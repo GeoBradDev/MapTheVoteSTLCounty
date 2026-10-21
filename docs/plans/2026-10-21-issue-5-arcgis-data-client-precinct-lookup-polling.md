@@ -41,8 +41,8 @@ Scope decisions (made in Phase 1):
 
 1. `src/data/arcgis.js` exports `getPrecinctAtPoint`, `getPrecinctById`, `getPolls`,
    `getPrecinctGeometry`, the error classes `TimeoutError`, `ServiceError` and `NotFound`
-   (each an `Error` subclass with a matching `name`), and `PRECINCT_CODE`
-   (`/^[A-Z]{2,3}\d{3}$/`). All URLs come from `election.serviceRoot` and `election.layers`;
+   (each an `Error` subclass with a matching `name`), `PRECINCT_CODE`
+   (`/^[A-Z]{2,3}\d{3}$/`), and the timing constants `TIMEOUT_MS` and `RETRY_DELAY_MS`. All URLs come from `election.serviceRoot` and `election.layers`;
    no layer or service name is written in `src/data/`.
 2. `getPrecinctAtPoint({ lat, lng })` sends a GET to the precincts layer's `query` with exactly
    `geometry=<lng>,<lat>`, `geometryType=esriGeometryPoint`, `inSR=4326`,
@@ -138,6 +138,8 @@ Scope decisions (made in Phase 1):
 - Riskiest step: the retry/timeout interaction (a timer left running after success would
   abort nothing but leak; a retry after a non-retryable error would double requests). Both
   have tests asserting the request count.
+- The polls are cached for the page load, so the `inline` line count, which fills only on
+  Election Day, goes stale in a tab left open. Refreshing it belongs to #24 and #25.
 - Not done: a caller-supplied `AbortSignal`, persistent caching, PBF, and a precinct cache.
   None are asked for.
 
