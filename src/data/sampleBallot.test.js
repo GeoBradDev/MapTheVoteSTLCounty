@@ -92,7 +92,7 @@ describe('parseSampleBallot', () => {
   });
 
   it('reads a link even when the href comes after other attributes', () => {
-    expect(parseSampleBallot(`<a class="x" href='${URL_OK}'>CC-007.pdf</a>`)).toEqual({
+    expect(parseSampleBallot(`<a rel="noopener" href='${URL_OK}'>CC-007.pdf</a>`)).toEqual({
       url: URL_OK,
       fileName: 'CC-007.pdf',
     });
@@ -146,7 +146,7 @@ describe('parseSampleBallot', () => {
   });
 
   it('skips a finished link with no href and keeps the text', () => {
-    expect(parseSampleBallot('<a name="top"></a>No ballot for this precinct.')).toEqual({
+    expect(parseSampleBallot('<a title="top"></a>No ballot for this precinct.')).toEqual({
       message: 'No ballot for this precinct.',
     });
   });
@@ -236,8 +236,12 @@ describe('parseSampleBallot', () => {
     expect(performance.now() - started).toBeLessThan(200);
   });
 
-  it('does not mistake an attribute ending in href for the href', () => {
-    const html = `<a data-href="${URL_OK}" href="https://example.com/x">CC-007.pdf</a>`;
+  it.each([
+    ['data-href', `<a data-href="${URL_OK}" href="https://example.com/x">CC-007.pdf</a>`],
+    ['hidden', `<a hidden href=${URL_OK}>x</a><a href=${URL_OK}>CC-007.pdf</a>`],
+    ['style', `<a href=${URL_OK}><span style="display:none">X</span>CC-007.pdf</a>`],
+    ['class', `Polls closed<span class="x"> or not</span>`],
+  ])('shows nothing for an attribute it does not know: %s', (_, html) => {
     expect(parseSampleBallot(html)).toEqual({ message: null });
   });
 });

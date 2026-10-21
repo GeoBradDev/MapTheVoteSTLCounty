@@ -34,7 +34,9 @@ for (const { attributes } of body.features) {
   counts[`${status}: ${kind}`] = (counts[`${status}: ${kind}`] ?? 0) + 1;
 
   if (status === 'In Election') {
-    if (kind !== 'link') failures.push(`${precinct}: no valid link in ${JSON.stringify(html)}`);
+    if ((html?.match(/href/gi) ?? []).length > 1) failures.push(`${precinct}: several links`);
+    else if (kind !== 'link')
+      failures.push(`${precinct}: no valid link in ${JSON.stringify(html)}`);
     else if (!result.fileName) failures.push(`${precinct}: link has no file name`);
     else if (urls.has(result.url)) failures.push(`${precinct}: link shared with another precinct`);
     else urls.add(result.url);

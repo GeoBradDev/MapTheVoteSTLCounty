@@ -37,7 +37,8 @@ Scope decisions:
    `{ url, fileName }` or `{ message }`, never both shapes and never throws for any input.
 2. The parser is a small, strict reader, not a full HTML parser. It reads plain text,
    comments, and the tags `a`, `b`, `i`, `u`, `em`, `strong`, `small`, `span`, `font`,
-   `br`, `p` and `div`, with unquoted, single-quoted or double-quoted attribute values
+   `br`, `p` and `div`, and the attributes `href`, `target`, `title` and `rel` (others, such
+   as `hidden`, `style` or `class`, can hide content, so they fail closed), with unquoted, single-quoted or double-quoted attribute values
    (case-insensitive names, optional whitespace around `=`, HTML whitespace or `/` between
    attributes). The href is read from the first `<a>` tag that has one. An `href` in text,
    inside an attribute value, in a comment, or on a tag other than `<a>` is ignored. The
@@ -48,7 +49,7 @@ Scope decisions:
    (criterion 5), or `null` when empty. It is for display only.
 4. `{ message: null }` comes back for a link whose URL is rejected (a non-portal URL, a
    `javascript:` URL, an `http:` URL, a URL with extra path or query), and for any markup
-   the reader does not know or cannot read to its end: another tag (`script`, `img`,
+   the reader does not know or cannot read to its end: another tag or attribute (`script`, `img`, `hidden`,
    `textarea`, ...), a declaration, CDATA, a processing instruction, an unfinished tag or
    comment, or a quote or `<` where a browser reports a parse error. It fails closed: the
    worst case is showing nothing.

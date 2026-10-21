@@ -5,15 +5,19 @@
 // render the field as HTML: show the result of this parser as text.
 //
 // This is a small, strict reader, not a full HTML parser. It knows plain text,
-// comments and a few simple formatting tags. Anything else (another tag, a
-// declaration, a tag it cannot read to its end, a quote or < where a browser
-// would report a parse error) gives `{ message: null }`, so the worst case is
+// comments and a few simple formatting tags and attributes. Anything else
+// (another tag or attribute, a declaration, a tag it cannot read to its end, a
+// quote or < where a browser would report a parse error) gives `{ message: null }`, so the worst case is
 // showing nothing, never a wrong link or raw markup.
 import election from '../config/election.js';
 
 // Tags the field may use. Block tags separate words; inline tags do not.
 const INLINE_TAGS = new Set(['a', 'b', 'i', 'u', 'em', 'strong', 'small', 'span', 'font']);
 const BLOCK_TAGS = new Set(['br', 'p', 'div']);
+
+// Attributes the field may use. Others, like hidden, style or class, can hide
+// content in a browser, so the reader cannot tell what would be shown.
+const ATTRIBUTES = new Set(['href', 'target', 'title', 'rel']);
 
 // HTML whitespace. Not \s, which also matches characters like a no-break
 // space that a browser treats as part of a name.
@@ -48,6 +52,8 @@ function readTag(html, start) {
     while (i < html.length && !isSpace(html[i]) && !'/>='.includes(html[i])) i += 1;
     const attr = html.slice(attrStart, i).toLowerCase();
     if (!attr || /["'<]/.test(attr)) return null;
+    // A browser ignores attributes on a closing tag.
+    if (!closing && !ATTRIBUTES.has(attr)) return null;
 
     let value = '';
     let j = i;
