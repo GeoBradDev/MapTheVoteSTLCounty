@@ -113,14 +113,15 @@ quotes).
 
 A Vite plugin (`src/features/learn/content/vitePlugin.js`) checks every topic file when the
 build, the tests or the dev server start (restart the dev server after adding a topic), and
-turns each topic into plain data. The build fails, naming the
-file and each problem, when a topic: has no sources; has no `group`, or one not in the list;
-has no `lastVerified`, or one more than 60 days before Election Day or after it; was written for another `election`; contains `TODO`;
-has an `id` that differs from its file name, or a front matter key it does not know; cites a
-source it does not list; uses Markdown outside the list above; or links anywhere but an
-`https` URL on an official host or a path on this site. The official hosts are any `.gov` site
-and the county board's own sites, listed in `src/features/learn/content/officialSources.js`;
-add a host there in a reviewed change, never per topic.
+turns each topic into plain data. The build fails, naming the file and each problem, when a
+topic: has no sources; has no `group`, or one not in the list; has no `lastVerified`, or one
+more than 60 days before Election Day or after it; was written for another `election`;
+contains `TODO`; has an `id` that differs from its file name, or a front matter key it does
+not know; cites a source it does not list; uses Markdown outside the list above; or links
+anywhere but an `https` URL on an official host or a path on this site. The official hosts are
+any `.gov` site and the county board's own sites, listed in
+`src/features/learn/content/officialSources.js`; add a host there in a reviewed change, never
+per topic.
 
 For each new election, re-read every topic's sources, then update its `election` and
 `lastVerified`; the build fails until you do. `src/features/learn/topics.js` loads the topics
