@@ -4,7 +4,6 @@
 // geocoder, the county's precinct and polls layers. Nothing reaches the
 // network. A failure is a network error (what a CORS refusal or a dropped
 // connection looks like to the page), a timeout or an HTTP 5xx.
-import { readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import election from '../src/config/election.js';
@@ -14,20 +13,8 @@ import { DEFAULT_BASE_URL as PHOTON_URL } from '../src/data/photon.js';
 import { copy as errorCopy } from '../src/features/lookup/errorCopy.js';
 import { copy as lookupCopy } from '../src/features/lookup/lookupCopy.js';
 import { copy as resultsCopy } from '../src/features/lookup/resultsCopy.js';
+import { CODE, fixtureBody } from './fixtures.js';
 
-const fixture = (name) =>
-  readFileSync(new URL(`../docs/raw/fixtures/${name}.json`, import.meta.url), 'utf8');
-
-const FIXTURES = {
-  polls: fixture('polls'),
-  absentee: fixture('absentee-sites'),
-  geometry: fixture('precinct-geometry'),
-  byId: fixture('precinct-by-id'),
-  none: fixture('precinct-at-city'),
-};
-
-// The one precinct the fixtures hold.
-const CODE = 'CC007';
 const ADDRESS = '1318 Ross Ave';
 
 // One county address point for ADDRESS, as both county layers return it.
@@ -85,19 +72,20 @@ async function services(
     if (!url.href.startsWith(election.serviceRoot)) return route.abort();
     if (delayMs) await new Promise((resolve) => setTimeout(resolve, delayMs));
     if (url.pathname.includes(election.layers.polls)) {
-      const absentee = url.searchParams.get('where') === election.absenteeWhere;
-      return behave(route, polls, absentee ? FIXTURES.absentee : FIXTURES.polls);
+      return behave(route, polls, fixtureBody(url.href));
     }
-    let body;
-    if (url.searchParams.get('where') === `precinct='${CODE}'`) {
-      body = url.searchParams.get('f') === 'geojson' ? FIXTURES.geometry : FIXTURES.byId;
-    } else if (url.searchParams.get('geometryType') === 'esriGeometryPoint') {
-      // A point in the precinct: the precinct's own record answers.
-      body = url.pathname.includes(election.layers.precincts) ? FIXTURES.byId : FIXTURES.none;
-    } else {
-      body = FIXTURES.none;
+    let href = url.href;
+    if (
+      url.searchParams.get('geometryType') === 'esriGeometryPoint' &&
+      url.pathname.includes(election.layers.precincts)
+    ) {
+      // A point in the precinct: the precinct's own record answers, shaped to
+      // the fields the point query asked for.
+      const byId = new URL(url);
+      byId.searchParams.set('where', `precinct='${CODE}'`);
+      href = byId.href;
     }
-    return behave(route, precincts, body);
+    return behave(route, precincts, fixtureBody(href));
   });
 }
 

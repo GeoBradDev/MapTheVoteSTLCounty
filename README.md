@@ -10,7 +10,7 @@ npm run dev           # start the dev server
 npm run build         # build the static site into dist/
 npm run preview       # serve dist/ locally
 npm test              # run the tests once (npm run test:watch to watch)
-npm run test:e2e      # accessibility checks in Chromium; run npm run build first
+npm run test:e2e      # accessibility and failure-state checks in Chromium; run npm run build first
 npm run test:perf     # Lighthouse performance budgets; run npm run build first
 npm run lint          # ESLint, including jsx-a11y rules
 npm run format        # format with Prettier (npm run format:check to check only)
@@ -69,7 +69,7 @@ that table, so change both together.
 
 ## Accessibility
 
-The target is WCAG 2.1 AA (#26). `npm run test:e2e` runs `e2e/a11y.e2e.js` with Playwright
+The target is WCAG 2.1 AA (#26). `npm run test:e2e` runs `e2e/a11y.e2e.js` (and the failure states of #18, `e2e/failures.e2e.js`) with Playwright
 against the production build (`vite preview`), at 360 px and 1280 px. On each key route it
 runs axe-core (WCAG 2.1 A and AA plus best practice, contrast included) and checks for
 horizontal scroll (also with the WCAG text spacing override), one `h1`, the page language and

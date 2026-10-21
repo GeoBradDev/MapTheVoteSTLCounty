@@ -124,7 +124,7 @@ function Schedules({ now }) {
 export default function EarlyVotingCard({ code, origin }) {
   // The absentee topic, once published (#22, #23); until then, the index.
   const absentee = getTopic(CARD_TOPICS.absentee);
-  // { rows } once loaded, { error: true } on failure.
+  // { rows } once loaded, { error: true, attempt } on failure.
   const [result, setResult] = useState(null);
   // A failed load can be tried again; it stays shown while it is (#18).
   const { attempt, loading, retry, done, targetRef } = useRetry();

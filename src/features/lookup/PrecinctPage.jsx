@@ -152,10 +152,6 @@ function PrecinctResults({ code }) {
         {precinct ? copy.ready(code) : ''}
       </p>
 
-      <p role="status" className="mt-6 empty:hidden">
-        {slow ? errorCopy.slow : ''}
-      </p>
-
       {!result && <ResultsSkeleton />}
 
       <div ref={errorRef} tabIndex={-1} className={result?.error ? 'mt-6' : undefined}>
@@ -173,6 +169,12 @@ function PrecinctResults({ code }) {
         </p>
         {retryable && <RetryButton onRetry={retry} busy={loading} className="mt-3" />}
       </div>
+
+      {/* Below the skeleton and the error, so it pushes nothing down when it
+          appears (#27). */}
+      <p role="status" className="mt-6 empty:hidden">
+        {slow ? errorCopy.slow : ''}
+      </p>
 
       {result?.error === 'notFound' && (
         <section aria-labelledby={searchHeadingId} className="mt-6">

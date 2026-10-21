@@ -120,7 +120,7 @@ function PollRow({ poll, apple, headingRef }) {
  *   distances are from the precinct's center.
  */
 export default function PollsCard({ code, origin }) {
-  // { rows } once loaded, { error: true } on failure.
+  // { rows } once loaded, { error: true, attempt } on failure.
   const [result, setResult] = useState(null);
   // A failed load can be tried again; it stays shown while it is (#18).
   const { attempt, loading, retry, done, targetRef } = useRetry();

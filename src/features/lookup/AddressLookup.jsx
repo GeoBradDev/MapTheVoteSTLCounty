@@ -157,9 +157,6 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
     <div>
       <AddressSearch onSubmit={handleAddress} onEdit={handleEdit} busy={busy} inputRef={inputRef} />
       <GeocoderAttribution />
-      <p role="status" className="mt-2 empty:hidden">
-        {slow ? errorCopy.slow : ''}
-      </p>
       <p role="alert" className="mt-2">
         {outcome?.error && (
           <span key={outcome.run}>
@@ -183,6 +180,10 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
           addressInputRef={inputRef}
         />
       </div>
+      {/* Last, so it pushes nothing down when it appears (#27). */}
+      <p role="status" className="mt-2 empty:hidden">
+        {slow ? errorCopy.slow : ''}
+      </p>
       {outcome?.kind && (
         <div ref={outcomeRef} tabIndex={-1} className="mt-6 rounded-md border border-border p-4">
           <OutOfCountyNotice kind={outcome.kind} headingLevel={noticeHeadingLevel} />
