@@ -150,3 +150,6 @@ applicable because the app is a frontend-only React site.
   in the app build and a bad topic built cleanly. The plugin now also checks every
   `content/<locale>/learn/*.md` file when the build or dev server starts, whether or not
   anything imports it; a real-build test proves a bad, unimported topic fails the build.
+- Rerun review: the build-start check skips a directory whose name ends in `.md` instead of
+  failing with an error that names no file; the README says the dev server checks topics when
+  it starts.

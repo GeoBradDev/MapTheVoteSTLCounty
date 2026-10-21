@@ -36,7 +36,7 @@ async function topicFiles(root) {
       if (error.code !== 'ENOENT') throw error;
     }
     for (const entry of entries) {
-      if (entry.name.endsWith('.md')) files.push(path.join(learnDir, entry.name));
+      if (entry.isFile() && entry.name.endsWith('.md')) files.push(path.join(learnDir, entry.name));
     }
   }
   return files.sort();

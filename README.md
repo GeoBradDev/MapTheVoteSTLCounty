@@ -105,8 +105,9 @@ link to that source, matching the numbered source list. The body allows paragrap
 lines between them), `**bold**` and `[text](url)` links, and nothing else (no HTML, images,
 code, tables or quotes).
 
-A Vite plugin (`src/features/learn/content/vitePlugin.js`) checks every topic in the dev
-server, the tests and the build, and turns it into plain data. The build fails, naming the
+A Vite plugin (`src/features/learn/content/vitePlugin.js`) checks every topic file when the
+build, the tests or the dev server start (restart the dev server after adding a topic), and
+turns each topic into plain data. The build fails, naming the
 file and each problem, when a topic: has no sources; has no `lastVerified`, or one more than
 60 days before Election Day or after it; was written for another `election`; contains `TODO`;
 has an `id` that differs from its file name, or a front matter key it does not know; cites a
