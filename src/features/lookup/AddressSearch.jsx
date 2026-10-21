@@ -16,12 +16,14 @@ const MAX_SUGGESTIONS = 5;
  * location" (#9) can listen for the voter going back to it.
  * @param {{
  *   onSubmit: (query: string | import('../../data/geocoder.js').Suggestion) => void,
+ *   onEdit?: () => void,
  *   busy?: boolean,
  *   inputRef?: { current: HTMLInputElement | null },
  * }} props `busy` marks a lookup in progress: the button says so and submits
- *   are ignored.
+ *   are ignored. `onEdit` is called on every edit of the text, so the caller
+ *   can cancel a lookup for the old text.
  */
-export default function AddressSearch({ onSubmit, busy = false, inputRef }) {
+export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef }) {
   const geocoder = useGeocoder();
   const [text, setText] = useState('');
   // The text to suggest for, set only by typing, so a pick that fills in the
@@ -74,6 +76,7 @@ export default function AddressSearch({ onSubmit, busy = false, inputRef }) {
   function handleChange(event) {
     const value = event.target.value;
     setText(value);
+    onEdit?.();
     setEmpty(false);
     setClosed(false);
     // Suggestions for the old text are stale the moment the text changes.

@@ -77,13 +77,22 @@ export default function AddressLookup() {
     run((signal) => geocoder.geocode(query, { signal }));
   }
 
+  // Editing the address cancels a lookup still running, for the old text or
+  // for the device's location, so the voter can correct and resubmit.
+  function handleEdit() {
+    if (!runRef.current) return;
+    runRef.current.abort();
+    runRef.current = null;
+    setBusy(false);
+  }
+
   function handleLocation(place) {
     run(async () => place);
   }
 
   return (
     <div>
-      <AddressSearch onSubmit={handleAddress} busy={busy} inputRef={inputRef} />
+      <AddressSearch onSubmit={handleAddress} onEdit={handleEdit} busy={busy} inputRef={inputRef} />
       <p role="alert" className="mt-2">
         {outcome?.error && (
           <>

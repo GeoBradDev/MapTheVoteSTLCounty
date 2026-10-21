@@ -67,6 +67,9 @@ the message would never apply, and a standing notice would only confuse.) #7's p
    A precinct navigates to `/p/<code>`. Any other kind shows `OutOfCountyNotice` for it on
    the same screen. No match, an unavailable geocoder (`GeocoderUnavailableError`), or a
    failed lookup (any other geocoder or `locate` error) shows a short message in a `role="alert"` region with the official county lookup link.
+   While a lookup runs, the button says so and further submits are ignored; any edit of the
+   address text cancels that lookup (for an address or the device location) so the voter
+   can correct it and submit again (review round 3).
 6. "Use my location" (#9) sits under the address box with `addressInputRef` wired to it; its
    place goes to the same `locate` flow. A device point in St. Louis City comes back
    `unknown` (no state or county); the existing `unknown` notice already names the City of
