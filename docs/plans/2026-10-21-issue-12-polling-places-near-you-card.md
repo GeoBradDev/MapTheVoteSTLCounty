@@ -104,7 +104,7 @@ Domain skills:
 - iOS detection by user agent is heuristic; the Google link is always shown, so a missed
   detection still leaves working directions.
 - The centroid of a concave precinct can fall outside it; acceptable for "distance from
-  the precinct's center", and the card says distances are approximate from the center.
+  the precinct's center", and the card says distances are from the center.
 - Riskiest step: the PrecinctPage test changes, since they were written for the pending
   card. Each change keeps the original assertion for the cards still pending.
 
