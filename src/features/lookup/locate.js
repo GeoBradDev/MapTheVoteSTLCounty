@@ -32,7 +32,7 @@ function normalizeName(value) {
 
 const CITY_NAMES = new Set(['st louis city', 'city of st louis']);
 const COUNTY_NAMES = new Set(['st louis county']);
-// 29 is Missouri's FIPS code, which the Census geocoder returns as STATE.
+// 29 is Missouri's FIPS code, which some geocoders return as the state.
 const MISSOURI = new Set(['mo', 'missouri', '29']);
 
 /**

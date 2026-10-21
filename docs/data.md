@@ -318,7 +318,8 @@ than the raw result on purpose: typed text (the part before the first comma) mus
 start with the result's house number and then its whole street, word for word, with
 the same direction and street type ("100 S Lindbergh Blvd" is not "100 Lindbergh
 Blvd", and "8025 Maryland Ave Clayton" is not "8025 Clayton Rd"); a typed ZIP must be
-its postcode and a typed town other than St. Louis its town; and a result in a named
+its postcode and a town typed after the street (with or without a comma) its town,
+unless it is St. Louis; and a result in a named
 town other than St. Louis needs that town or its ZIP typed, because the same address
 can exist in two towns ("St. Louis" is the mailing city for much of the county, so it
 confirms nothing). Typing a suggestion's own label back always matches. So the Galleria (Photon's answer is 1155, the mall, not 1417)

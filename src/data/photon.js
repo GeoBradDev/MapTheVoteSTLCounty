@@ -158,12 +158,22 @@ function typedZip(text) {
   return zips.at(-1)?.[1];
 }
 
-// The town typed after the first comma, without state and ZIP, if any.
-function typedTown(text) {
-  const [, part = ''] = text.split(',');
-  return words(part)
-    .filter((word) => !/^\d/.test(word) && word !== 'mo' && word !== 'missouri')
-    .join(' ');
+const NOT_TOWN = new Set(['mo', 'missouri', 'usa', 'us']);
+// Unit words; the word after one is the unit, not a town.
+const UNIT = new Set('apt apartment unit ste suite bldg building fl floor rm room lot'.split(' '));
+// Typed towns that name St. Louis, the mailing city for much of the county.
+const ST_LOUIS_NAMES = new Set([ST_LOUIS, `${ST_LOUIS} city`]);
+
+// The town in the words typed after the street, with or without commas:
+// what is left once units, the state, the country and numbers are dropped.
+function typedTown(after) {
+  const kept = [];
+  for (let i = 0; i < after.length; i += 1) {
+    const word = after[i];
+    if (UNIT.has(word)) i += 1;
+    else if (!/^\d/.test(word) && !NOT_TOWN.has(word)) kept.push(word);
+  }
+  return kept.join(' ');
 }
 
 // Typed text names a feature when:
@@ -171,8 +181,9 @@ function typedTown(text) {
 //   number and then the feature's whole street, word for word, with no
 //   direction or street type after it ("100 S Lindbergh Blvd" is not "100
 //   Lindbergh Blvd", "8025 Maryland Ave Clayton" is not "8025 Clayton Rd");
-// - a typed ZIP is the feature's postcode, and a typed town other than St.
-//   Louis is the feature's town;
+// - a typed ZIP is the feature's postcode (a St. Louis City feature with no
+//   postcode cannot confirm one), and a town typed after the street, with or
+//   without a comma, is the feature's town unless it is St. Louis;
 // - a feature in a named town other than St. Louis has that town or its ZIP
 //   typed, since the same address can exist in two towns. St. Louis is the
 //   mailing city for much of the county, so it confirms nothing.
@@ -193,8 +204,10 @@ function matchesTyped(text, props) {
   const postcode = props.postcode ? String(props.postcode).slice(0, 5) : null;
   if (zip && postcode && zip !== postcode) return false;
   const town = words(props.city ?? props.district).join(' ');
-  const typedPlace = typedTown(text);
-  if (typedPlace && typedPlace !== ST_LOUIS && town && typedPlace !== town) return false;
+  // A City house with no postcode cannot confirm a typed ZIP.
+  if (zip && !postcode && town === ST_LOUIS) return false;
+  const typedPlace = typedTown(words(text).slice(1 + street.length));
+  if (typedPlace && town && typedPlace !== town && !ST_LOUIS_NAMES.has(typedPlace)) return false;
   const confirmed = (zip && zip === postcode) || (typedPlace && typedPlace === town);
   return !town || town === ST_LOUIS || Boolean(confirmed);
 }
