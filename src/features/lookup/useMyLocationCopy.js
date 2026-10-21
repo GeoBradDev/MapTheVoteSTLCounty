@@ -3,7 +3,7 @@
 export const copy = {
   button: 'Use my location',
   busy: 'Finding your location...',
-  privacy: 'Your location is used only to find your precinct. It is not saved.',
+  privacy: 'Your location is used only to find your precinct. This site does not save it.',
   notHome:
     'Results are for where your device is now, which may not be your home address. Your ballot is based on the address where you are registered to vote.',
   errors: {

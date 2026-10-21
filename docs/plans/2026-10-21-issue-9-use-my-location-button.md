@@ -41,14 +41,19 @@ including the `unknown` kind for a point outside the county with no state.
 2. `src/features/lookup/UseMyLocation.jsx` renders a "Use my location" button. Location is
    requested only when the button is pressed, never on render or page load.
 3. Next to the button, always visible:
-   - one short line that the location is used only to find the precinct and is not saved;
+   - one short line that the location is used only to find the precinct and this site does
+     not save it (it is sent to the county's ArcGIS query, so "not saved" anywhere would
+     overclaim; review finding 2);
    - a warning that results use where the device is now, which may not be the voter's home
      address.
 4. While the position is pending the button says "Finding your location..." and is marked
    `aria-disabled="true"` (it stays focusable); presses while pending do nothing.
 5. On success the button calls `onLocate({ lat, lng })` once. The parent (#10) passes that
-   place straight to `locate` (#8). The component stores the coordinates nowhere: no URL,
-   no web storage, no state kept after the call.
+   place straight to `locate` (#8) and owns that query's loading and error states (#18).
+   The component stores the coordinates nowhere: no URL, no web storage, no state kept
+   after the call. A pending result is dropped, with no `onLocate`, error or focus move,
+   when the voter types in the address box or the component unmounts, so a late answer
+   never replaces a typed address. (Added after review finding 1.)
 6. On failure it shows a clear message for each reason in a `role="alert"` region, and
    moves focus to the address box (`addressInputRef`) so typing an address is the next
    step. The address box is never disabled by this component.
@@ -87,12 +92,14 @@ gate, error codes, timeout) in tests and in desktop Chrome with emulated geoloca
 
 - Copy honesty: the issue asks for "only used on this device", but the coordinates are sent
   to the county's ArcGIS precinct query (#20 lists it). The line instead says the location
-  is used only to find the precinct and is not saved, which is true.
+  is used only to find the precinct and that this site does not save it, which is true.
+  The coordinates travel in the ArcGIS GET query string, as every query from #5 does.
 - iOS Safari reports an insecure page as a permission error; the `insecure` check runs first
   so the message names HTTPS rather than permission.
 - Some browsers never call back when the prompt is dismissed; the timeout covers that
   (Chrome and Safari both apply the timeout only after permission, so a dismissed prompt can
-  leave the button pending; the voter can still type an address since nothing is disabled).
+  leave the button pending; the voter can still type an address since nothing is disabled,
+  and typing drops the pending request and resets the button).
 - Focus moving on every failure, not just denial: chosen so the next step is always the
   address box.
 

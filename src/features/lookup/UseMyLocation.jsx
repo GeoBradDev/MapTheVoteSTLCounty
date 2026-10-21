@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { getDeviceLocation } from './deviceLocation.js';
 import { copy } from './useMyLocationCopy.js';
 
@@ -6,34 +6,59 @@ import { copy } from './useMyLocationCopy.js';
  * The "Use my location" button. It asks for the device's position only when
  * pressed and hands the coordinates to `onLocate` without keeping them. When
  * the position cannot be had, it says why and moves focus to the address box.
+ * Typing in the address box while the position is pending, or unmounting,
+ * drops the pending result, so a late answer never replaces a typed address.
  * @param {{
  *   onLocate: (place: { lat: number, lng: number }) => void,
  *   addressInputRef?: { current: HTMLElement | null },
- * }} props `onLocate` gets a coordinates-only place for locate() (#8).
+ * }} props `onLocate` gets a coordinates-only place for locate() (#8) and
+ *   handles its own errors and loading state.
  */
 export default function UseMyLocation({ onLocate, addressInputRef }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
-  // A ref, not state, so a second press before the re-render is ignored too.
-  const busyRef = useRef(false);
+  // The current request, or null. A ref, not state, so a second press before
+  // the re-render is ignored too, and a dropped request can tell it was dropped.
+  const requestRef = useRef(null);
   const notesId = useId();
 
+  // Drops the pending request, if any.
+  function cancel() {
+    requestRef.current?.stopListening();
+    requestRef.current = null;
+  }
+
+  useEffect(() => cancel, []);
+
   async function handleClick() {
-    if (busyRef.current) return;
-    busyRef.current = true;
+    if (requestRef.current) return;
+    const input = addressInputRef?.current;
+    const onType = () => {
+      cancel();
+      setBusy(false);
+    };
+    input?.addEventListener('input', onType);
+    const request = { stopListening: () => input?.removeEventListener('input', onType) };
+    requestRef.current = request;
     setBusy(true);
     setError(null);
+
     let place = null;
+    let reason = null;
     try {
       place = await getDeviceLocation();
     } catch (e) {
-      setError(Object.hasOwn(copy.errors, e?.reason) ? e.reason : 'unavailable');
-      addressInputRef?.current?.focus();
-    } finally {
-      busyRef.current = false;
-      setBusy(false);
+      reason = Object.hasOwn(copy.errors, e?.reason) ? e.reason : 'unavailable';
     }
-    if (place) onLocate(place);
+    if (requestRef.current !== request) return;
+    cancel();
+    setBusy(false);
+    if (place) {
+      onLocate(place);
+    } else {
+      setError(reason);
+      input?.focus();
+    }
   }
 
   return (
