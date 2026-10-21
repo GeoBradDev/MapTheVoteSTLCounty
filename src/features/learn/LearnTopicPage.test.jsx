@@ -73,4 +73,40 @@ describe('LearnTopicPage', () => {
     expect(remove).toHaveBeenCalledWith('beforeprint', expect.any(Function));
     remove.mockRestore();
   });
+
+  it('closes again after printing the sections it opened, and only those', () => {
+    const { container } = renderTopic('at-polls');
+    const details = container.querySelector('details');
+    act(() => {
+      window.dispatchEvent(new Event('beforeprint'));
+    });
+    act(() => {
+      window.dispatchEvent(new Event('afterprint'));
+    });
+    expect(details.open).toBe(false);
+
+    details.open = true;
+    act(() => {
+      window.dispatchEvent(new Event('beforeprint'));
+      window.dispatchEvent(new Event('afterprint'));
+    });
+    expect(details.open).toBe(true);
+  });
+
+  it('starts the next topic fresh: folded, titled and focused', async () => {
+    const location = memoryLocation({ path: '/learn/at-polls', record: true });
+    const { container } = render(
+      <Router hook={location.hook}>
+        <Route path="/learn/:topic" component={LearnTopicPage} />
+      </Router>,
+    );
+    container.querySelector('details').open = true;
+    screen.getByRole('heading', { level: 1 }).blur();
+    act(() => location.navigate('/learn/second-long'));
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Fixture second long topic',
+    );
+    expect(container.querySelector('details').open).toBe(false);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveFocus();
+  });
 });

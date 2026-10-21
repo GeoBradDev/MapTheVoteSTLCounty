@@ -8,7 +8,7 @@ import { learnCopy } from './learnCopy.js';
 //
 // Each `##` heading starts a section. A long section folds into
 // <details>/<summary>, with its heading in the summary, so a voter can scan the
-// headings first; it works without JavaScript and with screen readers.
+// headings first; the browser does the folding, and screen readers announce it.
 // LearnTopicPage opens every one before printing.
 
 const linkClass = 'text-primary underline';
@@ -61,7 +61,7 @@ function Inline({ nodes, topic, copy }) {
             <Inline nodes={node.children} topic={topic} copy={copy} />
           </Link>
         ) : (
-          <a key={i} href={node.href} className={linkClass}>
+          <a key={i} href={node.href} className={`${linkClass} print-href`}>
             <Inline nodes={node.children} topic={topic} copy={copy} />
           </a>
         );

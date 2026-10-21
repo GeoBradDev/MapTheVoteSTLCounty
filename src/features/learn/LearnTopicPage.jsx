@@ -15,27 +15,38 @@ export default function LearnTopicPage() {
   const topic = getTopic(id);
   const headingRef = useRef(null);
   const articleRef = useRef(null);
+  const found = topic?.id;
   const title = topic?.title;
 
   useEffect(() => {
-    if (!title) return undefined;
+    if (!found) return undefined;
     headingRef.current?.focus();
     const previous = document.title;
     document.title = copy.pageTitle(title);
     return () => {
       document.title = previous;
     };
-  }, [title]);
+  }, [found, title]);
 
-  // A folded section would print as its heading only, so open them all first.
+  // A folded section would print as its heading only, so open them all first,
+  // then fold again the ones that were folded.
   useEffect(() => {
+    let opened = [];
     const openAll = () => {
-      for (const details of articleRef.current?.querySelectorAll('details') ?? []) {
-        details.open = true;
-      }
+      const folded = articleRef.current?.querySelectorAll('details:not([open])') ?? [];
+      opened = [...folded];
+      for (const details of opened) details.open = true;
+    };
+    const restore = () => {
+      for (const details of opened) details.open = false;
+      opened = [];
     };
     window.addEventListener('beforeprint', openAll);
-    return () => window.removeEventListener('beforeprint', openAll);
+    window.addEventListener('afterprint', restore);
+    return () => {
+      window.removeEventListener('beforeprint', openAll);
+      window.removeEventListener('afterprint', restore);
+    };
   }, []);
 
   if (!topic) return <NotFoundPage />;
@@ -43,7 +54,8 @@ export default function LearnTopicPage() {
   return (
     <>
       <div ref={articleRef}>
-        <TopicArticle topic={topic} headingRef={headingRef} />
+        {/* Keyed, so the next topic starts with its sections folded. */}
+        <TopicArticle key={topic.id} topic={topic} headingRef={headingRef} />
       </div>
       <nav aria-label={copy.moreHelp} className="mt-8 print:hidden">
         <ul className="flex flex-col gap-1">

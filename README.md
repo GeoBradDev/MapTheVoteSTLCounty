@@ -106,8 +106,8 @@ order, by title within each.
 
 Cite a source after the claim it supports with `[^sos-id]`; the page shows it as a numbered
 link to that source, matching the numbered source list. The body allows paragraphs, `##` and
-`###` headings (a `###` only after a `##`), `- ` and `1. ` lists (one level; number ordered items 1, 2, 3 with no blank
-lines between them), `**bold**` and `[text](url)` links, and nothing else (no HTML, images,
+`###` headings (a `###` only after a `##`; text and bold only, no links or citations), `- `
+and `1. ` lists (one level; number ordered items 1, 2, 3 with no blank lines between them), `**bold**` and `[text](url)` links, and nothing else (no HTML, images,
 code, tables or quotes).
 
 A Vite plugin (`src/features/learn/content/vitePlugin.js`) checks every topic file when the
@@ -129,7 +129,7 @@ The "How to vote" pages (#23) are `/learn`, the index, and `/learn/<id>`, one to
 topics, `/learn` says the guides are not ready and links to the county board's site and the
 address lookup. A topic page folds each `##` section with at least `LONG_SECTION_CHARS`
 characters of text (in `TopicArticle.jsx`) into a `<details>` with its heading in the summary,
-and opens them all before printing. The polling places card links to the `voter-id` topic and
+and opens the folded ones while printing. The polling places card links to the `voter-id` topic and
 the early voting card to the `absentee` topic, each only once that topic exists
 (`src/features/learn/cardTopics.js`); give those topics these ids, or change that file.
 `src/features/learn/learnA11y.test.jsx` runs axe on the pages with fixture topics.

@@ -26,7 +26,9 @@ payments, email: not applicable because the app is a frontend-only React site.
 1. `/learn` shows an `h1` "How to vote". With topics, it lists every topic as a link to
    `/learn/<id>`, under `h2` groups in this order: "Before you vote", "Ways to vote", "At
    the polls", "Get help". A group with no topics is not shown. Within a group, topics sort by
-   title.
+   title, under a one-line intro. Below the list, a "More help" nav links to the address
+   lookup and the county board's site. Like topic pages, `/learn` sets the tab title and
+   moves focus to its `h1` on arrival (links to it sit low on other pages).
 2. With zero topics, `/learn` says plainly that the guides are not ready yet, and links to the
    county board's official site (`election.countySiteUrl`) and to the address lookup (`/`).
    It invents no voter guidance.
@@ -36,18 +38,22 @@ payments, email: not applicable because the app is a frontend-only React site.
    Sources list, "Last checked against these sources on <date>."). An unknown id shows the
    not-found page. The page links back to `/learn`, sets the tab title to the topic's title,
    and moves focus to its `h1` on arrival.
-5. A `##` section whose text is long (over a fixed character threshold) renders as
-   `<details>`/`<summary>` with the `h2` inside the summary; short sections render as plain
-   headings. Before printing, every `<details>` on the page is opened.
+5. A `##` section whose text is long (at least `LONG_SECTION_CHARS`, 600 characters) renders
+   as `<details>`/`<summary>` with the `h2` inside the summary; short sections render as plain
+   headings. Before printing, every folded `<details>` is opened, and after printing those are
+   folded again. Moving to another topic starts it with its sections folded. Headings may hold
+   only text and bold (the build rejects links and citations in them), so a summary never
+   contains a link.
 6. Heading order is correct: the build rejects a `###` heading that comes before any `##`
    heading, so a page never jumps from `h1` to `h3`. All link text is descriptive (topic
    titles, source labels, named destinations; no "click here").
-7. The polling places card links to the `voter-id` topic (link text is the topic's title)
-   when that topic exists, and shows nothing extra when it does not. The early voting card's
+7. The polling places card links to the `voter-id` topic (link text is the topic's title,
+   after "Before you go:") when that topic exists, and shows nothing extra when it does not. The early voting card's
    mail and absentee line links to the `absentee` topic when it exists, and to `/learn`
    otherwise (today's behavior).
 8. Print styles: the site footer and page navigation links are hidden in print; external links
-   in a topic print their URL after the text.
+   in a topic (body links and the Sources list, not the numbered citations, whose URLs the
+   Sources list prints) print their URL after the text.
 9. axe (axe-core, run in the tests) reports no violations on `/learn` empty, `/learn` with
    fixture topics, and every fixture topic page, including one with a collapsible section.
 10. Docs: README "Learn content" describes `group`, the card topic ids and the pages;
@@ -59,7 +65,11 @@ payments, email: not applicable because the app is a frontend-only React site.
 - `src/features/learn/content/topic.js` (+ test): required `group` key, validated against
   `TOPIC_GROUPS` exported from a new `src/features/learn/groups.js` (browser-safe; the bundle
   test forbids app code importing `content/topic.js`).
-- `src/features/learn/content/markdown.js` (+ test): `###` before any `##` is an error.
+- `src/features/learn/content/markdown.js` (+ test): `###` before any `##` is an error, and
+  so is a link or citation in a heading.
+- `src/features/learn/content/vitePlugin.test.js`: its fixture topic gains `group`.
+- `src/App.test.jsx`: the routing tests use fixture topics, since `/learn/:topic` now shows
+  the not-found page for an id with no topic.
 - `src/features/learn/groups.js` (new): group ids in display order.
 - `src/features/learn/learnCopy.js`: page labels, group labels, empty state.
 - `src/features/learn/LearnPage.jsx` (+ new test): index and empty state.

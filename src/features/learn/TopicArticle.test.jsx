@@ -142,8 +142,24 @@ describe('TopicArticle', () => {
     expect(ref.current).toHaveAttribute('tabindex', '-1');
   });
 
+  it('marks the external links in the text so print shows where they go', () => {
+    renderTopic({
+      ...topic,
+      blocks: [
+        {
+          type: 'paragraph',
+          children: [
+            { type: 'link', href: 'https://first.example.gov/c', children: [text('Off')] },
+          ],
+        },
+      ],
+    });
+    expect(screen.getByRole('link', { name: 'Off' })).toHaveClass('print-href');
+  });
+
   it('marks the source links so print shows where each one goes', () => {
     renderTopic();
+    expect(screen.getByRole('link', { name: 'a page here' })).not.toHaveClass('print-href');
     const sources = screen.getByRole('region', { name: 'Sources' });
     for (const link of within(sources).getAllByRole('link')) {
       expect(link).toHaveClass('print-href');

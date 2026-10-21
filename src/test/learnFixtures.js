@@ -41,4 +41,8 @@ export const fixtureTopics = [
     { type: 'list', ordered: true, items: [[text('Step one')], [text('Step two')]] },
   ]),
   fixture('register', 'A fixture registration topic', 'before-you-vote', []),
+  fixture('second-long', 'Fixture second long topic', 'get-help', [
+    heading(2, 'Fixture other long section'),
+    paragraph('w'.repeat(LONG_SECTION_CHARS)),
+  ]),
 ];
