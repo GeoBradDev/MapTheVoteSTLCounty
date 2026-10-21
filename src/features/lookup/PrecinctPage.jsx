@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'wouter';
 import election from '../../config/election.js';
 import { getPrecinctById, NotFound, PRECINCT_CODE } from '../../data/arcgis.js';
+import { lookupPointFor } from './lookupPoint.js';
 import { precinctStatus } from './precinctStatus.js';
 import PrecinctStatusBanner from './PrecinctStatusBanner.jsx';
 import ResultsCards, { ResultsSkeleton, SkeletonLine } from './ResultsCards.jsx';
@@ -22,6 +23,9 @@ function municipalityName(value) {
 function PrecinctResults({ code }) {
   // { precinct } once loaded, { error: 'notFound' | 'failed' } on failure.
   const [result, setResult] = useState(null);
+  // The point of the lookup that opened this page, if any. Memory only: a
+  // reload or a shared link has none.
+  const [origin] = useState(() => lookupPointFor(code));
   const headingRef = useRef(null);
 
   useEffect(() => {
@@ -85,7 +89,7 @@ function PrecinctResults({ code }) {
       {status && (
         <>
           <PrecinctStatusBanner status={status} />
-          <ResultsCards showBallot={status.showBallot} />
+          <ResultsCards code={code} origin={origin} showBallot={status.showBallot} />
         </>
       )}
     </>

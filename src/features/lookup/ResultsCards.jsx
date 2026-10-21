@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import election from '../../config/election.js';
+import PollsCard from './PollsCard.jsx';
 import { copy } from './resultsCopy.js';
 
 const linkClass = 'text-primary underline';
@@ -24,23 +25,31 @@ function Card({ title, children }) {
   );
 }
 
+function PendingCard() {
+  return (
+    <p className="mt-2">
+      {copy.cards.pending}{' '}
+      <a href={election.officialLookupUrl} rel="noreferrer" className={linkClass}>
+        {copy.officialLookup}
+      </a>
+      .
+    </p>
+  );
+}
+
 /**
  * The result cards, in order.
- * @param {{ showBallot: boolean }} props False hides the sample ballot card, for
- *   a precinct with nothing on the ballot.
+ * @param {{ code: string, origin: { lat: number, lng: number } | null,
+ *   showBallot: boolean }} props `origin` is the looked-up point, in memory
+ *   only. `showBallot` false hides the sample ballot card, for a precinct with
+ *   nothing on the ballot.
  */
-export default function ResultsCards({ showBallot }) {
+export default function ResultsCards({ code, origin, showBallot }) {
   return (
     <div className="mt-6 flex flex-col gap-4">
       {CARDS.filter((card) => showBallot || !card.ballot).map(({ key }) => (
         <Card key={key} title={copy.cards[key]}>
-          <p className="mt-2">
-            {copy.cards.pending}{' '}
-            <a href={election.officialLookupUrl} rel="noreferrer" className={linkClass}>
-              {copy.officialLookup}
-            </a>
-            .
-          </p>
+          {key === 'polls' ? <PollsCard code={code} origin={origin} /> : <PendingCard />}
         </Card>
       ))}
     </div>
