@@ -73,6 +73,10 @@ describe('parseMarkdown', () => {
     ['a bare bracket', 'See [this] page'],
     ['a heading with no text', '## '],
     ['a horizontal rule', '---'],
+    ['an underlined heading', 'Title\n==='],
+    ['an ordered list that does not start at 1', '3. Third\n4. Fourth'],
+    ['an ordered list that skips a number', '1. One\n3. Three'],
+    ['ordered items split by blank lines', '1. Register\n\n2. Request a ballot'],
   ])('rejects %s', (_name, md) => {
     expect(parseMarkdown(md).errors.length).toBeGreaterThan(0);
   });
@@ -80,6 +84,13 @@ describe('parseMarkdown', () => {
   it('reports the line number of a problem', () => {
     const { errors } = parseMarkdown('Fine.\n\n# Title');
     expect(errors).toEqual([expect.stringMatching(/^line 3: /)]);
+  });
+
+  it('reports every problem in a paragraph, not just the first', () => {
+    const { errors } = parseMarkdown('<b>x</b> then `code` and ![img](https://a.gov/i.png)');
+    expect(errors.join('\n')).toMatch(/raw HTML/);
+    expect(errors.join('\n')).toMatch(/code/);
+    expect(errors.join('\n')).toMatch(/images/);
   });
 
   it('rejects an empty body', () => {

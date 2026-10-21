@@ -158,6 +158,32 @@ describe('parseTopic', () => {
     ).toMatch(/link .* is not an official https source or a path on this site/);
   });
 
+  it.each(['/\\evil.com', '/\\/evil.com', '//evil.com', '/a\\b'])(
+    'fails a site path a browser would send to another host: %s',
+    (href) => {
+      expect(problems(topicText({ body: `See [x](${href}).[^sos-id]` }))).toMatch(
+        /is not an official https source or a path on this site/,
+      );
+    },
+  );
+
+  it('fails an id that is not a lowercase slug', () => {
+    const file = '/repo/content/en/learn/Voter ID.md';
+    expect(problems(topicText({ front: { id: 'Voter ID' } }), file)).toMatch(
+      /id: "Voter ID" must be lowercase words joined by hyphens/,
+    );
+  });
+
+  it('reads a file that starts with a byte order mark', () => {
+    expect(() => parse(`\uFEFF${topicText()}`)).not.toThrow();
+  });
+
+  it('does not blame valid citations when the front matter is not valid YAML', () => {
+    const message = problems(topicText({ extra: 'title: [unclosed\n' }));
+    expect(message).toMatch(/front matter is not valid YAML/);
+    expect(message).not.toMatch(/cites a source/);
+  });
+
   it('allows an inline link to a path on this site', () => {
     expect(() =>
       parse(topicText({ body: 'Find [your polling place](/).[^sos-id]' })),
@@ -235,6 +261,8 @@ describe('isOfficialUrl', () => {
     'https://example.com/',
     'https://sos.mo.gov.example.com/',
     'https://evil-stlouiscovotes.info/',
+    'https:www.sos.mo.gov/elections',
+    'https:\\\\www.sos.mo.gov\\elections',
     'https://other.maps.arcgis.com/',
     'https://user@www.sos.mo.gov/',
     'not a url',

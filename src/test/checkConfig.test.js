@@ -500,6 +500,9 @@ describe('data health workflow', () => {
     expect(runs).toContain('node scripts/check-config.mjs');
     expect(runs).toContain('node scripts/check-geocoder.mjs');
     expect(runs).toContain('node scripts/check-content-links.mjs');
+    // A timed-out step fails and still gets reported; a timed-out job does not.
+    const links = steps.find((s) => s.run === 'node scripts/check-content-links.mjs');
+    expect(links['timeout-minutes']).toBeGreaterThan(0);
     const report = steps.find((s) => s.if === 'failure()');
     expect(report.run).toContain('gh issue create');
     expect(report.run).toContain('gh issue comment');

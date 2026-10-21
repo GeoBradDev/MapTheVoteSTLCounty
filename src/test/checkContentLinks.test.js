@@ -103,6 +103,20 @@ describe('checkLinks', () => {
     expect(calls.filter((u) => u === 'https://down.gov/')).toHaveLength(3);
   });
 
+  it('fails a URL that redirects off the official hosts', async () => {
+    const moved = async () => {
+      const res = new Response('parked', { status: 200 });
+      Object.defineProperty(res, 'redirected', { value: true });
+      Object.defineProperty(res, 'url', { value: 'https://parked.example.com/' });
+      return res;
+    };
+    const [result] = await checkLinks([links[0]], { fetch: moved, attempts: 1 });
+    expect(result).toMatchObject({
+      status: 'fail',
+      detail: 'redirected off the official hosts to https://parked.example.com/',
+    });
+  });
+
   it('fails a URL that does not answer in time', async () => {
     const hang = (_url, { signal }) =>
       new Promise((_resolve, reject) => {
