@@ -45,6 +45,16 @@ describe('PrecinctMap', () => {
     expect(polls).toEqual(POLLS);
   });
 
+  // precinctMap.css sets position: relative on .maplibregl-map, which beats a
+  // Tailwind position utility on the same element and collapsed the map to 0 px.
+  it('gives the map element a size without a position utility', async () => {
+    render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
+    await waitFor(() => expect(createPrecinctMap).toHaveBeenCalled());
+    const [container] = createPrecinctMap.mock.calls[0];
+    expect(container).toHaveClass('h-full', 'w-full');
+    expect(container.className).not.toMatch(/\b(absolute|relative|fixed|sticky|inset-\S+)\b/);
+  });
+
   it('explains the map in text, including the dot only when there is a looked-up point', () => {
     const { unmount } = render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
     expect(region()).toHaveTextContent(copy.map.legend('CC007'));

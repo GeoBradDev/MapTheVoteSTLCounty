@@ -81,8 +81,9 @@ export default function PrecinctMap({ code, origin, polls }) {
     <div role="region" aria-label={copy.map.label(code)} className="mt-3">
       <div className="relative h-64 overflow-hidden rounded-md border border-border">
         {/* MapLibre adds its own classes to this element, so React must never
-            change its className. */}
-        <div ref={containerRef} className="absolute inset-0" />
+            change its className. Not positioned: .maplibregl-map sets
+            position: relative, which would override a position utility. */}
+        <div ref={containerRef} className="h-full w-full" />
         {state === 'loading' && (
           <div
             data-testid="map-placeholder"
