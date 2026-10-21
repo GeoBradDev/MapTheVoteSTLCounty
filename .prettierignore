@@ -1,5 +1,7 @@
 dist
 coverage
+test-results
+playwright-report
 package-lock.json
 docs/raw
 # Claude worktrees: full copies of the repo on other branches.

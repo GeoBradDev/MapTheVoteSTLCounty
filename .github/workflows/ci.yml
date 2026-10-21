@@ -40,3 +40,9 @@ jobs:
           ls dist/assets/index-*.js dist/assets/index-*.css
           grep -q 'src="/assets/index-' dist/index.html
           grep -q 'href="/assets/index-' dist/index.html
+
+      # Accessibility in a real browser (#26): axe, reflow, skip link and focus
+      # on the key routes at 360 and 1280 px, against the build above. The
+      # county's layers come from recorded fixtures; no live service is called.
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
