@@ -25,7 +25,8 @@ action is the workflow opening a GitHub issue, which is covered by the plan's ow
    6. one known point per County Council district (7) returns a precinct with a valid code
       and that council district, and lies inside the county boundary layer; one point in
       St. Louis City returns no precinct and lies outside the boundary.
-2. It prints one PASS, FAIL or SKIP line per check (SKIP when a check it depends on failed)
+2. It prints one PASS, FAIL or SKIP line per check (SKIP when a check it needs input from
+   failed; the PDF spot-check still runs on the valid links when some precincts' links fail)
    and exits 1 unless every check passes. A query answer with no features list fails the
    check rather than counting as empty.
 3. Pointing the config at a wrong layer name makes the check fail with a clear message that
