@@ -7,6 +7,7 @@ import { parseSampleBallot } from './sampleBallot.js';
 // The recorded CC007 link, so no election-specific URL is written here.
 const URL_OK = byId.features[0].attributes.html.match(/href=(\S+?)>/)[1];
 const ITEM = URL_OK.match(/[0-9a-f]{32}/)[0];
+const HOST = new URL(URL_OK).host;
 
 const link = (href, text = 'CC-007.pdf') => `Sample Ballot: <a href=${href}>${text}</a>`;
 
@@ -72,7 +73,7 @@ describe('parseSampleBallot', () => {
     ['a quoted javascript: URL', `"javascript:alert('${URL_OK}')"`],
     ['a data: URL', 'data:text/html,hi'],
     ['an http: URL', URL_OK.replace('https:', 'http:')],
-    ['a lookalike host', URL_OK.replace('arcgis.com', 'arcgis.com.example.com')],
+    ['a lookalike host', URL_OK.replace(HOST, `${HOST}.example.com`)],
     ['a URL with a query', `${URL_OK}?x=1`],
     ['a URL with a fragment', `${URL_OK}#x`],
     ['a URL with an extra path', `${URL_OK}/more`],
@@ -142,6 +143,58 @@ describe('parseSampleBallot', () => {
     const result = parseSampleBallot('');
     result.extra = true;
     expect(parseSampleBallot('')).toEqual({ message: null });
+  });
+
+  it('skips a finished link with no href and keeps the text', () => {
+    expect(parseSampleBallot('<a name="top"></a>No ballot for this precinct.')).toEqual({
+      message: 'No ballot for this precinct.',
+    });
+  });
+
+  it('removes tags with a > in a quoted value, in messages and file names', () => {
+    expect(parseSampleBallot('<span title="a>b">No ballot here</span>')).toEqual({
+      message: 'No ballot here',
+    });
+    expect(parseSampleBallot(`<a href=${URL_OK}><b title="x>y">CC-007.pdf</b></a>`)).toEqual({
+      url: URL_OK,
+      fileName: 'CC-007.pdf',
+    });
+  });
+
+  it('removes declarations and script or style bodies from messages', () => {
+    const html =
+      '<!DOCTYPE html><?xml version="1.0"?><![CDATA[x]]><script>alert(1)</script>' +
+      '<style>p{}</style>No ballot';
+    expect(parseSampleBallot(html)).toEqual({ message: 'No ballot' });
+  });
+
+  it('ends the file name at a closing tag with attributes or at the next link', () => {
+    expect(parseSampleBallot(`<a href=${URL_OK}>CC-007.pdf</a foo>trailing`)).toEqual({
+      url: URL_OK,
+      fileName: 'CC-007.pdf',
+    });
+    expect(parseSampleBallot(`<a href=${URL_OK}>CC-007.pdf<a href=x>other</a>`)).toEqual({
+      url: URL_OK,
+      fileName: 'CC-007.pdf',
+    });
+  });
+
+  it('shows nothing when an earlier link tag cannot be read', () => {
+    const html = `<a title=x"y href=javascript:alert(1)>Click</a> <a href="${URL_OK}">CC</a>`;
+    expect(parseSampleBallot(html)).toEqual({ message: null });
+  });
+
+  it('does not treat a no-break space as an attribute separator', () => {
+    expect(parseSampleBallot(`<a\u00a0href=${URL_OK}>CC-007.pdf</a>`)).toEqual({
+      message: 'CC-007.pdf',
+    });
+  });
+
+  it('stays fast on a long field of unfinished tags', () => {
+    const started = performance.now();
+    parseSampleBallot('<a "'.repeat(20000));
+    parseSampleBallot('<a '.repeat(20000));
+    expect(performance.now() - started).toBeLessThan(200);
   });
 
   it('does not mistake an attribute ending in href for the href', () => {

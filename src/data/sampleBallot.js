@@ -3,26 +3,44 @@
 //   Sample Ballot: <a href=https://.../items/<id>/data>CC-007.pdf</a>
 // or a plain message, such as the one for nonresidential precincts. Never
 // render the field as HTML: show the result of this parser as text.
+//
+// This is not a full HTML parser. Anything it cannot read with confidence
+// gives `{ message: null }`, so the worst case is showing nothing, never a
+// wrong link or raw markup.
 import election from '../config/election.js';
+
+// HTML whitespace. Not \s, which also matches characters like a no-break
+// space that a browser treats as part of a name.
+const WS = '[\\t\\n\\f\\r ]';
 
 const COMMENT = /<!--[\s\S]*?(?:-->|$)/g;
 
-// An opening <a> tag. Quoted attribute values may hold a `>`.
-const ANCHOR = /<a(?=[\s/>])((?:"[^"]*"|'[^']*'|[^"'>])*)>/gi;
+// Script and style bodies are not text.
+const RAW_TEXT = /<(script|style)\b[\s\S]*?(?:<\/\1[^>]*>|$)/gi;
 
-// Any start of an <a> tag, finished or not.
-const ANCHOR_START = /<a[\s/]/i;
+// Where an <a> tag starts, finished or not.
+const ANCHOR_START = new RegExp(`<a(?=${WS}|[/>])`, 'gi');
+
+// A whole opening <a> tag, read from where ANCHOR_START found one. Quoted
+// attribute values may hold a `>`.
+const ANCHOR = /<a((?:"[^"]*"|'[^']*'|[^"'<>])*)>/iy;
 
 // One attribute: a name and an optional unquoted, single- or double-quoted
 // value. Whitespace and `/` separate attributes, as in a browser.
-const ATTRIBUTE = /([^\s"'>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g;
+const ATTRIBUTE = new RegExp(
+  `([^\\t\\n\\f\\r "'>/=]+)(?:${WS}*=${WS}*(?:"([^"]*)"|'([^']*)'|([^\\t\\n\\f\\r "'>]+)))?`,
+  'g',
+);
 
-// A tag: < then a letter or /. A lone < or > in text is kept.
-const TAG = /<\/?[a-z][^<>]*>/gi;
+// The end of the link text: a closing </a>, or another <a> starting.
+const LINK_END = new RegExp(`</a(?:${WS}|/|>)|<a(?:${WS}|/|>)`, 'i');
 
-const CLOSE_ANCHOR = /<\/a\s*>/i;
+// Tags, including ones with a `>` in a quoted value, and declarations like
+// <!DOCTYPE>, CDATA and <?xml?>. A lone < or > in text is kept.
+const TAG = /<\/?[a-z](?:"[^"]*"|'[^']*'|[^"'<>])*>|<[!?][^>]*>/gi;
 
-// Tags become spaces, then whitespace collapses. Returns null when nothing is left.
+// Tags and declarations become spaces, then whitespace collapses. Returns null
+// when nothing is left.
 function plainText(text) {
   const plain = text.replace(TAG, ' ').replace(/\s+/g, ' ').trim();
   return plain || null;
@@ -47,24 +65,26 @@ function hrefOf(attributes) {
  * @returns {SampleBallotLink | SampleBallotMessage} `{ url, fileName }` when the
  *   field's first link with an href points at a sample ballot whose URL matches
  *   `election.sampleBallotUrlPattern`; otherwise `{ message }` with the field as
- *   plain text. A link that fails the pattern, an unfinished link tag, or an
- *   empty field gives `{ message: null }`: there is nothing safe to show.
+ *   plain text. A link that fails the pattern, an `<a` tag that cannot be read,
+ *   or an empty field gives `{ message: null }`: there is nothing safe to show.
  */
 export function parseSampleBallot(html) {
   if (typeof html !== 'string') return { message: null };
-  const source = html.replace(COMMENT, ' ');
+  const source = html.replace(COMMENT, ' ').replace(RAW_TEXT, ' ');
 
-  for (const match of source.matchAll(ANCHOR)) {
+  // Every <a> in order. One that cannot be read ends the search with nothing,
+  // since a browser may see a link there that this parser does not.
+  for (const start of source.matchAll(ANCHOR_START)) {
+    ANCHOR.lastIndex = start.index;
+    const match = ANCHOR.exec(source);
+    if (!match) return { message: null };
     const url = hrefOf(match[1]);
     if (url === undefined) continue;
     if (!election.sampleBallotUrlPattern.test(url)) return { message: null };
-    // The link text runs from the end of the opening tag to the closing </a>.
-    const text = source.slice(match.index + match[0].length);
-    const close = text.search(CLOSE_ANCHOR);
-    return { url, fileName: plainText(close === -1 ? text : text.slice(0, close)) };
+    const text = source.slice(ANCHOR.lastIndex);
+    const end = text.search(LINK_END);
+    return { url, fileName: plainText(end === -1 ? text : text.slice(0, end)) };
   }
 
-  // No finished link. Markup from an unfinished one is not shown.
-  if (ANCHOR_START.test(source)) return { message: null };
   return { message: plainText(source) };
 }
