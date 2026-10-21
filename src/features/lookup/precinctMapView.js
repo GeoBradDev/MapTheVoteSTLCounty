@@ -21,8 +21,9 @@ const POLL_MARKER =
 const INTERSTATE_SHIELDS = 'highway-shield-us-interstate';
 const GRAY_SHIELD = ['concat', 'road_', ['get', 'ref_length']];
 
-// Above the numbered markers, so a polling place at the address does not hide it.
-const ORIGIN_MARKER = 'z-1 block size-4 rounded-full border-2 border-surface bg-ink shadow';
+// Under the numbered markers (added first), so their numbers stay readable
+// even when a polling place is at the searched address.
+const ORIGIN_MARKER = 'block size-4 rounded-full border-2 border-surface bg-ink shadow';
 
 function markerElement(className, text) {
   const element = document.createElement('div');

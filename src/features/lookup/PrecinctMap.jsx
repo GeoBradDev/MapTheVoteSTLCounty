@@ -132,7 +132,8 @@ export default function PrecinctMap({ code, origin, polls }) {
         {/* MapLibre adds its own classes to this element, so React must never
             change its className. Not positioned: .maplibregl-map sets
             position: relative, which would override a position utility.
-            Isolated, so the markers' z-index stays under the placeholder. */}
+            Isolated, so nothing MapLibre stacks inside it can rise above the
+            placeholder. */}
         <div ref={containerRef} className="isolate h-full w-full" />
         {state === 'loading' && (
           <div

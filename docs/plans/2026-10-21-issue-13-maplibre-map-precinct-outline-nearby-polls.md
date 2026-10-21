@@ -34,7 +34,8 @@ contributors". Both are shown as text links under the map.
    precinct outline (neutral fill and line from the `primary` token, not red or blue), the
    looked-up point when there is one (memory only, never in the URL or storage), and the
    listed polling places as numbered markers whose numbers match the list, including places
-   added by "Show more".
+   added by "Show more". The dot sits under the numbered markers, so every number stays
+   readable when a polling place is at the searched address (found by the verifier).
 2. The map fits its bounds to the precinct outline plus the looked-up point and the listed
    polling places, with no fly-to or other camera animation.
 3. MapLibre GL JS is loaded with a dynamic `import()` only when the map is about to render:
