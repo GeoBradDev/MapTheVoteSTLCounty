@@ -137,6 +137,15 @@ for (const [name, geocoder] of [
     console.log(`${name}: ${text}: ${kind} (${place?.label ?? ''})`);
     if (kind !== 'stl-city') wrong.push(`${name}: ${text}: ${kind}, want stl-city`);
   }
+  // A City voter who types the start of the address and picks the first
+  // suggestion: the county's, labeled with the county record's ZIP (#58).
+  for (const partial of ['6135 Washington', '6109 Washington']) {
+    const [pick] = await withRetry(() => geocoder.suggest(partial));
+    const place = pick ? await withRetry(() => geocoder.geocode(pick)) : null;
+    const kind = place ? (await locate(place)).kind : 'no match';
+    console.log(`${name}: pick "${pick?.label}" for ${partial}: ${kind} (${place?.label ?? ''})`);
+    if (kind !== 'stl-city') wrong.push(`${name}: pick for ${partial}: ${kind}, want stl-city`);
+  }
 }
 
 if (wrong.length) {

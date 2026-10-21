@@ -75,6 +75,17 @@ function abortError() {
 // City check.
 const ST_LOUIS_COUNTY = new Set(['st louis county', 'st louis']);
 
+// A picked suggestion's label without its ZIPs, as the City check sees it:
+// the ZIP in a county label is the county record's own, not one the voter
+// typed, so it must neither skip the check nor rule out a City parcel in
+// another ZIP (6135 Washington Ave 63134 in the county, 63112 in the City).
+function withoutZip(label) {
+  return label.replace(
+    /^(\s*\S+)(.*)$/,
+    (_, first, rest) => first + rest.replace(/\b\d{5}(?:-\d{4})?\b/g, ' '),
+  );
+}
+
 // Whether a place could get a county precinct: not the City, and not named
 // as another county by its provider.
 function couldBeCounty(place) {
@@ -158,14 +169,17 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
       // A picked suggestion is geocoded again by its label, county first, so
       // every rule applies to it as to typed text; a Photon suggestion's own
       // place could be one house of two the county knows.
-      const text = String((typeof query === 'object' ? query?.label : query) ?? '').trim();
+      const picked = typeof query === 'object';
+      const text = String((picked ? query?.label : query) ?? '').trim();
       if (!text) return null;
+      // What the voter typed, for the City check.
+      const typed = picked ? withoutZip(text) : text;
       const county = await firstAnswer((source) => source.find(text, { signal }), signal);
       if (signal?.aborted) throw abortError();
       // The official data has two addresses that fit: ask for a ZIP.
       if (county?.status === 'ambiguous') return null;
       // A county record in the City already gets the City's referral.
-      if (county?.status === 'match') return checkedForCity(text, county.place, signal);
+      if (county?.status === 'match') return checkedForCity(typed, county.place, signal);
       let place;
       try {
         place = await fallback.geocode(text, { signal });
@@ -176,7 +190,7 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
         throw error;
       }
       if (signal?.aborted) throw abortError();
-      return checkedForCity(text, place, signal);
+      return checkedForCity(typed, place, signal);
     },
   });
 }

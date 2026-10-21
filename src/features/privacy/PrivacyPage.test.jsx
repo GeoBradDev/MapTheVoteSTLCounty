@@ -67,7 +67,7 @@ describe('PrivacyPage', () => {
       'It also goes to Photon by komoot (photon.komoot.io) when the county has no match or cannot be reached;',
     );
     expect(item).toHaveTextContent(
-      "its house number and street (not the town, ZIP code or unit) also go to the City of St. Louis's address search (maps6.stlouis-mo.gov), in the body of the request, to check that the City does not have the same address. That is skipped only when you typed a ZIP code that is entirely outside the City.",
+      "its house number and street (not the town, ZIP code or unit) also go to the City of St. Louis's address search (maps6.stlouis-mo.gov), in the body of the request, to check that the City does not have the same address. It is skipped when you typed a ZIP code that is entirely outside the City, or when the address was found in another county.",
     );
     expect(item).not.toHaveTextContent('not also in St. Louis City');
   });

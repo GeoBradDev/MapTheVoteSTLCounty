@@ -226,7 +226,7 @@ node scripts/check-geocoder.mjs [photon-base-url]
 It geocodes 10 polling place addresses and 1318 Ross Ave with each source alone, with the
 app's chain and with the chain while the live county layer is blocked, and checks that City
 Hall and the City addresses of #58, whose number and street the county also has, get the City
-referral. It exits 1 if the chain puts any address in the wrong precinct or a City address
+referral, typed and picked from the suggestions. It exits 1 if the chain puts any address in the wrong precinct or a City address
 loses its referral. "No match" is
 allowed: the app then points the voter to "Use my location" and the county's official
 lookup. Results are recorded in `docs/data.md` under Geocoding.

@@ -508,7 +508,10 @@ answer with the typed text itself:
   not, town typed or not. The one skip is a ZIP entirely outside the City: the Census
   2020 ZIP Code Tabulation Areas that touch the county and do not come within 500 m of
   the City (`COUNTY_ONLY_ZIPS`, from TIGERweb). A ZIP that crosses the City line (63130,
-  63133, 63136, 63120, 63147 and others) or is not listed gets the check.
+  63133, 63136, 63120, 63147 and others) or is not listed gets the check. The ZIP in a
+  picked suggestion's label is the county record's, not the voter's, so for a pick the
+  check ignores it: it neither skips the check nor rules out a City parcel in another ZIP
+  (a City voter typing `6135 Washington` is offered only the county's 63134 address).
 - **A City match:** a `PointAddress` (a City parcel; interpolated `StreetAddress` ranges do
   not count) with the typed house number and whole street under the strict rules
   (`matchesStreet` in `addressMatch.js`), and the typed ZIP when one is typed (a parcel
@@ -519,9 +522,9 @@ answer with the typed text itself:
 - **The City geocoder unavailable** (network error, non-2xx, error body, malformed body,
   or no answer in 4 s): no match, never the county place. The voter gets "Use my
   location" and the county's official lookup.
-- **Cost:** a county voter whose number and street the City also has, who types no ZIP or
-  a ZIP that crosses the City line, gets the City referral; typing a county-only ZIP gets
-  the precinct. A City geocoder outage makes every lookup without a county-only ZIP no
+- **Cost:** a county voter whose number and street the City also has, who types no ZIP,
+  a ZIP that crosses the City line, or picks the suggestion, gets the City referral;
+  typing a county-only ZIP gets the precinct. A City geocoder outage makes every lookup without a county-only ZIP no
   match. The owner accepted both: neither sends a voter to a wrong county precinct.
 - **Not done:** looking up City addresses the county does not have (#57).
 
@@ -547,8 +550,8 @@ App: 11 right, 0 no match, 0 wrong; the same with the live layer blocked (the
 hosted copy answered). Photon alone: 8 right, 3 no match. The script also checks
 that City Hall (1200 Market St, 63103) and the #58 City addresses (`6135 Washington Ave,
 St. Louis, MO`, `6135 Washington Ave`, `6109 Washington Ave` and `6135 Horton Pl, St.
-Louis, MO 63133`) get the City referral, with the live layer and with it blocked: all
-do.
+Louis, MO 63133`) get the City referral, typed and (for the Washington Ave ones) picked
+from the county's suggestion, with the live layer and with it blocked: all do.
 A random sample of 192 current county address points, each typed both as stored
 and as a person would (lower case, full street type, town and ZIP), matched in the
 live layer every time.

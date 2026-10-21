@@ -28,7 +28,10 @@ Domain skills:
    (`https://maps6.stlouis-mo.gov/arcgis/rest/services/GEOCODERS/COMPOSITE_GEOCODE/GeocodeServer`),
    not Photon. It runs on every non-City result of the chain (a county match, or a Photon
    answer outside the City) unless the text holds a ZIP that is entirely outside the City
-   (a fixed list of county-only ZIPs). A typed town no longer skips the check.
+   (a fixed list of county-only ZIPs). A typed town no longer skips the check. For a picked
+   suggestion, the ZIP in its label is the county record's, not the voter's, so the check
+   ignores it (revision after review finding 1: picking the county's `6135 Washington Ave
+   ... 63134` suggestion still gave FER022).
 4. A City match counts when a City `PointAddress` has the typed house number and the typed
    whole street under the strict rules (`matchesStreet` in `addressMatch.js`), and its ZIP
    equals the typed ZIP when one is typed (a candidate with no ZIP counts). Then the answer is
@@ -107,7 +110,8 @@ Domain skills:
 - Criterion 1, 4: `geocoderChain.test.js` red test with the recorded Washington Ave fixture;
   `cityAddress.test.js` matching cases.
 - Criterion 2: `cityAddress.test.js` / chain test with the Horton Pl fixture and ZIP 63133.
-- Criterion 3: chain tests for the skip list, the Photon path and the typed-town case.
+- Criterion 3: chain tests for the skip list, the Photon path and the typed-town case;
+  `geocoder.pick58.test.js` (frozen) for a picked county suggestion.
 - Criterion 5, 6: unit tests for direction-less twin, HTTP error, error body, timeout, abort.
 - Criterion 7: unit test on the request (method, body, credentials, referrer, cache).
 - Criterion 8, 9: `PrivacyPage.test.jsx`, `render.test.js`, `geocoder.test.js`.
