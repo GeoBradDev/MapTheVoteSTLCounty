@@ -131,8 +131,8 @@ Election Day and in-person absentee sites.
 | `notes_abs` | `Voting entrance is outside; use the pink door next to Cheesecake Factory` | Voter-facing note for absentee sites. Trim padded spaces. |
 | `username` | `loc001boec` | Internal. Not for display. |
 
-Polling place hours are **not** in any layer. TODO for Brad: confirm Election
-Day hours from an official source and put them in config.
+Polling place hours are **not** in any layer. Election Day hours were confirmed
+from official sources in issue #1 and live in `src/config/election.js`.
 
 ### In-person absentee (early) voting
 
@@ -151,7 +151,7 @@ Dates and hours are not in the data. The county's Absentee app config
   8 a.m. to 4:30 p.m.; Saturday, October 24 and Saturday, October 31,
   9 a.m. to 1 p.m.; Monday, November 2, 8 a.m. to 5 p.m.
 
-This goes in the election config file with a source link and "last verified"
+This is in `src/config/election.js` with a source link and "last verified"
 date. It should be re-checked against the county website before launch.
 
 ### `sat_name_export_2026_11/FeatureServer/0`
@@ -245,19 +245,11 @@ link before using it. The Instant Apps list the county contact as
 314-615-1800 and `vote@stlouiscountymo.gov`. The website lists
 `stlouiscovotes@stlouisco.com`. TODO for Brad: confirm which email is current.
 
-## Config values for `election.config.js`
+## Election config
 
-```js
-{
-  electionDate: '2026-11-03',
-  serviceRoot: 'https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services',
-  layers: {
-    precincts: 'precincts_2026_11_view/FeatureServer/1',
-    polls: 'polls_2026_11_view/FeatureServer/1',
-    countyBoundary: 'St_Louis_County_Boundary/FeatureServer/0',
-  },
-  absenteeWhere: "abs_type IN ('abs','boe')",
-  sampleBallotUrlPattern: /^https:\/\/stlouiscovotes\.maps\.arcgis\.com\/sharing\/rest\/content\/items\/[0-9a-f]{32}\/data$/,
-  // Hours, absentee dates, and deadlines live in versioned content files with source links.
-}
-```
+The election-specific values this inspection found, including the early voting
+hours above, are in `src/config/election.js`, along with the decisions recorded
+in issue #1 (Election Day hours and their sources, and the 3 to 5 range for
+nearby polling places).
+When the next election's inspection changes them, edit that file; this doc
+records what the inspection found and why.

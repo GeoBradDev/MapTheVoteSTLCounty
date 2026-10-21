@@ -38,3 +38,12 @@ CSS under `src` or in the built CSS, and on any `data:` URI in the CSS under `sr
 SVG components that use `currentColor`). Only CSS is checked: a color written anywhere else
 (`index.html`, JSX props or SVG attributes, JavaScript strings) is not, so use token classes
 there instead of color values.
+
+## Election config
+
+Everything that changes between elections (layer paths, dates, hours, election-specific links)
+lives in `src/config/election.js`, so the next election is an edit to that file. Do not write
+those values anywhere else in `src/` or in `index.html`. A test fails when it finds the
+election name, an election-specific URL, a date, a layer or service name, the field name, the
+filter or the sample ballot pattern from the config there; it does not check hours, so read
+those from the config too. Text under `content/` may repeat them.
