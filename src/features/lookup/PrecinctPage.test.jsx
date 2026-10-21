@@ -79,9 +79,20 @@ describe('PrecinctPage', () => {
     routeFetch(byId);
     renderAt('CC007');
     await ready('CC007');
-    const calls = precinctCalls();
-    expect(calls.length).toBeGreaterThanOrEqual(1);
-    for (const url of calls) expect(url.searchParams.get('where')).toBe("precinct='CC007'");
+    const urls = fetchMock.mock.calls.map(([input]) => new URL(input));
+    const precinctQueries = urls.filter(
+      (url) =>
+        url.pathname.includes(election.layers.precincts) && url.searchParams.get('f') === 'json',
+    );
+    expect(precinctQueries).toHaveLength(1);
+    expect(precinctQueries[0].searchParams.get('where')).toBe("precinct='CC007'");
+    // Everything else is the polls list or this precinct's outline.
+    for (const url of urls.filter((u) => !precinctQueries.includes(u))) {
+      if (url.pathname.includes(election.layers.polls)) continue;
+      expect(url.pathname).toContain(election.layers.precincts);
+      expect(url.searchParams.get('f')).toBe('geojson');
+      expect(url.searchParams.get('where')).toBe("precinct='CC007'");
+    }
   });
 
   it('shows the heading and skeletons, and an empty live region, while loading', () => {
