@@ -4,6 +4,7 @@ import polls from '../../../docs/raw/fixtures/polls.json';
 import geometry from '../../../docs/raw/fixtures/precinct-geometry.json';
 import election from '../../config/election.js';
 import { getPolls, getPrecinctGeometry } from '../../data/arcgis.js';
+import { fixtureTopics } from '../../test/learnFixtures.js';
 import { nearestPolls, polygonCenter } from './nearbyPolls.js';
 import PollsCard from './PollsCard.jsx';
 import { createPrecinctMap } from './precinctMapView.js';
@@ -11,6 +12,17 @@ import { copy, formatTime } from './resultsCopy.js';
 
 vi.mock('../../data/arcgis.js', () => ({ getPolls: vi.fn(), getPrecinctGeometry: vi.fn() }));
 vi.mock('./precinctMapView.js', () => ({ createPrecinctMap: vi.fn() }));
+
+// Which topics exist: none by default, as content/en/learn/ ships today.
+const shown = vi.hoisted(() => ({ topics: [] }));
+vi.mock('../learn/topics.js', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    getTopic: (id, locale) =>
+      actual.topicLookups(actual.indexTopics(shown.topics)).getTopic(id, locale),
+  };
+});
 
 const ORIGIN = { lat: 38.66, lng: -90.45 };
 const COUNT = election.nearbyPollCount;
@@ -27,6 +39,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  shown.topics = [];
 });
 
 const list = () => screen.findByRole('list', { name: copy.polls.listLabel });
@@ -148,6 +161,22 @@ describe('PollsCard', () => {
       'href',
       election.voteAnywhere.sources[0],
     );
+  });
+
+  it('links to the voter ID topic by its title once that topic exists (#23)', () => {
+    getPolls.mockReturnValue(new Promise(() => {}));
+    shown.topics = fixtureTopics;
+    render(<PollsCard code="CC007" origin={ORIGIN} />);
+    const link = screen.getByRole('link', { name: 'Fixture ID topic' });
+    expect(link).toHaveAttribute('href', '/learn/voter-id');
+    expect(link.closest('p')).toHaveTextContent(copy.polls.beforeYouGo);
+  });
+
+  it('has no voter ID link while that topic does not exist', () => {
+    getPolls.mockReturnValue(new Promise(() => {}));
+    render(<PollsCard code="CC007" origin={ORIGIN} />);
+    expect(screen.queryByText(copy.polls.beforeYouGo)).toBeNull();
+    expect(screen.queryByRole('link', { name: /ID/ })).toBeNull();
   });
 
   it('shows hidden skeleton lines while loading', () => {

@@ -94,6 +94,8 @@ export const copy = {
     /** @param {string} close HH:MM */
     inLine: (close) => `If you are in line at ${formatTime(close)}, you can still vote.`,
     voteAnywhere: 'You can vote at any polling place in St. Louis County.',
+    // Before the voter ID topic's title, which is the link (#23).
+    beforeYouGo: 'Before you go:',
     source: 'Source',
     // Link text for a source, by its host. Anything else shows its host.
     sourceNames: {
@@ -155,8 +157,8 @@ export const copy = {
     /** @param {number} count */
     showAll: (count) => `Show all ${count} early voting sites`,
     note: 'Note:',
-    // "How to vote" (#23) has no topic pages yet, so the county's site is the
-    // official place to read about mail-in and absentee ballots meanwhile.
+    // Then the absentee topic's title as the link (#23), or "How to vote" until
+    // that topic exists, and the county's site as the official place to read more.
     mail: 'To vote by mail or with an absentee ballot, see',
     howToVote: 'How to vote',
     or: 'or the',
