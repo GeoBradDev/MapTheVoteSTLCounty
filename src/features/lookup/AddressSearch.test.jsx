@@ -150,6 +150,17 @@ describe('AddressSearch', () => {
     expect(onSubmit).toHaveBeenCalledWith('7709 Oak St');
   });
 
+  it('suggests again after an edit that changes only spaces', async () => {
+    renderSearch();
+    await user.type(input(), '7700');
+    await settle();
+    expect(options()).toHaveLength(1);
+    await user.type(input(), ' ');
+    await settle();
+    expect(options()).toHaveLength(1);
+    expect(input()).toHaveAttribute('aria-expanded', 'true');
+  });
+
   it('submits the form when a suggestion is picked with a pointer', async () => {
     const onFormSubmit = vi.fn();
     const { onSubmit } = renderSearch();
