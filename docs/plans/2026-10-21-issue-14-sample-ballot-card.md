@@ -29,7 +29,9 @@ Domain skills:
    secondary text. With no file name, the secondary line is left out.
 3. The link has `href` equal to the parsed URL, `target="_blank"` and
    `rel="noopener noreferrer"` (noreferrer matches every other external link in the app).
-   Its accessible name tells screen reader users it opens a PDF in a new tab.
+   Its accessible name tells screen reader users it opens a PDF in a new tab, or downloads
+   it: the county serves each PDF with `Content-Disposition: attachment`, so most browsers
+   save it instead of showing it (found by the Phase 7 verifier; revised then).
 4. One line of neutral copy above the link: "The sample ballot shows the contests and
    measures on your ballot." Nothing about candidates or parties.
 5. Nonresidential and Not In Election precincts show no card (already done by
@@ -84,5 +86,6 @@ Domain skills:
 - Criteria 2, 3, 4, 6, 7: `SampleBallotCard.test.jsx`.
 - Criteria 1, 5 and wiring: `PrecinctPage.test.jsx`, `no-inner-html.test.js`.
 - Criterion 8: `render.test.js` and `election-hardcoding.test.js` stay green unchanged.
-- Live drive: `/p/CC007` shows the card; clicking the link opens the CC-007 PDF URL in a new
-  tab; `/p/AP200` shows no card.
+- Live drive: `/p/CC007`, `/p/MER013` and `/p/FLO030` show the card with the right link;
+  `curl -I` on each URL shows `application/pdf` with that file name; clicking the link
+  starts the download (the county sends it as an attachment); `/p/AP200` shows no card.

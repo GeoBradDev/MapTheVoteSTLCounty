@@ -79,8 +79,10 @@ export const copy = {
     // Neutral on purpose: what the document holds, nothing about candidates.
     intro: 'The sample ballot shows the contests and measures on your ballot.',
     open: 'Open your sample ballot (PDF)',
-    // Read after the link text and file name by screen readers only.
-    newTab: '(opens a PDF in a new tab)',
+    // Read after the link text and file name by screen readers only. The
+    // county serves the PDF as a download, so most browsers save it rather
+    // than show it in the new tab.
+    newTab: '(opens a PDF in a new tab, or downloads it)',
     missing: 'We could not find the sample ballot for this precinct. Find it with the',
   },
   map: {
