@@ -1,0 +1,19 @@
+# Progress log
+
+One line per issue: number, PR, summary, follow-ups.
+
+## Batch 1 (2026-10-21)
+
+- #6: https://github.com/GeoBradDev/MapTheVoteSTLCounty/pull/36: Added a strict sample ballot link parser plus a live-layer check script (all 974 precincts parse). Follow-up: fold scripts/check-sample-ballots.mjs into the #28 data health check.
+- #7: https://github.com/GeoBradDev/MapTheVoteSTLCounty/pull/42: Address search via public Photon from the browser (owner decision: open source, frontend-only), strict matching so a typed address never lands on another house; live check 8 right, 2 no match, 0 wrong. Follow-ups: three minor matching nits in a PR comment (ZIP+4, "East St. Louis, IL", town vs unincorporated).
+- #8: https://github.com/GeoBradDev/MapTheVoteSTLCounty/pull/37: Out-of-county logic routes St. Louis City, rest of Missouri, and out-of-state voters to the right official office, independent of geocoder choice. Follow-ups: wire into UI in #10/#11/#13; stlelections.com is a parked domain, link uses stlouis-mo.gov instead.
+- #9: https://github.com/GeoBradDev/MapTheVoteSTLCounty/pull/39: Use my location button (asks only on press, clear failure messages, coordinates never stored or put in the URL). Took two runs because of the review-round limit. New issue #38. Follow-up for #10: a device location inside St. Louis City comes back as unknown.
+- #10: https://github.com/GeoBradDev/MapTheVoteSTLCounty/pull/40: Landing screen with an accessible address combobox behind a provider-agnostic suggest/geocode interface, Use my location, and the vote-anywhere line sourced from the county FAQ. Follow-up: confirm vote-anywhere wording with the Board before launch (#1 note).
+- #31 (owner request, outside the batch): https://github.com/GeoBradDev/MapTheVoteSTLCounty/pull/41: render.yaml Blueprint (static site, mapthevotestl.com, headers, CSP, SPA rewrite). #31 stays open until the owner deploys and runs the post-deploy checks.
+- Process: https://github.com/GeoBradDev/MapTheVoteSTLCounty/pull/43: Repo CLAUDE.md git exception (owner choice): /work-issue may commit, push and squash-merge its own issue branch once CI is green; never main.
+- #11: https://github.com/GeoBradDev/MapTheVoteSTLCounty/pull/44: Results screen at /p/:precinct with status banner, card slots linking to the official lookup until #12-#16 land, and a fix so crafted share links cannot inject heading text. Follow-ups: focus on load failure (#18), lowercase codes (#17), 1px horizontal scroll at 360px.
+- #12: https://github.com/GeoBradDev/MapTheVoteSTLCounty/pull/45: Polling places near you card: 3 closest sites with distance, directions links, hours, show more; search point held in memory only. Follow-up: on a shared computer, Back to the same precinct shows distances from the previous search (point kept in memory until next search or reload).
+- #13: https://github.com/GeoBradDev/MapTheVoteSTLCounty/pull/46: MapLibre map with precinct outline and numbered polling place markers on an OpenFreeMap Positron basemap (free, keyless), lazy-loaded, with a neutral-color restyle; CSP adds tiles.openfreemap.org.
+- #14: https://github.com/GeoBradDev/MapTheVoteSTLCounty/pull/47: Sample ballot card using parseSampleBallot only, with a fallback to the official lookup. Note: the county serves the PDFs as downloads, so the button downloads rather than opening a tab.
+- #15: https://github.com/GeoBradDev/MapTheVoteSTLCounty/pull/48: Your districts card from county precinct data only (2025 congressional map, neutral labels, no officeholder or party info).
+- #49 (opened after the batch): Photon/OSM lacks ~40% of county house numbers (owner report: 1318 Ross Ave). Owner chose county official address points first, then the hosted copy, then Photon. In progress.
