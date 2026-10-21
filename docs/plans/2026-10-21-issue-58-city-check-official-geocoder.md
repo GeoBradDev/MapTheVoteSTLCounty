@@ -48,7 +48,9 @@ Domain skills:
    FER022; frozen `AddressSearch.pasteunit58.test.jsx`). Letters or spaces typed against the
    ZIP keep the pick; a digit left against it when the voter searches makes it another number
    and the voter's own; only a paste's own selection counts (review rerun findings; frozen
-   `AddressSearch.zipedge58.test.jsx`). The owner approved rewriting the frozen
+   `AddressSearch.zipedge58.test.jsx`). An edit before the ZIP that starts with its first
+   digit ("Apt 6 ") is still an edit before it, and deleting a digit left against the ZIP
+   brings the pick back (review rerun finding; frozen `AddressSearch.digitedge58.test.jsx`). The owner approved rewriting the frozen
    `AddressSearch.repick58.test.jsx` (a space added keeps the pick) and, with the shared-ZIP
    decision, `geocoder.city58.test.js` (Horton Pl is no match); both fail at the merge base.
 4. A City match counts when a City `PointAddress` has the typed house number and the typed

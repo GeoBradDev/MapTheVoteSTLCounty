@@ -12,27 +12,18 @@ function zipIn(label) {
 }
 
 // Where the picked ZIP is after an edit from `before` to `after`, or null when
-// the edit deleted or changed it. The edit is the one stretch the two texts do
-// not share; the ZIP must lie wholly before or after it. A digit typed
-// against it may be the start of a word typed next to it ("Apt 2" before a
-// space), so that is judged when the voter searches (zipReadsAlone).
+// the edit deleted or changed it. The ZIP is intact when everything up to its
+// end is unchanged (the edit came after it) or everything from its start is
+// unchanged (the edit came before it); both are checked, since text typed
+// before the ZIP may start with its own first digit. A digit typed against it
+// may be the start of a word typed next to it ("Apt 2" before a space), so
+// that is judged when the voter searches (zipReadsAlone).
 function zipAfterEdit(before, after, { zip, start }) {
-  let prefix = 0;
-  const shortest = Math.min(before.length, after.length);
-  while (prefix < shortest && before[prefix] === after[prefix]) prefix += 1;
-  let suffix = 0;
-  while (
-    suffix < shortest - prefix &&
-    before[before.length - 1 - suffix] === after[after.length - 1 - suffix]
-  ) {
-    suffix += 1;
-  }
-  const editEnd = before.length - suffix;
-  let moved;
-  if (editEnd <= start) moved = start + after.length - before.length;
-  else if (prefix >= start + zip.length) moved = start;
-  else return null;
-  return after.slice(moved, moved + zip.length) === zip ? { zip, start: moved } : null;
+  const end = start + zip.length;
+  if (after.slice(0, end) === before.slice(0, end)) return { zip, start };
+  const moved = start + after.length - before.length;
+  if (moved >= 0 && after.slice(moved) === before.slice(start)) return { zip, start: moved };
+  return null;
 }
 
 // Whether the tracked ZIP still reads as the same five digits: no digit next
@@ -177,11 +168,9 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
     const { suggestion, edited, zip } = pickedRef.current ?? {};
     if (!suggestion) return undefined;
     if (!edited) return suggestion;
-    // A digit left against the ZIP made it another number: the voter's own.
-    if (!zip || !zipReadsAlone(text, zip)) {
-      pickedRef.current = null;
-      return undefined;
-    }
+    // A digit left against the ZIP makes it another number, the voter's own,
+    // until it is deleted again.
+    if (!zip || !zipReadsAlone(text, zip)) return undefined;
     return { id: `${suggestion.id}-edited`, label: trimmed };
   }
 
