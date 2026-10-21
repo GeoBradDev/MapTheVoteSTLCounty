@@ -1,0 +1,66 @@
+// Issue #58: a St. Louis City voter must never get a county precinct when the
+// same house number and street also exist in the county. The City's own
+// geocoder decides, whether or not a ZIP was typed, unless the ZIP is entirely
+// outside the City. Frozen: written red before the fix.
+import { createGeocoder } from './geocoder.js';
+
+const WASHINGTON_COUNTY = Object.freeze({
+  lat: 38.7067,
+  lng: -90.3185,
+  state: 'Missouri',
+  county: 'Saint Louis County',
+  label: '6135 Washington Ave, Saint Louis, MO 63134',
+});
+const WASHINGTON_CITY = Object.freeze({
+  lat: 38.654558,
+  lng: -90.297434,
+  state: 'Missouri',
+  county: 'St. Louis city',
+  label: '6135 Washington Ave, St. Louis, MO 63112',
+});
+const HORTON_COUNTY = Object.freeze({
+  lat: 38.6634,
+  lng: -90.2959,
+  state: 'Missouri',
+  county: 'Saint Louis County',
+  label: '6135 Horton Pl, Saint Louis, MO 63133',
+});
+const HORTON_CITY = Object.freeze({
+  lat: 38.663129,
+  lng: -90.295637,
+  state: 'Missouri',
+  county: 'St. Louis city',
+  label: '6135 Horton Pl, St. Louis, MO 63133',
+});
+
+function chainWith(countyPlace, confirmed, cityPlace) {
+  const county = {
+    find: vi.fn(async () => ({ status: 'match', place: countyPlace, confirmed })),
+    suggest: vi.fn(async () => []),
+  };
+  // Photon, as in the bug: it has no point for the City house.
+  const fallback = {
+    geocode: vi.fn(async () => null),
+    suggest: vi.fn(async () => []),
+    findPlaces: vi.fn(async () => []),
+  };
+  const cityCheck = { find: vi.fn(async () => ({ status: 'city', place: cityPlace })) };
+  return createGeocoder({ sources: [county], fallback, cityCheck });
+}
+
+describe('issue #58: a City twin of a county address', () => {
+  it.each(['6135 Washington Ave, St. Louis, MO', '6135 Washington Ave'])(
+    '%s gives the City place, never the county one',
+    async (text) => {
+      const geocoder = chainWith(WASHINGTON_COUNTY, false, WASHINGTON_CITY);
+      await expect(geocoder.geocode(text)).resolves.toEqual(WASHINGTON_CITY);
+    },
+  );
+
+  it('6135 Horton Pl, St. Louis, MO 63133 gives the City place though the ZIP confirms the county match', async () => {
+    const geocoder = chainWith(HORTON_COUNTY, true, HORTON_CITY);
+    await expect(geocoder.geocode('6135 Horton Pl, St. Louis, MO 63133')).resolves.toEqual(
+      HORTON_CITY,
+    );
+  });
+});
