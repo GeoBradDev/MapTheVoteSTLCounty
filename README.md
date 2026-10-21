@@ -101,3 +101,26 @@ node scripts/check-geocoder.mjs [photon-base-url]
 It geocodes 10 polling place addresses and exits 1 if any lands in the wrong precinct. "No
 match" is allowed: the app then points the voter to "Use my location" and the county's
 official lookup. Results are recorded in `docs/data.md` under Geocoding.
+
+## Map
+
+The results screen shows a small map of the precinct and the listed polling places (#13). It
+is extra help: the list holds everything on it, its markers are hidden from screen readers,
+and it is removed when anything fails before it first renders, when it takes longer than 15
+seconds of visible time, or when the browser lacks WebGL 2. MapLibre GL JS is
+loaded with `import()` only when the map renders (`src/features/lookup/precinctMapView.js` is
+the only file that imports it), and its worker ships as a same-origin file, so the
+Content-Security-Policy needs no `blob:` source. The app ships its own few MapLibre layout
+rules (`src/features/lookup/precinctMap.css`) instead of `maplibre-gl.css`, which embeds
+`data:` icons and party blue.
+
+The basemap is [OpenFreeMap](https://openfreemap.org)'s Positron style: free, with no API key
+or account, and its terms allow embedding it. Its attribution (OpenFreeMap, OpenMapTiles,
+OpenStreetMap contributors) is shown as links under the map. Its water labels are blue and
+its interstate shields slate blue, so the map draws every label in the muted token and
+interstates with the gray road shield. Tile requests tell OpenFreeMap (and
+Cloudflare, its CDN) which area is on screen: the precinct and its nearest polling places,
+which depend a little on the searched point within the precinct. The `no-referrer` policy
+keeps the page URL out of them. `src/features/lookup/basemap.js` holds the style URL and the
+credits; to change the basemap, change that file and the origin in `render.yaml`'s
+`connect-src` together, and check the new style's colors and sprite icons for red or blue.

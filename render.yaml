@@ -46,13 +46,15 @@ services:
         name: Strict-Transport-Security
         value: max-age=31536000
       # connect-src: the county ArcGIS services (src/config/election.js
-      # serviceRoot) and the Photon geocoder (#7). Links to other official
-      # sites are navigation, which connect-src does not govern.
-      # #13 (MapLibre basemap) must extend this policy when it lands: add its
-      # tile, style, glyph and sprite hosts to connect-src and img-src,
-      # worker-src blob: and child-src blob: for MapLibre's workers, and
-      # img-src data: for the control icons maplibre-gl.css embeds. Update
-      # src/test/render.test.js and the build test's CSS url() check with it.
+      # serviceRoot), the Photon geocoder (#7) and the OpenFreeMap basemap
+      # (#13, src/features/lookup/basemap.js), whose style, tiles, sprites and
+      # glyphs share one origin. MapLibre fetches all of those, images too
+      # (decoded with createImageBitmap, which img-src does not govern), so
+      # img-src stays 'self'. Its worker is a same-origin file under /assets/
+      # (script-src 'self'), so no blob: source is needed, and the app ships
+      # its own map CSS instead of maplibre-gl.css, so no data: icons either.
+      # Links to other official sites are navigation, which connect-src does
+      # not govern.
       - path: /*
         name: Content-Security-Policy
         value: >-
@@ -61,7 +63,7 @@ services:
           style-src 'self';
           img-src 'self';
           font-src 'self';
-          connect-src 'self' https://services6.arcgis.com https://photon.komoot.io;
+          connect-src 'self' https://services6.arcgis.com https://photon.komoot.io https://tiles.openfreemap.org;
           manifest-src 'self';
           object-src 'none';
           base-uri 'self';

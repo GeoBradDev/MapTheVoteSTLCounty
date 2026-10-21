@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import polls from '../../../docs/raw/fixtures/polls.json';
 import geometry from '../../../docs/raw/fixtures/precinct-geometry.json';
@@ -6,9 +6,11 @@ import election from '../../config/election.js';
 import { getPolls, getPrecinctGeometry } from '../../data/arcgis.js';
 import { nearestPolls, polygonCenter } from './nearbyPolls.js';
 import PollsCard from './PollsCard.jsx';
+import { createPrecinctMap } from './precinctMapView.js';
 import { copy, formatTime } from './resultsCopy.js';
 
 vi.mock('../../data/arcgis.js', () => ({ getPolls: vi.fn(), getPrecinctGeometry: vi.fn() }));
+vi.mock('./precinctMapView.js', () => ({ createPrecinctMap: vi.fn() }));
 
 const ORIGIN = { lat: 38.66, lng: -90.45 };
 const COUNT = election.nearbyPollCount;
@@ -177,6 +179,54 @@ describe('PollsCard', () => {
     render(<PollsCard code="CC007" origin={ORIGIN} />);
     const message = await screen.findByText(copy.polls.none, { exact: false });
     expect(within(message).getByRole('link', { name: copy.officialLookup })).toBeInTheDocument();
+  });
+
+  describe('map', () => {
+    let view;
+    const mapRegion = () => screen.queryByRole('region', { name: copy.map.label('CC007') });
+    const points = (places) => places.map(({ lat, lng }) => ({ lat, lng }));
+
+    beforeEach(() => {
+      vi.stubGlobal('WebGL2RenderingContext', function WebGL2RenderingContext() {});
+      view = { setPolls: vi.fn(), remove: vi.fn() };
+      createPrecinctMap.mockReset().mockReturnValue(view);
+    });
+
+    it('maps the listed places in list order, and the looked-up point', async () => {
+      render(<PollsCard code="CC007" origin={ORIGIN} />);
+      await list();
+      await waitFor(() => expect(createPrecinctMap).toHaveBeenCalled());
+      const { origin, polls: mapped } = createPrecinctMap.mock.calls[0][1];
+      expect(origin).toEqual(ORIGIN);
+      expect(points(mapped)).toEqual(points(nearestPolls(polls, ORIGIN).slice(0, COUNT)));
+      expect(mapRegion()).toBeInTheDocument();
+    });
+
+    it('adds the places "Show more" reveals', async () => {
+      render(<PollsCard code="CC007" origin={ORIGIN} />);
+      await list();
+      await waitFor(() => expect(createPrecinctMap).toHaveBeenCalled());
+      await userEvent.click(screen.getByRole('button', { name: copy.polls.showMore }));
+      const last = view.setPolls.mock.calls.at(-1)[0];
+      expect(points(last)).toEqual(points(nearestPolls(polls, ORIGIN).slice(0, COUNT * 2)));
+    });
+
+    it('is not shown when the polling places fail to load', async () => {
+      getPolls.mockRejectedValue(new Error('down'));
+      render(<PollsCard code="CC007" origin={ORIGIN} />);
+      await screen.findByText(new RegExp(copy.polls.failed));
+      expect(mapRegion()).toBeNull();
+    });
+
+    it('keeps the list when the map fails', async () => {
+      render(<PollsCard code="CC007" origin={ORIGIN} />);
+      const ol = await list();
+      await waitFor(() => expect(createPrecinctMap).toHaveBeenCalled());
+      createPrecinctMap.mock.calls[0][1].onFail(new Error('tiles'));
+      await waitFor(() => expect(mapRegion()).toBeNull());
+      expect(ol).toBeInTheDocument();
+      expect(within(ol).getAllByRole('listitem')).toHaveLength(COUNT);
+    });
   });
 
   it('drops a result that arrives after it unmounts', async () => {

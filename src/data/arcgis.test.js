@@ -300,6 +300,41 @@ describe('getPrecinctGeometry', () => {
     );
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it('shares one request for the same precinct between concurrent and later calls', async () => {
+    fetchMock.mockResolvedValue(respond(geometry));
+    const [a, b] = await Promise.all([
+      client.getPrecinctGeometry('CC007'),
+      client.getPrecinctGeometry('CC007'),
+    ]);
+    const c = await client.getPrecinctGeometry('CC007');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(b).toBe(a);
+    expect(c).toBe(a);
+  });
+
+  it('fetches again for another precinct', async () => {
+    fetchMock.mockImplementation(async () => respond(geometry));
+    await client.getPrecinctGeometry('CC007');
+    await client.getPrecinctGeometry('CC008');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(new URL(fetchMock.mock.calls[1][0]).searchParams.get('where')).toBe("precinct='CC008'");
+  });
+
+  it('does not cache a failure: the next call fetches again', async () => {
+    fetchMock.mockResolvedValueOnce(respond(errorBody)).mockResolvedValueOnce(respond(geometry));
+    await expect(client.getPrecinctGeometry('CC007')).rejects.toBeInstanceOf(client.ServiceError);
+    expect((await client.getPrecinctGeometry('CC007')).type).toBe('Feature');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not cache NotFound', async () => {
+    fetchMock
+      .mockResolvedValueOnce(respond({ type: 'FeatureCollection', features: [] }))
+      .mockResolvedValueOnce(respond(geometry));
+    await expect(client.getPrecinctGeometry('CC007')).rejects.toBeInstanceOf(client.NotFound);
+    expect((await client.getPrecinctGeometry('CC007')).type).toBe('Feature');
+  });
 });
 
 describe('errors', () => {

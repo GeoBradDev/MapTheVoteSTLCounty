@@ -75,6 +75,17 @@ export const copy = {
     failed: 'We could not load polling places right now. Find them with the',
     none: 'We could not find polling places near here. Find them with the',
   },
+  map: {
+    /** @param {string} code */
+    label: (code) => `Map of precinct ${code} and nearby polling places`,
+    /** @param {string} code */
+    legend: (code) =>
+      `The shaded area is precinct ${code}. Numbers on the map match the list below.`,
+    origin: 'The dark dot is your address or location.',
+    basemap: 'Map:',
+    data: 'Precinct and polling place data:',
+    county: 'St. Louis County Board of Elections',
+  },
   errors: {
     notFound: 'We could not find that precinct. Search for your address, or use the',
     failed: 'We could not load this precinct right now. Try again, or use the',
