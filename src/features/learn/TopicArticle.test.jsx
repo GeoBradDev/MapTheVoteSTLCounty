@@ -122,9 +122,9 @@ describe('TopicArticle', () => {
     // The intro and the short section stay outside it.
     expect(only).not.toHaveTextContent('Intro text.');
     expect(only).not.toHaveTextContent('Short text.');
-    expect(screen.getByRole('heading', { level: 2, name: 'Short section' }).closest('details')).toBe(
-      null,
-    );
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Short section' }).closest('details'),
+    ).toBe(null);
   });
 
   it('counts a section as long only past the threshold', () => {
