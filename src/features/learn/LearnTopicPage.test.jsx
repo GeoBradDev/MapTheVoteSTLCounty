@@ -2,7 +2,6 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
-import { fixtureTopics } from '../../test/learnFixtures.js';
 import { learnCopy } from './learnCopy.js';
 import LearnTopicPage from './LearnTopicPage.jsx';
 
