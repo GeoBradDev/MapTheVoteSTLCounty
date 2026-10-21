@@ -199,7 +199,11 @@ export default function EarlyVotingCard({ code, origin }) {
         {t.mail}{' '}
         <Link href="/learn" className={linkClass}>
           {t.howToVote}
-        </Link>
+        </Link>{' '}
+        {t.or}{' '}
+        <a href={election.countySiteUrl} rel="noreferrer" className={linkClass}>
+          {t.countySite}
+        </a>
         .
       </p>
     </div>

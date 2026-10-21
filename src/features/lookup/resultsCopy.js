@@ -114,8 +114,8 @@ export const copy = {
       boe: 'Board of Elections office',
       abs: 'Satellite site',
     },
-    /** @param {import('./earlyVoting.js').EarlyVotingStatus} status @param {(date: string) => string} longDate */
     // No closing period after a time: every time already ends in "a.m." or "p.m.".
+    /** @param {import('./earlyVoting.js').EarlyVotingStatus} status @param {(date: string) => string} longDate */
     status: (status, longDate) => {
       switch (status.kind) {
         case 'openNow':
@@ -141,8 +141,12 @@ export const copy = {
     /** @param {number} count */
     showAll: (count) => `Show all ${count} early voting sites`,
     note: 'Note:',
+    // "How to vote" (#23) has no topic pages yet, so the county's site is the
+    // official place to read about mail-in and absentee ballots meanwhile.
     mail: 'To vote by mail or with an absentee ballot, see',
     howToVote: 'How to vote',
+    or: 'or the',
+    countySite: 'St. Louis County Board of Elections website',
     failed: 'We could not load early voting sites right now. Find them with the',
     none: 'We could not find early voting sites. Find them with the',
   },

@@ -36,7 +36,9 @@ Domain skills:
    whatever the device's zone: "Open today until 4:30 p.m.", "Opens today at 8 a.m.",
    "Opens Saturday, October 24 at 9 a.m.", or "Early voting has ended." The status updates
    while the page stays open (re-evaluated every minute).
-6. A link to the mail-in and absentee ballot information in "How to vote" (`/learn`).
+6. A link to the mail-in and absentee ballot information in "How to vote" (`/learn`), plus
+   the county election board's website (`countySiteUrl`), since "How to vote" has no
+   content until #23 (added after review).
 7. Date logic has unit tests with a mocked clock for: before opening, a weekday, a
    Saturday, Monday Nov 2, Election Day, and after; plus around midnight (Chicago vs UTC),
    a Sunday, and the DST change on Nov 1.
@@ -56,7 +58,7 @@ Domain skills:
   to `resultsCopy.js` (exported) so the early voting card can name its source too.
 - `src/data/arcgis.test.js`: request shape, normalization, sharing.
 - `scripts/record-fixtures.mjs` + `docs/raw/fixtures/absentee-sites.json` (new, live).
-- `src/features/lookup/nearbyPolls.js`: rows also carry `absType` and `absNote`.
+- `src/features/lookup/nearbyPolls.js` + test: rows also carry `absType` and `absNote`.
 - `src/features/lookup/earlyVoting.js` (new): pure date logic: `zonedNow`, `hoursOn`,
   `earlyVotingStatus`, `scheduleLines`, `formatLongDate`.
 - `src/features/lookup/earlyVoting.test.js` (new): mocked clock cases.

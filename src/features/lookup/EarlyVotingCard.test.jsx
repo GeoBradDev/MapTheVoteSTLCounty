@@ -152,10 +152,14 @@ describe('EarlyVotingCard', () => {
     ).toBeInTheDocument();
   });
 
-  it('links to the mail-in and absentee ballot information in How to vote', async () => {
+  it('links to mail-in and absentee ballot information in How to vote and on the county site', async () => {
     render(<EarlyVotingCard code="CC007" origin={ORIGIN} />);
     await list();
     expect(screen.getByRole('link', { name: t.howToVote })).toHaveAttribute('href', '/learn');
+    expect(screen.getByRole('link', { name: t.countySite })).toHaveAttribute(
+      'href',
+      election.countySiteUrl,
+    );
   });
 
   describe('status by date, in Chicago time', () => {
