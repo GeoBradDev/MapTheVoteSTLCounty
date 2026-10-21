@@ -156,7 +156,8 @@ export const UNIT = new Set(
 // Typed towns that name St. Louis, the mailing city for much of the county.
 const ST_LOUIS_NAMES = new Set([ST_LOUIS, `${ST_LOUIS} city`]);
 
-const isUnitNumber = (word) => /^\d/.test(word ?? '') || word?.length === 1;
+// A unit number has a digit ("2", "N230") or is one letter ("B"); a town has neither.
+const isUnitNumber = (word) => /\d/.test(word ?? '') || word?.length === 1;
 
 // The town in the words typed after the street, with or without commas:
 // what is left once units ("Apt 2", "Unit 2-B"), the state, the country and

@@ -39,8 +39,11 @@ export const attribution = Object.freeze({
 export const TIMEOUT_MS = 2500;
 /** The hosted copy is the last county source, so it gets a little longer. */
 export const HOSTED_TIMEOUT_MS = 3000;
-/** How many records a find may return; more means the filter was too loose. */
-const FIND_LIMIT = 100;
+/**
+ * How many records a find may return: an apartment complex can have over 300
+ * units at one number. More means the filter was too loose.
+ */
+const FIND_LIMIT = 1000;
 // Units of one building fill the list, so ask for more than we show.
 const SUGGEST_LIMIT = 25;
 const MAX_SUGGESTIONS = 5;
@@ -102,6 +105,17 @@ function spellingsOf(word) {
   return [...new Set(all.map((w) => w.toUpperCase()))].filter((w) => /^[A-Z0-9]+$/.test(w));
 }
 
+// The word of a typed street to look for: the first plain word, else the
+// first that is not a street type, leaving out a trailing street type (the
+// county keeps it in ADRSUF) and a ZIP. A town or ZIP typed with no comma
+// follows the street, so the first word is the safe one.
+function streetWord(street) {
+  const candidates = street.filter(
+    (word, i) => !/^\d{5}$/.test(word) && !(i === street.length - 1 && isType(words(word)[0])),
+  );
+  return candidates.find(isPlain) ?? candidates.find((word) => !isType(words(word)[0]));
+}
+
 /**
  * The where clause that finds the typed house: its number, current records
  * only, and one street word anywhere in ADRSTR. It is built only from a
@@ -114,17 +128,16 @@ export function findWhere(text) {
   const [first, ...rest] = tokens(text);
   const number = houseNumber(first);
   if (number === null) return null;
-  // The street: up to a unit word, without a leading direction (ADRDIR) or a
-  // trailing street type (ADRSUF).
+  // The street: up to a unit word, without a leading direction (ADRDIR)
+  // unless that is the street's name ("East Ln").
   const unitAt = rest.findIndex((word) => UNIT.has(word));
   const street = unitAt === -1 ? rest : rest.slice(0, unitAt);
-  if (street.length > 1 && DIRECTIONS.has(words(street[0])[0])) street.shift();
-  // A town or ZIP typed with no comma follows the street, so take the first
-  // plain word, else the first word at all that is not a street type.
-  const candidates = street.filter(
-    (word, i) => !(i === street.length - 1 && isType(words(word)[0])),
-  );
-  const key = candidates.find(isPlain) ?? candidates.find((word) => !isType(words(word)[0]));
+  const key =
+    streetWord(street.slice(DIRECTIONS.has(words(street[0])[0]) ? 1 : 0)) ??
+    streetWord(street) ??
+    // A street named for a street type ("Plaza Dr", "Center Ave"): any word
+    // but the last, which is its type.
+    street.slice(0, -1).find((word) => !/^\d{5}$/.test(word));
   if (!key) return null;
   const likes = spellingsOf(key).map((spelling) => `ADRSTR LIKE '%${spelling}%'`);
   return `ADRNO = ${number} AND ${CURRENT} AND (${likes.join(' OR ')})`;
@@ -330,19 +343,22 @@ export function createCountyAddressSource({
         .map(recordOf)
         .filter((record) => record && matchesTyped(typed, record.props));
       if (!matches.length) return { status: 'none' };
-      // Two addresses fit (two ZIPs, two streets, or one number far apart):
-      // asking for a ZIP beats guessing.
+      // Two addresses fit (two ZIPs or two streets): asking for a ZIP beats
+      // guessing.
       const [first] = matches;
-      if (!matches.every((m) => siteKey(m) === siteKey(first) && near(m, first))) {
-        return { status: 'ambiguous' };
-      }
+      if (!matches.every((m) => siteKey(m) === siteKey(first))) return { status: 'ambiguous' };
+      // One address: the typed unit's point, else the address's own point
+      // (the record with no unit), else its units' point when they are close
+      // together. Units spread over a large parcel, with no point of the
+      // address itself, could be in two precincts.
       const unit = typedUnit(typed);
       const ownUnit = unit && matches.find((m) => m.unitKey === unit);
-      const chosen = ownUnit ?? matches.find((m) => !m.unitKey) ?? first;
+      const chosen = ownUnit ?? matches.find((m) => !m.unitKey);
+      if (!chosen && !matches.every((m) => near(m, first))) return { status: 'ambiguous' };
       return {
         status: 'match',
-        place: placeOf(chosen, { withUnit: Boolean(ownUnit) }),
-        confirmed: isConfirmed(typed, chosen.props),
+        place: placeOf(chosen ?? first, { withUnit: Boolean(ownUnit) }),
+        confirmed: isConfirmed(typed, (chosen ?? first).props),
       };
     },
 

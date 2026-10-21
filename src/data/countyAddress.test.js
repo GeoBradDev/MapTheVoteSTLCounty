@@ -112,6 +112,20 @@ describe('findWhere', () => {
     );
   });
 
+  it('keeps a leading direction word when it is the street name itself', () => {
+    expect(findWhere('13272 East Ln')).toBe(
+      "ADRNO = 13272 AND STATUS = 'Current' AND (ADRSTR LIKE '%EAST%' OR ADRSTR LIKE '%E%')",
+    );
+    expect(findWhere('13272 East Lane 63128')).toContain("(ADRSTR LIKE '%EAST%'");
+  });
+
+  it('uses a street-type word when the street is named for one', () => {
+    expect(findWhere('171 Plaza Dr, Grover 63040')).toBe(
+      "ADRNO = 171 AND STATUS = 'Current' AND (ADRSTR LIKE '%PLAZA%' OR ADRSTR LIKE '%PLZ%')",
+    );
+    expect(findWhere('2626 Center Avenue')).toContain("(ADRSTR LIKE '%CENTER%'");
+  });
+
   it('stops at a unit, so the unit is never the street word', () => {
     expect(findWhere('8025 Md Ave Apt Seventeen')).toContain("(ADRSTR LIKE '%MD%')");
   });
@@ -278,6 +292,13 @@ describe('find', () => {
     await expect(find('1750 N Geyer Rd', geyer)).resolves.toMatchObject({ status: 'match' });
   });
 
+  it('matches a street named for a direction', async () => {
+    const east = point({ ADRNO: 13272, ADRSTR: 'EAST', ADRSUF: 'LN', ZIPCODE: '63128' });
+    await expect(source(answering(east)).find('13272 East Lane 63128')).resolves.toMatchObject({
+      status: 'match',
+    });
+  });
+
   it('matches county street types like Plaza and Crossing in full or short', async () => {
     const plaza = point({ ADRNO: 20, ADRSTR: 'WEST PORT', ADRSUF: 'PLZ' });
     await expect(source(answering(plaza)).find('20 West Port Plaza')).resolves.toMatchObject({
@@ -354,6 +375,23 @@ describe('find', () => {
       });
     });
 
+    it('may start with a letter', async () => {
+      const n230 = point({
+        ADRNO: 6,
+        ADRSTR: 'MILLSTONE CAMPUS',
+        ADRSUF: 'DR',
+        UNITDESC: 'APT',
+        UNITNO: 'N230',
+      });
+      const result = await source(answering(n230)).find(
+        '6 Millstone Campus Dr Apt N230, Saint Louis, MO 63146',
+      );
+      expect(result).toMatchObject({
+        status: 'match',
+        place: { label: '6 Millstone Campus Dr Apt N230, Saint Louis, MO 63146' },
+      });
+    });
+
     it('fall back to a unit of the building when there is no building record', async () => {
       const result = await source(answering(a5, b13)).find('8025 Maryland Ave #7, 63105');
       expect(result).toMatchObject({
@@ -362,7 +400,13 @@ describe('find', () => {
       });
     });
 
-    it('are not one place when they are far apart', async () => {
+    it('on a large parcel, far apart, still have the building point as the address', async () => {
+      const far = unit('99', 5, [-90.3, 38.7]);
+      const result = await source(answering(a5, far, building)).find('8025 Maryland Ave 63105');
+      expect(result).toMatchObject({ status: 'match', place: { lat: 38.6522 } });
+    });
+
+    it('are not one place when they are far apart and there is no building point', async () => {
       const far = unit('99', 5, [-90.3, 38.7]);
       await expect(source(answering(a5, far)).find('8025 Maryland Ave 63105')).resolves.toEqual({
         status: 'ambiguous',
