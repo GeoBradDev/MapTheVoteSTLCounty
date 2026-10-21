@@ -4,6 +4,19 @@ import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import App from './App.jsx';
 
+// The precinct page loads its precinct; these tests only check routing, so the
+// request never answers and nothing reaches the network.
+beforeEach(() => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(() => new Promise(() => {})),
+  );
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
 function renderAt(path) {
   const location = memoryLocation({ path, record: true });
   render(
