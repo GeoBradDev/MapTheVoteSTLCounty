@@ -94,7 +94,11 @@ Owner decisions (2026-10-21):
 Post-deploy, verifiable only after the owner creates the Blueprint (not met by this run):
 merge to `main` with green CI deploys; PR previews get URLs; hard reload of `/p/CC007` on
 the live site; `curl -I` shows the headers; securityheaders.com grade; Render's own
-caching does not override ours; unknown-path caching.
+caching does not override ours; unknown-path caching; `npm run smoke` passes against a PR
+preview and against production (deferred here by #3, criterion 8); the app loads with no
+CSP errors in the console; "Use my location" works on a real iPhone (Safari) and Android
+phone (Chrome) on the HTTPS site (deferred here by #9); `npm ci` on Render installs the
+dev dependencies the build needs; the first Blueprint sync accepts the `/` header path.
 
 ## Files that change
 
