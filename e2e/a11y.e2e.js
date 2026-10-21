@@ -135,6 +135,8 @@ test('going home from a page focuses the home heading at the top', async ({ page
   await page.goto('/privacy');
   const back = page.getByRole('link', { name: 'Back to home' });
   await back.focus();
+  // The link sits low on the page, so the page starts scrolled.
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
   await page.keyboard.press('Enter');
   const heading = page.getByRole('heading', { level: 1 });
   await expect(heading).toHaveText('St. Louis County Voter Guide');

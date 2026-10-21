@@ -74,8 +74,9 @@ horizontal scroll (also with the WCAG text spacing override), one `h1`, the page
 the skip link; it also checks focus after an in-app link and reduced motion. The county's
 layers are answered from `docs/raw/fixtures/` and every other outside request is blocked, so
 it needs no network. The first run needs `npx playwright install chromium`. Add a route there
-when the app gets a new one. In jsdom, `src/test/a11yPages.test.jsx` and
-`src/features/learn/learnA11y.test.jsx` run axe on the same pages without layout.
+when the app gets a new one. In jsdom, without layout, `src/test/a11yPages.test.jsx` runs axe on home, privacy and
+the two not-found pages, and `src/features/learn/learnA11y.test.jsx` on `/learn` with fixture
+topics.
 
 Page rules the checks rely on: every page has one `h1`, set with `tabIndex={-1}` so the app
 can focus it after an in-app link (`App.jsx`), and its own tab title (`usePageTitle` in

@@ -62,8 +62,9 @@ Not fixed here: focus when the results fail to load (#18). Headings inside a fol
    focus to `<main>`.
 2. After an in-app navigation (not the first load), the window is scrolled to the top and,
    when focus was left on `<body>` (or on `<main>`, where Safari puts it after a click),
-   the page's `h1` takes focus. Back and Forward keep the scroll position the browser
-   restores (revised after review).
+   the page's `h1` takes focus. Back and Forward do not scroll to the top (revised after
+   review). Pages that already focus their own heading on arrival (privacy, learn, results)
+   still bring it into view on Back; that behavior predates this issue and is left as is.
 3. `/privacy` has the tab title "Privacy | St. Louis County Voter Guide" and the not-found
    page "Page not found | St. Louis County Voter Guide" (including an unknown `/learn/<id>`,
    which renders the not-found page; its test is updated); each restores the previous title

@@ -8,14 +8,25 @@ import HomePage from './features/lookup/HomePage.jsx';
 import PrecinctPage from './features/lookup/PrecinctPage.jsx';
 import PrivacyPage from './features/privacy/PrivacyPage.jsx';
 
+// The path as wouter reports it: decoded with decodeURI, or as is when that fails.
+function decodedPath() {
+  const path = window.location.pathname;
+  try {
+    return decodeURI(path);
+  } catch {
+    return path;
+  }
+}
+
 /**
  * After an in-app navigation (not the first load), starts the new page at the
  * top, and when the link that was followed went away with the old page,
  * leaving focus on the body (or on main, where Safari puts it after a click),
  * moves focus to the new page's heading so a screen reader announces it.
  * Pages that focus their own heading do it in their own effects, which run
- * first, so they are left alone. Back and Forward keep the scroll position
- * the browser restores.
+ * first, so they are left alone. Back and Forward do not scroll to the top,
+ * so the position the browser restores stays, unless the page itself focuses
+ * its heading on arrival.
  */
 function usePageArrival() {
   const [location] = useLocation();
@@ -26,7 +37,7 @@ function usePageArrival() {
 
   useEffect(() => {
     const onPop = () => {
-      popped.current = window.location.pathname;
+      popped.current = decodedPath();
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
@@ -50,7 +61,7 @@ export default function App() {
     <div className="flex min-h-screen flex-col bg-surface text-ink">
       <a
         href="#main"
-        className="sr-only rounded-md bg-primary px-4 py-2 font-semibold text-on-primary focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-20"
+        className="sr-only rounded-md bg-primary font-semibold text-on-primary focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-20 focus:inline-flex focus:min-h-11 focus:items-center focus:px-4 focus:py-2"
       >
         Skip to main content
       </a>
