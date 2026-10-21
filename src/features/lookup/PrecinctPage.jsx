@@ -10,12 +10,15 @@ import {
   PRECINCT_CODE,
 } from '../../data/arcgis.js';
 import AddressLookup from './AddressLookup.jsx';
+import { copy as errorCopy, isOffline } from './errorCopy.js';
 import { lookupPointFor } from './lookupPoint.js';
 import { precinctStatus } from './precinctStatus.js';
 import PrecinctStatusBanner from './PrecinctStatusBanner.jsx';
 import ResultsCards, { ResultsSkeleton, SkeletonLine } from './ResultsCards.jsx';
 import { copy } from './resultsCopy.js';
+import RetryButton from './RetryButton.jsx';
 import ShareLink from './ShareLink.jsx';
+import { useSlowNotice } from './slowNotice.js';
 
 const linkClass = 'text-primary underline';
 
@@ -32,8 +35,14 @@ function municipalityName(value) {
  * @param {{ code: string }} props
  */
 function PrecinctResults({ code }) {
-  // { precinct } once loaded, { error: 'notFound' | 'failed' } on failure.
+  // { precinct } once loaded, { error: 'notFound' | 'failed' | 'offline',
+  // attempt } on failure. A failed load stays shown while it is retried.
   const [result, setResult] = useState(null);
+  // Each "Try again" is a new attempt; `loading` is the one in flight, if any.
+  const [attempt, setAttempt] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const slow = useSlowNotice(loading ? attempt : null);
+  const errorRef = useRef(null);
   // The point of the lookup that opened this page, if any. Memory only: a
   // reload or a shared link has none.
   const [origin] = useState(() => lookupPointFor(code));
@@ -67,19 +76,45 @@ function PrecinctResults({ code }) {
       getAbsenteeSites().catch(ignore);
       if (!origin) getPrecinctGeometry(code).catch(ignore);
     }
+    const done = (next) => {
+      if (!current) return;
+      setResult(next);
+      setLoading(false);
+    };
     getPrecinctById(code).then(
-      (precinct) => current && setResult({ precinct }),
-      (error) => current && setResult({ error: error instanceof NotFound ? 'notFound' : 'failed' }),
+      (precinct) => done({ precinct }),
+      (error) => {
+        let kind = 'failed';
+        if (error instanceof NotFound) kind = 'notFound';
+        else if (isOffline()) kind = 'offline';
+        done({ error: kind, attempt });
+      },
     );
     return () => {
       current = false;
     };
-  }, [code, validCode, origin]);
+  }, [code, validCode, origin, attempt]);
 
   const precinct = result?.precinct;
   useEffect(() => {
     if (precinct) headingRef.current?.focus();
   }, [precinct]);
+
+  // A load that failed for a reason other than "not found" moves focus to its
+  // message and "Try again" (#18), unless focus is already there (on the
+  // retry button), so the voter lands on the way forward.
+  const retryable = result?.error && result.error !== 'notFound';
+  useEffect(() => {
+    if (!retryable) return;
+    const block = errorRef.current;
+    if (block && !block.contains(document.activeElement)) block.focus();
+  }, [retryable, result]);
+
+  function retry() {
+    if (loading) return;
+    setLoading(true);
+    setAttempt((n) => n + 1);
+  }
 
   const status = precinct ? precinctStatus(precinct) : null;
   const municipality = municipalityName(precinct?.municipality);
@@ -110,19 +145,27 @@ function PrecinctResults({ code }) {
         {precinct ? copy.ready(code) : ''}
       </p>
 
+      <p role="status" className="mt-6 empty:hidden">
+        {slow ? errorCopy.slow : ''}
+      </p>
+
       {!result && <ResultsSkeleton />}
 
-      <p role="alert" className="mt-6 empty:hidden">
-        {result?.error && (
-          <>
-            {copy.errors[result.error]}{' '}
-            <a href={election.officialLookupUrl} rel="noreferrer" className={linkClass}>
-              {copy.officialLookup}
-            </a>
-            .
-          </>
-        )}
-      </p>
+      <div ref={errorRef} tabIndex={-1} className={result?.error ? 'mt-6' : undefined}>
+        <p role="alert" className="empty:hidden">
+          {result?.error && (
+            // A new node per attempt, so a repeated failure is announced again.
+            <span key={result.attempt ?? 0}>
+              {copy.errors[result.error]}{' '}
+              <a href={election.officialLookupUrl} rel="noreferrer" className={linkClass}>
+                {copy.officialLookup}
+              </a>
+              .
+            </span>
+          )}
+        </p>
+        {retryable && <RetryButton onRetry={retry} busy={loading} className="mt-3" />}
+      </div>
 
       {result?.error === 'notFound' && (
         <section aria-labelledby={searchHeadingId} className="mt-6">

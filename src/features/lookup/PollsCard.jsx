@@ -7,7 +7,9 @@ import { getTopic } from '../learn/topics.js';
 import { distanceOrigin } from './distanceOrigin.js';
 import { directionsLinks, isAppleMobile, nearestPolls } from './nearbyPolls.js';
 import PrecinctMap from './PrecinctMap.jsx';
+import RetryButton from './RetryButton.jsx';
 import { copy, sourceName } from './resultsCopy.js';
+import { useRetry } from './useRetry.js';
 
 const linkClass = 'text-primary underline';
 const tapLinkClass = `inline-flex min-h-11 items-center ${linkClass}`;
@@ -120,6 +122,8 @@ function PollRow({ poll, apple, headingRef }) {
 export default function PollsCard({ code, origin }) {
   // { rows } once loaded, { error: true } on failure.
   const [result, setResult] = useState(null);
+  // A failed load can be tried again; it stays shown while it is (#18).
+  const { attempt, loading, retry, done, targetRef } = useRetry();
   const [shown, setShown] = useState(election.nearbyPollCount);
   // The index of the first place a "Show more" revealed, which takes focus.
   const [focusFrom, setFocusFrom] = useState(null);
@@ -127,14 +131,20 @@ export default function PollsCard({ code, origin }) {
 
   useEffect(() => {
     let current = true;
-    Promise.all([getPolls(), distanceOrigin(code, origin)]).then(
-      ([polls, point]) => current && setResult({ rows: nearestPolls(polls, point) }),
-      () => current && setResult({ error: true }),
-    );
+    Promise.all([getPolls(), distanceOrigin(code, origin)])
+      .then(
+        ([polls, point]) => ({ rows: nearestPolls(polls, point) }),
+        () => ({ error: true }),
+      )
+      .then((next) => {
+        if (!current) return;
+        setResult(next);
+        done();
+      });
     return () => {
       current = false;
     };
-  }, [code, origin]);
+  }, [code, origin, attempt, done]);
 
   useEffect(() => {
     if (focusFrom !== null) focusRef.current?.focus();
@@ -151,7 +161,7 @@ export default function PollsCard({ code, origin }) {
   }
 
   return (
-    <div className="mt-2">
+    <div ref={targetRef} tabIndex={-1} className="mt-2">
       {/* Said while loading too, so the line does not push the card down when
           the list arrives (#27). */}
       {!origin && !result?.error && !(rows && rows.length === 0) && (
@@ -161,9 +171,12 @@ export default function PollsCard({ code, origin }) {
       {!result && <ListSkeleton />}
 
       {result?.error && (
-        <p>
-          {copy.polls.failed} <OfficialLookupLink />.
-        </p>
+        <>
+          <p>
+            {copy.polls.failed} <OfficialLookupLink />.
+          </p>
+          <RetryButton onRetry={retry} busy={loading} className="mt-2" />
+        </>
       )}
 
       {rows && rows.length === 0 && (
