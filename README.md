@@ -274,15 +274,17 @@ lookup. Results are recorded in `docs/data.md` under Geocoding.
 When a service is slow or down, the app says so and offers a way forward (#18); it never
 guesses a precinct. "We could not find that address" means the sources that answered had
 no single answer: none has the address, two addresses fit, or the county and the City both
-list it. A lookup that could not finish says address search is not working instead: every
+list it in one ZIP. A lookup that could not finish says address search is not working instead: every
 source down, the City check or the county's precinct check failing or slow, Photon down after a county no
 match, or no county layer answering with Photon finding nothing. (With the live county
 layer down, the 2023 hosted copy's no match counts as an answer.)
-`createGeocoder` reports that as a `GeocoderUnavailableError` only when the caller passes
-`reportUnavailable`, which the app does; without it the chain answers no match, as the #49
-and #58 tests and `scripts/check-geocoder.mjs` expect. Every lookup error links the
+Every source down was already a `GeocoderUnavailableError`; `createGeocoder` reports the
+other cases that way only when the caller passes `reportUnavailable`, which the app does;
+without it the chain answers no match for them, as the #49 and #58 tests and
+`scripts/check-geocoder.mjs` expect. Every lookup error links the
 county's official lookup next to Use my location, and every one but a no match has a Try
-again button that repeats the same search or location. The precinct page and its polling places
+again button that repeats the same search, or the same device location without asking the
+device again, until the voter edits the address. The precinct page and its polling places
 and early voting cards show their own failures, each with Try again (the map still removes
 itself, #13); a failed page load moves focus to its message.
 After `SLOW_MS` (`src/features/lookup/slowNotice.js`), the lookup and the precinct page say
