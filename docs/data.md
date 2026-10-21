@@ -254,11 +254,57 @@ The county Instant App uses a **private** Esri utility proxy
 (`utility.arcgis.com/usrsvcs/servers/d5419f11.../World/GeocodeServer`). It is
 tied to the county's subscription and should not be used from our app.
 
-Plan (to check in step 2): US Census Geocoder for address lookup. It is free
-and needs no key, but it has no autocomplete and may not allow CORS calls from
-a browser. If those are blockers, fall back to the Esri World Geocoder
-`suggest` + `findAddressCandidates`. TODO: test both before choosing, and check
-Esri's current terms on keys and free use instead of assuming them.
+Spike results (issue #7, 2026-10-21). Test script and raw output are recorded in
+`docs/plans/2026-10-21-issue-7-geocoding-census-esri-address-search.md`.
+
+**US Census Geocoder** (`geocoding.geo.census.gov/geocoder/locations/onelineaddress`):
+free, no key, but **not usable from the browser**. Its responses carry no
+`Access-Control-Allow-Origin` header (on GET or on an `OPTIONS` preflight), so a
+browser `fetch` from our site is blocked. It has no suggest operation either. Using
+it would need a proxy, which would send address text through a server of ours.
+
+**Esri World Geocoder** (`geocode.arcgis.com/.../World/GeocodeServer`): `suggest` and
+`findAddressCandidates` both answer browser requests (CORS allowed for any origin).
+`searchExtent=-90.74,38.39,-90.11,38.89` with `countryCode=USA` and
+`category=Address` keeps suggestions in and around the county. Apartment units come
+back as `Subaddress` matches (`8025 Maryland Ave, Unit 5A`).
+
+Esri's current terms, read 2026-10-21 (do not assume them, re-check before launch):
+- https://developers.arcgis.com/rest/geocode/ : "An ArcGIS Location Platform or
+  ArcGIS Online account is required to use the services." Pricing on that page:
+  not-stored geocodes 20K free per month, then $0.50 per 1,000; suggests $0.
+- https://developers.arcgis.com/rest/geocode/find-address-candidates/ : the `token`
+  parameter is "An access token with the required privileges." Results may not be
+  stored unless the request passes `forStorage=true` with a valid token. We never
+  store results, so `forStorage` stays false.
+- Requests without a token still succeed today, but that is not permission: the
+  terms require an account, so we should send a token.
+
+Accuracy, 10 polling place addresses across the county (north, south, west,
+central, unincorporated), each geocoded from its street and ZIP and compared with
+the precinct at the county's own point for that site:
+
+| Address | County point | Esri | Census |
+|---|---|---|---|
+| 7700 Fine Rd 63129 (Oakville, unincorporated south) | OAK019 | OAK019 | OAK019 |
+| 501 Bowles Ave 63026 (Fenton) | MER025 | MER025 | MER025 |
+| 6915 Weber Rd 63123 (Affton, unincorporated) | GRA045 | GRA045 | GRA045 |
+| 1375 Carman Rd 63021 (Ballwin) | MR018 | MR018 | MR018 |
+| 12325 Manchester Rd 63131 (Des Peres) | MR006 | MR006 | MR006 |
+| 1417 St Louis Galleria St 63117 (Richmond Heights) | CLA019 | CLA019 | **CLA020** |
+| 17476 Chesterfield Airport Rd 63005 (Chesterfield, west) | CHE002 | CHE002 | CHE002 |
+| 9225 Lackland Rd 63114 (Overland) | MID014 | MID014 | MID014 |
+| 1910 Exuma Dr 63136 (north) | NRW020 | NRW020 | NRW020 |
+| 11831 Bellefontaine Rd 63138 (Spanish Lake, north) | SF014 | SF014 | SF014 |
+
+Esri: 10 of 10, all `PointAddress` matches. Census: 9 of 10; it interpolates along
+street ranges, which put the Galleria in the next precinct. Two apartment addresses
+with units (8025 Maryland Ave Unit 5A, 7536 Forsyth Blvd Apt 2, both 63105) gave the
+same precinct from both providers. The first 12 to 14 characters typed brought up
+the right address as the first Esri suggestion in all 10 cases.
+
+Choice: Esri World Geocoder, pending the owner's decision on an ArcGIS account and
+access token (issue #7).
 
 The app calls a geocoder only through the interface in `src/data/geocoder.js`:
 `suggest(text)` for the address box's suggestions and `geocode(textOrSuggestion)`
