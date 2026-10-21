@@ -205,7 +205,7 @@ describe('Content-Security-Policy', () => {
       'default-src': ["'self'"],
       'script-src': ["'self'"],
       'style-src': ["'self'"],
-      'img-src': ["'self'", BASEMAP],
+      'img-src': ["'self'"],
       'font-src': ["'self'"],
       'connect-src': ["'self'", new URL(election.serviceRoot).origin, PHOTON, BASEMAP],
       'manifest-src': ["'self'"],

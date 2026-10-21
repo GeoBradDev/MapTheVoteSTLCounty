@@ -9,6 +9,12 @@ const linkClass = 'text-primary underline';
 // MapLibre GL JS needs WebGL 2. Without it, the map chunk is never downloaded.
 const canDrawMap = () => typeof globalThis.WebGL2RenderingContext === 'function';
 
+// How long the map may take, from mount to its first full render (code,
+// outline, style and tiles), before it is dropped. Time while the page is
+// hidden does not count: a background tab draws nothing, so the clock starts
+// over when the page is shown again.
+const LOAD_TIMEOUT_MS = 15_000;
+
 function Attribution() {
   return (
     <p className="mt-1 text-xs text-muted">
@@ -55,21 +61,55 @@ export default function PrecinctMap({ code, origin, polls }) {
 
   useEffect(() => {
     if (!supported) return undefined;
+    // `current` turns false on cleanup; `loading` once the map rendered or failed.
     let current = true;
+    let loading = true;
+    let timer;
+
+    function stopClock() {
+      clearTimeout(timer);
+      document.removeEventListener('visibilitychange', onVisibility);
+    }
+    function startClock() {
+      clearTimeout(timer);
+      timer = setTimeout(fail, LOAD_TIMEOUT_MS);
+    }
+    function onVisibility() {
+      if (document.visibilityState === 'hidden') clearTimeout(timer);
+      else startClock();
+    }
+    function ready() {
+      if (!current || !loading) return;
+      loading = false;
+      stopClock();
+      setState('ready');
+    }
+    function fail() {
+      if (!current || !loading) return;
+      loading = false;
+      stopClock();
+      viewRef.current?.remove();
+      viewRef.current = null;
+      setState('failed');
+    }
+
+    if (document.visibilityState !== 'hidden') startClock();
+    document.addEventListener('visibilitychange', onVisibility);
     Promise.all([import('./precinctMapView.js'), getPrecinctGeometry(code)])
       .then(([{ createPrecinctMap }, feature]) => {
-        if (!current) return;
+        if (!current || !loading) return;
         viewRef.current = createPrecinctMap(containerRef.current, {
           geometry: feature.geometry,
           origin,
           polls: pollsRef.current,
-          onReady: () => current && setState('ready'),
-          onFail: () => current && setState('failed'),
+          onReady: ready,
+          onFail: fail,
         });
       })
-      .catch(() => current && setState('failed'));
+      .catch(fail);
     return () => {
       current = false;
+      stopClock();
       viewRef.current?.remove();
       viewRef.current = null;
     };

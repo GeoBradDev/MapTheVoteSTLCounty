@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import geometry from '../../../docs/raw/fixtures/precinct-geometry.json';
 import election from '../../config/election.js';
 import { getPrecinctGeometry } from '../../data/arcgis.js';
@@ -132,6 +132,87 @@ describe('PrecinctMap', () => {
     resolve(feature);
     await waitFor(() => expect(createPrecinctMap).toHaveBeenCalled());
     expect(options().polls).toEqual(more);
+  });
+
+  describe('load time limit', () => {
+    const LIMIT = 15_000;
+    let visibility;
+
+    beforeEach(() => {
+      visibility = 'visible';
+      vi.spyOn(document, 'visibilityState', 'get').mockImplementation(() => visibility);
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+      vi.restoreAllMocks();
+    });
+
+    const setVisibility = (value) => {
+      visibility = value;
+      act(() => document.dispatchEvent(new Event('visibilitychange')));
+    };
+
+    it('drops a map that has not rendered in time', async () => {
+      render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
+      await waitFor(() => expect(createPrecinctMap).toHaveBeenCalled());
+      vi.useFakeTimers();
+      // The clock started at mount, before fake timers; restart it under them.
+      setVisibility('hidden');
+      setVisibility('visible');
+      act(() => vi.advanceTimersByTime(LIMIT - 1));
+      expect(region()).toBeInTheDocument();
+      act(() => vi.advanceTimersByTime(1));
+      expect(screen.queryByRole('region')).toBeNull();
+      expect(view.remove).toHaveBeenCalled();
+    });
+
+    it('counts the time the code and outline take to load', () => {
+      vi.useFakeTimers();
+      getPrecinctGeometry.mockReturnValue(new Promise(() => {}));
+      render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
+      act(() => vi.advanceTimersByTime(LIMIT));
+      expect(screen.queryByRole('region')).toBeNull();
+    });
+
+    it('does not count time while the page is hidden', () => {
+      vi.useFakeTimers();
+      getPrecinctGeometry.mockReturnValue(new Promise(() => {}));
+      render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
+      act(() => vi.advanceTimersByTime(LIMIT - 1000));
+      setVisibility('hidden');
+      act(() => vi.advanceTimersByTime(LIMIT * 4));
+      expect(region()).toBeInTheDocument();
+      setVisibility('visible');
+      act(() => vi.advanceTimersByTime(LIMIT - 1));
+      expect(region()).toBeInTheDocument();
+      act(() => vi.advanceTimersByTime(1));
+      expect(screen.queryByRole('region')).toBeNull();
+    });
+
+    it('starts the clock only when a page that opened hidden is shown', () => {
+      visibility = 'hidden';
+      vi.useFakeTimers();
+      getPrecinctGeometry.mockReturnValue(new Promise(() => {}));
+      render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
+      act(() => vi.advanceTimersByTime(LIMIT * 2));
+      expect(region()).toBeInTheDocument();
+      setVisibility('visible');
+      act(() => vi.advanceTimersByTime(LIMIT));
+      expect(screen.queryByRole('region')).toBeNull();
+    });
+
+    it('keeps a map that rendered in time', async () => {
+      render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
+      await waitFor(() => expect(createPrecinctMap).toHaveBeenCalled());
+      act(() => options().onReady());
+      vi.useFakeTimers();
+      setVisibility('hidden');
+      setVisibility('visible');
+      act(() => vi.advanceTimersByTime(LIMIT * 2));
+      expect(region()).toBeInTheDocument();
+      expect(view.remove).not.toHaveBeenCalled();
+    });
   });
 
   it('removes the map when the page goes away', async () => {

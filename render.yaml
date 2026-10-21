@@ -48,19 +48,20 @@ services:
       # connect-src: the county ArcGIS services (src/config/election.js
       # serviceRoot), the Photon geocoder (#7) and the OpenFreeMap basemap
       # (#13, src/features/lookup/basemap.js), whose style, tiles, sprites and
-      # glyphs share one origin. MapLibre fetches those, and may load sprite
-      # and raster tile images directly, so the basemap origin is in img-src
-      # too. Its worker is a same-origin file under /assets/ (script-src
-      # 'self'), so no blob: source is needed, and the app ships its own map
-      # CSS instead of maplibre-gl.css, so no data: icons either. Links to
-      # other official sites are navigation, which connect-src does not govern.
+      # glyphs share one origin. MapLibre fetches all of those, images too
+      # (decoded with createImageBitmap, which img-src does not govern), so
+      # img-src stays 'self'. Its worker is a same-origin file under /assets/
+      # (script-src 'self'), so no blob: source is needed, and the app ships
+      # its own map CSS instead of maplibre-gl.css, so no data: icons either.
+      # Links to other official sites are navigation, which connect-src does
+      # not govern.
       - path: /*
         name: Content-Security-Policy
         value: >-
           default-src 'self';
           script-src 'self';
           style-src 'self';
-          img-src 'self' https://tiles.openfreemap.org;
+          img-src 'self';
           font-src 'self';
           connect-src 'self' https://services6.arcgis.com https://photon.komoot.io https://tiles.openfreemap.org;
           manifest-src 'self';

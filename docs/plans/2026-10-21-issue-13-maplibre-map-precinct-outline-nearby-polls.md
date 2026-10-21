@@ -47,11 +47,14 @@ contributors". Both are shown as text links under the map.
    off.
 6. If MapLibre fails to load, WebGL is missing, the outline fails to load, the style or
    tiles fail before the map first finishes rendering, or the map has not rendered within
-   15 seconds, the map is removed and the cards stay as they are.
+   15 seconds of mounting (code, outline, style and tiles all count; time while the page is
+   hidden does not, since a background tab draws nothing), the map is removed and the cards
+   stay as they are.
 7. The attribution (OpenFreeMap, OpenMapTiles, OpenStreetMap contributors) is shown as text
    links under the map, and the precinct and polling place data are credited to the county.
 8. `render.yaml`'s Content-Security-Policy allows `https://tiles.openfreemap.org` in
-   `connect-src` and `img-src`, and nothing else new: the worker is a same-origin file, so
+   `connect-src`, and nothing else new: MapLibre 6 fetches images too and decodes them with
+   `createImageBitmap`, so `img-src` stays `'self'`; the worker is a same-origin file, so
    no `blob:` source is needed, and no MapLibre CSS with `data:` icons ships.
    `src/test/render.test.js` expects exactly that policy, and the comment in `render.yaml`
    that asked #13 to extend the policy is replaced by a description of what it allows.
@@ -62,14 +65,18 @@ contributors". Both are shown as text links under the map.
 
 - `package.json`, `package-lock.json`: add `maplibre-gl` (v6).
 - `src/features/lookup/mapBounds.js` (new, tested): the bounds of the outline, the point and
-  the polls; `cssColorToRgb` to turn an `oklch()` token into the `rgb()` MapLibre parses.
+  the polls; `oklchToRgb` to turn an `oklch()` token into the `rgb()` MapLibre parses.
+- `src/features/lookup/basemap.js` (new): the style URL and the attribution credits, so the
+  render test can check the policy without importing MapLibre.
 - `src/features/lookup/precinctMapView.js` (new): the only file that imports `maplibre-gl`.
-  Sets the worker URL, builds the map, outline layers and DOM markers, reports a failure.
+  Sets the worker URL, builds the map (rotation, pitch and box zoom off), outline layers and
+  DOM markers, reports a failure before the first full render.
 - `src/features/lookup/precinctMap.css` (new, imported by the view): the few MapLibre layout
   rules the map needs (canvas, markers, cooperative gesture overlay, touch-action), written
   with tokens only.
 - `src/features/lookup/PrecinctMap.jsx` (new, tested with the view module mocked): the
-  region, the loading placeholder, legend, attribution, and the lazy import.
+  region, the loading placeholder, legend, attribution, the lazy import and the 15 second
+  load limit.
 - `src/features/lookup/PollsCard.jsx`: render the map above the list with the shown rows.
 - `src/features/lookup/resultsCopy.js`: map text.
 - `src/data/arcgis.js`: cache `getPrecinctGeometry` per code (like `getPolls`) so the card's

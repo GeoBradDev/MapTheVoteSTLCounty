@@ -2,7 +2,7 @@
 // API key or account, and its terms (https://openfreemap.org/tos/) allow
 // embedding it in a website. Style, tiles, sprites and glyphs all come from
 // one origin, which render.yaml's Content-Security-Policy allows in
-// connect-src and img-src. To change the basemap, change this file and the
+// connect-src. To change the basemap, change this file and the
 // policy together.
 
 /** The MapLibre style URL. Positron is light gray, so the map stays neutral. */

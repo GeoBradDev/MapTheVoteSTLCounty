@@ -12,9 +12,6 @@ import './precinctMap.css';
 
 setWorkerUrl(workerUrl);
 
-/** How long the map may take to first finish rendering before it is dropped. */
-export const LOAD_TIMEOUT_MS = 15_000;
-
 // Room around the fitted bounds for the markers, in CSS pixels.
 const FIT = { padding: 40, maxZoom: 16, animate: false };
 
@@ -40,6 +37,7 @@ function markerElement(className, text) {
  *   onFail: (error: unknown) => void }} options `polls` are numbered from 1 in
  *   order, as in the list. `onFail` is called at most once, when anything fails
  *   before the map first finishes rendering; the map is already removed then.
+ *   The caller owns the load time limit and calls `remove()` when it passes.
  * @returns {{ setPolls: (polls: { lat: number, lng: number }[]) => void,
  *   remove: () => void }}
  * @throws When WebGL is unavailable or the inputs give nothing to show.
@@ -58,6 +56,8 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
     fitBoundsOptions: FIT,
     // Credited as text links under the map instead.
     attributionControl: false,
+    // Its box is unstyled here, and the list already covers every place.
+    boxZoom: false,
     // One finger scrolls the page, two move the map; the wheel zooms only
     // with Ctrl or Cmd.
     cooperativeGestures: true,
@@ -73,12 +73,10 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
   // 'loading', then 'ready' or 'failed'; 'removed' once the page drops it.
   let state = 'loading';
   let markers = [];
-  const timer = setTimeout(() => fail(new Error('The map took too long to load')), LOAD_TIMEOUT_MS);
 
   function fail(error) {
     if (state !== 'loading') return;
     state = 'failed';
-    clearTimeout(timer);
     map.remove();
     onFail(error);
   }
@@ -89,7 +87,6 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
   map.once('idle', () => {
     if (state !== 'loading') return;
     state = 'ready';
-    clearTimeout(timer);
     onReady();
   });
 
@@ -139,7 +136,6 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
     remove() {
       if (state === 'failed' || state === 'removed') return;
       state = 'removed';
-      clearTimeout(timer);
       map.remove();
     },
   };

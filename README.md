@@ -119,4 +119,4 @@ OpenStreetMap contributors) is shown as links under the map. Tile requests tell 
 which area is on screen, about as precise as the precinct already in the URL; the
 `no-referrer` policy keeps the page URL out of them. `src/features/lookup/basemap.js` holds the
 style URL and the credits; to change the basemap, change that file and the origin in
-`render.yaml`'s `connect-src` and `img-src` together.
+`render.yaml`'s `connect-src` together.
