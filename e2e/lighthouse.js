@@ -4,25 +4,50 @@
 // Each route is measured RUNS times with Lighthouse's mobile emulation at
 // 360 x 640 (the Moto G4 Lighthouse used to emulate) on simulated slow 4G with
 // a 4x CPU slowdown. The median run by score is compared with the budgets, and
-// its HTML report goes to lighthouse-reports/. Like the accessibility run, the
-// county's layers come from the recorded fixtures (e2e/fixtures.js), the map
-// gets a blank basemap style, and every other outside request is blocked, so no
-// live service can fail a pull request. Exits 1 when a route misses a budget.
-import { mkdir, writeFile } from 'node:fs/promises';
+// its HTML report goes to lighthouse-reports/. Exits 1 when a route misses a
+// budget or does not show its content.
+//
+// No live service is called. Chromium resolves the county's ArcGIS host and
+// the basemap host to a local HTTPS server and every other outside host to
+// nothing. The local server answers the layers from the recorded fixtures
+// (e2e/fixtures.js), gzipped as the county's service sends them, and the
+// basemap style with a blank style. A real server, rather than answering
+// inside the browser, keeps the connection setup and the compressed sizes
+// that Lighthouse's network model needs.
+import { execFileSync } from 'node:child_process';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { createServer } from 'node:https';
+import os from 'node:os';
+import path from 'node:path';
+import { gzipSync } from 'node:zlib';
 import { chromium } from '@playwright/test';
 import lighthouse from 'lighthouse';
 import puppeteer from 'puppeteer-core';
 import { preview } from 'vite';
+import election from '../src/config/election.js';
 import { BASEMAP_STYLE_URL, BLANK_STYLE, CODE, fixtureBody } from './fixtures.js';
-
-/** The pages the issue names: landing, results (fixture precinct), a learn page. */
-const ROUTES = ['/', `/p/${CODE}`, '/learn'];
 
 /** Lowest performance score allowed, 0 to 100. */
 const MIN_SCORE = 90;
 
 /** Largest Contentful Paint budget on simulated 4G, in ms. */
 const MAX_LCP_MS = 2500;
+
+/**
+ * The pages the issue names: landing, results (fixture precinct) and a learn
+ * page. `shows` checks, in the page, that the run measured the real content
+ * and not an error or a loading state.
+ */
+const ROUTES = [
+  { path: '/', shows: () => Boolean(document.querySelector('[role="combobox"]')) },
+  {
+    path: `/p/${CODE}`,
+    shows: () =>
+      document.querySelectorAll('ol[aria-label="Nearest polling places"] > li').length > 0 &&
+      !document.querySelector('[role="alert"]')?.textContent.trim(),
+  },
+  { path: '/learn', shows: () => document.querySelectorAll('h1').length === 1 },
+];
 
 const RUNS = 3;
 const PORT = 4174;
@@ -42,37 +67,56 @@ const CONFIG = {
     },
     // Lighthouse's mobile defaults, written out: simulated slow 4G, 4x CPU.
     throttlingMethod: 'simulate',
-    throttling: {
-      rttMs: 150,
-      throughputKbps: 1638.4,
-      cpuSlowdownMultiplier: 4,
-      requestLatencyMs: 562.5,
-      downloadThroughputKbps: 1474.56,
-      uploadThroughputKbps: 675,
-    },
+    throttling: { rttMs: 150, throughputKbps: 1638.4, cpuSlowdownMultiplier: 4 },
   },
 };
 
-// Answers outside requests from the fixtures and blocks the rest.
-async function answerFromFixtures(page) {
-  await page.setRequestInterception(true);
-  page.on('request', (request) => {
-    const href = request.url();
-    if (new URL(href).hostname === 'localhost') return request.continue();
-    const headers = { 'access-control-allow-origin': '*' };
-    const body = href === BASEMAP_STYLE_URL ? BLANK_STYLE : fixtureBody(href);
-    if (body === null) return request.abort();
-    return request.respond({ status: 200, contentType: 'application/json', headers, body });
-  });
+// A throwaway self-signed certificate for the local HTTPS server.
+async function certificate(dir) {
+  const key = path.join(dir, 'key.pem');
+  const cert = path.join(dir, 'cert.pem');
+  execFileSync(
+    'openssl',
+    [
+      'req',
+      '-x509',
+      '-newkey',
+      'rsa:2048',
+      '-nodes',
+      '-days',
+      '1',
+      '-subj',
+      '/CN=localhost',
+    ].concat(['-keyout', key, '-out', cert]),
+    { stdio: 'ignore' },
+  );
+  return { key: await readFile(key), cert: await readFile(cert) };
 }
 
-async function measure(browser, url) {
+// Answers the county's layers and the basemap style; 404 for anything else.
+function answer(request, response) {
+  const href = `https://${request.headers.host}${request.url}`;
+  const body = href === BASEMAP_STYLE_URL ? BLANK_STYLE : fixtureBody(href);
+  if (request.method !== 'GET' || body === null) {
+    response.writeHead(404).end();
+    return;
+  }
+  const headers = {
+    'content-type': 'application/json',
+    'access-control-allow-origin': '*',
+  };
+  const gzip = /\bgzip\b/.test(request.headers['accept-encoding'] ?? '');
+  if (gzip) headers['content-encoding'] = 'gzip';
+  response.writeHead(200, headers).end(gzip ? gzipSync(body) : body);
+}
+
+async function measure(browser, { path: route, shows }) {
   const page = await browser.newPage();
   try {
-    await answerFromFixtures(page);
+    const url = `http://localhost:${PORT}${route}`;
     const result = await lighthouse(url, { logLevel: 'error', output: 'html' }, CONFIG, page);
     const { lhr } = result;
-    if (lhr.runtimeError) throw new Error(`${url}: ${lhr.runtimeError.message}`);
+    if (lhr.runtimeError) throw new Error(`${route}: ${lhr.runtimeError.message}`);
     const audit = (id) => lhr.audits[id].numericValue;
     return {
       score: Math.round(lhr.categories.performance.score * 100),
@@ -81,6 +125,7 @@ async function measure(browser, url) {
       tbt: audit('total-blocking-time'),
       cls: audit('cumulative-layout-shift'),
       si: audit('speed-index'),
+      shown: await page.evaluate(shows),
       report: result.report,
     };
   } finally {
@@ -93,35 +138,47 @@ function median(runs) {
 }
 
 async function main() {
+  const tmp = await mkdtemp(path.join(os.tmpdir(), 'mapthevote-lighthouse-'));
+  const fixtures = createServer(await certificate(tmp), answer);
+  await new Promise((resolve) => fixtures.listen(0, '127.0.0.1', resolve));
+  const local = `127.0.0.1:${fixtures.address().port}`;
+  const hosts = [new URL(election.serviceRoot).hostname, new URL(BASEMAP_STYLE_URL).hostname];
+  const rules = [...hosts.map((h) => `MAP ${h} ${local}`), 'MAP * ~NOTFOUND', 'EXCLUDE localhost'];
+
   const server = await preview({ preview: { port: PORT, strictPort: true }, logLevel: 'error' });
   const browser = await puppeteer.launch({
     executablePath: chromium.executablePath(),
     headless: true,
+    args: [`--host-resolver-rules=${rules.join(', ')}`, '--ignore-certificate-errors'],
   });
   await mkdir(REPORTS, { recursive: true });
   const failures = [];
   try {
     for (const route of ROUTES) {
       const runs = [];
-      for (let i = 0; i < RUNS; i += 1) {
-        runs.push(await measure(browser, `http://localhost:${PORT}${route}`));
-      }
+      for (let i = 0; i < RUNS; i += 1) runs.push(await measure(browser, route));
       const m = median(runs);
-      const name = route === '/' ? 'home' : route.slice(1).replaceAll('/', '-');
+      const name = route.path === '/' ? 'home' : route.path.slice(1).replaceAll('/', '-');
       await writeFile(new URL(`${name}.html`, REPORTS), m.report);
       console.log(
-        `${route}: performance ${m.score} (runs ${runs.map((r) => r.score).join(', ')}), ` +
+        `${route.path}: performance ${m.score} (runs ${runs.map((r) => r.score).join(', ')}), ` +
           `LCP ${Math.round(m.lcp)} ms, FCP ${Math.round(m.fcp)} ms, ` +
           `TBT ${Math.round(m.tbt)} ms, CLS ${m.cls.toFixed(3)}, SI ${Math.round(m.si)} ms`,
       );
-      if (m.score < MIN_SCORE) failures.push(`${route}: score ${m.score} is below ${MIN_SCORE}`);
+      if (!runs.every((r) => r.shown)) {
+        failures.push(`${route.path}: a run ended without the page's content`);
+      }
+      if (m.score < MIN_SCORE)
+        failures.push(`${route.path}: score ${m.score} is below ${MIN_SCORE}`);
       if (m.lcp >= MAX_LCP_MS) {
-        failures.push(`${route}: LCP ${Math.round(m.lcp)} ms is not under ${MAX_LCP_MS} ms`);
+        failures.push(`${route.path}: LCP ${Math.round(m.lcp)} ms is not under ${MAX_LCP_MS} ms`);
       }
     }
   } finally {
     await browser.close();
     await server.close();
+    fixtures.close();
+    await rm(tmp, { recursive: true, force: true });
   }
   if (failures.length) {
     console.error(`FAIL\n${failures.join('\n')}`);
