@@ -1,23 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import election from '../../config/election.js';
-import { getPolls, getPrecinctGeometry } from '../../data/arcgis.js';
-import { directionsLinks, isAppleMobile, nearestPolls, polygonCenter } from './nearbyPolls.js';
+import { getPolls } from '../../data/arcgis.js';
+import { distanceOrigin } from './distanceOrigin.js';
+import { directionsLinks, isAppleMobile, nearestPolls } from './nearbyPolls.js';
 import PrecinctMap from './PrecinctMap.jsx';
-import { copy } from './resultsCopy.js';
+import { copy, sourceName } from './resultsCopy.js';
 
 const linkClass = 'text-primary underline';
 const tapLinkClass = `inline-flex min-h-11 items-center ${linkClass}`;
 const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
-
-function sourceName(url) {
-  let host;
-  try {
-    host = new URL(url).host;
-  } catch {
-    return copy.polls.source;
-  }
-  return copy.polls.sourceNames[host] ?? host;
-}
 
 function OfficialLookupLink() {
   return (
@@ -25,14 +16,6 @@ function OfficialLookupLink() {
       {copy.officialLookup}
     </a>
   );
-}
-
-// The precinct's center, for a page opened without a lookup point.
-async function precinctCenter(code) {
-  const feature = await getPrecinctGeometry(code);
-  const center = polygonCenter(feature?.geometry);
-  if (!center) throw new Error(`No center for precinct ${code}`);
-  return center;
 }
 
 function Hours() {
@@ -102,8 +85,7 @@ export default function PollsCard({ code, origin }) {
 
   useEffect(() => {
     let current = true;
-    const from = origin ? Promise.resolve(origin) : precinctCenter(code);
-    Promise.all([getPolls(), from]).then(
+    Promise.all([getPolls(), distanceOrigin(code, origin)]).then(
       ([polls, point]) => current && setResult({ rows: nearestPolls(polls, point) }),
       () => current && setResult({ error: true }),
     );

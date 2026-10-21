@@ -79,6 +79,11 @@ const FIXTURES = {
   'boundary-at-st-charles.json': [boundary, boundaryQuery(...ST_CHARLES)],
   'boundary-at-out-of-state.json': [boundary, boundaryQuery(...OUT_OF_STATE)],
   'polls.json': [polls, { where: '1=1', outFields: '*', outSR: '4326', f: 'geojson' }],
+  // The in-person absentee sites, with the filter from the config.
+  'absentee-sites.json': [
+    polls,
+    { where: election.absenteeWhere, outFields: '*', outSR: '4326', f: 'geojson' },
+  ],
   // An invalid field: ArcGIS answers HTTP 200 with an error body.
   'error-body.json': [precincts, { where: 'no_such_field=1', f: 'json' }],
 };

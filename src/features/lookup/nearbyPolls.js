@@ -98,6 +98,9 @@ function zipOf(value) {
  * @property {number} lat
  * @property {number} lng
  * @property {number} miles Straight-line distance from the origin.
+ * @property {string | null} absType The layer's `abs_type`: `none`, or the
+ *   kind of in-person absentee site.
+ * @property {string | null} absNote The layer's voter-facing `notes_abs`.
  */
 
 /**
@@ -120,6 +123,8 @@ export function nearestPolls(collection, origin) {
       name: titleCase(props.name),
       address: titleCase(props.address),
       zip: zipOf(props.zipcode),
+      absType: typeof props.abs_type === 'string' ? props.abs_type : null,
+      absNote: typeof props.notes_abs === 'string' ? props.notes_abs : null,
       lat: point.lat,
       lng: point.lng,
       miles: distanceMiles(origin, point),

@@ -63,6 +63,8 @@ describe('nearestPolls', () => {
             loc: '180',
             address: '1 UNIVERSITY BLVD',
             zipcode: 63121,
+            abs_type: 'abs',
+            notes_abs: 'Use the north door',
           }),
         ],
       },
@@ -74,6 +76,8 @@ describe('nearestPolls', () => {
         name: 'UMSL Millennium Student Center',
         address: '1 University Blvd',
         zip: '63121',
+        absType: 'abs',
+        absNote: 'Use the north door',
         lat: 38.7,
         lng: -90.3,
         miles: 0,
@@ -94,6 +98,15 @@ describe('nearestPolls', () => {
       { lat: 38.6, lng: -90.3 },
     );
     expect(rows.map((r) => r.name)).toEqual(['Good']);
+  });
+
+  it('gives null absentee fields when the layer has none', () => {
+    const [row] = nearestPolls(
+      { features: [poll('GOOD', 38.6, -90.3)] },
+      { lat: 38.6, lng: -90.3 },
+    );
+    expect(row.absType).toBeNull();
+    expect(row.absNote).toBeNull();
   });
 
   it('breaks distance ties by location number, so the order is stable', () => {

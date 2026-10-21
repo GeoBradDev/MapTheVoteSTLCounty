@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import election from '../../config/election.js';
 import DistrictsCard from './DistrictsCard.jsx';
+import EarlyVotingCard from './EarlyVotingCard.jsx';
 import PollsCard from './PollsCard.jsx';
 import SampleBallotCard from './SampleBallotCard.jsx';
 import { copy } from './resultsCopy.js';
@@ -52,6 +53,7 @@ export default function ResultsCards({ code, origin, showBallot, ballotHtml, pre
   const body = {
     polls: () => <PollsCard code={code} origin={origin} />,
     ballot: () => <SampleBallotCard html={ballotHtml} />,
+    earlyVoting: () => <EarlyVotingCard code={code} origin={origin} />,
     districts: () => <DistrictsCard precinct={precinct} />,
   };
   return (
