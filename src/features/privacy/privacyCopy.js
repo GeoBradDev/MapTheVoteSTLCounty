@@ -9,7 +9,7 @@ import { BASEMAP_STYLE_URL } from '../lookup/basemap.js';
 
 const host = (url) => new URL(url).host;
 
-// The open address search service (Photon). Only the geocoder modules may
+// The open address search service. Only the geocoder modules may
 // name a provider, so its name and link come from there. #49 moves them from
 // `attribution` to `attribution.fallback`; this reads either shape. The county
 // address service's hosts are not written here for the same reason: #49 adds
