@@ -516,7 +516,9 @@ answer with the typed text itself:
   until the voter deletes or changes the label's ZIP (owner decision, 2026-10-21): editing
   other parts of the label (adding or pasting a unit, deleting ", MO", a space) keeps it.
   Pasting over a selection that holds the ZIP replaces it, and an autofill (an edit with no
-  input type) forgets the pick, since the box cannot tell what it replaced. Once the pick is forgotten, a ZIP typed later is the voter's own, so a county
+  input type) forgets the pick, since the box cannot tell what it replaced. A digit left
+  against the ZIP when the voter searches makes it another number, so that search goes as
+  typed text; deleting the digit makes it a pick again. Once the pick is forgotten, a ZIP typed later is the voter's own, so a county
   voter can still type a county-only ZIP to get the precinct.
 - **A City match:** a `PointAddress` (a City parcel; interpolated `StreetAddress` ranges do
   not count) with the typed house number and whole street under the strict rules
