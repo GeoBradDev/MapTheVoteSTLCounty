@@ -225,7 +225,10 @@ and state, for example `St. Louis city`, `MO`. With no precinct at the point, a
 place in St. Louis City is sent to the City's Board of Election Commissioners,
 one elsewhere in Missouri to the Secretary of State Voter Outreach Center (the
 county apps' own no-results link), and one outside Missouri gets a generic
-message. Those two links are in `src/config/referrals.js`. The City board's page
+message. A point inside the boundary with no precinct goes to the county's
+official lookup, and a place with no state (coordinates alone) gets a message for
+both Missouri and elsewhere. The two referral links are in
+`src/config/referrals.js`. The City board's page
 is on `stlouis-mo.gov`; `stlelections.com` is a parked domain for sale (checked
 2026-10-21), so do not link it.
 

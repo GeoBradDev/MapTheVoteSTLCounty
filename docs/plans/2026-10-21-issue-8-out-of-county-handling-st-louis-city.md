@@ -51,6 +51,10 @@ unknown place gets its own message.
    - `{ kind: 'missouri' }` when outside the county and the state is Missouri;
    - `{ kind: 'out-of-state' }` when the state is known and is not Missouri;
    - `{ kind: 'unknown' }` when outside the county and the state is not known.
+   Names are matched ignoring case and punctuation; the state may be `MO`, `Missouri` or
+   the Census FIPS code `29`. `classifyPlace(place)` is exported too: the geocoder fields
+   alone, with an internal `st-louis-county` result that `locate` turns into
+   `county-unmatched` (boundary query failed) or `missouri` (outside the boundary).
    A precinct query error rejects (the caller shows #18's error state). A boundary query
    error does not: it falls back to the place's fields. Invalid coordinates throw
    `TypeError` before any request.

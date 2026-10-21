@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
 import { copy } from './outOfCountyCopy.js';
@@ -13,11 +14,12 @@ const HREFS = {
  * @param {{ kind: string }} props A kind from locate(), other than `precinct`.
  */
 export default function OutOfCountyNotice({ kind }) {
+  const headingId = useId();
   if (!Object.hasOwn(copy, kind)) return null;
   const { heading, paragraphs } = copy[kind];
   return (
-    <section aria-labelledby="out-of-county-heading">
-      <h2 id="out-of-county-heading" className="text-xl font-semibold">
+    <section aria-labelledby={headingId}>
+      <h2 id={headingId} className="text-xl font-semibold">
         {heading}
       </h2>
       {paragraphs.map(({ text, link, after }) => (

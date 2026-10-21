@@ -7,7 +7,8 @@ import { getPrecinctAtPoint, isInCountyBoundary } from '../../data/arcgis.js';
  * @typedef {object} Place
  * @property {number} lat WGS 84 latitude.
  * @property {number} lng WGS 84 longitude.
- * @property {string} [state] The geocoder's state, as `MO` or `Missouri`.
+ * @property {string} [state] The geocoder's state, as `MO`, `Missouri` or the
+ *   FIPS code `29`.
  * @property {string} [county] The geocoder's county name, like `St. Louis city`
  *   (Census `Counties` NAME, Esri `Subregion`).
  */
@@ -18,12 +19,12 @@ import { getPrecinctAtPoint, isInCountyBoundary } from '../../data/arcgis.js';
  *   Location
  */
 
-// Lower case, periods dropped, "saint" as "st", single spaces.
+// Lower case, punctuation dropped, "saint" as "st", single spaces.
 function normalizeName(value) {
   if (typeof value !== 'string') return '';
   return value
     .toLowerCase()
-    .replace(/\./g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
     .replace(/\bsaint\b/g, 'st')
     .replace(/\s+/g, ' ')
     .trim();
@@ -31,7 +32,8 @@ function normalizeName(value) {
 
 const CITY_NAMES = new Set(['st louis city', 'city of st louis']);
 const COUNTY_NAMES = new Set(['st louis county']);
-const MISSOURI = new Set(['mo', 'missouri']);
+// 29 is Missouri's FIPS code, which the Census geocoder returns as STATE.
+const MISSOURI = new Set(['mo', 'missouri', '29']);
 
 /**
  * What a place's geocoder fields say about it, without the map. St. Louis City
