@@ -69,7 +69,9 @@ Scope decisions (made in Phase 1):
    values pass through.
 7. An HTTP 200 response whose body is `{ error: { code, message } }` rejects with
    `ServiceError` carrying `code` and `message`. A non-2xx response or a network failure
-   also rejects with `ServiceError` (with `status` for HTTP errors).
+   also rejects with `ServiceError` (with `status` for HTTP errors), as does a 200 body that
+   is not JSON or has no `features` array (added in Phase 4: without it such a body crashed
+   with a bare `TypeError`).
 8. Each request aborts after 8 s with `AbortController` and rejects with `TimeoutError`.
    A timeout, a network failure, an HTTP 5xx or 429, or an ArcGIS error code 5xx or 429 is
    retried once after a backoff of 500 ms; any other error is not retried. After the retry
@@ -95,7 +97,7 @@ Scope decisions (made in Phase 1):
   - `precinct-by-id.json`: `where=precinct='CC007'`.
   - `precinct-nonresidential.json`: `where=precinct='AP200'` (a nonresidential precinct).
   - `precinct-geometry.json`: CC007 GeoJSON with the offset above.
-  - `polls.geojson`: all polling places as GeoJSON (about 85 KB).
+  - `polls.json`: all polling places as GeoJSON (85 KB on the wire, about 130 KB pretty-printed).
   - `error-body.json`: a query with an invalid field, which returns HTTP 200 with an error
     body.
 - `src/data/.gitkeep`: removed, the directory now has files.

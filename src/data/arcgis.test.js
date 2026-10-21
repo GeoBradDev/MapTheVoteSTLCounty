@@ -1,0 +1,324 @@
+// Fixtures are live responses recorded by scripts/record-fixtures.mjs.
+// @vitest-environment node
+import errorBody from '../../docs/raw/fixtures/error-body.json';
+import outside from '../../docs/raw/fixtures/precinct-at-point-outside.json';
+import atPoint from '../../docs/raw/fixtures/precinct-at-point.json';
+import polls from '../../docs/raw/fixtures/polls.json';
+import byId from '../../docs/raw/fixtures/precinct-by-id.json';
+import geometry from '../../docs/raw/fixtures/precinct-geometry.json';
+import nonresidential from '../../docs/raw/fixtures/precinct-nonresidential.json';
+import election from '../config/election.js';
+
+const PRECINCTS = `${election.serviceRoot}/${election.layers.precincts}/query`;
+
+let client;
+let fetchMock;
+
+function respond(body, status = 200) {
+  return new Response(JSON.stringify(body), { status });
+}
+
+// The one request fetchMock received, split into its URL and parameters.
+function onlyRequest() {
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  const url = new URL(fetchMock.mock.calls[0][0]);
+  return { base: `${url.origin}${url.pathname}`, params: Object.fromEntries(url.searchParams) };
+}
+
+beforeEach(async () => {
+  vi.resetModules();
+  fetchMock = vi.fn();
+  vi.stubGlobal('fetch', fetchMock);
+  client = await import('./arcgis.js');
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
+
+describe('getPrecinctAtPoint', () => {
+  it('queries the precincts layer with only the point and fixed parameters', async () => {
+    fetchMock.mockResolvedValue(respond(atPoint));
+    await client.getPrecinctAtPoint({ lat: 38.62, lng: -90.33 });
+    const { base, params } = onlyRequest();
+    expect(base).toBe(PRECINCTS);
+    expect(params).toEqual({
+      geometry: '-90.33,38.62',
+      geometryType: 'esriGeometryPoint',
+      inSR: '4326',
+      spatialRel: 'esriSpatialRelIntersects',
+      outFields: '*',
+      returnGeometry: 'false',
+      f: 'json',
+    });
+  });
+
+  it('resolves to the precinct found there', async () => {
+    fetchMock.mockResolvedValue(respond(atPoint));
+    const precinct = await client.getPrecinctAtPoint({ lat: 38.62, lng: -90.33 });
+    expect(precinct.precinct).toBe('HAD023');
+    expect(precinct.in_election).toBe('In Election');
+    expect(precinct[election.congressionalField]).toMatch(/District \d/);
+  });
+
+  it('resolves a nonresidential precinct like any other, keeping its message', async () => {
+    fetchMock.mockResolvedValue(respond(nonresidential));
+    const precinct = await client.getPrecinctAtPoint({ lat: 38.7, lng: -90.4 });
+    expect(precinct.in_election).toBe('Nonresidential Precinct');
+    expect(precinct.html).toMatch(/^This precinct has no recognized residential addresses/);
+  });
+
+  it('turns empty strings into null', async () => {
+    fetchMock.mockResolvedValue(respond(atPoint));
+    const precinct = await client.getPrecinctAtPoint({ lat: 38.62, lng: -90.33 });
+    expect(atPoint.features[0].attributes.fire).toBe('');
+    expect(precinct.fire).toBeNull();
+  });
+
+  it('resolves to null outside the county', async () => {
+    fetchMock.mockResolvedValue(respond(outside));
+    expect(await client.getPrecinctAtPoint({ lat: 38.63, lng: -90.2 })).toBeNull();
+  });
+
+  it.each([
+    ['an address', { lat: '7900 Carondelet Ave', lng: -90.33 }],
+    ['a numeric string', { lat: '38.62', lng: -90.33 }],
+    ['NaN', { lat: NaN, lng: -90.33 }],
+    ['Infinity', { lat: 38.62, lng: Infinity }],
+    ['a missing value', { lat: 38.62 }],
+  ])('throws TypeError and sends nothing for %s', async (_, point) => {
+    await expect(client.getPrecinctAtPoint(point)).rejects.toThrow(TypeError);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('getPrecinctById', () => {
+  it('queries by precinct code with fixed parameters', async () => {
+    fetchMock.mockResolvedValue(respond(byId));
+    await client.getPrecinctById('CC007');
+    const { base, params } = onlyRequest();
+    expect(base).toBe(PRECINCTS);
+    expect(params).toEqual({
+      where: "precinct='CC007'",
+      outFields: '*',
+      returnGeometry: 'false',
+      f: 'json',
+    });
+  });
+
+  it('resolves to the precinct', async () => {
+    fetchMock.mockResolvedValue(respond(byId));
+    const precinct = await client.getPrecinctById('CC007');
+    expect(precinct.precinct).toBe('CC007');
+    expect(precinct.html).toMatch(/CC-007\.pdf/);
+  });
+
+  it('rejects with NotFound when no precinct has the code', async () => {
+    fetchMock.mockResolvedValue(respond(outside));
+    await expect(client.getPrecinctById('ZZ999')).rejects.toBeInstanceOf(client.NotFound);
+  });
+
+  it.each(['cc007', 'CC07', 'C007', 'CCCC007', "CC007' OR '1'='1", ' CC007', 'CC007\n', 7])(
+    'rejects %j with NotFound and sends nothing',
+    async (code) => {
+      await expect(client.getPrecinctById(code)).rejects.toBeInstanceOf(client.NotFound);
+      expect(fetchMock).not.toHaveBeenCalled();
+    },
+  );
+});
+
+describe('exports', () => {
+  it.each(['TimeoutError', 'ServiceError', 'NotFound'])('%s is a named Error', (name) => {
+    const error = new client[name]('x');
+    expect(error).toBeInstanceOf(Error);
+    expect(error.name).toBe(name);
+  });
+
+  it('exports the precinct code pattern', () => {
+    expect(client.PRECINCT_CODE.test('CC007')).toBe(true);
+    expect(client.PRECINCT_CODE.test('BON001')).toBe(true);
+    expect(client.PRECINCT_CODE.test('CC007x')).toBe(false);
+  });
+});
+
+describe('getPolls', () => {
+  const POLLS = `${election.serviceRoot}/${election.layers.polls}/query`;
+
+  it('requests every polling place once as GeoJSON in lat/lng', async () => {
+    fetchMock.mockResolvedValue(respond(polls));
+    await client.getPolls();
+    const { base, params } = onlyRequest();
+    expect(base).toBe(POLLS);
+    expect(params).toEqual({ where: '1=1', outFields: '*', outSR: '4326', f: 'geojson' });
+  });
+
+  it('resolves to the FeatureCollection with normalized properties', async () => {
+    fetchMock.mockResolvedValue(respond(polls));
+    const result = await client.getPolls();
+    expect(result.type).toBe('FeatureCollection');
+    expect(result.features).toHaveLength(polls.features.length);
+    const first = result.features[0];
+    expect(first.geometry).toEqual(polls.features[0].geometry);
+    expect(polls.features[0].properties.inline).toMatch(/^ +$/);
+    expect(first.properties.inline).toBeNull();
+    expect(first.properties.notes_abs).toBeNull();
+    const withNote = result.features.find((f) => f.properties.notes_abs);
+    expect(withNote.properties.notes_abs).toBe(withNote.properties.notes_abs.trim());
+  });
+
+  it.each([
+    [7, '007'],
+    ['7', '007'],
+    [' 42 ', '042'],
+    ['172', '172'],
+  ])('pads loc %j to %j', async (loc, expected) => {
+    const feature = { ...polls.features[0], properties: { ...polls.features[0].properties, loc } };
+    fetchMock.mockResolvedValue(respond({ ...polls, features: [feature] }));
+    expect((await client.getPolls()).features[0].properties.loc).toBe(expected);
+  });
+
+  it('shares one request between concurrent and later calls', async () => {
+    fetchMock.mockResolvedValue(respond(polls));
+    const [a, b] = await Promise.all([client.getPolls(), client.getPolls()]);
+    const c = await client.getPolls();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(b).toBe(a);
+    expect(c).toBe(a);
+  });
+
+  it('does not cache a failure: the next call fetches again', async () => {
+    fetchMock.mockResolvedValueOnce(respond(errorBody)).mockResolvedValueOnce(respond(polls));
+    await expect(client.getPolls()).rejects.toBeInstanceOf(client.ServiceError);
+    expect((await client.getPolls()).features).toHaveLength(polls.features.length);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('getPrecinctGeometry', () => {
+  it('requests a simplified outline in lat/lng as GeoJSON', async () => {
+    fetchMock.mockResolvedValue(respond(geometry));
+    await client.getPrecinctGeometry('CC007');
+    const { base, params } = onlyRequest();
+    expect(base).toBe(PRECINCTS);
+    expect(params).toEqual({
+      where: "precinct='CC007'",
+      outFields: 'precinct',
+      returnGeometry: 'true',
+      outSR: '4326',
+      maxAllowableOffset: '0.0001',
+      f: 'geojson',
+    });
+  });
+
+  it('resolves to the precinct Feature', async () => {
+    fetchMock.mockResolvedValue(respond(geometry));
+    const feature = await client.getPrecinctGeometry('CC007');
+    expect(feature.type).toBe('Feature');
+    expect(feature.geometry.type).toBe('Polygon');
+    expect(feature.properties.precinct).toBe('CC007');
+  });
+
+  it('rejects with NotFound when no precinct has the code', async () => {
+    fetchMock.mockResolvedValue(respond({ type: 'FeatureCollection', features: [] }));
+    await expect(client.getPrecinctGeometry('ZZ999')).rejects.toBeInstanceOf(client.NotFound);
+  });
+
+  it('rejects a malformed code with NotFound and sends nothing', async () => {
+    await expect(client.getPrecinctGeometry("CC007' OR '1'='1")).rejects.toBeInstanceOf(
+      client.NotFound,
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('errors', () => {
+  // A fetch that never answers until its signal aborts, as real fetch does.
+  function hang(url, { signal }) {
+    return new Promise((_, reject) => {
+      signal.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')));
+    });
+  }
+
+  it('rejects an HTTP 200 error body with ServiceError, its code and message, without retrying', async () => {
+    fetchMock.mockResolvedValue(respond(errorBody));
+    const error = await client.getPrecinctById('CC007').catch((e) => e);
+    expect(error).toBeInstanceOf(client.ServiceError);
+    expect(error.code).toBe(400);
+    expect(error.message).toBe(errorBody.error.message);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects an HTTP error with ServiceError and its status, without retrying a 404', async () => {
+    fetchMock.mockResolvedValue(new Response('nope', { status: 404 }));
+    const error = await client.getPrecinctById('CC007').catch((e) => e);
+    expect(error).toBeInstanceOf(client.ServiceError);
+    expect(error.status).toBe(404);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects a body that is not JSON with ServiceError', async () => {
+    fetchMock.mockResolvedValue(new Response('<html>', { status: 200 }));
+    await expect(client.getPrecinctById('CC007')).rejects.toBeInstanceOf(client.ServiceError);
+  });
+
+  it.each([{}, null, { features: 'none' }])(
+    'rejects JSON %j without a features list with ServiceError',
+    async (body) => {
+      fetchMock.mockResolvedValue(respond(body));
+      await expect(client.getPolls()).rejects.toBeInstanceOf(client.ServiceError);
+    },
+  );
+
+  it('retries a network failure once after a backoff, then rejects with ServiceError', async () => {
+    vi.useFakeTimers();
+    fetchMock.mockRejectedValue(new TypeError('fetch failed'));
+    const result = client.getPrecinctById('CC007').catch((e) => e);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(client.RETRY_DELAY_MS);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(await result).toBeInstanceOf(client.ServiceError);
+  });
+
+  it.each([
+    ['HTTP 500', () => new Response('', { status: 500 })],
+    ['HTTP 429', () => new Response('', { status: 429 })],
+    ['an ArcGIS 500 body', () => respond({ error: { code: 500, message: 'busy' } })],
+  ])('retries %s once and resolves when the retry works', async (_, failure) => {
+    vi.useFakeTimers();
+    fetchMock.mockResolvedValueOnce(failure()).mockResolvedValueOnce(respond(byId));
+    const result = client.getPrecinctById('CC007');
+    await vi.advanceTimersByTimeAsync(client.RETRY_DELAY_MS);
+    expect((await result).precinct).toBe('CC007');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('times out after 8 seconds, retries once, then rejects with TimeoutError', async () => {
+    vi.useFakeTimers();
+    fetchMock.mockImplementation(hang);
+    const result = client.getPrecinctAtPoint({ lat: 38.62, lng: -90.33 }).catch((e) => e);
+    await vi.advanceTimersByTimeAsync(client.TIMEOUT_MS - 1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1 + client.RETRY_DELAY_MS);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(client.TIMEOUT_MS);
+    expect(await result).toBeInstanceOf(client.TimeoutError);
+    expect(client.TIMEOUT_MS).toBe(8000);
+  });
+
+  it('resolves when the retry after a timeout answers', async () => {
+    vi.useFakeTimers();
+    fetchMock.mockImplementationOnce(hang).mockResolvedValueOnce(respond(atPoint));
+    const result = client.getPrecinctAtPoint({ lat: 38.62, lng: -90.33 });
+    await vi.advanceTimersByTimeAsync(client.TIMEOUT_MS + client.RETRY_DELAY_MS);
+    expect((await result).precinct).toBe('HAD023');
+  });
+
+  it('leaves no timer running after a request answers', async () => {
+    vi.useFakeTimers();
+    fetchMock.mockResolvedValue(respond(atPoint));
+    await client.getPrecinctAtPoint({ lat: 38.62, lng: -90.33 });
+    expect(vi.getTimerCount()).toBe(0);
+  });
+});
