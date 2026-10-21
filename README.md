@@ -84,8 +84,9 @@ those from the config too. Text under `content/` may repeat them.
 ## Address search
 
 The address box uses the public [Photon](https://photon.komoot.io) geocoder (OpenStreetMap
-data), called from the browser with no key and no server of ours. Only
-`src/data/geocoder.js` picks the provider; a test fails if any other app file names one.
+data), called from the browser with no key and no server of ours. `src/data/geocoder.js`
+picks the provider and `src/data/photon.js` implements it; a test fails if any other app file
+names a provider.
 To point a build at another Photon instance, set `VITE_GEOCODER_URL` (for example
 `VITE_GEOCODER_URL=https://photon.example.org npm run build`). A Content-Security-Policy must
 allow that origin, or `https://photon.komoot.io`, in `connect-src`.

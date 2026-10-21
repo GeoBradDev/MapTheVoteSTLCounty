@@ -9,8 +9,9 @@ import { createPhotonGeocoder } from './photon.js';
 export { GeocoderUnavailableError } from './geocoderError.js';
 
 /**
- * A suggestion for partly typed text. A provider may add its own fields (for
- * example a magic key) that only its own geocode() reads.
+ * A suggestion for partly typed text. A provider may add its own fields that
+ * only its own geocode() reads (the Photon provider adds `place`, the
+ * geocoded place, so a pick needs no second request).
  * @typedef {object} Suggestion
  * @property {string} id Unique among one suggest() result.
  * @property {string} label What the voter sees.

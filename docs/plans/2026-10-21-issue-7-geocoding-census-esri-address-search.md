@@ -52,8 +52,9 @@ Recorded in `docs/data.md` under Geocoding. Summary:
 3. `geocode` returns `{ lat, lng, state, county, label }` (Photon `state`, `county`; when
    Photon gives no county for a Missouri place whose city is Saint Louis, county is
    `St. Louis city`, the independent city), or `null` when nothing matches. For typed text
-   the match's house number must be the typed one and a street word must appear in the
-   text; otherwise `null`. A picked suggestion geocodes from the suggestion with no second
+   the match's house number must be the typed one, every telling word of its street (not
+   "Road", "North" and the like) must be in the typed street part (before the first comma),
+   and a typed ZIP must be its postcode; otherwise `null`. A picked suggestion geocodes from the suggestion with no second
    request.
 4. A timeout (8 s), network error, non-2xx (429 included) or malformed body rejects with
    `GeocoderUnavailableError`; a caller abort rejects with an AbortError. The lookup then
@@ -64,10 +65,12 @@ Recorded in `docs/data.md` under Geocoding. Summary:
 6. Address text goes only to Photon: requests use `cache: 'no-store'`, `credentials: 'omit'`
    and `referrerPolicy: 'no-referrer'`; nothing is written to storage or the URL (existing
    AddressLookup tests keep covering that).
-7. The lookup shows "Address search by Photon (komoot). Map data (c) OpenStreetMap
-   contributors" with the OSM link to https://www.openstreetmap.org/copyright. Photon's
+7. The lookup shows "Address search: Photon by komoot. Data © OpenStreetMap contributors.",
+   with the OSM link to https://www.openstreetmap.org/copyright, followed by "Your address is
+   sent only to that service, to find your precinct. This site does not save it." Photon's
    site asks for fair use, not a credit; the komoot credit is kept anyway so voters can see
-   where the address goes.
+   where the address goes. The sentence says nothing about what Photon itself keeps, which
+   we do not control.
 8. `scripts/check-geocoder.mjs` geocodes the 10 test addresses with the app's own provider
    against live Photon and checks the precinct at each point; `docs/data.md` records the
    result next to the Esri and Census table, plus the Nominatim evaluation.
@@ -97,8 +100,10 @@ attribution. 4. Live check script and docs. 5. Live drive in a browser.
 - Public Photon is best effort and throttles heavy use; Election Day load could hit it. The
   fallback messages and "Use my location" cover that; self-hosting was ruled out by the owner.
 - 6915 Weber Rd has no house-level match in OSM; that address gets the not-found message.
-- Photon fuzzy matching can return a nearby house with another number; the house number and
-  street word checks on typed text return null instead.
+- Photon fuzzy matching can return a nearby house with another number, or the typed number
+  on another street; the house number, street and ZIP checks on typed text return null
+  instead (review finding: a typed city word must not satisfy the street check; frozen test
+  `src/data/photon.strict.test.js`).
 
 ## Proof
 

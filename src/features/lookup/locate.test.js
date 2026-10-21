@@ -1,6 +1,6 @@
 // The three test addresses run end to end against live responses recorded by
-// scripts/record-fixtures.mjs. Places use the geocoder-neutral shape both the
-// Census and the Esri geocoder can fill (see docs/data.md).
+// scripts/record-fixtures.mjs. Places use the geocoder-neutral shape any
+// geocoder can fill (see docs/data.md, Geocoding).
 // @vitest-environment node
 import boundaryAtCity from '../../../docs/raw/fixtures/boundary-at-city.json';
 import boundaryAtOutOfState from '../../../docs/raw/fixtures/boundary-at-out-of-state.json';

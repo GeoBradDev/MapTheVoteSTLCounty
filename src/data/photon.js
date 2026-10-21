@@ -49,13 +49,13 @@ function abortError() {
   return new DOMException('The operation was aborted.', 'AbortError');
 }
 
-// Lower-case words, with ordinals as bare numbers (63rd -> 63).
+// Lower-case words, with ordinals as bare numbers (63rd -> 63) and "saint" as "st".
 function words(text) {
   return String(text ?? '')
     .toLowerCase()
     .split(/[^a-z0-9]+/)
     .filter(Boolean)
-    .map((word) => word.replace(/^(\d+)(st|nd|rd|th)$/, '$1'));
+    .map((word) => (word === 'saint' ? 'st' : word.replace(/^(\d+)(st|nd|rd|th)$/, '$1')));
 }
 
 function isAddress(feature) {
@@ -85,7 +85,7 @@ function labelOf(props) {
 // Photon gives St. Louis City, an independent city, as a city with no county.
 function countyOf(props) {
   if (props.county) return props.county;
-  if (props.state === 'Missouri' && words(props.city).join(' ') === 'saint louis') {
+  if (props.state === 'Missouri' && words(props.city).join(' ') === 'st louis') {
     return 'St. Louis city';
   }
   return undefined;
@@ -113,15 +113,23 @@ function hasNumber(housenumber, typed) {
     });
 }
 
-// Typed text names a feature when it starts with the feature's house number and
-// shares a telling word of its street.
+// Typed text names a feature when it starts with the feature's house number,
+// its street part (before the first comma) has every telling word of the
+// feature's street, and a typed ZIP, if any, is the feature's. Only the street
+// part counts, so a typed city that shares a word with another street (8025
+// Maryland Ave, Clayton vs 8025 Clayton Road) is no match.
 function matchesTyped(text, props) {
-  const [number, ...rest] = words(text);
+  const [streetPart] = text.split(',');
+  const [number, ...rest] = words(streetPart);
   if (!number || !/^\d/.test(number) || !hasNumber(props.housenumber, number)) return false;
-  const typed = new Set(rest.map((w) => (w === 'saint' ? 'st' : w)));
+  const zip =
+    text.slice(streetPart.length).match(/\b(\d{5})(?:-\d{4})?\b/)?.[1] ??
+    streetPart.match(/\s(\d{5})(?:-\d{4})?\s*$/)?.[1];
+  if (zip && props.postcode && String(props.postcode).slice(0, 5) !== zip) return false;
+  const typed = new Set(rest);
   const street = words(props.street);
   const telling = street.filter((w) => !GENERIC.has(w));
-  return (telling.length ? telling : street).some((w) => typed.has(w));
+  return telling.length ? telling.every((w) => typed.has(w)) : street.some((w) => typed.has(w));
 }
 
 /**

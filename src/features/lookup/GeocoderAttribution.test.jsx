@@ -17,8 +17,10 @@ describe('GeocoderAttribution', () => {
     expect(link.closest('p')).toHaveTextContent(`by ${attribution.serviceBy}`);
   });
 
-  it('says the address is not saved', () => {
+  it('says where the address goes and that this site does not save it', () => {
     render(<GeocoderAttribution />);
-    expect(screen.getByText(/is not saved/)).toBeInTheDocument();
+    expect(screen.getByText(/sent only to that service/)).toHaveTextContent(
+      'This site does not save it.',
+    );
   });
 });

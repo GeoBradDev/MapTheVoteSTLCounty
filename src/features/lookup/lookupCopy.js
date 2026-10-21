@@ -13,9 +13,10 @@ export const copy = {
   // The credit next to the address box. The service and data names and links
   // come from the geocoder module (attribution in src/data/geocoder.js).
   attribution: {
-    searchBy: 'Address search by',
+    searchBy: 'Address search:',
     by: 'by',
     data: 'Data \u00a9',
-    privacy: 'Your address goes only to that service, to find your precinct, and is not saved.',
+    privacy:
+      'Your address is sent only to that service, to find your precinct. This site does not save it.',
   },
 };
