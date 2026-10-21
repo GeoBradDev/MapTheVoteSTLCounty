@@ -20,10 +20,9 @@ import { attribution as photonAttribution, createPhotonGeocoder } from './photon
 export { GeocoderUnavailableError } from './geocoderError.js';
 
 /**
- * A suggestion for partly typed text. A source may add its own fields that
- * only geocode() reads: Photon's suggestions add `place`, the geocoded place,
- * so a pick needs no second request. County suggestions carry no place (one
- * label can be two houses), so a pick is geocoded again by its label.
+ * A suggestion for partly typed text. A source may add its own fields
+ * (Photon's add `place`), but the app geocoder geocodes a pick again by its
+ * label, so the county's rules apply to every pick.
  * @typedef {object} Suggestion
  * @property {string} id Unique among one suggest() result.
  * @property {string} label What the voter sees.
@@ -139,10 +138,9 @@ export function createGeocoder({ sources, fallback }) {
     },
 
     async geocode(query, { signal } = {}) {
-      if (query && typeof query === 'object' && query.place) {
-        if (signal?.aborted) throw abortError();
-        return { ...query.place };
-      }
+      // A picked suggestion is geocoded again by its label, county first, so
+      // every rule applies to it as to typed text; a Photon suggestion's own
+      // place could be one house of two the county knows.
       const text = String((typeof query === 'object' ? query?.label : query) ?? '').trim();
       if (!text) return null;
       const county = await firstAnswer((source) => source.find(text, { signal }), signal);

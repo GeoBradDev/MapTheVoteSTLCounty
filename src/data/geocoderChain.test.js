@@ -132,10 +132,14 @@ describe('geocode', () => {
     );
   });
 
-  it('returns a picked suggestion its place without asking anyone', async () => {
-    const { geocoder, live, fallback } = chain();
-    await expect(geocoder.geocode({ id: 'x', label: 'L', place: ROSS })).resolves.toEqual(ROSS);
-    expect(live.find).not.toHaveBeenCalled();
+  it('geocodes a picked suggestion again by its label, county first, ignoring any place', async () => {
+    const { geocoder, live, fallback } = chain({
+      live: countySource({ find: async () => ({ status: 'ambiguous' }) }),
+    });
+    await expect(
+      geocoder.geocode({ id: 'x', label: '4005 Ripa Avenue, MO 63125', place: PHOTON_PLACE }),
+    ).resolves.toBeNull();
+    expect(live.find).toHaveBeenCalledWith('4005 Ripa Avenue, MO 63125', expect.any(Object));
     expect(fallback.geocode).not.toHaveBeenCalled();
   });
 

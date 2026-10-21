@@ -13,6 +13,7 @@ import {
   DIRECTIONS,
   isConfirmed,
   labelOf,
+  matchesStreet,
   matchesTyped,
   STREET_TYPES,
   typedUnit,
@@ -206,11 +207,15 @@ export function suggestWhere(text) {
   const streetPart = raw.split(',')[0];
   const parts = tokens(streetPart);
   if (!/^\d/.test(parts[0] ?? '')) return null;
-  const lastIsWhole = /[^a-z0-9]$/i.test(streetPart) || raw.includes(',');
+  // A ZIP typed after the street, with or without a comma, is not part of
+  // FULL_ADDRESS.
+  const zip = typedZip(raw);
+  if (parts.length > 2 && parts.at(-1) === zip) parts.pop();
+  const lastIsWhole = raw.includes(',') || Boolean(zip);
   const spelled = parts.map((word, i) => {
-    // A short last word may still be partial ("Av" of "Avalon"); a long one
-    // in the list is whole ("Avenue").
-    if (i === parts.length - 1 && !lastIsWhole && word.length < 5) return word;
+    // A short last word may still be partial ("Av" of "Avalon"); a longer one
+    // in the list is whole ("Road", "Avenue").
+    if (i === parts.length - 1 && !lastIsWhole && word.length < 4) return word;
     if (i === 1 && parts.length > 2 && Object.hasOwn(DIRECTION_SPELLING, word)) {
       return DIRECTION_SPELLING[word];
     }
@@ -220,8 +225,7 @@ export function suggestWhere(text) {
     if (!asType && STREET_TYPE_WORDS.has(word)) return word;
     return Object.hasOwn(COUNTY_SPELLING, word) ? COUNTY_SPELLING[word] : word;
   });
-  const prefix = `${spelled.join(' ').toUpperCase()}${/\s$/.test(streetPart) ? ' ' : ''}`;
-  const zip = raw.includes(',') ? typedZip(raw) : undefined;
+  const prefix = spelled.join(' ').toUpperCase();
   return `${CURRENT} AND FULL_ADDRESS LIKE '${prefix}%'${zip ? ` AND ZIPCODE = '${zip}'` : ''}`;
 }
 
@@ -403,14 +407,20 @@ export function createCountyAddressSource({
       if (json.exceededTransferLimit) {
         throw new GeocoderUnavailableError('County addresses gave too many records');
       }
-      const matches = json.features
+      const sameStreet = json.features
         .map(recordOf)
-        .filter((record) => record && matchesTyped(typed, record.props));
+        .filter((record) => record && matchesStreet(typed, record.props));
+      const matches = sameStreet.filter((record) => matchesTyped(typed, record.props));
       if (!matches.length) return { status: 'none' };
       // Two addresses fit (two ZIPs or two streets): asking for a ZIP beats
-      // guessing.
+      // guessing. Unless a ZIP or a town other than St. Louis pins the text
+      // down, a house in a named town counts too, though the rules leave it
+      // out of `matches` for want of its town: 2 Colonial Ct is in Ladue
+      // (mailing city Saint Louis) and in Florissant.
       const [first] = matches;
-      if (!matches.every((m) => siteKey(m) === siteKey(first))) return { status: 'ambiguous' };
+      const pinned = Boolean(typedZip(typed)) || matches.some((m) => isConfirmed(typed, m.props));
+      const pool = pinned ? matches : sameStreet;
+      if (!pool.every((m) => siteKey(m) === siteKey(first))) return { status: 'ambiguous' };
       // A typed unit that exactly one record has is that record's point.
       const unit = typedUnit(typed);
       const units = unit ? matches.filter((m) => m.unitKey === unit) : [];
@@ -447,7 +457,7 @@ export function createCountyAddressSource({
 
     /**
      * Up to five county addresses starting with the text. They carry no
-     * point: one label can be two houses (see sameHouse), so a pick is found
+     * point: one label can be two houses, so a pick is found
      * again by its label, under every rule of find().
      * @param {string} input
      * @param {{ signal?: AbortSignal }} [options]

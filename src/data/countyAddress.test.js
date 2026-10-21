@@ -151,10 +151,10 @@ describe('findWhere', () => {
     );
     expect(findWhere('100 toString Ave')).toContain("'%TOSTRING%'");
     expect(suggestWhere('100 constructor ')).toBe(
-      "STATUS = 'Current' AND FULL_ADDRESS LIKE '100 CONSTRUCTOR %'",
+      "STATUS = 'Current' AND FULL_ADDRESS LIKE '100 CONSTRUCTOR%'",
     );
     expect(suggestWhere('100 n __proto__ hasOwnProperty ')).toBe(
-      "STATUS = 'Current' AND FULL_ADDRESS LIKE '100 N PROTO HASOWNPROPERTY %'",
+      "STATUS = 'Current' AND FULL_ADDRESS LIKE '100 N PROTO HASOWNPROPERTY%'",
     );
   });
 
@@ -180,8 +180,11 @@ describe('suggestWhere', () => {
     expect(suggestWhere('1318 ross av')).toBe(
       "STATUS = 'Current' AND FULL_ADDRESS LIKE '1318 ROSS AV%'",
     );
-    expect(suggestWhere('1318 Ross Avenue ')).toBe(
-      "STATUS = 'Current' AND FULL_ADDRESS LIKE '1318 ROSS AVE %'",
+    expect(suggestWhere('10 Kirkwood Road')).toBe(
+      "STATUS = 'Current' AND FULL_ADDRESS LIKE '10 KIRKWOOD RD%'",
+    );
+    expect(suggestWhere('4005 Ripa Ave 63125')).toBe(
+      "STATUS = 'Current' AND FULL_ADDRESS LIKE '4005 RIPA AVE%' AND ZIPCODE = '63125'",
     );
     expect(suggestWhere('1318 Ross Avenue')).toBe(
       "STATUS = 'Current' AND FULL_ADDRESS LIKE '1318 ROSS AVE%'",
@@ -287,6 +290,43 @@ describe('find', () => {
     await expect(find('1318 Ross Ave, MO 63141')).resolves.toEqual({ status: 'none' });
     await expect(find('1310 Ross Ave')).resolves.toEqual({ status: 'none' });
     await expect(find('1318 Ross Ave, St. Louis City')).resolves.toEqual({ status: 'none' });
+  });
+
+  describe('one number and street in a named town and in a St. Louis mailing area', () => {
+    // Live data: 2 Colonial Ct is in Ladue (mailing city Saint Louis, 63124,
+    // CLA014) and in Florissant (63031, FLO001).
+    const ladue = point(
+      { OBJECTID: 1, ADRNO: 2, ADRSTR: 'COLONIAL', ADRSUF: 'CT', ZIPCODE: '63124' },
+      [-90.38, 38.65],
+    );
+    const florissant = point(
+      {
+        OBJECTID: 2,
+        ADRNO: 2,
+        ADRSTR: 'COLONIAL',
+        ADRSUF: 'CT',
+        ZIPCODE: '63031',
+        MAILINGCITY: 'FLORISSANT',
+      },
+      [-90.32, 38.79],
+    );
+    const find = (text) => source(answering(ladue, florissant)).find(text);
+
+    it('is no match with neither ZIP nor town typed', async () => {
+      await expect(find('2 Colonial Ct')).resolves.toEqual({ status: 'ambiguous' });
+      await expect(find('2 Colonial Ct, St. Louis, MO')).resolves.toEqual({ status: 'ambiguous' });
+    });
+
+    it('is found with the ZIP or the named town', async () => {
+      await expect(find('2 Colonial Ct 63124')).resolves.toMatchObject({
+        status: 'match',
+        place: { lat: 38.65 },
+      });
+      await expect(find('2 Colonial Ct, Florissant')).resolves.toMatchObject({
+        status: 'match',
+        place: { lat: 38.79 },
+      });
+    });
   });
 
   it('needs the town or ZIP for an address in a named town', async () => {

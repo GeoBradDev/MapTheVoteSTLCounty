@@ -88,7 +88,8 @@ browser with no key and no server of ours: the county's live layer, then its hos
 ArcGIS Online when the live one is unavailable. When the county has no match (a St. Louis
 City address, for example) or neither layer answers, it falls back to the public
 [Photon](https://photon.komoot.io) geocoder (OpenStreetMap data). Photon also gets a county
-match typed with no ZIP or town, to check that St. Louis City has no address that fits it. `src/data/geocoder.js`
+match typed with neither a ZIP nor a town other than St. Louis, to check that St. Louis City has no address
+that fits it. `src/data/geocoder.js`
 builds that chain, `src/data/countyAddress.js` and `src/data/photon.js` implement the
 sources and `src/data/addressMatch.js` holds the strict matching rules they share; a test
 fails if any other app file names a provider. docs/data.md (Geocoding, County address

@@ -178,3 +178,13 @@ Domain skills:
   record in the City skips the City cross-check (it already gets the City referral).
   The precinct check is capped at 4 s and stops on abort. The privacy notice now says
   the points of an address's several records go to the election maps for the check.
+- Review round 5 (finder): one number and street in a named town and in a "Saint
+  Louis" mailing area (2 Colonial Ct: Ladue and Florissant) answered the Ladue house,
+  because the named-town house failed the town rule before the ambiguity check. Unless
+  a ZIP or a town other than St. Louis is typed, every record at that number and street
+  now counts for the ambiguity check (`matchesStreet` in the shared matcher). Picked
+  suggestions, Photon's too, are geocoded again by label through the whole chain
+  (criterion 10 changes again: no pick skips the county). The suggestion prefix maps
+  whole four-letter types ("Road", "Lane") and takes a ZIP typed without a comma as a
+  ZIP filter. The privacy notice, README and docs say exactly when Photon gets the
+  address for the City check.

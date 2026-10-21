@@ -46,7 +46,7 @@ export const copy = {
     items: [
       {
         heading: 'Address search',
-        text: `What you type in the address box goes first to St. Louis County's address points (${hosts.countyAddresses}), or to the county's copy of them on Esri's ArcGIS Online (${hosts.countyAddressesCopy}) when the first cannot be reached. The county gets it in the body of the request, not in its web address. It also goes to ${openSearch.service} by ${openSearch.serviceBy} (${hosts.openSearch}) when the county has no match or cannot be reached, and to check that an address typed with no ZIP code or town is not also in St. Louis City; ${openSearch.service} gets it as part of the request's web address. Suggestions are looked up as you type, so these services get each part of the address as you type it.`,
+        text: `What you type in the address box goes first to St. Louis County's address points (${hosts.countyAddresses}), or to the county's copy of them on Esri's ArcGIS Online (${hosts.countyAddressesCopy}) when the first cannot be reached. The county gets it in the body of the request, not in its web address. It also goes to ${openSearch.service} by ${openSearch.serviceBy} (${hosts.openSearch}) when the county has no match or cannot be reached, and, when you typed neither a ZIP code nor a town other than St. Louis, to check that the address it found is not also in St. Louis City; ${openSearch.service} gets it as part of the request's web address. Suggestions are looked up as you type, so these services get each part of the address as you type it.`,
       },
       {
         heading: 'Finding your precinct',

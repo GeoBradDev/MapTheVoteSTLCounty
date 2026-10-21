@@ -435,7 +435,11 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
   in the live layer); they are given the City as their county, so they get the City
   referral, with no City cross-check against Photon.
 - **Two addresses fit** (two ZIPs or two streets): no match, with no fallback, since
-  the official data says the text is ambiguous. A ZIP picks one.
+  the official data says the text is ambiguous. A ZIP picks one. Unless a ZIP or a town
+  other than St. Louis is typed, a house in a named town counts here too, though the
+  strict rules alone would leave it out for want of its town: "2 Colonial Ct" is in
+  Ladue (mailing city Saint Louis, CLA014) and in Florissant (FLO001), so it is no match
+  rather than the Ladue house (about 120 such number and street pairs).
 - **No match in the live layer:** Photon. The hosted copy is not asked, because the
   live layer is its newer superset; the copy could only add a retired address.
 - **A layer unavailable** (network error, non-2xx such as a firewall 403, ArcGIS
@@ -462,14 +466,16 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
   name stays as typed ("Olive Street Rd"). County suggestions carry no point, since
   one label can be two houses: a pick is found again by its label (which has the ZIP),
   under every rule above. Photon suggests only when the county layers are unavailable
-  or have none (a City address, or a spelling the prefix misses); its suggestions
-  carry their place as before.
+  or have none (a City address, or a spelling the prefix misses). Every pick, Photon's
+  too, is geocoded again by its label through the whole chain, county first, so a
+  Photon suggestion cannot skip the county's rules. A ZIP typed after the street, with
+  or without a comma, filters by `ZIPCODE` instead of joining the prefix.
 
 Privacy: the address goes to the county layers only in a POST body, never a URL,
 with `cache: no-store`, no cookies (`credentials: 'omit'`; the live server sets an
 `AGS_ROLES` cookie, which is never stored) and no referrer. Photon gets the address
 only when the county has no match or no county layer answers, or for the City check
-of a county match typed with no ZIP or town; it gets it in a GET query string, as
+of a county match typed with neither a ZIP nor a town other than St. Louis; it gets it in a GET query string, as
 before (#38). Nothing is stored. The Content-Security-Policy
 allows `https://maps.stlouisco.com` and `https://services2.arcgis.com` in
 `connect-src`.

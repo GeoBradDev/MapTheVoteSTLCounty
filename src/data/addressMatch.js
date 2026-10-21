@@ -176,6 +176,24 @@ export function typedTown(after) {
   return kept.join(' ');
 }
 
+/**
+ * Whether typed text names this address's house number and whole street
+ * (the first rule of matchesTyped), whatever its ZIP or town. A source uses it
+ * to see every house the number and street could mean.
+ */
+export function matchesStreet(text, props) {
+  if (words(text).join(' ') === words(labelOf(props)).join(' ')) return true;
+  const [streetPart] = text.split(',');
+  const [number, ...typed] = words(streetPart);
+  if (!number || !/^\d/.test(number) || !hasNumber(props.housenumber, number)) return false;
+  const street = words(props.street);
+  if (!street.length || !street.every((word, i) => typed[i] === word)) return false;
+  const next = typed[street.length];
+  if (next && (DIRECTIONS.has(next) || STREET_TYPES.has(next))) return false;
+  // "Elm St Louis" could be Elm Street in St. Louis or Elm (any type) in St. Louis.
+  return !(street.at(-1) === 'st' && next === 'louis');
+}
+
 // Typed text names a feature when:
 // - its street part (before the first comma) starts with the feature's house
 //   number and then the feature's whole street, word for word, with no
@@ -192,15 +210,8 @@ export function typedTown(after) {
 // A source also needs every match to be one place before it answers.
 export function matchesTyped(text, props) {
   if (words(text).join(' ') === words(labelOf(props)).join(' ')) return true;
-  const [streetPart] = text.split(',');
-  const [number, ...typed] = words(streetPart);
-  if (!number || !/^\d/.test(number) || !hasNumber(props.housenumber, number)) return false;
+  if (!matchesStreet(text, props)) return false;
   const street = words(props.street);
-  if (!street.length || !street.every((word, i) => typed[i] === word)) return false;
-  const next = typed[street.length];
-  if (next && (DIRECTIONS.has(next) || STREET_TYPES.has(next))) return false;
-  // "Elm St Louis" could be Elm Street in St. Louis or Elm (any type) in St. Louis.
-  if (street.at(-1) === 'st' && next === 'louis') return false;
 
   const zip = typedZip(text);
   const postcode = props.postcode ? String(props.postcode).slice(0, 5) : null;
