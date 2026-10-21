@@ -1,38 +1,60 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
-import geocoder, { GeocoderUnavailableError } from './geocoder.js';
+import geocoder, { attribution, GeocoderUnavailableError } from './geocoder.js';
+import { GeocoderUnavailableError as ProviderError } from './geocoderError.js';
 import { createFakeGeocoder } from '../test/fakeGeocoder.js';
 
 const SRC = path.resolve(import.meta.dirname, '..');
 
-describe('the unconfigured geocoder', () => {
-  it('suggests nothing', async () => {
-    await expect(geocoder.suggest('7700 Fine Rd')).resolves.toEqual([]);
+describe('the app geocoder', () => {
+  it('is one frozen Photon geocoder, the same object on every import', async () => {
+    expect(Object.isFrozen(geocoder)).toBe(true);
+    expect(geocoder.suggest).toEqual(expect.any(Function));
+    expect(geocoder.geocode).toEqual(expect.any(Function));
+    const again = await import('./geocoder.js');
+    expect(again.default).toBe(geocoder);
   });
 
-  it('rejects a geocode with GeocoderUnavailableError', async () => {
-    const error = await geocoder.geocode('7700 Fine Rd').catch((e) => e);
-    expect(error).toBeInstanceOf(GeocoderUnavailableError);
-    expect(error.message).not.toContain('7700');
+  it('re-exports the error the lookup checks for', () => {
+    expect(GeocoderUnavailableError).toBe(ProviderError);
+  });
+
+  it('credits OpenStreetMap with its copyright page', () => {
+    expect(attribution.dataUrl).toBe('https://www.openstreetmap.org/copyright');
+    expect(attribution.data).toBe('OpenStreetMap contributors');
   });
 });
 
 describe('the app source', () => {
-  it('names no geocoder provider and holds no API key', async () => {
+  // Only the module that picks the provider, and the provider itself, may name
+  // one, so swapping it stays a change to those files.
+  const PROVIDER_FILES = new Set(['data/geocoder.js', 'data/photon.js']);
+
+  async function appFiles() {
     const entries = await readdir(SRC, { withFileTypes: true, recursive: true });
-    const files = entries
+    return entries
       .filter((e) => e.isFile() && /\.(js|jsx)$/.test(e.name) && !/\.test\.jsx?$/.test(e.name))
       .map((e) => path.join(e.parentPath, e.name));
+  }
+
+  it('names a geocoder provider only in the provider modules', async () => {
     const offenders = [];
-    for (const file of files) {
+    for (const file of await appFiles()) {
+      const relative = path.relative(SRC, file).split(path.sep).join('/');
+      if (PROVIDER_FILES.has(relative)) continue;
       const text = await readFile(file, 'utf8');
-      if (
-        /geocode\.arcgis\.com|geocoding\.geo\.census\.gov|photon|nominatim|api[_-]?key|token=/i.test(
-          text,
-        )
-      ) {
-        offenders.push(path.relative(SRC, file));
+      if (/geocode\.arcgis\.com|geocoding\.geo\.census\.gov|photon|komoot|nominatim/i.test(text)) {
+        offenders.push(relative);
       }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('holds no API key or token anywhere', async () => {
+    const offenders = [];
+    for (const file of await appFiles()) {
+      const text = await readFile(file, 'utf8');
+      if (/api[_-]?key|token=|access_token/i.test(text)) offenders.push(path.relative(SRC, file));
     }
     expect(offenders).toEqual([]);
   });

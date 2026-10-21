@@ -80,3 +80,24 @@ those values anywhere else in `src/` or in `index.html`. A test fails when it fi
 election name, an election-specific URL, a date, a layer or service name, the field name, the
 filter or the sample ballot pattern from the config there; it does not check hours, so read
 those from the config too. Text under `content/` may repeat them.
+
+## Address search
+
+The address box uses the public [Photon](https://photon.komoot.io) geocoder (OpenStreetMap
+data), called from the browser with no key and no server of ours. `src/data/geocoder.js`
+picks the provider and `src/data/photon.js` implements it; a test fails if any other app file
+names a provider.
+To point a build at another Photon instance, set `VITE_GEOCODER_URL` (for example
+`VITE_GEOCODER_URL=https://photon.example.org npm run build`). The Content-Security-Policy in
+`render.yaml` allows only the default, `https://photon.komoot.io`, in `connect-src`; add any
+other origin there too.
+
+Check the geocoder against the live precinct layer before each election:
+
+```sh
+node scripts/check-geocoder.mjs [photon-base-url]
+```
+
+It geocodes 10 polling place addresses and exits 1 if any lands in the wrong precinct. "No
+match" is allowed: the app then points the voter to "Use my location" and the county's
+official lookup. Results are recorded in `docs/data.md` under Geocoding.

@@ -4,6 +4,7 @@ import election from '../../config/election.js';
 import { PRECINCT_CODE } from '../../data/arcgis.js';
 import { GeocoderUnavailableError } from '../../data/geocoder.js';
 import AddressSearch from './AddressSearch.jsx';
+import GeocoderAttribution from './GeocoderAttribution.jsx';
 import { useGeocoder } from './geocoderContext.js';
 import { locate } from './locate.js';
 import { copy } from './lookupCopy.js';
@@ -93,6 +94,7 @@ export default function AddressLookup() {
   return (
     <div>
       <AddressSearch onSubmit={handleAddress} onEdit={handleEdit} busy={busy} inputRef={inputRef} />
+      <GeocoderAttribution />
       <p role="alert" className="mt-2">
         {outcome?.error && (
           <>
