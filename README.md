@@ -107,14 +107,15 @@ order, by title within each.
 Cite a source after the claim it supports with `[^sos-id]`; the page shows it as a numbered
 link to that source, matching the numbered source list. The body allows paragraphs, `##` and
 `###` headings (a `###` only after a `##`; text and bold only, no links or citations), `- `
-and `1. ` lists (one level; number ordered items 1, 2, 3 with no blank lines between them), `**bold**` and `[text](url)` links, and nothing else (no HTML, images,
-code, tables or quotes).
+and `1. ` lists (one level; number ordered items 1, 2, 3 with no blank lines between them),
+`**bold**` and `[text](url)` links, and nothing else (no HTML, images, code, tables or
+quotes).
 
 A Vite plugin (`src/features/learn/content/vitePlugin.js`) checks every topic file when the
 build, the tests or the dev server start (restart the dev server after adding a topic), and
 turns each topic into plain data. The build fails, naming the
-file and each problem, when a topic: has no sources; has no `group`, or one not in the list; has no `lastVerified`, or one more than
-60 days before Election Day or after it; was written for another `election`; contains `TODO`;
+file and each problem, when a topic: has no sources; has no `group`, or one not in the list;
+has no `lastVerified`, or one more than 60 days before Election Day or after it; was written for another `election`; contains `TODO`;
 has an `id` that differs from its file name, or a front matter key it does not know; cites a
 source it does not list; uses Markdown outside the list above; or links anywhere but an
 `https` URL on an official host or a path on this site. The official hosts are any `.gov` site

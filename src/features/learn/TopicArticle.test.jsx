@@ -127,12 +127,12 @@ describe('TopicArticle', () => {
     ).toBe(null);
   });
 
-  it('counts a section as long only past the threshold', () => {
-    const { container } = renderTopic({
-      ...topic,
-      blocks: [heading(2, 'Edge'), paragraph('y'.repeat(LONG_SECTION_CHARS - 1))],
-    });
-    expect(container.querySelector('details')).toBeNull();
+  it('folds a section at LONG_SECTION_CHARS characters, not one below', () => {
+    const at = (length) =>
+      renderTopic({ ...topic, blocks: [heading(2, 'Edge'), paragraph('y'.repeat(length))] })
+        .container;
+    expect(at(LONG_SECTION_CHARS - 1).querySelector('details')).toBeNull();
+    expect(at(LONG_SECTION_CHARS).querySelector('details')).not.toBeNull();
   });
 
   it('can take focus on its title when the page asks for it', () => {

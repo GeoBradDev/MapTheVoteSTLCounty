@@ -100,10 +100,12 @@ describe('production build', () => {
   });
 
   // "How to vote" pages print cleanly (#23): no footer or page links, and each
-  // source prints its address.
+  // external link prints its address.
   it('ships the print styles', () => {
     expect(css).toMatch(/@media print\{[^@]*\.print\\:hidden\{display:none\}/);
-    expect(css).toMatch(/@media print\{[^@]*\.print-href:after\{content:" \(" attr\(href\) "\)"\}/);
+    expect(css).toMatch(
+      /@media print\{[^@]*\.print-href:after\{content:" \(" attr\(href\) "\)";overflow-wrap:anywhere\}/,
+    );
   });
 
   it('loads hashed assets by root-absolute path, so a hard load of /p/CC007 finds them', () => {

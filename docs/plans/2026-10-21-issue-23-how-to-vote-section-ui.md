@@ -36,8 +36,8 @@ payments, email: not applicable because the app is a frontend-only React site.
    at-the-polls | get-help`). A missing or unknown group fails the build, naming the file.
 4. `/learn/<id>` renders that topic with `TopicArticle` (title, body, numbered citations,
    Sources list, "Last checked against these sources on <date>."). An unknown id shows the
-   not-found page. The page links back to `/learn`, sets the tab title to the topic's title,
-   and moves focus to its `h1` on arrival.
+   not-found page. A "More help" nav links back to `/learn` and to the address lookup (`/`).
+   The page sets the tab title to the topic's title and moves focus to its `h1` on arrival.
 5. A `##` section whose text is long (at least `LONG_SECTION_CHARS`, 600 characters) renders
    as `<details>`/`<summary>` with the `h2` inside the summary; short sections render as plain
    headings. Before printing, every folded `<details>` is opened, and after printing those are
@@ -48,8 +48,8 @@ payments, email: not applicable because the app is a frontend-only React site.
    heading, so a page never jumps from `h1` to `h3`. All link text is descriptive (topic
    titles, source labels, named destinations; no "click here").
 7. The polling places card links to the `voter-id` topic (link text is the topic's title,
-   after "Before you go:") when that topic exists, and shows nothing extra when it does not. The early voting card's
-   mail and absentee line links to the `absentee` topic when it exists, and to `/learn`
+   after "Before you go:") when that topic exists, and shows nothing extra when it does not.
+   The early voting card's mail and absentee line links to the `absentee` topic when it exists, and to `/learn`
    otherwise (today's behavior).
 8. Print styles: the site footer and page navigation links are hidden in print; external links
    in a topic (body links and the Sources list, not the numbered citations, whose URLs the

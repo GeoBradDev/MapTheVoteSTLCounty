@@ -5,8 +5,9 @@
 // cannot quietly render as something else.
 //
 // Blocks: paragraphs, `##` and `###` headings (a `###` only after a `##`; text
-// and bold only), `- ` and `1. ` lists (one level; indent continuation lines). Inline: `**bold**`, `[text](url)`, and `[^id]`,
-// a citation of the front matter source with that id.
+// and bold only), `- ` and `1. ` lists (one level; indent continuation lines).
+// Inline: `**bold**`, `[text](url)`, and `[^id]`, a citation of the front
+// matter source with that id.
 
 /**
  * @typedef {{ type: 'text', value: string }

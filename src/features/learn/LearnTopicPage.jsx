@@ -34,8 +34,10 @@ export default function LearnTopicPage() {
     let opened = [];
     const openAll = () => {
       const folded = articleRef.current?.querySelectorAll('details:not([open])') ?? [];
-      opened = [...folded];
-      for (const details of opened) details.open = true;
+      for (const details of folded) {
+        details.open = true;
+        opened.push(details);
+      }
     };
     const restore = () => {
       for (const details of opened) details.open = false;
