@@ -59,7 +59,7 @@ payments, email: not applicable because the app is a frontend-only React site.
 - `src/features/lookup/sharePrivacy.test.jsx` (new): end-to-end privacy test for criterion 7
   through `App` and the real browser location. (Planned for `src/App.test.jsx`, but that file
   never answers fetch, and this test needs the fixtures.)
-- `README.md`: one line on share URLs using the production origin.
+- `README.md`: a short "Share links" section (code-only URLs, case fix, production origin).
 
 No new route, so `render.yaml` does not change.
 
