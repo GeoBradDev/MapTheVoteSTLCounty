@@ -57,6 +57,14 @@ export function addDays(isoDate, days) {
   return date.toISOString().slice(0, 10);
 }
 
+/**
+ * A path on this site, like /privacy. Not //host or anything with a
+ * backslash, which browsers read as a slash and so as another host.
+ */
+function isSitePath(href) {
+  return /^\/(?!\/)[^\\]*$/.test(href);
+}
+
 function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
 }
@@ -72,7 +80,7 @@ function isNonEmptyString(value) {
  */
 export function readTopicFile(text) {
   const errors = [];
-  const normalized = text.replace(/\r\n?/g, '\n');
+  const normalized = text.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
   const match = /^---\n([\s\S]*?)\n---(?:\n|$)/.exec(normalized);
   if (!match) {
     errors.push('the file must start with a --- front matter block, closed by another ---');
@@ -177,8 +185,10 @@ export function parseTopic(text, { file, electionDate }) {
     for (const key of Object.keys(data)) {
       if (!TOPIC_KEYS.includes(key)) errors.push(`unknown front matter key "${key}"`);
     }
-    if (!isNonEmptyString(data.id)) errors.push('id: missing');
-    else if (fileId && data.id !== fileId) {
+    if (!isNonEmptyString(data.id)) errors.push('id: missing, or not text');
+    else if (!ID_PATTERN.test(data.id)) {
+      errors.push(`id: "${data.id}" must be lowercase words joined by hyphens, like voter-id`);
+    } else if (fileId && data.id !== fileId) {
       errors.push(`id: "${data.id}" must match the file name "${fileId}"`);
     }
     if (!isNonEmptyString(data.title)) errors.push('title: missing');
@@ -188,13 +198,13 @@ export function parseTopic(text, { file, electionDate }) {
 
   if (markdown) {
     errors.push(...markdown.errors);
+    // Without readable front matter every citation would look unknown.
     const known = new Set(sources.filter(Boolean).map((s) => s.id));
-    for (const id of new Set(markdown.citations)) {
+    for (const id of data ? new Set(markdown.citations) : []) {
       if (!known.has(id)) errors.push(`[^${id}] cites a source that is not in sources`);
     }
     for (const href of markdown.links) {
-      const sitePath = href.startsWith('/') && !href.startsWith('//');
-      if (!sitePath && !isOfficialUrl(href)) {
+      if (!isSitePath(href) && !isOfficialUrl(href)) {
         errors.push(`link ${href} is not an official https source or a path on this site`);
       }
     }

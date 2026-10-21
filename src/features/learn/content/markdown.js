@@ -23,7 +23,8 @@ export const ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const HEADING = /^(#+)(\s+|$)(.*)$/;
 const UNORDERED_ITEM = /^- (.*)$/;
-const ORDERED_ITEM = /^\d+\. (.*)$/;
+const ORDERED_ITEM = /^(\d+)\. (.*)$/;
+const SETEXT_UNDERLINE = /^=+\s*$/;
 const OTHER_LIST_MARKER = /^[*+] /;
 const RULE = /^(?:-{3,}|\*{3,}|_{3,})\s*$/;
 const CITATION = /^\[\^([^\]]*)\]/;
@@ -47,27 +48,34 @@ function parseInline(source, where, errors, ctx, { inLink = false, inStrong = fa
     const rest = source.slice(i);
     const ch = source[i];
 
+    // After a problem, skip past it and keep reading, so one build lists
+    // every problem in the text.
     if (ch === '<' && /^<[A-Za-z/!?]/.test(rest)) {
       fail('raw HTML is not allowed');
-      return nodes;
+      i += 1;
+      continue;
     }
     if (ch === '`') {
       fail('code is not supported');
-      return nodes;
+      i += 1;
+      continue;
     }
     if (rest.startsWith('![')) {
       fail('images are not supported');
-      return nodes;
+      i += 1;
+      continue;
     }
     if (rest.startsWith('**')) {
+      const end = source.indexOf('**', i + 2);
       if (inStrong) {
         fail('bold cannot be nested');
-        return nodes;
+        i += 2;
+        continue;
       }
-      const end = source.indexOf('**', i + 2);
       if (end === -1 || end === i + 2) {
         fail('a ** has no closing **');
-        return nodes;
+        i += 2;
+        continue;
       }
       flush();
       const children = parseInline(source.slice(i + 2, end), where, errors, ctx, {
@@ -80,23 +88,28 @@ function parseInline(source, where, errors, ctx, { inLink = false, inStrong = fa
     }
     if (ch === '*') {
       fail('use **bold**; single * emphasis is not supported');
-      return nodes;
+      i += 1;
+      continue;
     }
     if (ch === '[') {
       const citation = CITATION.exec(rest);
       if (citation) {
         const id = citation[1];
+        const skip = citation[0].length;
         if (!ID_PATTERN.test(id)) {
           fail(`citation [^${id}] must name a source id like sos-voter-id`);
-          return nodes;
+          i += skip;
+          continue;
         }
-        if (source[i + citation[0].length] === ':') {
+        if (source[i + skip] === ':') {
           fail(`[^${id}]: footnote definitions are not used; list sources in the front matter`);
-          return nodes;
+          i += skip + 1;
+          continue;
         }
         if (inLink) {
           fail('a citation cannot sit inside link text');
-          return nodes;
+          i += skip;
+          continue;
         }
         flush();
         nodes.push({ type: 'cite', source: id });
@@ -109,7 +122,8 @@ function parseInline(source, where, errors, ctx, { inLink = false, inStrong = fa
         const [whole, label, href] = link;
         if (!label.trim() || !href) {
           fail('a link needs both text and a URL: [text](https://...)');
-          return nodes;
+          i += whole.length;
+          continue;
         }
         flush();
         const children = parseInline(label, where, errors, ctx, { inLink: true, inStrong });
@@ -119,11 +133,13 @@ function parseInline(source, where, errors, ctx, { inLink = false, inStrong = fa
         continue;
       }
       fail('a [ must start a link [text](url) or a citation [^source-id]');
-      return nodes;
+      i += 1;
+      continue;
     }
     if (ch === ']') {
       fail('a ] has no matching [');
-      return nodes;
+      i += 1;
+      continue;
     }
     buffer += ch;
     i += 1;
@@ -188,6 +204,11 @@ export function parseMarkdown(body, firstLine = 1) {
       return;
     }
 
+    if (SETEXT_UNDERLINE.test(line)) {
+      close();
+      errors.push(`${where}: underlined headings are not supported; use ## or ###`);
+      return;
+    }
     if (RULE.test(line)) {
       close();
       errors.push(`${where}: horizontal rules are not supported`);
@@ -239,7 +260,15 @@ export function parseMarkdown(body, firstLine = 1) {
         close();
         open = { type: 'list', ordered: isOrdered, line: lineNo, items: [] };
       }
-      open.items.push({ line: lineNo, lines: [(unordered || ordered)[1].trim()] });
+      // The page numbers ordered items itself, from 1. A written number that
+      // would show differently (a list split by blank lines, a skipped or
+      // restarted number) is an error, so a step number cannot silently change.
+      if (isOrdered && Number(ordered[1]) !== open.items.length + 1) {
+        errors.push(
+          `${where}: number ordered items 1, 2, 3 in order, with no blank lines between them`,
+        );
+      }
+      open.items.push({ line: lineNo, lines: [(unordered ? unordered[1] : ordered[2]).trim()] });
       return;
     }
 
@@ -254,5 +283,5 @@ export function parseMarkdown(body, firstLine = 1) {
   close();
 
   if (!blocks.length && !errors.length) errors.push('the topic has no body text');
-  return { blocks, citations: ctx.citations, links: ctx.links, errors };
+  return { blocks, citations: ctx.citations, links: ctx.links, errors: [...new Set(errors)] };
 }

@@ -66,7 +66,8 @@ applicable because the app is a frontend-only React site.
 - Vite plugin (`src/features/learn/content/vitePlugin.js`): `transform` for files matching
   `content/<locale>/learn/<id>.md`; returns `export default <json>`. Registered in
   `vite.config.js`, so dev, build and vitest all run the check.
-- Loader (`src/features/learn/topics.js`): `getTopics(locale)` and `getTopic(locale, id)`.
+- Loader (`src/features/learn/topics.js`): `getTopics(locale)` and `getTopic(id, locale)`, with
+  `locale` optional (English by default).
 - Renderer (`src/features/learn/TopicArticle.jsx`) and `learnCopy.js` (labels by locale).
   Not mounted on a route.
 - Link checker (`scripts/check-content-links.mjs`): GET with redirects, 15 s timeout, 3 tries;
@@ -83,7 +84,10 @@ applicable because the app is a frontend-only React site.
 - `src/features/learn/LearnTopicPage.jsx` (comment only: points #23 at the loader)
 - `vite.config.js` (register the plugin)
 - `scripts/check-content-links.mjs`, `src/test/checkContentLinks.test.js` (new)
-- `.github/workflows/data-health.yml` (add the link check step and its outcome line)
+- `src/test/checkConfig.test.js` (the workflow test also expects the link check step, with a
+  step time limit)
+- `.github/workflows/data-health.yml` (add the link check step with its own time limit and its
+  outcome line; raise the job limit to fit it)
 - `content/en/learn/.gitkeep` (new; `content/.gitkeep` removed)
 - `README.md` (a "Learn content" section), `docs/progress.md` is not touched by this run
 
@@ -109,6 +113,16 @@ applicable because the app is a frontend-only React site.
   list is extended in review.
 - Chose not to: wire topics into routes (#23), translate (#19), write content (#22), or add a
   Markdown dependency.
+
+## Revisions after review
+
+- Finder 1: site paths with a backslash (which browsers read as another host) and
+  `https:` URLs without `//` are rejected; ordered lists must be numbered 1, 2, 3 with no
+  blank lines between items, so a step number cannot silently change; inline problems no
+  longer stop at the first one in a paragraph; topic ids must be lowercase slugs; a BOM is
+  ignored; invalid YAML no longer blames valid citations; the link checker fails a redirect
+  that lands off the official hosts; the link check step has its own time limit so a slow day
+  still opens the data health issue.
 
 ## Proof
 

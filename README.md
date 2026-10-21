@@ -101,8 +101,9 @@ sources:
 
 Cite a source after the claim it supports with `[^sos-id]`; the page shows it as a numbered
 link to that source, matching the numbered source list. The body allows paragraphs, `##` and
-`###` headings, `- ` and `1. ` lists (one level), `**bold**` and `[text](url)` links, and
-nothing else (no HTML, images, code, tables or quotes).
+`###` headings, `- ` and `1. ` lists (one level; number ordered items 1, 2, 3 with no blank
+lines between them), `**bold**` and `[text](url)` links, and nothing else (no HTML, images,
+code, tables or quotes).
 
 A Vite plugin (`src/features/learn/content/vitePlugin.js`) checks every topic in the dev
 server, the tests and the build, and turns it into plain data. The build fails, naming the
@@ -124,7 +125,8 @@ Translations (#19): put a topic with the same `id` under another locale, such as
 `src/features/learn/learnCopy.js`. A locale shows the English topic until its own exists.
 
 `node scripts/check-content-links.mjs` requests every source and link in every topic, prints
-PASS or FAIL per URL and exits 1 on any failure. The data health workflow runs it daily (see
+PASS or FAIL per URL and exits 1 on any failure, including a redirect that lands off the
+official hosts. The data health workflow runs it daily (see
 below), never on pull requests.
 
 ## Data health check

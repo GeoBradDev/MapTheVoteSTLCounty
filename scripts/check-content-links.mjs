@@ -11,6 +11,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { realpathSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isOfficialUrl } from '../src/features/learn/content/officialSources.js';
 import { readTopicFile } from '../src/features/learn/content/topic.js';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -84,6 +85,15 @@ async function requestOnce(fetchImpl, url, timeoutMs) {
       signal: controller.signal,
     });
     await res.body?.cancel?.();
+    // A lapsed domain or a moved page can redirect to a parked or unofficial
+    // site that answers 200.
+    if (res.redirected && !isOfficialUrl(res.url)) {
+      return {
+        ok: false,
+        transient: false,
+        detail: `redirected off the official hosts to ${res.url}`,
+      };
+    }
     if (res.ok) return { ok: true, detail: `HTTP ${res.status}` };
     return {
       ok: false,

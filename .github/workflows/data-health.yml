@@ -24,8 +24,11 @@ jobs:
   check:
     runs-on: ubuntu-latest
     # Worst case with every request slow: about 22 minutes for the config check
-    # (26 requests, 3 tries of 15 s each) and 16 for the geocoder check.
-    timeout-minutes: 45
+    # (26 requests, 3 tries of 15 s each), 16 for the geocoder check and the
+    # content link check's own step limit. A job that hits its limit is
+    # cancelled and reports nothing, so each slow step has a step limit, which
+    # fails the step and still opens the issue.
+    timeout-minutes: 55
     steps:
       # The token may write issues: do not leave it in .git/config, where
       # dependency install scripts could read it.
@@ -72,10 +75,12 @@ jobs:
         if: ${{ !cancelled() && steps.window.outputs.active == 'true' }}
         run: node scripts/check-geocoder.mjs
 
-      # Every source and link in content/<locale>/learn/ (#21).
+      # Every source and link in content/<locale>/learn/ (#21). Each dead URL
+      # can take about 51 s (3 tries of 15 s plus waits).
       - name: Content link check
         id: links
         if: ${{ !cancelled() && steps.window.outputs.active == 'true' }}
+        timeout-minutes: 12
         run: node scripts/check-content-links.mjs
 
       - name: Report the failure as an issue

@@ -18,6 +18,9 @@ const OFFICIAL_HOSTS = ['stlouiscovotes.maps.arcgis.com'];
  * @returns {boolean}
  */
 export function isOfficialUrl(url) {
+  // The URL parser forgives a missing // and backslashes; the source text must
+  // be a plain https:// URL so it reads the same to a person and a browser.
+  if (typeof url !== 'string' || !url.startsWith('https://') || url.includes('\\')) return false;
   let parsed;
   try {
     parsed = new URL(url);
