@@ -8,6 +8,7 @@ import path from 'node:path';
 import { parse } from 'yaml';
 import viteConfig from '../../vite.config.js';
 import election from '../config/election.js';
+import { CITY_GEOCODER_URL } from '../data/cityAddress.js';
 import { HOSTED_URL, LIVE_URL } from '../data/countyAddress.js';
 import { DEFAULT_BASE_URL as PHOTON } from '../data/photon.js';
 import { BASEMAP_STYLE_URL } from '../features/lookup/basemap.js';
@@ -222,6 +223,7 @@ describe('Content-Security-Policy', () => {
         new URL(election.serviceRoot).origin,
         new URL(LIVE_URL).origin,
         new URL(HOSTED_URL).origin,
+        new URL(CITY_GEOCODER_URL).origin,
         PHOTON,
         BASEMAP,
       ],

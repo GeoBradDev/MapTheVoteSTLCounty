@@ -6,11 +6,13 @@ const linkClass = 'text-primary underline';
 /**
  * Credits the address search sources: St. Louis County's address points
  * first, then the fallback service and its OpenStreetMap data, as the data
- * license requires. It also says where the typed address goes.
+ * license requires, then the City of St. Louis's address search, which checks
+ * that the City does not have the same address (#58). It also says where the
+ * typed address goes.
  */
 export default function GeocoderAttribution() {
   const text = copy.attribution;
-  const { county, fallback } = attribution;
+  const { county, fallback, city } = attribution;
   return (
     <p className="mt-2 text-sm text-muted">
       {text.searchBy} {county.by}{' '}
@@ -25,7 +27,7 @@ export default function GeocoderAttribution() {
       <a href={fallback.dataUrl} rel="noreferrer" className={linkClass}>
         {fallback.data}
       </a>
-      . {text.privacy}
+      . {text.cityCheck} {city.by} {city.service}. {text.privacy}
     </p>
   );
 }

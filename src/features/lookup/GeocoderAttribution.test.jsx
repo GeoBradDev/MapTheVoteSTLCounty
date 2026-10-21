@@ -28,6 +28,13 @@ describe('GeocoderAttribution', () => {
     );
   });
 
+  it('names the City of St. Louis address search, which also gets the address (#58)', () => {
+    render(<GeocoderAttribution />);
+    expect(screen.getByText(/sent only to these services/)).toHaveTextContent(
+      'An address found outside St. Louis City may also be checked with the City of St. Louis address search. Your address is sent only to these services',
+    );
+  });
+
   it('says where the address goes and that this site does not save it', () => {
     render(<GeocoderAttribution />);
     expect(screen.getByText(/sent only to these services/)).toHaveTextContent(

@@ -7,6 +7,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import election from '../src/config/election.js';
+import { CITY_GEOCODER_URL } from '../src/data/cityAddress.js';
 
 const OUT_DIR = path.resolve('docs/raw/fixtures');
 
@@ -39,6 +40,16 @@ const boundaryQuery = (lng, lat) => ({
 const CITY = [-90.19843, 38.62741]; // 1200 Market St, St. Louis, MO 63103
 const ST_CHARLES = [-90.48187, 38.78267]; // 200 N 2nd St, St. Charles, MO 63301
 const OUT_OF_STATE = [-89.98831, 38.51368]; // 301 W Main St, Belleville, IL 62220
+
+// The City check (#58) asks the City's geocoder for a house number and street.
+const cityFind = `${CITY_GEOCODER_URL}/findAddressCandidates`;
+const cityQuery = (street) => ({
+  SingleLine: street,
+  outFields: 'Addr_type,AddNum,StPreDir,StPreType,StName,StType,StDir,ZIP',
+  maxLocations: '20',
+  outSR: '4326',
+  f: 'json',
+});
 
 const byId = (code) => ({
   where: `precinct='${code}'`,
@@ -84,6 +95,14 @@ const FIXTURES = {
     polls,
     { where: election.absenteeWhere, outFields: '*', outSR: '4326', f: 'geojson' },
   ],
+  // The City's geocoder for the #58 addresses, City Hall and 1318 Ross Ave
+  // (src/data/cityAddress.test.js).
+  'city-geocode-washington-ave.json': [cityFind, cityQuery('6135 Washington Ave')],
+  'city-geocode-horton-pl.json': [cityFind, cityQuery('6135 Horton Pl')],
+  'city-geocode-market-st.json': [cityFind, cityQuery('1200 Market St')],
+  'city-geocode-ross-ave.json': [cityFind, cityQuery('1318 Ross Ave')],
+  // Washington University: the county and the City both list it in 63130.
+  'city-geocode-brookings-dr.json': [cityFind, cityQuery('1 Brookings Dr')],
   // An invalid field: ArcGIS answers HTTP 200 with an error body.
   'error-body.json': [precincts, { where: 'no_such_field=1', f: 'json' }],
 };
@@ -94,5 +113,5 @@ for (const [file, [url, params]] of Object.entries(FIXTURES)) {
   if (!res.ok) throw new Error(`${res.status} ${file}`);
   const body = await res.json();
   await writeFile(path.join(OUT_DIR, file), `${JSON.stringify(body, null, 2)}\n`);
-  console.log(`ok   ${file} (${body.features?.length ?? 'no'} features)`);
+  console.log(`ok   ${file} (${(body.features ?? body.candidates)?.length ?? 'no'} features)`);
 }

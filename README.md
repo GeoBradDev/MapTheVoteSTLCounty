@@ -202,17 +202,19 @@ The address box searches St. Louis County's official address points first, from 
 browser with no key and no server of ours: the county's live layer, then its hosted copy on
 ArcGIS Online when the live one is unavailable. When the county has no match (a St. Louis
 City address, for example) or neither layer answers, it falls back to the public
-[Photon](https://photon.komoot.io) geocoder (OpenStreetMap data). Photon also gets a county
-match typed with neither a ZIP nor a town other than St. Louis, to check that St. Louis City has no address
-that fits it. `src/data/geocoder.js`
-builds that chain, `src/data/countyAddress.js` and `src/data/photon.js` implement the
-sources and `src/data/addressMatch.js` holds the strict matching rules they share; a test
-fails if any other app file names a provider. docs/data.md (Geocoding, County address
-points) explains every rule.
+[Photon](https://photon.komoot.io) geocoder (OpenStreetMap data). Every answer that could get
+a county precinct is then checked with the City of St. Louis's own geocoder, unless the text
+holds a ZIP entirely outside the City: when the City has the same address in another ZIP, the
+voter gets the City referral, when both list it in one ZIP the answer is no match, and when the City geocoder fails or is slow, the answer is no match, never a
+county precinct (#58). `src/data/geocoder.js` builds that chain, `src/data/countyAddress.js`,
+`src/data/photon.js` and `src/data/cityAddress.js` implement the sources and
+`src/data/addressMatch.js` holds the strict matching rules they share; a test fails if any
+other app file names a provider. docs/data.md (Geocoding, County address points, City check)
+explains every rule.
 To point a build at another Photon instance, set `VITE_GEOCODER_URL` (for example
 `VITE_GEOCODER_URL=https://photon.example.org npm run build`). The Content-Security-Policy in
-`render.yaml` allows only the default Photon origin, `https://photon.komoot.io`, and the two
-county origins in `connect-src`; add any other origin there too.
+`render.yaml` allows only the default Photon origin, `https://photon.komoot.io`, the two
+county origins and the City geocoder's origin in `connect-src`; add any other origin there too.
 
 Check address search against the live services and the live precinct layer before each
 election:
@@ -222,9 +224,12 @@ node scripts/check-geocoder.mjs [photon-base-url]
 ```
 
 It geocodes 10 polling place addresses and 1318 Ross Ave with each source alone, with the
-app's chain and with the chain while the live county layer is blocked, and checks that a
-St. Louis City address still gets the City referral. It exits 1 if the chain puts any
-address in the wrong precinct or the City address loses its referral. "No match" is
+app's chain and with the chain while the live county layer is blocked, and checks that City
+Hall and the City addresses of #58, whose number and street the county also has, get the City
+referral, typed and picked from the suggestions, and that addresses the county and the City
+both list in one ZIP (6135 Horton Pl 63133, 1 Brookings Dr 63130) are no match. It exits 1 if
+the chain puts any address in the wrong precinct, a City address loses its referral, or a
+shared address is not no match. "No match" is
 allowed: the app then points the voter to "Use my location" and the county's official
 lookup. Results are recorded in `docs/data.md` under Geocoding.
 

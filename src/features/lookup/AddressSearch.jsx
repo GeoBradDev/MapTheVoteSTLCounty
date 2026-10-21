@@ -1,6 +1,41 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import { typedZip } from '../../data/addressMatch.js';
 import { copy } from './addressSearchCopy.js';
 import { useGeocoder } from './geocoderContext.js';
+
+// Where a picked label's ZIP is in it, as { zip, start }, or null when the
+// label has none.
+function zipIn(label) {
+  const zip = typedZip(label);
+  if (!zip) return null;
+  return { zip, start: label.lastIndexOf(zip) };
+}
+
+// Where the picked ZIP is after an edit from `before` to `after`, or null when
+// the edit deleted or changed it. The ZIP is intact when everything up to its
+// end is unchanged (the edit came after it) or everything from its start is
+// unchanged (the edit came before it); both are checked, since text typed
+// before the ZIP may start with its own first digit. A digit typed against it
+// may be the start of a word typed next to it ("Apt 2" before a space), so
+// that is judged when the voter searches (zipReadsAlone).
+function zipAfterEdit(before, after, { zip, start }) {
+  const end = start + zip.length;
+  if (after.slice(0, end) === before.slice(0, end)) return { zip, start };
+  const moved = start + after.length - before.length;
+  if (moved >= 0 && after.slice(moved) === before.slice(start)) return { zip, start: moved };
+  return null;
+}
+
+// Whether the tracked ZIP still reads as the same five digits: no digit next
+// to it, which would make it another number.
+function zipReadsAlone(text, { zip, start }) {
+  const digit = /\d/;
+  return (
+    text.slice(start, start + zip.length) === zip &&
+    !digit.test(text[start - 1] ?? '') &&
+    !digit.test(text[start + zip.length] ?? '')
+  );
+}
 
 /** How long typing must pause before suggestions are requested. */
 export const DEBOUNCE_MS = 250;
@@ -37,6 +72,15 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
   const [empty, setEmpty] = useState(false);
   const formRef = useRef(null);
   const pointerPickRef = useRef(null);
+  // The last picked suggestion, whether the box was edited since, and where
+  // its label's ZIP is in the box. That ZIP is the source's, not one the
+  // voter typed, and the geocoder's City check treats the two differently
+  // (#58), so a search goes as a pick until the voter deletes or changes that
+  // ZIP (owner decision), pasting over it included. An autofill forgets it.
+  const pickedRef = useRef(null);
+  // The selection a paste replaces, read when it starts: the texts before and
+  // after cannot show whether a pasted ZIP replaced the picked one.
+  const replacedRef = useRef(null);
   const id = useId();
   const listboxId = `${id}-listbox`;
   const hintId = `${id}-hint`;
@@ -75,6 +119,23 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
 
   function handleChange(event) {
     const value = event.target.value;
+    const picked = pickedRef.current;
+    if (picked) {
+      // An edit with no input type (autofill, a script) cannot be told
+      // apart from a new address, so it forgets the pick. A paste over a
+      // selection that holds the ZIP replaces it.
+      const inputType = event.nativeEvent?.inputType;
+      const replaced = inputType === 'insertFromPaste' ? replacedRef.current : null;
+      const overZip =
+        replaced &&
+        picked.zip &&
+        replaced.start < picked.zip.start + picked.zip.zip.length &&
+        replaced.end > picked.zip.start;
+      const zip =
+        picked.zip && inputType && !overZip ? zipAfterEdit(text, value, picked.zip) : null;
+      pickedRef.current = zip ? { ...picked, edited: true, zip } : null;
+    }
+    replacedRef.current = null;
     setText(value);
     onEdit?.();
     setEmpty(false);
@@ -86,6 +147,7 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
 
   function pick(suggestion) {
     if (busy) return;
+    pickedRef.current = { suggestion, edited: false, zip: zipIn(suggestion.label) };
     setText(suggestion.label);
     reset();
     onSubmit(suggestion);
@@ -98,6 +160,18 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
     pointerPickRef.current = suggestion;
     formRef.current?.requestSubmit();
     pointerPickRef.current = null;
+  }
+
+  // The text as a pick while the picked label's ZIP is still in it, as the
+  // suggestion itself when unedited; otherwise undefined.
+  function asPick(trimmed) {
+    const { suggestion, edited, zip } = pickedRef.current ?? {};
+    if (!suggestion) return undefined;
+    if (!edited) return suggestion;
+    // A digit left against the ZIP makes it another number, the voter's own,
+    // until it is deleted again.
+    if (!zip || !zipReadsAlone(text, zip)) return undefined;
+    return { id: `${suggestion.id}-edited`, label: trimmed };
   }
 
   function handleSubmit(event) {
@@ -117,7 +191,14 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
       return;
     }
     reset();
-    onSubmit(trimmed);
+    onSubmit(asPick(trimmed) ?? trimmed);
+  }
+
+  // Read on every paste, so a paste that changed nothing (and so fired no
+  // change) leaves nothing behind for a later edit.
+  function rememberSelection(event) {
+    const { selectionStart: start, selectionEnd: end } = event.currentTarget;
+    replacedRef.current = Number.isInteger(start) ? { start, end } : null;
   }
 
   function handleKeyDown(event) {
@@ -169,6 +250,7 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
           value={text}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
+          onPaste={rememberSelection}
           onBlur={() => setClosed(true)}
           className="min-h-11 w-full rounded-md border border-ink bg-surface px-3 py-2 text-base text-ink"
         />

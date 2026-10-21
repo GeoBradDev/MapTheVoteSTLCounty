@@ -55,6 +55,7 @@ describe('the app source', () => {
     'data/geocoder.js',
     'data/photon.js',
     'data/countyAddress.js',
+    'data/cityAddress.js',
     'data/addressMatch.js',
   ]);
 
@@ -72,7 +73,7 @@ describe('the app source', () => {
       if (PROVIDER_FILES.has(relative)) continue;
       const text = await readFile(file, 'utf8');
       if (
-        /geocode\.arcgis\.com|geocoding\.geo\.census\.gov|photon|komoot|nominatim|stlouisco\.com|Address_Points/i.test(
+        /geocode\.arcgis\.com|geocoding\.geo\.census\.gov|photon|komoot|nominatim|stlouisco\.com|Address_Points|maps6\.stlouis-mo\.gov|COMPOSITE_GEOCODE/i.test(
           text,
         )
       ) {

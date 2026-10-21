@@ -1,0 +1,176 @@
+{
+  "spatialReference": {
+    "wkid": 4326,
+    "latestWkid": 4326
+  },
+  "candidates": [
+    {
+      "address": "6135 HORTON PL, 63133",
+      "location": {
+        "x": -90.29563744731992,
+        "y": 38.66312892426949
+      },
+      "score": 100,
+      "attributes": {
+        "Addr_type": "PointAddress",
+        "AddNum": "6135",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "HORTON",
+        "StType": "PL",
+        "StDir": "",
+        "ZIP": "63133"
+      },
+      "extent": {
+        "xmin": -90.29743609141207,
+        "ymin": 38.661330280177346,
+        "xmax": -90.29383880322777,
+        "ymax": 38.66492756836164
+      }
+    },
+    {
+      "address": "6135 HORTON PL",
+      "location": {
+        "x": -90.29568240584223,
+        "y": 38.66286981263204
+      },
+      "score": 100,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "6135",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "HORTON",
+        "StType": "PL",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29748104993438,
+        "ymin": 38.66107116853989,
+        "xmax": -90.29388376175008,
+        "ymax": 38.664668456724186
+      }
+    },
+    {
+      "address": "6136 HORTON PL",
+      "location": {
+        "x": -90.29584071379442,
+        "y": 38.66286841435331
+      },
+      "score": 79,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "6136",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "HORTON",
+        "StType": "PL",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29763935788657,
+        "ymin": 38.661069770261165,
+        "xmax": -90.29404206970227,
+        "ymax": 38.66466705844546
+      }
+    },
+    {
+      "address": "6109 HORTON PL",
+      "location": {
+        "x": -90.29452384920391,
+        "y": 38.66276241106995
+      },
+      "score": 68.48,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "6109",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "HORTON",
+        "StType": "PL",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29632249329606,
+        "ymin": 38.6609637669778,
+        "xmax": -90.29272520511176,
+        "ymax": 38.664561055162096
+      }
+    },
+    {
+      "address": "6099 HORTON PL",
+      "location": {
+        "x": -90.29407270006485,
+        "y": 38.662765648898
+      },
+      "score": 68.48,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "6099",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "HORTON",
+        "StType": "PL",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29587134415699,
+        "ymin": 38.660967004805855,
+        "xmax": -90.2922740559727,
+        "ymax": 38.66456429299015
+      }
+    },
+    {
+      "address": "6110 HORTON PL",
+      "location": {
+        "x": -90.29452341475212,
+        "y": 38.66274593919031
+      },
+      "score": 63.24,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "6110",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "HORTON",
+        "StType": "PL",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29632205884427,
+        "ymin": 38.66094729509816,
+        "xmax": -90.29272477065997,
+        "ymax": 38.664544583282456
+      }
+    },
+    {
+      "address": "6098 HORTON PL",
+      "location": {
+        "x": -90.2940753214313,
+        "y": 38.66274930219485
+      },
+      "score": 63.24,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "6098",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "HORTON",
+        "StType": "PL",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29587396552344,
+        "ymin": 38.6609506581027,
+        "xmax": -90.29227667733915,
+        "ymax": 38.664547946286994
+      }
+    }
+  ]
+}

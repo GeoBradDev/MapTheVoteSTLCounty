@@ -1,4 +1,4 @@
-import { createGeocoder, CROSS_CHECK_MS, GeocoderUnavailableError } from './geocoder.js';
+import { createGeocoder, GeocoderUnavailableError } from './geocoder.js';
 
 const ROSS = Object.freeze({
   lat: 38.6822,
@@ -33,26 +33,36 @@ function countySource({ find, suggest } = {}) {
   };
 }
 
-function photon({ geocode, suggest, findPlaces } = {}) {
+function photon({ geocode, suggest } = {}) {
   return {
     geocode: vi.fn(geocode ?? (async () => PHOTON_PLACE)),
     suggest: vi.fn(
       suggest ?? (async () => [{ id: 'p', label: 'from Photon', place: PHOTON_PLACE }]),
     ),
-    findPlaces: vi.fn(findPlaces ?? (async () => [])),
   };
+}
+
+// The City check (src/data/cityAddress.js): no City address unless a test says so.
+function cityCheck(find) {
+  return { find: vi.fn(find ?? (async () => ({ status: 'none' }))) };
 }
 
 const match =
   (confirmed, place = ROSS) =>
   async () => ({ status: 'match', place, confirmed });
 
-function chain({ live = countySource(), hosted = countySource(), fallback = photon() } = {}) {
+function chain({
+  live = countySource(),
+  hosted = countySource(),
+  fallback = photon(),
+  city = cityCheck(),
+} = {}) {
   return {
     live,
     hosted,
     fallback,
-    geocoder: createGeocoder({ sources: [live, hosted], fallback }),
+    city,
+    geocoder: createGeocoder({ sources: [live, hosted], fallback, cityCheck: city }),
   };
 }
 
@@ -62,6 +72,10 @@ describe('createGeocoder', () => {
     expect(Object.isFrozen(geocoder)).toBe(true);
     expect(Object.keys(geocoder).sort()).toEqual(['geocode', 'suggest']);
   });
+
+  it('refuses to build without a City check', () => {
+    expect(() => createGeocoder({ sources: [], fallback: photon() })).toThrow(TypeError);
+  });
 });
 
 describe('geocode', () => {
@@ -70,7 +84,6 @@ describe('geocode', () => {
     await expect(geocoder.geocode('1318 Ross Ave 63146')).resolves.toEqual(ROSS);
     expect(hosted.find).not.toHaveBeenCalled();
     expect(fallback.geocode).not.toHaveBeenCalled();
-    expect(fallback.findPlaces).not.toHaveBeenCalled();
   });
 
   it('passes the typed text and the signal to each source', async () => {
@@ -155,66 +168,104 @@ describe('geocode', () => {
     expect(live.find).not.toHaveBeenCalled();
   });
 
-  describe('a county match with no ZIP or town to confirm it', () => {
-    it('is no match when St. Louis City also has the address', async () => {
-      const { geocoder, fallback } = chain({
-        live: countySource({ find: match(false) }),
-        fallback: photon({ findPlaces: async () => [CITY] }),
-      });
-      await expect(geocoder.geocode('1318 Ross Ave')).resolves.toBeNull();
-      expect(fallback.findPlaces).toHaveBeenCalledWith('1318 Ross Ave', expect.any(Object));
+  describe('the City check (#58)', () => {
+    const CITY_ANSWER = async () => ({ status: 'city', place: CITY });
+
+    it('asks the City for the county match, with the typed text and its street', async () => {
+      const { geocoder, city } = chain({ live: countySource({ find: match(false) }) });
+      await expect(geocoder.geocode('1318 Ross Ave')).resolves.toEqual(ROSS);
+      expect(city.find).toHaveBeenCalledWith('1318 Ross Ave', '1318 Ross Ave', expect.any(Object));
     });
 
-    it('is not cross-checked when the county record is itself in St. Louis City', async () => {
-      const cityRecord = { ...CITY, label: '100 Washington Ave, St. Louis city, MO 63102' };
+    it('gives the City place when the City has the address', async () => {
       const { geocoder, fallback } = chain({
+        live: countySource({ find: match(false) }),
+        city: cityCheck(CITY_ANSWER),
+      });
+      await expect(geocoder.geocode('1318 Ross Ave')).resolves.toEqual(CITY);
+      expect(fallback.geocode).not.toHaveBeenCalled();
+    });
+
+    it('runs although a ZIP that crosses the City line confirms the county match', async () => {
+      const place = { ...ROSS, label: '1318 Ross Ave, Saint Louis, MO 63133' };
+      const { geocoder, city } = chain({
+        live: countySource({ find: match(true, place) }),
+        city: cityCheck(CITY_ANSWER),
+      });
+      await expect(geocoder.geocode('1318 Ross Ave 63133')).resolves.toEqual(CITY);
+      expect(city.find).toHaveBeenCalled();
+    });
+
+    it('runs although a town other than St. Louis confirms the county match', async () => {
+      const { geocoder, city } = chain({
+        live: countySource({ find: match(true) }),
+        city: cityCheck(CITY_ANSWER),
+      });
+      await expect(geocoder.geocode('1318 Ross Ave, Olivette')).resolves.toEqual(CITY);
+      expect(city.find).toHaveBeenCalled();
+    });
+
+    it('is skipped when the text holds a ZIP entirely outside the City', async () => {
+      const { geocoder, city } = chain({
+        live: countySource({ find: match(true) }),
+        city: cityCheck(CITY_ANSWER),
+      });
+      await expect(geocoder.geocode('1318 Ross Ave 63146')).resolves.toEqual(ROSS);
+      expect(city.find).not.toHaveBeenCalled();
+    });
+
+    it('is skipped when the county record is itself in St. Louis City', async () => {
+      const cityRecord = { ...CITY, label: '100 Washington Ave, St. Louis city, MO 63102' };
+      const { geocoder, city } = chain({
         live: countySource({ find: match(false, cityRecord) }),
-        fallback: photon({ findPlaces: async () => [CITY] }),
       });
       await expect(geocoder.geocode('100 Washington Ave')).resolves.toEqual(cityRecord);
-      expect(fallback.findPlaces).not.toHaveBeenCalled();
+      expect(city.find).not.toHaveBeenCalled();
     });
 
-    it('stands when only county places fit in Photon too', async () => {
+    it('is no match when the City has an address the text could mean, not exactly', async () => {
       const { geocoder } = chain({
         live: countySource({ find: match(false) }),
-        fallback: photon({ findPlaces: async () => [ROSS] }),
+        city: cityCheck(async () => ({ status: 'ambiguous' })),
       });
-      await expect(geocoder.geocode('1318 Ross Ave')).resolves.toEqual(ROSS);
+      await expect(geocoder.geocode('1318 Ross Ave')).resolves.toBeNull();
     });
 
-    it('stands when Photon is unavailable', async () => {
+    it('is no match, never the county place, when the City geocoder is unavailable', async () => {
       const { geocoder } = chain({
         live: countySource({ find: match(false) }),
-        fallback: photon({ findPlaces: unavailable }),
+        city: cityCheck(unavailable),
       });
-      await expect(geocoder.geocode('1318 Ross Ave')).resolves.toEqual(ROSS);
+      await expect(geocoder.geocode('1318 Ross Ave')).resolves.toBeNull();
     });
 
-    it('stands when Photon is slow, and the Photon request is cancelled', async () => {
-      vi.useFakeTimers();
-      try {
-        let photonSignal;
-        const { geocoder } = chain({
-          live: countySource({ find: match(false) }),
-          fallback: photon({
-            findPlaces: (text, options) => {
-              photonSignal = options.signal;
-              return hang(text, options);
-            },
-          }),
-        });
-        const pending = geocoder.geocode('1318 Ross Ave');
-        await vi.advanceTimersByTimeAsync(CROSS_CHECK_MS);
-        await expect(pending).resolves.toEqual(ROSS);
-        expect(photonSignal.aborted).toBe(true);
-      } finally {
-        vi.useRealTimers();
+    it('is no match when the City check gives an unexpected answer', async () => {
+      const { geocoder } = chain({
+        live: countySource({ find: match(false) }),
+        city: cityCheck(async () => undefined),
+      });
+      await expect(geocoder.geocode('1318 Ross Ave')).resolves.toBeNull();
+    });
+
+    it('checks a Photon answer in St. Louis County too', async () => {
+      const { geocoder, city } = chain({ city: cityCheck(CITY_ANSWER) });
+      await expect(geocoder.geocode('1318 Ross Ave')).resolves.toEqual(CITY);
+      expect(city.find).toHaveBeenCalledWith('1318 Ross Ave', 'from Photon', expect.any(Object));
+    });
+
+    it('does not check a Photon answer in the City or in another county', async () => {
+      const elsewhere = { ...PHOTON_PLACE, county: 'Saint Charles County' };
+      for (const place of [CITY, elsewhere]) {
+        const { geocoder, city } = chain({ fallback: photon({ geocode: async () => place }) });
+        await expect(geocoder.geocode('200 N 2nd St')).resolves.toEqual(place);
+        expect(city.find).not.toHaveBeenCalled();
       }
     });
 
-    it('keeps the cross-check short', () => {
-      expect(CROSS_CHECK_MS).toBeLessThanOrEqual(3000);
+    it('does not check when Photon has no match', async () => {
+      const { geocoder, city } = chain({ fallback: photon({ geocode: async () => null }) });
+      await expect(geocoder.geocode('1 Nowhere Ln')).resolves.toBeNull();
+      expect(city.find).not.toHaveBeenCalled();
     });
   });
 
@@ -263,15 +314,13 @@ describe('geocode', () => {
       expect(error.name).toBe('AbortError');
     });
 
-    it('rejects with AbortError when aborted as the City cross-check answers', async () => {
+    it('rejects with AbortError when aborted as the City check answers', async () => {
       const controller = new AbortController();
       const { geocoder } = chain({
         live: countySource({ find: match(false) }),
-        fallback: photon({
-          findPlaces: async () => {
-            controller.abort();
-            return [];
-          },
+        city: cityCheck(async () => {
+          controller.abort();
+          return { status: 'none' };
         }),
       });
       const error = await geocoder
@@ -280,10 +329,10 @@ describe('geocode', () => {
       expect(error.name).toBe('AbortError');
     });
 
-    it('rejects with AbortError during the City cross-check', async () => {
+    it('rejects with AbortError during the City check', async () => {
       const { geocoder } = chain({
         live: countySource({ find: match(false) }),
-        fallback: photon({ findPlaces: hang }),
+        city: cityCheck((_text, _street, options) => hang(_text, options)),
       });
       const controller = new AbortController();
       const pending = geocoder

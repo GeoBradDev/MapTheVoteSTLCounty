@@ -6,11 +6,15 @@
 // Columns: each source alone (the county's live layer, its hosted copy,
 // Photon), then the app's own chain (src/data/geocoder.js), then the chain
 // with the live county layer blocked. A St. Louis City address must still get
-// the City referral (#8). "no match" is safe (the voter is sent to "Use my
+// the City referral (#8), and so must the City addresses of issue #58, whose
+// house number and street the county also has in another ZIP; an address both
+// list in one ZIP must be no match. The chain asks the City's own geocoder
+// (src/data/cityAddress.js) before it trusts a county match. "no match" is safe (the voter is sent to "Use my
 // location" and the county's official lookup); a wrong precinct is not.
 // Usage: node scripts/check-geocoder.mjs [photon base URL]   (default: public Photon)
 // Exits 1 when any address lands in the wrong precinct with the app's chain
-// or the blocked chain, or the City address does not get the City referral.
+// or the blocked chain, a City address does not get the City referral, or an
+// address both list in one ZIP is not no match.
 
 import { readFile } from 'node:fs/promises';
 import { getPrecinctAtPoint } from '../src/data/arcgis.js';
@@ -20,6 +24,7 @@ import {
   HOSTED_URL,
   LIVE_URL,
 } from '../src/data/countyAddress.js';
+import { createCityAddressCheck } from '../src/data/cityAddress.js';
 import { createGeocoder } from '../src/data/geocoder.js';
 import { GeocoderUnavailableError } from '../src/data/geocoderError.js';
 import { createPhotonGeocoder } from '../src/data/photon.js';
@@ -28,8 +33,23 @@ import { locate } from '../src/features/lookup/locate.js';
 // North, south, west, central and unincorporated sites (docs/data.md, Geocoding).
 const LOCS = ['144', '020', '002', '054', '041', '148', '158', '122', '096', '178'];
 const ROSS = { text: '1318 Ross Ave, Saint Louis, MO 63146', want: 'CC007' };
-// St. Louis City Hall.
-const CITY = '1200 Market St, St. Louis, MO 63103';
+// St. Louis City Hall, and the City addresses of issue #58 whose number and
+// street the county also has in another ZIP (6135 and 6109 Washington Ave
+// 63134, FER022): the City referral.
+const CITY = [
+  '1200 Market St, St. Louis, MO 63103',
+  '6135 Washington Ave, St. Louis, MO',
+  '6135 Washington Ave',
+  '6109 Washington Ave',
+];
+// Addresses the county and the City both list in one ZIP (6135 Horton Pl
+// 63133, UNV202; 1 Brookings Dr 63130, Washington University, HAD018): no
+// match, never a county precinct (owner decision, #58).
+const SHARED = [
+  '6135 Horton Pl, St. Louis, MO 63133',
+  '1 Brookings Dr',
+  '1 Brookings Dr, St. Louis, MO 63130',
+];
 
 const polls = JSON.parse(
   await readFile(new URL('../docs/raw/fixtures/polls.json', import.meta.url), 'utf8'),
@@ -44,8 +64,9 @@ const blockedLive = createCountyAddressSource({
   url: LIVE_URL,
   fetch: () => Promise.reject(new TypeError('blocked')),
 });
-const app = createGeocoder({ sources: [live, hosted], fallback: photon });
-const appBlocked = createGeocoder({ sources: [blockedLive, hosted], fallback: photon });
+const cityCheck = createCityAddressCheck();
+const app = createGeocoder({ sources: [live, hosted], fallback: photon, cityCheck });
+const appBlocked = createGeocoder({ sources: [blockedLive, hosted], fallback: photon, cityCheck });
 
 // Public Photon fails now and then; try again a few times before giving up.
 async function withRetry(call) {
@@ -115,10 +136,36 @@ for (const [name, { right, none }] of Object.entries(tally)) {
   console.log(`${name}: ${right} right, ${none} no match or down, of ${total}`);
 }
 
-const cityPlace = await withRetry(() => app.geocode(CITY));
-const cityKind = cityPlace ? (await locate(cityPlace)).kind : 'no match';
-console.log(`${CITY}: ${cityKind} (${cityPlace?.label ?? ''})`);
-if (cityKind !== 'stl-city') wrong.push(`${CITY}: ${cityKind}, want stl-city`);
+for (const [name, geocoder] of [
+  ['app', app],
+  ['app, live blocked', appBlocked],
+]) {
+  for (const text of CITY) {
+    const place = await withRetry(() => geocoder.geocode(text));
+    const kind = place ? (await locate(place)).kind : 'no match';
+    console.log(`${name}: ${text}: ${kind} (${place?.label ?? ''})`);
+    if (kind !== 'stl-city') wrong.push(`${name}: ${text}: ${kind}, want stl-city`);
+  }
+  for (const text of SHARED) {
+    const place = await withRetry(() => geocoder.geocode(text));
+    const kind = place ? (await locate(place)).kind : 'no match';
+    console.log(`${name}: ${text}: ${kind} (${place?.label ?? ''})`);
+    if (kind !== 'no match') wrong.push(`${name}: ${text}: ${kind}, want no match`);
+  }
+  // A voter who types the start of the address and picks the first
+  // suggestion: the county's, labeled with the county record's ZIP (#58).
+  for (const [partial, want] of [
+    ['6135 Washington', 'stl-city'],
+    ['6109 Washington', 'stl-city'],
+    ['1 Brookings', 'no match'],
+  ]) {
+    const [pick] = await withRetry(() => geocoder.suggest(partial));
+    const place = pick ? await withRetry(() => geocoder.geocode(pick)) : null;
+    const kind = place ? (await locate(place)).kind : 'no match';
+    console.log(`${name}: pick "${pick?.label}" for ${partial}: ${kind} (${place?.label ?? ''})`);
+    if (kind !== want) wrong.push(`${name}: pick for ${partial}: ${kind}, want ${want}`);
+  }
+}
 
 if (wrong.length) {
   console.error(`Wrong:\n  ${wrong.join('\n  ')}`);

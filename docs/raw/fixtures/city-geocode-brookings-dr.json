@@ -1,0 +1,176 @@
+{
+  "spatialReference": {
+    "wkid": 4326,
+    "latestWkid": 4326
+  },
+  "candidates": [
+    {
+      "address": "1 BROOKINGS DR, 63130",
+      "location": {
+        "x": -90.30213056086464,
+        "y": 38.647791328945864
+      },
+      "score": 100,
+      "attributes": {
+        "Addr_type": "PointAddress",
+        "AddNum": "1",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "BROOKINGS",
+        "StType": "DR",
+        "StDir": "",
+        "ZIP": "63130"
+      },
+      "extent": {
+        "xmin": -90.30392920495679,
+        "ymin": 38.64599268485372,
+        "xmax": -90.30033191677249,
+        "ymax": 38.64958997303801
+      }
+    },
+    {
+      "address": "BROOKINGS DR",
+      "location": {
+        "x": -90.30213278353312,
+        "y": 38.647595923599155
+      },
+      "score": 100,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "1",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "BROOKINGS",
+        "StType": "DR",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.30393142762527,
+        "ymin": 38.64579727950701,
+        "xmax": -90.30033413944098,
+        "ymax": 38.6493945676913
+      }
+    },
+    {
+      "address": "1 BROOKINGS DR",
+      "location": {
+        "x": -90.30212683738618,
+        "y": 38.64780477264767
+      },
+      "score": 100,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "1",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "BROOKINGS",
+        "StType": "DR",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.30392548147833,
+        "ymin": 38.64600612855552,
+        "xmax": -90.30032819329404,
+        "ymax": 38.649603416739815
+      }
+    },
+    {
+      "address": "6201 BROOKINGS DR",
+      "location": {
+        "x": -90.30098655840547,
+        "y": 38.647809187436835
+      },
+      "score": 64.48,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "6201",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "BROOKINGS",
+        "StType": "DR",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.30278520249762,
+        "ymin": 38.64601054334469,
+        "xmax": -90.29918791431332,
+        "ymax": 38.64960783152898
+      }
+    },
+    {
+      "address": "BROOKINGS DR",
+      "location": {
+        "x": -90.30212683738618,
+        "y": 38.64780477264767
+      },
+      "score": 63.25,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "2",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "BROOKINGS",
+        "StType": "DR",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.30392548147833,
+        "ymin": 38.64600612855552,
+        "xmax": -90.30032819329404,
+        "ymax": 38.649603416739815
+      }
+    },
+    {
+      "address": "BROOKINGS DR",
+      "location": {
+        "x": -90.30098908328905,
+        "y": 38.64779283140387
+      },
+      "score": 63.25,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "2",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "BROOKINGS",
+        "StType": "DR",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.3027877273812,
+        "ymin": 38.64599418731172,
+        "xmax": -90.2991904391969,
+        "ymax": 38.64959147549602
+      }
+    },
+    {
+      "address": "6200 BROOKINGS DR",
+      "location": {
+        "x": -90.30104257833965,
+        "y": 38.64746735657977
+      },
+      "score": 61.24,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "6200",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "BROOKINGS",
+        "StType": "DR",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.3028412224318,
+        "ymin": 38.64566871248762,
+        "xmax": -90.2992439342475,
+        "ymax": 38.649266000671915
+      }
+    }
+  ]
+}
