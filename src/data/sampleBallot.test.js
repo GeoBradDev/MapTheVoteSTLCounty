@@ -115,7 +115,7 @@ describe('parseSampleBallot', () => {
   });
 
   it('ignores an href in a comment or in a tag other than a link', () => {
-    const html = `<!-- old <a href=x>y</a> --><img href="x"><a href="${URL_OK}">CC-007.pdf</a>`;
+    const html = `<!-- old <a href=x>y</a> --><span href="x"></span><a href="${URL_OK}">CC-007.pdf</a>`;
     expect(parseSampleBallot(html)).toEqual({ url: URL_OK, fileName: 'CC-007.pdf' });
   });
 
@@ -161,11 +161,45 @@ describe('parseSampleBallot', () => {
     });
   });
 
-  it('removes declarations and script or style bodies from messages', () => {
-    const html =
-      '<!DOCTYPE html><?xml version="1.0"?><![CDATA[x]]><script>alert(1)</script>' +
-      '<style>p{}</style>No ballot';
-    expect(parseSampleBallot(html)).toEqual({ message: 'No ballot' });
+  it.each([
+    ['a declaration', 'msg <!DOCTYPE html>No ballot'],
+    ['CDATA', '<![CDATA[x]]>No ballot'],
+    ['a processing instruction', '<?xml version="1.0"?>No ballot'],
+    ['a script', '<script>alert(1)</script>No ballot'],
+    ['a style', '<style>p{}</style>No ballot'],
+    ['an image', 'No ballot <img src=x onerror=alert(1)>'],
+    ['a textarea around a link', `<textarea><a href=${URL_OK}>CC</a></textarea>`],
+    ['an unfinished tag', 'Hello <img src=x onerror=alert(1)'],
+    ['an unfinished closing tag', '<p>Msg</p'],
+    ['an unclosed comment', 'Msg <!-- note'],
+    ['a < inside a tag', 'No ballot <span title=x <br>'],
+    ['a link inside another tag', `<p <a href=${URL_OK}>CC</a>`],
+    ['a quote in an attribute name', `<a b"=" href=${URL_OK}>CC</a>`],
+    ['an unfinished tag in the link text', `<a href=${URL_OK}>CC.pdf<img src=x`],
+  ])('shows nothing for markup it does not know: %s', (_, html) => {
+    expect(parseSampleBallot(html)).toEqual({ message: null });
+  });
+
+  it('ignores a link written inside an attribute value', () => {
+    const html = `<span title="<a href=${URL_OK}>x</a>">Real message</span>`;
+    expect(parseSampleBallot(html)).toEqual({ message: 'Real message' });
+  });
+
+  it('drops comments and inline tags from text without adding spaces', () => {
+    expect(parseSampleBallot(`<a href=${URL_OK}>CC<!-- x -->-<b>007</b>.pdf</a>`)).toEqual({
+      url: URL_OK,
+      fileName: 'CC-007.pdf',
+    });
+    expect(parseSampleBallot('No ballot.<br>Call us.<p>Thanks</p>')).toEqual({
+      message: 'No ballot. Call us. Thanks',
+    });
+  });
+
+  it('treats <!--> as an empty comment', () => {
+    expect(parseSampleBallot(`<!--><a href=${URL_OK}>CC-007.pdf</a>`)).toEqual({
+      url: URL_OK,
+      fileName: 'CC-007.pdf',
+    });
   });
 
   it('ends the file name at a closing tag with attributes or at the next link', () => {
@@ -186,7 +220,7 @@ describe('parseSampleBallot', () => {
 
   it('does not treat a no-break space as an attribute separator', () => {
     expect(parseSampleBallot(`<a\u00a0href=${URL_OK}>CC-007.pdf</a>`)).toEqual({
-      message: 'CC-007.pdf',
+      message: null,
     });
   });
 

@@ -35,23 +35,26 @@ Scope decisions:
 
 1. `src/data/sampleBallot.js` exports `parseSampleBallot(html)`, which returns either
    `{ url, fileName }` or `{ message }`, never both shapes and never throws for any input.
-2. The href is read from the first `<a>` tag that has one: unquoted, single-quoted or
-   double-quoted values, a case-insensitive `href`, optional whitespace around `=`, HTML
-   whitespace or `/` between attributes. An `href` in text outside a tag, inside another
-   attribute's value, in an HTML comment, or on a tag other than `<a>` is ignored. The URL
-   is returned only when it matches `election.sampleBallotUrlPattern` in full; no URL
+2. The parser is a small, strict reader, not a full HTML parser. It reads plain text,
+   comments, and the tags `a`, `b`, `i`, `u`, `em`, `strong`, `small`, `span`, `font`,
+   `br`, `p` and `div`, with unquoted, single-quoted or double-quoted attribute values
+   (case-insensitive names, optional whitespace around `=`, HTML whitespace or `/` between
+   attributes). The href is read from the first `<a>` tag that has one. An `href` in text,
+   inside an attribute value, in a comment, or on a tag other than `<a>` is ignored. The
+   URL is returned only when it matches `election.sampleBallotUrlPattern` in full; no URL
    pattern or election URL is written in `src/data/`, tests included (they take the URL
-   from the recorded fixture). The parser is not a full HTML parser: where it cannot read
-   an `<a` tag with confidence, it fails closed (criterion 4).
-3. `fileName` is the link text, up to the closing `</a>` or the next `<a>`, with tags
-   removed and whitespace collapsed, or `null` when empty. It is for display only.
-4. A link whose URL is rejected (a non-portal URL, a `javascript:` URL, an `http:` URL, a
-   URL with extra path or query), or an `<a` tag that cannot be read (unfinished, or an
-   unpaired quote), returns `{ message: null }`.
-5. Text with no link returns `{ message }` holding the plain text: tags (including ones
-   with a `>` in a quoted value), comments, declarations, and script or style bodies
-   removed; a lone `<` or `>` in the text is kept; whitespace collapsed and trimmed. The
-   nonresidential message comes back verbatim.
+   from the recorded fixture).
+3. `fileName` is the link text, up to the closing `</a>` or the next `<a>`, as plain text
+   (criterion 5), or `null` when empty. It is for display only.
+4. `{ message: null }` comes back for a link whose URL is rejected (a non-portal URL, a
+   `javascript:` URL, an `http:` URL, a URL with extra path or query), and for any markup
+   the reader does not know or cannot read to its end: another tag (`script`, `img`,
+   `textarea`, ...), a declaration, CDATA, a processing instruction, an unfinished tag or
+   comment, or a quote or `<` where a browser reports a parse error. It fails closed: the
+   worst case is showing nothing.
+5. Text with no link returns `{ message }` holding the plain text: comments and inline
+   tags removed, block tags (`br`, `p`, `div`) turned into spaces, a lone `<` or `>` kept,
+   whitespace collapsed and trimmed. The nonresidential message comes back verbatim.
 6. `null`, `undefined`, a non-string, an empty or whitespace-only string returns
    `{ message: null }`.
 7. No file under `src/` uses `dangerouslySetInnerHTML`; a test fails if one does.

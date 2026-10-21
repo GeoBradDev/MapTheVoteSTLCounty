@@ -48,8 +48,9 @@ html     = "Sample Ballot: <a href=https://stlouiscovotes.maps.arcgis.com/sharin
 Parsing: `parseSampleBallot` in `src/data/sampleBallot.js` pulls the `href` with a
 regex (unquoted, single- or double-quoted), accepts it only when it matches
 `sampleBallotUrlPattern` in `src/config/election.js`, and takes the file name from the
-link text. Anything else comes back as plain text, or as nothing when a link is
-rejected. Never render `html` as raw HTML; a test fails on `dangerouslySetInnerHTML`
+link text. A field with no link comes back as plain text. A rejected link, or markup
+the parser does not know (it reads only text, comments and a few formatting tags),
+comes back as nothing. Never render `html` as raw HTML; a test fails on `dangerouslySetInnerHTML`
 anywhere under `src/`. `node scripts/check-sample-ballots.mjs` runs the parser over
 every precinct on the live layer and exits 1 unless each `In Election` precinct has
 its own valid link and every other precinct a message. Run it before each election.
