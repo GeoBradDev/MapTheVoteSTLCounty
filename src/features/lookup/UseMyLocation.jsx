@@ -6,8 +6,9 @@ import { copy } from './useMyLocationCopy.js';
  * The "Use my location" button. It asks for the device's position only when
  * pressed and hands the coordinates to `onLocate` without keeping them. When
  * the position cannot be had, it says why and moves focus to the address box.
- * Typing in the address box while the position is pending, or unmounting,
- * drops the pending result, so a late answer never replaces a typed address.
+ * Going back to the address box (focusing or typing in it, or submitting its
+ * form) while the position is pending, or unmounting, drops the pending
+ * result, so a late answer never replaces an address the voter chose.
  * @param {{
  *   onLocate: (place: { lat: number, lng: number }) => void,
  *   addressInputRef?: { current: HTMLElement | null },
@@ -33,12 +34,22 @@ export default function UseMyLocation({ onLocate, addressInputRef }) {
   async function handleClick() {
     if (requestRef.current) return;
     const input = addressInputRef?.current;
-    const onType = () => {
+    const onAddress = () => {
       cancel();
       setBusy(false);
     };
-    input?.addEventListener('input', onType);
-    const request = { stopListening: () => input?.removeEventListener('input', onType) };
+    // Each target and event the voter can use to go with an address instead.
+    const listeners = [
+      [input, 'focus'],
+      [input, 'input'],
+      [input?.form, 'submit'],
+    ].filter(([target]) => target);
+    for (const [target, type] of listeners) target.addEventListener(type, onAddress);
+    const request = {
+      stopListening: () => {
+        for (const [target, type] of listeners) target.removeEventListener(type, onAddress);
+      },
+    };
     requestRef.current = request;
     setBusy(true);
     setError(null);
@@ -76,6 +87,9 @@ export default function UseMyLocation({ onLocate, addressInputRef }) {
         <p>{copy.privacy}</p>
         <p className="mt-1">{copy.notHome}</p>
       </div>
+      <p role="status" className="sr-only">
+        {busy ? copy.busy : ''}
+      </p>
       <p role="alert" className="mt-2">
         {error && copy.errors[error]}
       </p>

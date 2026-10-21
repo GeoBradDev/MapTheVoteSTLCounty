@@ -48,12 +48,15 @@ including the `unknown` kind for a point outside the county with no state.
      address.
 4. While the position is pending the button says "Finding your location..." and is marked
    `aria-disabled="true"` (it stays focusable); presses while pending do nothing.
+   A visually hidden `role="status"` region says the same, since a label change on a
+   focused button is often not announced. (Added after review finding 4's notes.)
 5. On success the button calls `onLocate({ lat, lng })` once. The parent (#10) passes that
    place straight to `locate` (#8) and owns that query's loading and error states (#18).
    The component stores the coordinates nowhere: no URL, no web storage, no state kept
    after the call. A pending result is dropped, with no `onLocate`, error or focus move,
-   when the voter types in the address box or the component unmounts, so a late answer
-   never replaces a typed address. (Added after review finding 1.)
+   when the voter goes back to the address box (focuses or types in it, or submits its
+   form) or the component unmounts, so a late answer never replaces an address the voter
+   chose. (Added after review findings 1 and 4.)
 6. On failure it shows a clear message for each reason in a `role="alert"` region, and
    moves focus to the address box (`addressInputRef`) so typing an address is the next
    step. The address box is never disabled by this component.
@@ -99,7 +102,7 @@ gate, error codes, timeout) in tests and in desktop Chrome with emulated geoloca
 - Some browsers never call back when the prompt is dismissed; the timeout covers that
   (Chrome and Safari both apply the timeout only after permission, so a dismissed prompt can
   leave the button pending; the voter can still type an address since nothing is disabled,
-  and typing drops the pending request and resets the button).
+  and going back to the address box drops the pending request and resets the button).
 - Focus moving on every failure, not just denial: chosen so the next step is always the
   address box.
 
