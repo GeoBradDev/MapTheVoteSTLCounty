@@ -71,7 +71,8 @@ Scope decisions (made in Phase 1):
    `ServiceError` carrying `code` and `message`. A non-2xx response or a network failure
    also rejects with `ServiceError` (with `status` for HTTP errors), as does a 200 body that
    is not JSON or has no `features` array (added in Phase 4: without it such a body crashed
-   with a bare `TypeError`).
+   with a bare `TypeError`), or a feature without an `attributes` or `properties` object
+   (added in Phase 5: such a polls body was cached as a rejection for the page load).
 8. Each request aborts after 8 s with `AbortController` and rejects with `TimeoutError`.
    A timeout, a network failure, an HTTP 5xx or 429, or an ArcGIS error code 5xx or 429 is
    retried once after a backoff of 500 ms; any other error is not retried. After the retry

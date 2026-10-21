@@ -62,6 +62,10 @@ function queryUrl(layer, params) {
   return `${election.serviceRoot}/${election.layers[layer]}/query?${new URLSearchParams(params)}`;
 }
 
+function isObject(value) {
+  return value !== null && typeof value === 'object';
+}
+
 // One attempt. The timeout covers reading the body too.
 async function fetchOnce(url) {
   const controller = new AbortController();
@@ -90,6 +94,10 @@ async function fetchOnce(url) {
     }
     if (!Array.isArray(body?.features)) {
       throw new ServiceError('Response has no features list', { status: res.status });
+    }
+    // JSON features carry `attributes`, GeoJSON features `properties`.
+    if (!body.features.every((f) => isObject(f?.attributes ?? f?.properties))) {
+      throw new ServiceError('Response has a feature without fields', { status: res.status });
     }
     return body;
   } finally {
@@ -188,15 +196,14 @@ let polls;
  *   normalized properties.
  */
 export function getPolls() {
-  polls ??= query('polls', { where: '1=1', outFields: '*', outSR: '4326', f: 'geojson' }).then(
-    (body) => ({
+  polls ??= query('polls', { where: '1=1', outFields: '*', outSR: '4326', f: 'geojson' })
+    .then((body) => ({
       ...body,
       features: body.features.map((f) => ({ ...f, properties: normalize(f.properties) })),
-    }),
-    (error) => {
+    }))
+    .catch((error) => {
       polls = undefined;
       throw error;
-    },
-  );
+    });
   return polls;
 }
