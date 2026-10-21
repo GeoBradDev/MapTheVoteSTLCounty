@@ -35,9 +35,7 @@ Domain skills:
    ... 63134` suggestion still gave FER022). Searching again while the box still holds the
    picked label sends the pick again (revision after review finding 2: the label resent as
    text skipped the check and gave FER022), and so does an edit of the label that keeps its
-   ZIP, like a unit added (revision after review finding 3). Editing the label and restoring
-   it exactly still sends typed text: the frozen test `AddressSearch.repick58.test.jsx`
-   asserts that, and rewriting it needs the owner's approval. Once the label's ZIP leaves the
+   ZIP, like a unit added (revision after review finding 3). Once the label's ZIP leaves the
    box, the pick is forgotten, so a ZIP typed later is the voter's own (revision after review
    finding 4: a county voter retyping their address with a county-only ZIP got the City
    referral; frozen `AddressSearch.retype58.test.jsx`). The pick is kept only while every
@@ -47,7 +45,10 @@ Domain skills:
    itself is deleted or changed (frozen `AddressSearch.pickzip58.test.jsx`); pasting over a
    selection that holds the ZIP changes it, and an autofill forgets the pick, but a unit
    pasted elsewhere keeps it (revision after the verifier finding: a pasted unit gave
-   FER022; frozen `AddressSearch.pasteunit58.test.jsx`). The owner approved rewriting the frozen
+   FER022; frozen `AddressSearch.pasteunit58.test.jsx`). Letters or spaces typed against the
+   ZIP keep the pick; a digit left against it when the voter searches makes it another number
+   and the voter's own; only a paste's own selection counts (review rerun findings; frozen
+   `AddressSearch.zipedge58.test.jsx`). The owner approved rewriting the frozen
    `AddressSearch.repick58.test.jsx` (a space added keeps the pick) and, with the shared-ZIP
    decision, `geocoder.city58.test.js` (Horton Pl is no match); both fail at the merge base.
 4. A City match counts when a City `PointAddress` has the typed house number and the typed
@@ -67,7 +68,8 @@ Domain skills:
    the notice stops saying it is.
 9. Only geocoder modules name the City geocoder (the #49 provider test covers the new module
    and its host).
-10. `scripts/check-geocoder.mjs` adds the two #58 cases (want the City referral) and still
+10. `scripts/check-geocoder.mjs` adds the #58 cases (the Washington Ave ones want the City
+    referral; 6135 Horton Pl 63133 and 1 Brookings Dr 63130 want no match) and still
     passes: 0 wrong for the polling places and 1318 Ross Ave, City Hall still referred.
     Results recorded in `docs/data.md`.
 11. County addresses are unaffected: the 10 polling places and 1318 Ross Ave resolve as before.

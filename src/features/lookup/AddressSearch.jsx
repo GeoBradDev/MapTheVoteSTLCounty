@@ -13,8 +13,9 @@ function zipIn(label) {
 
 // Where the picked ZIP is after an edit from `before` to `after`, or null when
 // the edit deleted or changed it. The edit is the one stretch the two texts do
-// not share; the ZIP must lie wholly before or after it and still read as the
-// same five digits on their own.
+// not share; the ZIP must lie wholly before or after it. A digit typed
+// against it may be the start of a word typed next to it ("Apt 2" before a
+// space), so that is judged when the voter searches (zipReadsAlone).
 function zipAfterEdit(before, after, { zip, start }) {
   let prefix = 0;
   const shortest = Math.min(before.length, after.length);
@@ -31,12 +32,18 @@ function zipAfterEdit(before, after, { zip, start }) {
   if (editEnd <= start) moved = start + after.length - before.length;
   else if (prefix >= start + zip.length) moved = start;
   else return null;
-  const word = /[A-Za-z0-9]/;
-  const intact =
-    after.slice(moved, moved + zip.length) === zip &&
-    !word.test(after[moved - 1] ?? '') &&
-    !word.test(after[moved + zip.length] ?? '');
-  return intact ? { zip, start: moved } : null;
+  return after.slice(moved, moved + zip.length) === zip ? { zip, start: moved } : null;
+}
+
+// Whether the tracked ZIP still reads as the same five digits: no digit next
+// to it, which would make it another number.
+function zipReadsAlone(text, { zip, start }) {
+  const digit = /\d/;
+  return (
+    text.slice(start, start + zip.length) === zip &&
+    !digit.test(text[start - 1] ?? '') &&
+    !digit.test(text[start + zip.length] ?? '')
+  );
 }
 
 /** How long typing must pause before suggestions are requested. */
@@ -127,7 +134,7 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
       // apart from a new address, so it forgets the pick. A paste over a
       // selection that holds the ZIP replaces it.
       const inputType = event.nativeEvent?.inputType;
-      const replaced = inputType?.startsWith('insertFrom') ? replacedRef.current : null;
+      const replaced = inputType === 'insertFromPaste' ? replacedRef.current : null;
       const overZip =
         replaced &&
         picked.zip &&
@@ -167,9 +174,14 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
   // The text as a pick while the picked label's ZIP is still in it, as the
   // suggestion itself when unedited; otherwise undefined.
   function asPick(trimmed) {
-    const { suggestion, edited } = pickedRef.current ?? {};
+    const { suggestion, edited, zip } = pickedRef.current ?? {};
     if (!suggestion) return undefined;
     if (!edited) return suggestion;
+    // A digit left against the ZIP made it another number: the voter's own.
+    if (!zip || !zipReadsAlone(text, zip)) {
+      pickedRef.current = null;
+      return undefined;
+    }
     return { id: `${suggestion.id}-edited`, label: trimmed };
   }
 
@@ -193,6 +205,8 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
     onSubmit(asPick(trimmed) ?? trimmed);
   }
 
+  // Read on every paste, so a paste that changed nothing (and so fired no
+  // change) leaves nothing behind for a later edit.
   function rememberSelection(event) {
     const { selectionStart: start, selectionEnd: end } = event.currentTarget;
     replacedRef.current = Number.isInteger(start) ? { start, end } : null;
