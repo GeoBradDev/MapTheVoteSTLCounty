@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
@@ -66,7 +66,36 @@ describe('App', () => {
     expect(screen.getByRole('link', { name: /all topics/i })).toHaveAttribute('href', '/learn');
   });
 
-  it.each(['/p/CC007/', '/learn/', '/learn/voter-id/'])(
+  it('renders the privacy notice at /privacy', () => {
+    renderAt('/privacy');
+
+    expect(heading()).toHaveTextContent('Privacy');
+  });
+
+  it.each(['/', '/p/CC007', '/learn', '/learn/voter-id', '/privacy', '/nope'])(
+    'links to the privacy notice from the footer, outside main, on %s',
+    (path) => {
+      renderAt(path);
+
+      const footer = screen.getByRole('contentinfo');
+      const link = within(footer).getByRole('link', { name: 'Privacy' });
+      expect(link).toHaveAttribute('href', '/privacy');
+      expect(screen.getByRole('main')).not.toContainElement(footer);
+    },
+  );
+
+  it('opens the privacy notice from the footer without a full reload', async () => {
+    const location = renderAt('/');
+
+    await userEvent.click(
+      within(screen.getByRole('contentinfo')).getByRole('link', { name: 'Privacy' }),
+    );
+
+    expect(location.history).toEqual(['/', '/privacy']);
+    expect(heading()).toHaveTextContent('Privacy');
+  });
+
+  it.each(['/p/CC007/', '/learn/', '/learn/voter-id/', '/privacy/'])(
     'treats a trailing slash as the same page for %s',
     (path) => {
       renderAt(path);
@@ -75,7 +104,7 @@ describe('App', () => {
     },
   );
 
-  it.each(['/nope', '/p', '/p/CC007/extra', '/learn/a/b'])(
+  it.each(['/nope', '/p', '/p/CC007/extra', '/learn/a/b', '/privacy/extra'])(
     'shows the not-found page inside main for %s',
     (path) => {
       renderAt(path);

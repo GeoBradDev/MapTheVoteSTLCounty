@@ -58,9 +58,13 @@ email: not applicable because the app is a frontend-only React site.
 
 - `src/features/privacy/PrivacyPage.jsx` (new): the notice.
 - `src/features/privacy/privacyCopy.js` (new): all its text, kept out of the markup for i18n
-  (#19), like the other `*Copy.js` files. Host names for ArcGIS, Photon and the basemap come
-  from `election.serviceRoot`, `photon.js`'s `DEFAULT_BASE_URL` (import only) and
-  `basemap.js`; the county address service hosts are written in the copy.
+  (#19), like the other `*Copy.js` files. Host names for ArcGIS and the basemap come from
+  `election.serviceRoot` and `basemap.js`. The backup geocoder's name, operator and link come
+  from `geocoder.js`'s `attribution` (import only), because `geocoder.test.js` lets only the
+  geocoder modules name a provider; it reads both main's shape and #49's
+  (`attribution.fallback`). The county address service hosts are written in the copy.
+  (Revised during implementation: the first draft imported `photon.js` and named Photon in the
+  copy, which the provider-naming test rejects.)
 - `src/features/privacy/PrivacyPage.test.jsx` (new): renders the notice, checks the named
   hosts against the CSP, and the never-store claims.
 - `src/components/SiteFooter.jsx` (new) and `src/App.jsx`: footer after `<main>` with a link to
