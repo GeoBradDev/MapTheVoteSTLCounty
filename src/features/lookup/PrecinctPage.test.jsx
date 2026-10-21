@@ -301,6 +301,18 @@ describe('PrecinctPage', () => {
     expect(absenteeCalls).toHaveLength(1);
   });
 
+  it.each(['cc007', 'Cc007'])(
+    'replaces %s in the URL with the upper case code and shows that precinct',
+    async (typed) => {
+      routeFetch(byId);
+      const location = renderAt(typed);
+      await ready('CC007');
+      expect(heading()).toHaveTextContent(copy.heading('CC007'));
+      expect(location.history).toEqual(['/p/CC007']);
+      expect(precinctCalls().every((url) => !url.search.includes(typed))).toBe(true);
+    },
+  );
+
   it('says a malformed code is not found, without a request', async () => {
     renderAt('nope');
     const alert = await screen.findByRole('alert');
