@@ -110,24 +110,35 @@ turn the workflow back on in the Actions tab.
 
 ## Address search
 
-The address box uses the public [Photon](https://photon.komoot.io) geocoder (OpenStreetMap
-data), called from the browser with no key and no server of ours. `src/data/geocoder.js`
-picks the provider and `src/data/photon.js` implements it; a test fails if any other app file
-names a provider.
+The address box searches St. Louis County's official address points first, from the
+browser with no key and no server of ours: the county's live layer, then its hosted copy on
+ArcGIS Online when the live one is unavailable. When the county has no match (a St. Louis
+City address, for example) or neither layer answers, it falls back to the public
+[Photon](https://photon.komoot.io) geocoder (OpenStreetMap data). Photon also gets a county
+match typed with neither a ZIP nor a town other than St. Louis, to check that St. Louis City has no address
+that fits it. `src/data/geocoder.js`
+builds that chain, `src/data/countyAddress.js` and `src/data/photon.js` implement the
+sources and `src/data/addressMatch.js` holds the strict matching rules they share; a test
+fails if any other app file names a provider. docs/data.md (Geocoding, County address
+points) explains every rule.
 To point a build at another Photon instance, set `VITE_GEOCODER_URL` (for example
 `VITE_GEOCODER_URL=https://photon.example.org npm run build`). The Content-Security-Policy in
-`render.yaml` allows only the default, `https://photon.komoot.io`, in `connect-src`; add any
-other origin there too.
+`render.yaml` allows only the default Photon origin, `https://photon.komoot.io`, and the two
+county origins in `connect-src`; add any other origin there too.
 
-Check the geocoder against the live precinct layer before each election:
+Check address search against the live services and the live precinct layer before each
+election:
 
 ```sh
 node scripts/check-geocoder.mjs [photon-base-url]
 ```
 
-It geocodes 10 polling place addresses and exits 1 if any lands in the wrong precinct. "No
-match" is allowed: the app then points the voter to "Use my location" and the county's
-official lookup. Results are recorded in `docs/data.md` under Geocoding.
+It geocodes 10 polling place addresses and 1318 Ross Ave with each source alone, with the
+app's chain and with the chain while the live county layer is blocked, and checks that a
+St. Louis City address still gets the City referral. It exits 1 if the chain puts any
+address in the wrong precinct or the City address loses its referral. "No match" is
+allowed: the app then points the voter to "Use my location" and the county's official
+lookup. Results are recorded in `docs/data.md` under Geocoding.
 
 ## Privacy
 

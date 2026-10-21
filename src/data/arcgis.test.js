@@ -97,6 +97,69 @@ describe('getPrecinctAtPoint', () => {
   });
 });
 
+describe('getPrecinctCodesAtPoints', () => {
+  const points = [
+    { lat: 38.62, lng: -90.33 },
+    { lat: 38.63, lng: -90.34 },
+  ];
+
+  it('POSTs one multipoint query with only the points and fixed parameters', async () => {
+    fetchMock.mockResolvedValue(respond({ features: [{ attributes: { precinct: 'CC007' } }] }));
+    await client.getPrecinctCodesAtPoints(points);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe(PRECINCTS);
+    expect(init.method).toBe('POST');
+    expect(Object.fromEntries(new URLSearchParams(init.body))).toEqual({
+      geometry: JSON.stringify({
+        points: [
+          [-90.33, 38.62],
+          [-90.34, 38.63],
+        ],
+        spatialReference: { wkid: 4326 },
+      }),
+      geometryType: 'esriGeometryMultipoint',
+      inSR: '4326',
+      spatialRel: 'esriSpatialRelIntersects',
+      outFields: 'precinct',
+      returnGeometry: 'false',
+      f: 'json',
+    });
+  });
+
+  it('resolves to the distinct precinct codes found', async () => {
+    fetchMock.mockResolvedValue(
+      respond({
+        features: [
+          { attributes: { precinct: 'LEM012' } },
+          { attributes: { precinct: 'LEM021' } },
+          { attributes: { precinct: 'LEM012' } },
+        ],
+      }),
+    );
+    const codes = await client.getPrecinctCodesAtPoints(points);
+    expect([...codes].sort()).toEqual(['LEM012', 'LEM021']);
+  });
+
+  it('rejects points that are not numbers, sending nothing', async () => {
+    await expect(client.getPrecinctCodesAtPoints([{ lat: 'x', lng: 1 }])).rejects.toBeInstanceOf(
+      TypeError,
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('retries a 5xx once like the other queries', async () => {
+    vi.useFakeTimers();
+    fetchMock
+      .mockResolvedValueOnce(respond({}, 503))
+      .mockResolvedValueOnce(respond({ features: [{ attributes: { precinct: 'CC007' } }] }));
+    const pending = client.getPrecinctCodesAtPoints(points);
+    await vi.runAllTimersAsync();
+    expect([...(await pending)]).toEqual(['CC007']);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+});
+
 describe('isInCountyBoundary', () => {
   it('queries the county boundary layer with only the point and fixed parameters', async () => {
     fetchMock.mockResolvedValue(respond(boundaryInside));

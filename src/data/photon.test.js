@@ -328,3 +328,48 @@ describe('when Photon cannot answer', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 });
+
+describe('findPlaces', () => {
+  const CITY = feature(
+    {
+      osm_type: 'N',
+      osm_id: 1,
+      housenumber: '7700',
+      street: 'Fine Road',
+      city: 'Saint Louis',
+      state: 'Missouri',
+      postcode: '63111',
+    },
+    [-90.25, 38.56],
+  );
+
+  it('returns every place that fits the text, not only one, so a caller can see both', async () => {
+    const fetch = fakeFetch(() => respond(collection(FINE, CITY, DES_PERES)));
+    const places = await createPhotonGeocoder({ fetch }).findPlaces('7700 Fine Rd');
+    expect(places.map((p) => p.county)).toEqual(['Saint Louis County', 'St. Louis city']);
+  });
+
+  it('returns none for empty text without asking Photon', async () => {
+    const fetch = fakeFetch(() => respond(collection(FINE)));
+    await expect(createPhotonGeocoder({ fetch }).findPlaces('  ')).resolves.toEqual([]);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('words that are object keys', () => {
+  it('match as plain words', async () => {
+    const constructorSt = feature({
+      housenumber: '100',
+      street: 'Constructor Street',
+      county: 'Saint Louis County',
+      state: 'Missouri',
+      postcode: '63129',
+    });
+    const fetch = fakeFetch(() => respond(collection(constructorSt)));
+    await expect(
+      createPhotonGeocoder({ fetch }).geocode('100 Constructor St 63129'),
+    ).resolves.toMatchObject({
+      label: '100 Constructor Street, Saint Louis County, MO 63129',
+    });
+  });
+});

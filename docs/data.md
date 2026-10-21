@@ -364,22 +364,153 @@ Choice (owner, 2026-10-21, issue #7): public Photon, called from the browser. No
 proxy, no server, no self-hosting, no key. Esri was dropped because its terms need
 an account and token; Census has no CORS and no suggest.
 
-The app calls a geocoder only through the interface in `src/data/geocoder.js`:
-`suggest(text)` for the address box's suggestions and `geocode(textOrSuggestion)`
-for the place, `{ lat, lng, state?, county?, label }`, or null when nothing
-matches. The landing screen passes
-that place to `locate` (see Out of county above); a precinct opens `/p/<code>`, so
-only the precinct code goes in the URL. `geocoder.js` creates one Photon geocoder
-at load, at `VITE_GEOCODER_URL` when that is set at build time, else
-`https://photon.komoot.io`. Requests carry the county extent as `bbox`
+Photon is now the last fallback; see County address points below for what the app
+does first (issue #49). The Photon provider (`src/data/photon.js`) is created once at
+load, at `VITE_GEOCODER_URL` when that is set at build time, else
+`https://photon.komoot.io`. Its requests carry the county extent as `bbox`
 (`-90.74,38.39,-90.11,38.89`, which also covers St. Louis City), the bias point,
 `cache: no-store`, no cookies and no referrer, and time out after 8 seconds. Only
 results with a house number count, so a street or area center is never used as an
 address. A timeout, network error, non-2xx answer (a 429 included) or malformed
-body is a `GeocoderUnavailableError`, and the screen offers "Use my location" and
-the county's official lookup instead. The address text is sent only to Photon.
-Any Content-Security-Policy must allow `https://photon.komoot.io` (or the
-`VITE_GEOCODER_URL` origin) in `connect-src`.
+body is a `GeocoderUnavailableError`. Any Content-Security-Policy must allow
+`https://photon.komoot.io` (or the `VITE_GEOCODER_URL` origin) in `connect-src`.
+
+### County address points (issue #49)
+
+OpenStreetMap lacks the house numbers for much of the county: in a random sample of
+20 county address points Photon had the number for 12, and it has none for the
+owner's own test address, 1318 Ross Ave (63146, precinct CC007). So the owner chose
+(2026-10-21) the county's official address points first, still from the browser
+with no server, proxy or key:
+
+1. **Live county layer:**
+   `https://maps.stlouisco.com/hosting/rest/services/Maps/ASR_Address_Points/FeatureServer/0`
+   (549,164 points, edited daily). CORS reflects the requesting origin. It sits behind
+   Cloudflare, whose firewall blocked a Python client and blocks queries that look like
+   SQL attacks (`IS NULL`, `<>`); the app's query shapes (`=`, `LIKE`, `AND`, `OR`)
+   pass, from curl, Node and Chrome.
+2. **Hosted copy:** `https://services2.arcgis.com/w657bnjzrjguNyOy/arcgis/rest/services/Address_Points/FeatureServer/2`
+   (542,647 points, CORS `*`, data last edited 2023-02, so newer addresses are
+   missing). ArcGIS Online item `cf0a5470fca14004baee67da7746cdbf`, credited to the
+   St. Louis County GIS Service Center. Same fields as the live layer.
+3. **Photon**, as above.
+
+The app calls a geocoder only through the interface in `src/data/geocoder.js`:
+`suggest(text)` for the address box's suggestions and `geocode(textOrSuggestion)`
+for the place, `{ lat, lng, state?, county?, label }`, or null when nothing
+matches. The landing screen passes that place to `locate` (see Out of county above);
+a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
+`geocoder.js` builds one chain at load (`createGeocoder`), from
+`src/data/countyAddress.js` (both county layers) and the Photon provider:
+
+- **Finding an address:** a POST to the layer's `query` with
+  `ADRNO = <number> AND STATUS = 'Current' AND (ADRSTR LIKE '%<word>%' ...)`: the
+  typed house number and one street word in every county spelling (MOUNT and MT,
+  ST and SAINT; ordinals as digits). The clause is built only from a validated
+  integer and words reduced to `[A-Z0-9]`, so typed text cannot change the query.
+  The filter is loose on purpose; the same strict rules as Photon's (whole street,
+  same direction and type, a typed ZIP or town must agree, a named town other than
+  St. Louis needs its town or ZIP) then decide in the browser
+  (`src/data/addressMatch.js`, shared by both providers). County street types
+  (`PLZ`, `XING`, `CV` and others) compare equal to their full words.
+- **One address, several records:** the county has one number, street and ZIP as two
+  houses in two towns (50 Country Club Ln 63033: Black Jack, SPL021, and Florissant,
+  SPL026), a unit across a town line from its house (1950 Walton Rd 63114: the house in
+  Overland, MID002; Unit R in Vinita Park, UNV031) and apartment complexes whose units
+  span two precincts (4005 Ripa Ave 63125: 7 records in LEM012, 38 in LEM021). So a typed
+  unit ("Apt 13B", "#2") that exactly one record has answers with that record's point.
+  Otherwise the address's own record (no unit), else its first unit, answers only when
+  every record of the address is in one precinct: one POST multipoint query to the
+  precinct layer (`getPrecinctCodesAtPoints` in `src/data/arcgis.js`), sent only when
+  the address has more than one point, and capped at 4 s. Records that are partly in
+  St. Louis City and partly in the county (6200 Enright Ave 63130: 27 City units, 31 in
+  University City), two precincts, or a failed or slow check is no match, with no
+  fallback; the voter is pointed to "Use my location" and the county's official
+  lookup, or can type the unit. A scan of the hosted copy found about 20 such
+  single-town complexes and about 110 addresses with a unit in another town.
+- **Not homes:** records for utility poles, cell towers, billboards, ATMs and
+  substations (`UNITDESC` `UP`, `CELL TOWER`, `BILLBOARD`, `ATM`, `SUBSTATION`) are
+  ignored. A unit number with a space ("2 FL") is suggested as its address, without
+  the unit.
+- **City records:** the layers hold a few St. Louis City addresses (`MUNI = 'STL'`, 44
+  in the live layer); they are given the City as their county, so they get the City
+  referral, with no City cross-check against Photon.
+- **Every house the text could mean:** the records at the typed number and street,
+  and, when no direction is typed, the same street with a direction ("101 Elm Ave" is
+  101 Elm Ave 63122 in Glendale, JEF008, and also 101 N Elm Ave 63119 in Webster Groves,
+  JEF012; about 160 such pairs in different towns). Only a typed ZIP, or a typed town
+  other than plain St. Louis, narrows them; a house in a named town counts though the
+  strict rules alone would leave it out for want of its town ("2 Colonial Ct" is in
+  Ladue, mailing city Saint Louis, CLA014, and in Florissant, FLO001; about 120 such
+  pairs). If any of those houses is the text's but none passes the strict rules (its
+  town or direction is not typed), the answer is no match, not a hand-over to Photon,
+  which could answer a different house ("601 Washington Ave" is in Glencoe, and in the
+  City).
+- **Two addresses fit** (two ZIPs or two streets): no match, with no fallback, since
+  the official data says the text is ambiguous. A ZIP picks one.
+- **No match in the live layer:** Photon. The hosted copy is not asked, because the
+  live layer is its newer superset; the copy could only add a retired address.
+- **A layer unavailable** (network error, non-2xx such as a firewall 403, ArcGIS
+  error body, malformed body, too many records, or no answer in 2.5 s for the live
+  layer, 3 s for the hosted copy): the next source. Every source unavailable is a
+  `GeocoderUnavailableError`; a county "no match" with Photon unavailable is no
+  match. The hosted copy is from 2023: when it answers, an address that became two
+  houses since then still resolves to the one it knows. That needs the live layer to
+  be down at the same time, and the owner chose the copy as the first fallback knowing
+  it is older.
+- **St. Louis City:** apart from those few records, the county layers hold no City
+  addresses, so a City address falls through to Photon and keeps the City referral
+  (#8). A county match that
+  neither a typed ZIP nor a typed town other than St. Louis confirms is checked
+  against Photon (at most 3 s): if Photon finds the same text in St. Louis City, the
+  answer is no match (add the ZIP). If Photon is down or slow, the county match
+  stands. A typed ZIP is trusted: a City address with the same number, street, type
+  and direction in a ZIP that crosses the City line would still resolve to the
+  county one, which we judge too rare to slow every lookup for.
+- **Suggestions:** `STATUS = 'Current' AND FULL_ADDRESS LIKE '<typed>%'` in county
+  spelling (AVENUE as AVE, SAINT as ST, a typed ZIP as `ZIPCODE = '<zip>'`), 25 records ordered by address, units collapsed to their
+  address unless a unit is typed, at most 5 shown. A street type in the middle of a
+  name stays as typed ("Olive Street Rd"). County suggestions carry no point, since
+  one label can be two houses: a pick is found again by its label (which has the ZIP),
+  under every rule above. Photon suggests only when the county layers are unavailable
+  or have none (a City address, or a spelling the prefix misses). Every pick, Photon's
+  too, is geocoded again by its label through the whole chain, county first, so a
+  Photon suggestion cannot skip the county's rules. A ZIP typed after the street, with
+  or without a comma, filters by `ZIPCODE` instead of joining the prefix.
+
+Privacy: the address goes to the county layers only in a POST body, never a URL,
+with `cache: no-store`, no cookies (`credentials: 'omit'`; the live server sets an
+`AGS_ROLES` cookie, which is never stored) and no referrer. Photon gets the address
+only when the county has no match or no county layer answers, or for the City check
+of a county match typed with neither a ZIP nor a town other than St. Louis; it gets it in a GET query string, as
+before (#38). Nothing is stored. The Content-Security-Policy
+allows `https://maps.stlouisco.com` and `https://services2.arcgis.com` in
+`connect-src`.
+
+`node scripts/check-geocoder.mjs`, 2026-10-21: the 10 polling place addresses
+above plus 1318 Ross Ave, each source alone, the app's chain, and the chain with
+the live layer blocked:
+
+| Address | Want | Live county | Hosted copy | Photon | App | App, live blocked |
+|---|---|---|---|---|---|---|
+| 7700 Fine Rd 63129 | OAK019 | OAK019 | OAK019 | OAK019 | OAK019 | OAK019 |
+| 501 Bowles Ave 63026 | MER025 | MER025 | MER025 | MER025 | MER025 | MER025 |
+| 6915 Weber Rd 63123 | GRA045 | GRA045 | GRA045 | none | GRA045 | GRA045 |
+| 1375 Carman Rd 63021 | MR018 | MR018 | MR018 | MR018 | MR018 | MR018 |
+| 12325 Manchester Rd 63131 | MR006 | MR006 | MR006 | MR006 | MR006 | MR006 |
+| 1417 St Louis Galleria St 63117 | CLA019 | CLA019 | CLA019 | none | CLA019 | CLA019 |
+| 17476 Chesterfield Airport Rd 63005 | CHE002 | CHE002 | CHE002 | CHE002 | CHE002 | CHE002 |
+| 9225 Lackland Rd 63114 | MID014 | MID014 | MID014 | MID014 | MID014 | MID014 |
+| 1910 Exuma Dr 63136 | NRW020 | NRW020 | NRW020 | NRW020 | NRW020 | NRW020 |
+| 11831 Bellefontaine Rd 63138 | SF014 | SF014 | SF014 | SF014 | SF014 | SF014 |
+| 1318 Ross Ave 63146 | CC007 | CC007 | CC007 | none | CC007 | CC007 |
+
+App: 11 right, 0 no match, 0 wrong; the same with the live layer blocked (the
+hosted copy answered). Photon alone: 8 right, 3 no match. The script also checks
+that City Hall (1200 Market St, 63103) still gets the City referral: it does.
+A random sample of 192 current county address points, each typed both as stored
+and as a person would (lower case, full street type, town and ZIP), matched in the
+live layer every time.
 
 The county web map also has a `commercial_addresses_view` layer that warns when
 an address is commercial, not residential. Worth a later look as an optional
