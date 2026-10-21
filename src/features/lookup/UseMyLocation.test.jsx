@@ -159,6 +159,41 @@ describe('UseMyLocation', () => {
     expect(screen.getByRole('alert')).toBeEmptyDOMElement();
   });
 
+  it('drops a late result once the voter goes back to the address box', async () => {
+    const onLocate = vi.fn();
+    render(<Harness onLocate={onLocate} />);
+    await userEvent.type(address(), '1 Main St');
+    await userEvent.click(button());
+    await userEvent.click(address());
+    expect(button()).toHaveTextContent(copy.button);
+    await answer(({ ok }) => ok(POSITION));
+    expect(onLocate).not.toHaveBeenCalled();
+  });
+
+  it('drops a late result once the address form is submitted', async () => {
+    const onLocate = vi.fn();
+    render(
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Harness onLocate={onLocate} />
+        <button type="submit">Search</button>
+      </form>,
+    );
+    await userEvent.type(address(), '1 Main St');
+    await userEvent.click(button());
+    await userEvent.click(screen.getByRole('button', { name: 'Search' }));
+    await answer(({ ok }) => ok(POSITION));
+    expect(onLocate).not.toHaveBeenCalled();
+  });
+
+  it('tells screen readers it is finding the location', async () => {
+    render(<Harness />);
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    await userEvent.click(button());
+    expect(screen.getByRole('status')).toHaveTextContent(copy.busy);
+    await answer(({ ok }) => ok(POSITION));
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+  });
+
   it('drops a result that arrives after it unmounts', async () => {
     const onLocate = vi.fn();
     const { unmount } = render(<Harness onLocate={onLocate} />);
