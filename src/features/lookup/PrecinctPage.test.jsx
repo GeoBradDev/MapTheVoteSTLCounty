@@ -313,6 +313,16 @@ describe('PrecinctPage', () => {
     },
   );
 
+  it.each(['%C3%9Fc007', '%C4%B1c007', '%C5%BF%C5%BF007', '%EF%AC%80007'])(
+    'never turns non-ASCII letters in %s into another precinct code',
+    async (typed) => {
+      const location = renderAt(typed);
+      expect(await screen.findByText(copy.errors.notFound, { exact: false })).toBeInTheDocument();
+      expect(location.history).toEqual([`/p/${typed}`]);
+      expect(fetchMock).not.toHaveBeenCalled();
+    },
+  );
+
   it('says a malformed code is not found, without a request', async () => {
     renderAt('nope');
     const alert = await screen.findByRole('alert');
