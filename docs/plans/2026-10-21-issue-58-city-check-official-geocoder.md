@@ -69,6 +69,10 @@ Domain skills:
 - `render.yaml`, `src/test/render.test.js` (if it pins the policy), `scripts/smoke.mjs` (if
   it pins the policy).
 - `src/features/privacy/privacyCopy.js`, `PrivacyPage.test.jsx`.
+- `src/features/lookup/GeocoderAttribution.jsx`, `lookupCopy.js` and its test: the line under
+  the address box says the address is "sent only to these services", so it must name the City
+  check too (added during implementation, found in the live drive).
+- `scripts/record-fixtures.mjs`: records the City geocoder fixtures.
 - `scripts/check-geocoder.mjs`: the City check in the app chains; the #58 cases.
 - `docs/data.md`, `README.md`, `docs/progress.md`.
 

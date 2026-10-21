@@ -1,0 +1,368 @@
+{
+  "spatialReference": {
+    "wkid": 4326,
+    "latestWkid": 4326
+  },
+  "candidates": [
+    {
+      "address": "1200 MARKET ST, 63103",
+      "location": {
+        "x": -90.19965966163205,
+        "y": 38.62656617374446
+      },
+      "score": 100,
+      "attributes": {
+        "Addr_type": "PointAddress",
+        "AddNum": "1200",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "MARKET",
+        "StType": "ST",
+        "StDir": "",
+        "ZIP": "63103"
+      },
+      "extent": {
+        "xmin": -90.2014583057242,
+        "ymin": 38.62476752965231,
+        "xmax": -90.1978610175399,
+        "ymax": 38.628364817836605
+      }
+    },
+    {
+      "address": "1200 N MARKET ST, 63106",
+      "location": {
+        "x": -90.19377062135204,
+        "y": 38.64855705027009
+      },
+      "score": 92.43,
+      "attributes": {
+        "Addr_type": "PointAddress",
+        "AddNum": "1200",
+        "StPreDir": "N",
+        "StPreType": "",
+        "StName": "MARKET",
+        "StType": "ST",
+        "StDir": "",
+        "ZIP": "63106"
+      },
+      "extent": {
+        "xmin": -90.19556926544419,
+        "ymin": 38.646758406177945,
+        "xmax": -90.1919719772599,
+        "ymax": 38.65035569436224
+      }
+    },
+    {
+      "address": "1200 NORTH MARKET ST, 63106",
+      "location": {
+        "x": -90.19377062135204,
+        "y": 38.64855705027009
+      },
+      "score": 92.43,
+      "attributes": {
+        "Addr_type": "PointAddress",
+        "AddNum": "1200",
+        "StPreDir": "NORTH",
+        "StPreType": "",
+        "StName": "MARKET",
+        "StType": "ST",
+        "StDir": "",
+        "ZIP": "63106"
+      },
+      "extent": {
+        "xmin": -90.19556926544419,
+        "ymin": 38.646758406177945,
+        "xmax": -90.1919719772599,
+        "ymax": 38.65035569436224
+      }
+    },
+    {
+      "address": "1200 N MARKET PL, 63106",
+      "location": {
+        "x": -90.19377062135204,
+        "y": 38.64855705027009
+      },
+      "score": 83.35,
+      "attributes": {
+        "Addr_type": "PointAddress",
+        "AddNum": "1200",
+        "StPreDir": "N",
+        "StPreType": "",
+        "StName": "MARKET",
+        "StType": "PL",
+        "StDir": "",
+        "ZIP": "63106"
+      },
+      "extent": {
+        "xmin": -90.19556926544419,
+        "ymin": 38.646758406177945,
+        "xmax": -90.1919719772599,
+        "ymax": 38.65035569436224
+      }
+    },
+    {
+      "address": "1200 NORTH MARKET PL, 63106",
+      "location": {
+        "x": -90.19377062135204,
+        "y": 38.64855705027009
+      },
+      "score": 83.35,
+      "attributes": {
+        "Addr_type": "PointAddress",
+        "AddNum": "1200",
+        "StPreDir": "NORTH",
+        "StPreType": "",
+        "StName": "MARKET",
+        "StType": "PL",
+        "StDir": "",
+        "ZIP": "63106"
+      },
+      "extent": {
+        "xmin": -90.19556926544419,
+        "ymin": 38.646758406177945,
+        "xmax": -90.1919719772599,
+        "ymax": 38.65035569436224
+      }
+    },
+    {
+      "address": "1200 MARKET ST",
+      "location": {
+        "x": -90.19829187891384,
+        "y": 38.62746926277775
+      },
+      "score": 100,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "1200",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "MARKET",
+        "StType": "ST",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.20009052300598,
+        "ymin": 38.625670618685604,
+        "xmax": -90.19649323482169,
+        "ymax": 38.6292679068699
+      }
+    },
+    {
+      "address": "1200 N MARKET ST",
+      "location": {
+        "x": -90.1937545738422,
+        "y": 38.64881391004143
+      },
+      "score": 92.43,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "1200",
+        "StPreDir": "N",
+        "StPreType": "",
+        "StName": "MARKET",
+        "StType": "ST",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.19555321793435,
+        "ymin": 38.647015265949285,
+        "xmax": -90.19195592975005,
+        "ymax": 38.65061255413358
+      }
+    },
+    {
+      "address": "1200 NORTH MARKET ST",
+      "location": {
+        "x": -90.1937545738422,
+        "y": 38.64881391004143
+      },
+      "score": 92.43,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "1200",
+        "StPreDir": "NORTH",
+        "StPreType": "",
+        "StName": "MARKET",
+        "StType": "ST",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.19555321793435,
+        "ymin": 38.647015265949285,
+        "xmax": -90.19195592975005,
+        "ymax": 38.65061255413358
+      }
+    },
+    {
+      "address": "1200 N MARKET PL",
+      "location": {
+        "x": -90.1937545738422,
+        "y": 38.64881391004143
+      },
+      "score": 83.35,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "1200",
+        "StPreDir": "N",
+        "StPreType": "",
+        "StName": "MARKET",
+        "StType": "PL",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.19555321793435,
+        "ymin": 38.647015265949285,
+        "xmax": -90.19195592975005,
+        "ymax": 38.65061255413358
+      }
+    },
+    {
+      "address": "1200 NORTH MARKET PL",
+      "location": {
+        "x": -90.1937545738422,
+        "y": 38.64881391004143
+      },
+      "score": 83.35,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "1200",
+        "StPreDir": "NORTH",
+        "StPreType": "",
+        "StName": "MARKET",
+        "StType": "PL",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.19555321793435,
+        "ymin": 38.647015265949285,
+        "xmax": -90.19195592975005,
+        "ymax": 38.65061255413358
+      }
+    },
+    {
+      "address": "1201 MARKET ST",
+      "location": {
+        "x": -90.19828642716102,
+        "y": 38.62748473674415
+      },
+      "score": 79,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "1201",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "MARKET",
+        "StType": "ST",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.20008507125317,
+        "ymin": 38.625686092652,
+        "xmax": -90.19648778306887,
+        "ymax": 38.6292833808363
+      }
+    },
+    {
+      "address": "1201 N MARKET ST",
+      "location": {
+        "x": -90.19381076896681,
+        "y": 38.64892406919187
+      },
+      "score": 71.43,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "1201",
+        "StPreDir": "N",
+        "StPreType": "",
+        "StName": "MARKET",
+        "StType": "ST",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.19560941305896,
+        "ymin": 38.64712542509972,
+        "xmax": -90.19201212487467,
+        "ymax": 38.65072271328402
+      }
+    },
+    {
+      "address": "1201 NORTH MARKET ST",
+      "location": {
+        "x": -90.19381076896681,
+        "y": 38.64892406919187
+      },
+      "score": 71.43,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "1201",
+        "StPreDir": "NORTH",
+        "StPreType": "",
+        "StName": "MARKET",
+        "StType": "ST",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.19560941305896,
+        "ymin": 38.64712542509972,
+        "xmax": -90.19201212487467,
+        "ymax": 38.65072271328402
+      }
+    },
+    {
+      "address": "1198 MARKET ST",
+      "location": {
+        "x": -90.19822526389011,
+        "y": 38.62745337817514
+      },
+      "score": 68.5,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "1198",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "MARKET",
+        "StType": "ST",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.20002390798226,
+        "ymin": 38.62565473408299,
+        "xmax": -90.19642661979796,
+        "ymax": 38.62925202226729
+      }
+    },
+    {
+      "address": "1098 MARKET ST",
+      "location": {
+        "x": -90.1968643828878,
+        "y": 38.62710792880131
+      },
+      "score": 68.4,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "1098",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "MARKET",
+        "StType": "ST",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.19866302697994,
+        "ymin": 38.62530928470916,
+        "xmax": -90.19506573879565,
+        "ymax": 38.628906572893456
+      }
+    }
+  ]
+}

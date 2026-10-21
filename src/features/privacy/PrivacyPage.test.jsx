@@ -54,7 +54,7 @@ describe('PrivacyPage', () => {
     expect(hosts.electionMaps).toBe(new URL(election.serviceRoot).host);
   });
 
-  it('says where the typed address goes: the county service and Photon', () => {
+  it('says where the typed address goes: the county service, Photon and the City check', () => {
     render(<PrivacyPage />);
     const item = within(section(copy.sent.heading))
       .getByRole('heading', { name: 'Address search' })
@@ -64,8 +64,12 @@ describe('PrivacyPage', () => {
       "goes first to St. Louis County's address points (maps.stlouisco.com), or to the county's copy of them on Esri's ArcGIS Online (services2.arcgis.com) when the first cannot be reached. The county gets it in the body of the request, not in its web address.",
     );
     expect(item).toHaveTextContent(
-      'It also goes to Photon by komoot (photon.komoot.io) when the county has no match or cannot be reached',
+      'It also goes to Photon by komoot (photon.komoot.io) when the county has no match or cannot be reached;',
     );
+    expect(item).toHaveTextContent(
+      "its house number and street (not the town, ZIP code or unit) also go to the City of St. Louis's address search (maps6.stlouis-mo.gov), in the body of the request, to check that the City does not have the same address. That is skipped only when you typed a ZIP code that is entirely outside the City.",
+    );
+    expect(item).not.toHaveTextContent('not also in St. Louis City');
   });
 
   // Issue #38 is open: point queries still carry coordinates in a GET query

@@ -5,8 +5,12 @@
 // then its hosted copy when the live one is unavailable; Photon
 // (src/data/photon.js, issue #7, at VITE_GEOCODER_URL when that is set at
 // build time) when the county has no match, as for a St. Louis City address,
-// or is unavailable. Address text goes only to those services: never into the
-// URL, storage, logs or analytics.
+// or is unavailable. Issue #58: every answer outside St. Louis City is checked
+// against the City of St. Louis's own geocoder (src/data/cityAddress.js)
+// unless the text holds a ZIP entirely outside the City, so a City voter whose
+// address also exists in the county never gets a county precinct. Address
+// text goes only to those services: never into the URL, storage, logs or
+// analytics.
 import {
   attribution as countyAttribution,
   createCountyAddressSource,
@@ -14,7 +18,13 @@ import {
   HOSTED_URL,
   LIVE_URL,
 } from './countyAddress.js';
-import { CITY_COUNTY } from './addressMatch.js';
+import { CITY_COUNTY, words } from './addressMatch.js';
+import {
+  attribution as cityAttribution,
+  createCityAddressCheck,
+  needsCityCheck,
+  streetOf,
+} from './cityAddress.js';
 import { attribution as photonAttribution, createPhotonGeocoder } from './photon.js';
 
 export { GeocoderUnavailableError } from './geocoderError.js';
@@ -53,44 +63,45 @@ export { GeocoderUnavailableError } from './geocoderError.js';
 export const attribution = Object.freeze({
   county: countyAttribution,
   fallback: photonAttribution,
+  city: cityAttribution,
 });
-
-/**
- * How long a county match waits for Photon to say whether St. Louis City has
- * the same address too, before the match stands.
- */
-export const CROSS_CHECK_MS = 3000;
 
 function abortError() {
   return new DOMException('The operation was aborted.', 'AbortError');
 }
 
-// A signal that aborts with the caller's signal or after `ms`.
-function withTimeout(signal, ms) {
-  const controller = new AbortController();
-  const abort = () => controller.abort();
-  signal?.addEventListener('abort', abort, { once: true });
-  const timer = setTimeout(abort, ms);
-  return {
-    signal: controller.signal,
-    done() {
-      clearTimeout(timer);
-      signal?.removeEventListener('abort', abort);
-    },
-  };
+// The names a provider gives St. Louis County, in words() form. A place a
+// provider puts in another county gets no county precinct, so it needs no
+// City check.
+const ST_LOUIS_COUNTY = new Set(['st louis county', 'st louis']);
+
+// Whether a place could get a county precinct: not the City, and not named
+// as another county by its provider.
+function couldBeCounty(place) {
+  if (place.county === CITY_COUNTY) return false;
+  const county = words(place.county).join(' ');
+  return !county || ST_LOUIS_COUNTY.has(county);
 }
 
 /**
  * The county-first lookup.
  * @param {{
  *   sources: Array<{ find: Function, suggest: Function }>,
- *   fallback: Geocoder & { findPlaces: Function },
+ *   fallback: Geocoder,
+ *   cityCheck: { find: Function },
  * }} options `sources` are county address sources in order: each later one
  *   is asked only when the one before is unavailable. `fallback` answers when
- *   the county has no match, or no county source is available.
+ *   the county has no match, or no county source is available. `cityCheck`
+ *   (createCityAddressCheck in src/data/cityAddress.js) says whether St. Louis
+ *   City has the address too; it is required, since without it a City voter
+ *   could get a county precinct.
  * @returns {Readonly<Geocoder>}
  */
-export function createGeocoder({ sources, fallback }) {
+export function createGeocoder({ sources, fallback, cityCheck }) {
+  if (typeof cityCheck?.find !== 'function') {
+    throw new TypeError('createGeocoder needs a cityCheck');
+  }
+
   // The first county answer, skipping sources that are unavailable; null when
   // none is available. An abort always rejects.
   async function firstAnswer(ask, signal) {
@@ -105,18 +116,24 @@ export function createGeocoder({ sources, fallback }) {
     return null;
   }
 
-  // Whether Photon finds the text in St. Louis City, which the county's
-  // address points leave out. Unknown (Photon down or slow) counts as no.
-  async function alsoInCity(text, signal) {
-    const timeout = withTimeout(signal, CROSS_CHECK_MS);
+  // The place itself, or what St. Louis City has at the same address. The
+  // county's address points leave out almost every City address, and Photon
+  // misses many, so an answer that could get a county precinct is checked
+  // with the City's own geocoder, unless the text holds a ZIP entirely
+  // outside the City. A City address that fits is the answer (the City
+  // referral, #8); one the text could mean but not exactly, or a City
+  // geocoder that fails or is slow, is no match. Never the county place then.
+  async function checkedForCity(text, place, signal) {
+    if (!place || !couldBeCounty(place) || !needsCityCheck(text)) return place;
     try {
-      const places = await fallback.findPlaces(text, { signal: timeout.signal });
-      return places.some((place) => place.county === CITY_COUNTY);
+      const city = await cityCheck.find(text, streetOf(place.label), { signal });
+      if (signal?.aborted) throw abortError();
+      if (city?.status === 'city') return city.place;
+      if (city?.status === 'none') return place;
+      return null;
     } catch {
       if (signal?.aborted) throw abortError();
-      return false;
-    } finally {
-      timeout.done();
+      return null;
     }
   }
 
@@ -147,22 +164,19 @@ export function createGeocoder({ sources, fallback }) {
       if (signal?.aborted) throw abortError();
       // The official data has two addresses that fit: ask for a ZIP.
       if (county?.status === 'ambiguous') return null;
-      if (county?.status === 'match') {
-        // A county record in the City already gets the City's referral.
-        const check = !county.confirmed && county.place.county !== CITY_COUNTY;
-        const inCity = check && (await alsoInCity(text, signal));
-        if (signal?.aborted) throw abortError();
-        if (inCity) return null;
-        return county.place;
-      }
+      // A county record in the City already gets the City's referral.
+      if (county?.status === 'match') return checkedForCity(text, county.place, signal);
+      let place;
       try {
-        return await fallback.geocode(text, { signal });
+        place = await fallback.geocode(text, { signal });
       } catch (error) {
         if (signal?.aborted) throw abortError();
         // The county answered no match; with Photon down, that is the answer.
         if (county) return null;
         throw error;
       }
+      if (signal?.aborted) throw abortError();
+      return checkedForCity(text, place, signal);
     },
   });
 }
@@ -178,6 +192,7 @@ const geocoder = createGeocoder({
     createCountyAddressSource({ url: HOSTED_URL, timeoutMs: HOSTED_TIMEOUT_MS }),
   ],
   fallback: createPhotonGeocoder({ baseUrl: import.meta.env?.VITE_GEOCODER_URL }),
+  cityCheck: createCityAddressCheck(),
 });
 
 export default geocoder;

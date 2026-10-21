@@ -434,7 +434,7 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
   the unit.
 - **City records:** the layers hold a few St. Louis City addresses (`MUNI = 'STL'`, 44
   in the live layer); they are given the City as their county, so they get the City
-  referral, with no City cross-check against Photon.
+  referral, with no City check.
 - **Every house the text could mean:** the records at the typed number and street,
   and, when no direction is typed, the same street with a direction ("101 Elm Ave" is
   101 Elm Ave 63122 in Glendale, JEF008, and also 101 N Elm Ave 63119 in Webster Groves,
@@ -460,13 +460,8 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
   it is older.
 - **St. Louis City:** apart from those few records, the county layers hold no City
   addresses, so a City address falls through to Photon and keeps the City referral
-  (#8). A county match that
-  neither a typed ZIP nor a typed town other than St. Louis confirms is checked
-  against Photon (at most 3 s): if Photon finds the same text in St. Louis City, the
-  answer is no match (add the ZIP). If Photon is down or slow, the county match
-  stands. A typed ZIP is trusted: a City address with the same number, street, type
-  and direction in a ZIP that crosses the City line would still resolve to the
-  county one, which we judge too rare to slow every lookup for.
+  (#8). A City address whose number and street the county also has needs the City
+  check below (issue #58).
 - **Suggestions:** `STATUS = 'Current' AND FULL_ADDRESS LIKE '<typed>%'` in county
   spelling (AVENUE as AVE, SAINT as ST, a typed ZIP as `ZIPCODE = '<zip>'`), 25 records ordered by address, units collapsed to their
   address unless a unit is typed, at most 5 shown. A street type in the middle of a
@@ -481,13 +476,56 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
 Privacy: the address goes to the county layers only in a POST body, never a URL,
 with `cache: no-store`, no cookies (`credentials: 'omit'`; the live server sets an
 `AGS_ROLES` cookie, which is never stored) and no referrer. Photon gets the address
-only when the county has no match or no county layer answers, or for the City check
-of a county match typed with neither a ZIP nor a town other than St. Louis; it gets it in a GET query string, as
-before (#38). Nothing is stored. The Content-Security-Policy
-allows `https://maps.stlouisco.com` and `https://services2.arcgis.com` in
-`connect-src`.
+only when the county has no match or no county layer answers; it gets it in a GET
+query string, as before (#38). The City check (below) sends the City only the house
+number and street, in a POST body, the same way. Nothing is stored. The
+Content-Security-Policy allows `https://maps.stlouisco.com`,
+`https://services2.arcgis.com` and `https://maps6.stlouis-mo.gov` in `connect-src`.
 
-`node scripts/check-geocoder.mjs`, 2026-10-21: the 10 polling place addresses
+### City check (issue #58)
+
+The county's address points leave out almost every St. Louis City address, and
+OpenStreetMap misses many City house numbers, so a City voter whose number and street
+also exist in the county got a county precinct: `6135 Washington Ave, St. Louis, MO`
+and `6135 Washington Ave` opened FER022 (the county's 6135 Washington Ave 63134; the
+City has 6135 Washington Ave 63112), and `6135 Horton Pl, St. Louis, MO 63133` opened
+UNV202 (the City has 6135 Horton Pl 63133, about 30 m away). The #49 chain asked Photon
+whether the City had the address, and only when no ZIP or town confirmed the county
+match; Photon had no point for those City houses, and a Photon outage counted as "not
+in the City".
+
+The owner chose (2026-10-21) the City of St. Louis's own geocoder instead:
+`https://maps6.stlouis-mo.gov/arcgis/rest/services/GEOCODERS/COMPOSITE_GEOCODE/GeocodeServer`
+(`src/data/cityAddress.js`). Its `findAddressCandidates` answers browser requests (CORS
+reflects the requesting origin; it sets an `AGS_ROLES` cookie, never stored with
+`credentials: 'omit'`), in about 0.15 s. It does not parse a town or state in the
+single-line input (`6135 Washington Ave, St. Louis, MO` finds nothing), so it is asked
+for the house number and street of the found place only, and the app compares the
+answer with the typed text itself:
+
+- **When:** every answer of the chain that could get a county precinct (a county match,
+  or a Photon answer that is not in the City and not in another county), ZIP typed or
+  not, town typed or not. The one skip is a ZIP entirely outside the City: the Census
+  2020 ZIP Code Tabulation Areas that touch the county and do not come within 500 m of
+  the City (`COUNTY_ONLY_ZIPS`, from TIGERweb). A ZIP that crosses the City line (63130,
+  63133, 63136, 63120, 63147 and others) or is not listed gets the check.
+- **A City match:** a `PointAddress` (a City parcel; interpolated `StreetAddress` ranges do
+  not count) with the typed house number and whole street under the strict rules
+  (`matchesStreet` in `addressMatch.js`), and the typed ZIP when one is typed (a parcel
+  with no ZIP is not ruled out). The answer is that City place, so the voter gets the City
+  referral (#8), never the county precinct. A typed town does not rule a City parcel out.
+- **A City parcel the text could mean but not exactly** (its street has a direction the
+  text left out, like `1200 Market Pl` and the City's 1200 N Market Pl): no match.
+- **The City geocoder unavailable** (network error, non-2xx, error body, malformed body,
+  or no answer in 4 s): no match, never the county place. The voter gets "Use my
+  location" and the county's official lookup.
+- **Cost:** a county voter whose number and street the City also has, who types no ZIP or
+  a ZIP that crosses the City line, gets the City referral; typing a county-only ZIP gets
+  the precinct. A City geocoder outage makes every lookup without a county-only ZIP no
+  match. The owner accepted both: neither sends a voter to a wrong county precinct.
+- **Not done:** looking up City addresses the county does not have (#57).
+
+`node scripts/check-geocoder.mjs`, 2026-10-21, rerun with the City check (#58): the 10 polling place addresses
 above plus 1318 Ross Ave, each source alone, the app's chain, and the chain with
 the live layer blocked:
 
@@ -507,7 +545,10 @@ the live layer blocked:
 
 App: 11 right, 0 no match, 0 wrong; the same with the live layer blocked (the
 hosted copy answered). Photon alone: 8 right, 3 no match. The script also checks
-that City Hall (1200 Market St, 63103) still gets the City referral: it does.
+that City Hall (1200 Market St, 63103) and the #58 City addresses (`6135 Washington Ave,
+St. Louis, MO`, `6135 Washington Ave`, `6109 Washington Ave` and `6135 Horton Pl, St.
+Louis, MO 63133`) get the City referral, with the live layer and with it blocked: all
+do.
 A random sample of 192 current county address points, each typed both as stored
 and as a person would (lower case, full street type, town and ZIP), matched in the
 live layer every time.

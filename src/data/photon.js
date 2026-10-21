@@ -140,9 +140,10 @@ export function createPhotonGeocoder({
   return Object.freeze({
     /**
      * Every place that fits the text under the strict rules, in Photon's
-     * order. Not part of the Geocoder interface: the county-first lookup in
-     * src/data/geocoder.js uses it to see whether St. Louis City, which the
-     * county's address points leave out, also has the typed address.
+     * order. Not part of the Geocoder interface. The county-first lookup no
+     * longer uses it for the City check, which asks the City's own geocoder
+     * (src/data/cityAddress.js, issue #58), since OpenStreetMap misses many
+     * City house numbers.
      * @param {string} text
      * @param {{ signal?: AbortSignal }} [options]
      * @returns {Promise<import('./geocoder.js').GeocodedPlace[]>}

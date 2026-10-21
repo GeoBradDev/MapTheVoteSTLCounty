@@ -4,6 +4,7 @@
 // keeps, change this notice in the same change. PrivacyPage.test.jsx fails when
 // render.yaml's connect-src allows an origin this notice does not name.
 import election from '../../config/election.js';
+import { CITY_GEOCODER_URL } from '../../data/cityAddress.js';
 import { HOSTED_URL, LIVE_URL } from '../../data/countyAddress.js';
 import { attribution } from '../../data/geocoder.js';
 import { BASEMAP_STYLE_URL } from '../lookup/basemap.js';
@@ -12,14 +13,16 @@ const host = (url) => new URL(url).host;
 
 // The address search services. Only the geocoder modules may name a
 // provider, so the names, links and hosts come from there: St. Louis County's
-// address points first (its live layer, then its hosted copy), and the open
-// service after them (src/data/geocoder.js).
+// address points first (its live layer, then its hosted copy), the open
+// service after them, and the City of St. Louis's geocoder for the City
+// check (src/data/geocoder.js).
 const openSearch = attribution.fallback;
 
 /** Host names the notice names, so a reader can match them to network requests. */
 export const hosts = Object.freeze({
   countyAddresses: host(LIVE_URL),
   countyAddressesCopy: host(HOSTED_URL),
+  cityAddresses: host(CITY_GEOCODER_URL),
   openSearch: host(openSearch.serviceUrl),
   electionMaps: host(election.serviceRoot),
   basemap: host(BASEMAP_STYLE_URL),
@@ -46,7 +49,7 @@ export const copy = {
     items: [
       {
         heading: 'Address search',
-        text: `What you type in the address box goes first to St. Louis County's address points (${hosts.countyAddresses}), or to the county's copy of them on Esri's ArcGIS Online (${hosts.countyAddressesCopy}) when the first cannot be reached. The county gets it in the body of the request, not in its web address. It also goes to ${openSearch.service} by ${openSearch.serviceBy} (${hosts.openSearch}) when the county has no match or cannot be reached, and, when you typed neither a ZIP code nor a town other than St. Louis, to check that the address it found is not also in St. Louis City; ${openSearch.service} gets it as part of the request's web address. Suggestions are looked up as you type, so these services get each part of the address as you type it.`,
+        text: `What you type in the address box goes first to St. Louis County's address points (${hosts.countyAddresses}), or to the county's copy of them on Esri's ArcGIS Online (${hosts.countyAddressesCopy}) when the first cannot be reached. The county gets it in the body of the request, not in its web address. It also goes to ${openSearch.service} by ${openSearch.serviceBy} (${hosts.openSearch}) when the county has no match or cannot be reached; ${openSearch.service} gets it as part of the request's web address. When you search for an address and it is found outside St. Louis City, its house number and street (not the town, ZIP code or unit) also go to the City of St. Louis's address search (${hosts.cityAddresses}), in the body of the request, to check that the City does not have the same address. That is skipped only when you typed a ZIP code that is entirely outside the City. Suggestions are looked up as you type, so the county and ${openSearch.service} get each part of the address as you type it; the City gets only the address you search for.`,
       },
       {
         heading: 'Finding your precinct',

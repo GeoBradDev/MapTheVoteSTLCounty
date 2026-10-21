@@ -1,0 +1,248 @@
+{
+  "spatialReference": {
+    "wkid": 4326,
+    "latestWkid": 4326
+  },
+  "candidates": [
+    {
+      "address": "5600 ROSA AVE",
+      "location": {
+        "x": -90.2893881093934,
+        "y": 38.581201746111134
+      },
+      "score": 93.26,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "5600",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "ROSA",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29118675348555,
+        "ymin": 38.579403102018986,
+        "xmax": -90.28758946530125,
+        "ymax": 38.58300039020328
+      }
+    },
+    {
+      "address": "5601 ROSA AVE",
+      "location": {
+        "x": -90.28938546233641,
+        "y": 38.581218090195634
+      },
+      "score": 93.26,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "5601",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "ROSA",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29118410642856,
+        "ymin": 38.579419446103486,
+        "xmax": -90.28758681824426,
+        "ymax": 38.58301673428778
+      }
+    },
+    {
+      "address": "5400 ROSA AVE",
+      "location": {
+        "x": -90.28535507259204,
+        "y": 38.5807830218667
+      },
+      "score": 93.26,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "5400",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "ROSA",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.28715371668419,
+        "ymin": 38.57898437777455,
+        "xmax": -90.28355642849989,
+        "ymax": 38.58258166595885
+      }
+    },
+    {
+      "address": "5401 ROSA AVE",
+      "location": {
+        "x": -90.2853523189646,
+        "y": 38.58079935509587
+      },
+      "score": 93.26,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "5401",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "ROSA",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.28715096305675,
+        "ymin": 38.57900071100372,
+        "xmax": -90.28355367487245,
+        "ymax": 38.58259799918802
+      }
+    },
+    {
+      "address": "5100 ROSA AVE",
+      "location": {
+        "x": -90.2820287943558,
+        "y": 38.58043334445661
+      },
+      "score": 93.26,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "5100",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "ROSA",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.28382743844794,
+        "ymin": 38.57863470036446,
+        "xmax": -90.28023015026365,
+        "ymax": 38.582231988548756
+      }
+    },
+    {
+      "address": "5101 ROSA AVE",
+      "location": {
+        "x": -90.2820260074916,
+        "y": 38.5804496742094
+      },
+      "score": 93.26,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "5101",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "ROSA",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.28382465158374,
+        "ymin": 38.57865103011725,
+        "xmax": -90.28022736339945,
+        "ymax": 38.582248318301545
+      }
+    },
+    {
+      "address": "ROSA AVE",
+      "location": {
+        "x": -90.2819595255119,
+        "y": 38.58042592139455
+      },
+      "score": 93.26,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "2",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "ROSA",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.28375816960404,
+        "ymin": 38.5786272773024,
+        "xmax": -90.28016088141975,
+        "ymax": 38.5822245654867
+      }
+    },
+    {
+      "address": "ROSA AVE",
+      "location": {
+        "x": -90.2819566340758,
+        "y": 38.580442239941
+      },
+      "score": 93.26,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "1",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "ROSA",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.28375527816794,
+        "ymin": 38.57864359584885,
+        "xmax": -90.28015798998365,
+        "ymax": 38.58224088403315
+      }
+    },
+    {
+      "address": "5010 ROSA AVE",
+      "location": {
+        "x": -90.28036428380007,
+        "y": 38.580241412610846
+      },
+      "score": 93.26,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "5010",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "ROSA",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.28216292789222,
+        "ymin": 38.5784427685187,
+        "xmax": -90.27856563970792,
+        "ymax": 38.58204005670299
+      }
+    },
+    {
+      "address": "ROSA AVE",
+      "location": {
+        "x": -90.28029275077708,
+        "y": 38.580229882334805
+      },
+      "score": 93.26,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "1",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "ROSA",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.28209139486923,
+        "ymin": 38.57843123824266,
+        "xmax": -90.27849410668493,
+        "ymax": 38.58202852642695
+      }
+    }
+  ]
+}
