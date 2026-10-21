@@ -114,8 +114,10 @@ describe('render.yaml service', () => {
     expect(site).not.toHaveProperty('pullRequestPreviewsEnabled');
   });
 
-  it('skips builds for docs-only changes', () => {
-    expect(site.buildFilter).toEqual({ ignoredPaths: ['docs/**', '**/*.md'] });
+  // Not **/*.md: content under content/ (#21) is Markdown that ships in the
+  // build, so a content-only fix must still deploy.
+  it('skips builds only for changes that never ship', () => {
+    expect(site.buildFilter).toEqual({ ignoredPaths: ['docs/**', 'README.md'] });
   });
 
   it('serves the production domain', () => {
