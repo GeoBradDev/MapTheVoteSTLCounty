@@ -27,6 +27,8 @@ function onlyRequest() {
   expect(fetchMock).toHaveBeenCalledTimes(1);
   const [input, init = {}] = fetchMock.mock.calls[0];
   expect(init.method ?? 'GET').toBe('GET');
+  // No coordinates here, so the browser's default cache stays on (#27).
+  expect(init.cache).toBeUndefined();
   const url = new URL(input);
   return { base: `${url.origin}${url.pathname}`, params: Object.fromEntries(url.searchParams) };
 }

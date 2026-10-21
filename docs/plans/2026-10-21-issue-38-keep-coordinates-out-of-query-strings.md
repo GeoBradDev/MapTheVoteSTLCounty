@@ -59,7 +59,7 @@ OPTIONS answer is 200 with `content-type` allowed anyway. `connect-src` already 
 
 ## Files that change
 
-- `src/data/arcgis.js`: a `sensitive` query option (POST body, `no-store`, `omit`,
+- `src/data/arcgis.js`: a `private` query option (POST body, `no-store`, `omit`,
   `no-referrer`) used by the three point queries; the header comment.
 - `src/data/arcgis.test.js`: point queries asserted as POST bodies with the fetch options;
   by-code and layer queries asserted to stay GET.
