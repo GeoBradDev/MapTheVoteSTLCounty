@@ -109,7 +109,7 @@ function PrecinctResults({ code }) {
             {copy.searchInstead}
           </h2>
           <div className="mt-4">
-            <AddressLookup />
+            <AddressLookup noticeHeadingLevel={3} />
           </div>
         </section>
       )}
