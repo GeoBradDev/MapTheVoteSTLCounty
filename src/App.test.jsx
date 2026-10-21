@@ -220,6 +220,21 @@ describe('App', () => {
     expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
   });
 
+  it('keeps the scroll position on Back to a path with an escaped character', () => {
+    const location = renderAt('/');
+    window.history.replaceState(null, '', '/no%20such');
+    window.scrollTo.mockClear();
+
+    act(() => {
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      location.navigate('/no such');
+    });
+    window.history.replaceState(null, '', '/');
+
+    expect(heading()).toHaveTextContent('Page not found');
+    expect(window.scrollTo).not.toHaveBeenCalled();
+  });
+
   it('leaves focus where a page put it after navigating', async () => {
     renderAt('/');
 
