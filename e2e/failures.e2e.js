@@ -61,7 +61,7 @@ const json = (body) => ({ contentType: 'application/json', body });
 
 /**
  * Routes every request. Each service is 'ok' (fixtures), a number (that HTTP
- * status), 'network' (a refused or CORS-blocked request), 'timeout', or a
+ * status), 'network' (a refused or CORS-blocked request), or a
  * function of the route. The precinct point query answers CC007 when ok.
  */
 async function services(
@@ -72,7 +72,6 @@ async function services(
   const behave = async (route, how, body) => {
     if (typeof how === 'function') return how(route, body);
     if (how === 'network') return route.abort('failed');
-    if (how === 'timeout') return route.abort('timedout');
     if (typeof how === 'number') return route.fulfill({ status: how, body: '' });
     return route.fulfill(json(body));
   };
@@ -134,10 +133,23 @@ test.describe('address search', () => {
     await expectNoAxeViolations(page);
   });
 
-  test('county layers 5xx and Photon timing out: not working', async ({ page }) => {
-    await services(page, { live: 500, hosted: 503, photon: 'timeout' });
+  test('county layers 5xx and Photon hanging until its timeout: not working', async ({ page }) => {
+    let photonAsked = false;
+    await services(page, {
+      live: 500,
+      hosted: 503,
+      photon: () => {
+        photonAsked = true;
+        // Never answers, so the app's own Photon timeout gives up.
+        return new Promise(() => {});
+      },
+    });
     await search(page);
+    await expect(page.getByText(errorCopy.slow)).toBeVisible({ timeout: 6000 });
+    await expect(page.getByText(lookupCopy.errors.unavailable)).toBeVisible({ timeout: 15000 });
     await expectLookupError(page, lookupCopy.errors.unavailable);
+    expect(photonAsked).toBe(true);
+    await expect(page.getByText(errorCopy.slow)).toHaveCount(0);
   });
 
   test('county finds no match and Photon is down: not working, not no match', async ({ page }) => {

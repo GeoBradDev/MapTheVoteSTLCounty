@@ -141,8 +141,9 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
   // with the City's own geocoder, unless the text holds a ZIP entirely
   // outside the City. A City address that fits is the answer (the City
   // referral, #8), unless it is in the same ZIP as the place found; that, one
-  // the text could mean but not exactly, or a City geocoder that fails or is
-  // slow, is no match. Never the county place then.
+  // the text could mean but not exactly, is no match; a City geocoder that
+  // fails or is slow is no match too, or with reportUnavailable a
+  // GeocoderUnavailableError (#18). Never the county place then.
   async function checkedForCity(text, place, signal, reportUnavailable) {
     // What a failed or unreadable City check answers: no match, or with
     // reportUnavailable a rejection. Never the county place.

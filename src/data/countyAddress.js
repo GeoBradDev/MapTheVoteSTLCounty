@@ -45,7 +45,8 @@ export const attribution = Object.freeze({
 export const TIMEOUT_MS = 2500;
 /**
  * How long the precinct check for an address with several records may take;
- * longer is no match, since the lookup cannot tell those records apart.
+ * longer is no match (or, with reportUnavailable, `unavailable`, #18), since
+ * the lookup cannot tell those records apart.
  */
 export const PRECINCT_CHECK_MS = 4000;
 /** The hosted copy is the last county source, so it gets a little longer. */

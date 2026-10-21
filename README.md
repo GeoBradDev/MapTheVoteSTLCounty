@@ -290,7 +290,7 @@ they are still working. When the browser reports no connection, the message says
 appears to be offline (cached polling places wait for the PWA, #25). A page that throws
 while rendering shows a plain error screen (`src/components/ErrorBoundary.jsx`), and
 `src/main.jsx` keeps React from logging caught errors. `e2e/failures.e2e.js` breaks each
-service in turn (network refusal, timeout, 5xx) in a real browser.
+service in turn (network refusal, a request that never answers, 5xx) in a real browser.
 
 ## Privacy
 

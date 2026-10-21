@@ -21,7 +21,10 @@ export const attribution = Object.freeze({
   service: 'address search',
 });
 
-/** How long the City check may take; longer is no match. */
+/**
+ * How long the City check may take; longer is no match, or with
+ * reportUnavailable an unavailable search (#18). Never the county place.
+ */
 export const TIMEOUT_MS = 4000;
 
 /**

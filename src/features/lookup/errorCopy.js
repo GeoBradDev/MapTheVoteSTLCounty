@@ -4,7 +4,7 @@ export const copy = {
   retry: 'Try again',
   retrying: 'Trying again...',
   // Shown, and announced, after a lookup or a page has waited SLOW_MS.
-  slow: "Still working... The county's services are slow right now.",
+  slow: 'Still working... This is taking longer than usual.',
 };
 
 /** Whether the browser says it has no network connection. */
