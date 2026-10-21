@@ -53,9 +53,8 @@ function normalize(attributes) {
 }
 
 function checkCode(code) {
-  if (typeof code !== 'string' || !PRECINCT_CODE.test(code)) {
-    throw new NotFound(`Not a precinct code: ${JSON.stringify(code)}`);
-  }
+  if (typeof code !== 'string') throw new NotFound(`Not a precinct code: a ${typeof code}`);
+  if (!PRECINCT_CODE.test(code)) throw new NotFound(`Not a precinct code: ${JSON.stringify(code)}`);
 }
 
 function queryUrl(layer, params) {
@@ -66,8 +65,10 @@ function isObject(value) {
   return value !== null && typeof value === 'object';
 }
 
-// One attempt. The timeout covers reading the body too.
-async function fetchOnce(url) {
+// One attempt. The timeout covers reading the body too. `fieldsKey` is where
+// each feature keeps its fields: `attributes` for f=json, `properties` for
+// f=geojson.
+async function fetchOnce(url, fieldsKey) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   const fail = (error, message, details) =>
@@ -86,7 +87,12 @@ async function fetchOnce(url) {
     try {
       body = await res.json();
     } catch (error) {
-      throw fail(error, 'Response is not JSON', { status: res.status });
+      // Only a SyntaxError means a bad body. Anything else is the connection
+      // dropping mid-download, a network failure worth retrying.
+      if (error instanceof SyntaxError) {
+        throw new ServiceError('Response is not JSON', { status: res.status, cause: error });
+      }
+      throw fail(error, 'Network request failed');
     }
     // ArcGIS reports query errors as HTTP 200 with an error body.
     if (body?.error) {
@@ -95,8 +101,7 @@ async function fetchOnce(url) {
     if (!Array.isArray(body?.features)) {
       throw new ServiceError('Response has no features list', { status: res.status });
     }
-    // JSON features carry `attributes`, GeoJSON features `properties`.
-    if (!body.features.every((f) => isObject(f?.attributes ?? f?.properties))) {
+    if (!body.features.every((f) => isObject(f?.[fieldsKey]))) {
       throw new ServiceError('Response has a feature without fields', { status: res.status });
     }
     return body;
@@ -115,12 +120,13 @@ function isTransient(error) {
 
 async function query(layer, params) {
   const url = queryUrl(layer, params);
+  const fieldsKey = params.f === 'geojson' ? 'properties' : 'attributes';
   try {
-    return await fetchOnce(url);
+    return await fetchOnce(url, fieldsKey);
   } catch (error) {
     if (!isTransient(error)) throw error;
     await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
-    return fetchOnce(url);
+    return fetchOnce(url, fieldsKey);
   }
 }
 

@@ -52,7 +52,8 @@ Scope decisions (made in Phase 1):
    `in_election` and `html` values intact. `lat` or `lng` that is not a finite number throws
    `TypeError` and sends nothing.
 3. `getPrecinctById(code)` checks `code` against `PRECINCT_CODE` before building the query;
-   a failing code rejects with `NotFound` and sends nothing. A valid code sends
+   a failing code, including any value that is not a string, rejects with `NotFound` and
+   sends nothing. A valid code sends
    `where=precinct='<code>'`, `outFields=*`, `returnGeometry=false`, `f=json`, and resolves
    to the normalized attributes, or rejects with `NotFound` when no feature matches.
 4. `getPolls()` requests the polls layer once as GeoJSON (`where=1=1`, `outFields=*`,
@@ -71,11 +72,14 @@ Scope decisions (made in Phase 1):
    `ServiceError` carrying `code` and `message`. A non-2xx response or a network failure
    also rejects with `ServiceError` (with `status` for HTTP errors), as does a 200 body that
    is not JSON or has no `features` array (added in Phase 4: without it such a body crashed
-   with a bare `TypeError`), or a feature without an `attributes` or `properties` object
-   (added in Phase 5: such a polls body was cached as a rejection for the page load).
+   with a bare `TypeError`), or a feature without its fields object: `attributes` for
+   `f=json`, `properties` for `f=geojson` (added in Phase 5: such a polls body was cached as
+   a rejection for the page load).
 8. Each request aborts after 8 s with `AbortController` and rejects with `TimeoutError`.
    A timeout, a network failure, an HTTP 5xx or 429, or an ArcGIS error code 5xx or 429 is
-   retried once after a backoff of 500 ms; any other error is not retried. After the retry
+   retried once after a backoff of 500 ms; any other error is not retried. A connection that
+   drops while the body downloads is a network failure; only a body that fails to parse
+   (`SyntaxError`) is a non-retried bad body. After the retry
    fails, its error is the one thrown.
 9. Tests use fixtures recorded from the live layers and cover: found, not found (outside the
    county), nonresidential, an ArcGIS error body, and a timeout; plus by-ID, polls,
