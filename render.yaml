@@ -49,8 +49,10 @@ services:
       # serviceRoot) and the Photon geocoder (#7). Links to other official
       # sites are navigation, which connect-src does not govern.
       # #13 (MapLibre basemap) must extend this policy when it lands: add its
-      # tile, style, glyph and sprite hosts to connect-src and img-src, and
-      # worker-src blob: and child-src blob: for MapLibre's workers.
+      # tile, style, glyph and sprite hosts to connect-src and img-src,
+      # worker-src blob: and child-src blob: for MapLibre's workers, and
+      # img-src data: for the control icons maplibre-gl.css embeds. Update
+      # src/test/render.test.js and the build test's CSS url() check with it.
       - path: /*
         name: Content-Security-Policy
         value: >-

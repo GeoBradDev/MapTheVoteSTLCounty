@@ -52,14 +52,14 @@ function headersFor(rules, requestPath) {
   return headers;
 }
 
+// [name, values] pairs in order. A list, not a Map: browsers enforce the first
+// copy of a repeated directive, so duplicates must stay visible.
 function cspDirectives(policy) {
-  return new Map(
-    policy
-      .split(';')
-      .map((d) => d.trim().split(/\s+/))
-      .filter(([name]) => name)
-      .map(([name, ...values]) => [name.toLowerCase(), values]),
-  );
+  return policy
+    .split(';')
+    .map((d) => d.trim().split(/\s+/))
+    .filter(([name]) => name)
+    .map(([name, ...values]) => [name.toLowerCase(), values]);
 }
 
 let blueprint;
@@ -183,32 +183,43 @@ describe('render.yaml headers', () => {
 });
 
 describe('Content-Security-Policy', () => {
+  let directives;
   let csp;
 
   beforeAll(() => {
-    csp = cspDirectives(headersFor(site.headers, '/').get('content-security-policy'));
+    directives = cspDirectives(headersFor(site.headers, '/').get('content-security-policy'));
+    csp = new Map(directives);
   });
 
-  it('allows only same-origin scripts and styles, with no inline or eval', () => {
-    expect(csp.get('default-src')).toEqual(["'self'"]);
-    expect(csp.get('script-src')).toEqual(["'self'"]);
-    expect(csp.get('style-src')).toEqual(["'self'"]);
-    expect(csp.get('img-src')).toEqual(["'self'"]);
-    expect(csp.get('object-src')).toEqual(["'none'"]);
+  it('names each directive once', () => {
+    const names = directives.map(([name]) => name);
+    expect(names.filter((n, i) => names.indexOf(n) !== i)).toEqual([]);
   });
 
-  it('lets the app reach the county ArcGIS services and the geocoder', () => {
-    const connect = csp.get('connect-src');
-    expect(connect).toContain("'self'");
-    expect(connect).toContain(new URL(election.serviceRoot).origin);
-    expect(connect).toContain(PHOTON);
+  // The whole policy, so a loosened source or an added override directive
+  // (script-src-elem, style-src-attr, ...) fails here and gets reviewed.
+  it('is exactly the reviewed policy', () => {
+    expect(Object.fromEntries(csp)).toEqual({
+      'default-src': ["'self'"],
+      'script-src': ["'self'"],
+      'style-src': ["'self'"],
+      'img-src': ["'self'"],
+      'font-src': ["'self'"],
+      'connect-src': ["'self'", new URL(election.serviceRoot).origin, PHOTON],
+      'manifest-src': ["'self'"],
+      'object-src': ["'none'"],
+      'base-uri': ["'self'"],
+      'form-action': ["'self'"],
+      'frame-ancestors': ["'none'"],
+      'upgrade-insecure-requests': [],
+    });
   });
 
-  it('blocks framing, base and form hijacking, and mixed content', () => {
-    expect(csp.get('frame-ancestors')).toEqual(["'none'"]);
-    expect(csp.get('base-uri')).toEqual(["'self'"]);
-    expect(csp.get('form-action')).toEqual(["'self'"]);
-    expect(csp.has('upgrade-insecure-requests')).toBe(true);
+  it('allows no inline script or style, no eval and no wildcard source', () => {
+    const sources = directives.flatMap(([, values]) => values);
+    for (const unsafe of ["'unsafe-inline'", "'unsafe-eval'", '*', 'https:', 'data:', 'blob:']) {
+      expect(sources).not.toContain(unsafe);
+    }
   });
 
   it('is the same policy on every shell path', () => {
