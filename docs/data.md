@@ -262,7 +262,8 @@ Esri's current terms on keys and free use instead of assuming them.
 
 The app calls a geocoder only through the interface in `src/data/geocoder.js`:
 `suggest(text)` for the address box's suggestions and `geocode(textOrSuggestion)`
-for the place, `{ lat, lng, state?, county?, label }`. The landing screen passes
+for the place, `{ lat, lng, state?, county?, label }`, or null when nothing
+matches. The landing screen passes
 that place to `locate` (see Out of county above); a precinct opens `/p/<code>`, so
 only the precinct code goes in the URL. Until a provider is chosen (#7), the
 default geocoder suggests nothing and its `geocode` fails with

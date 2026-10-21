@@ -115,7 +115,8 @@ still stands.
   referral-link test flagged it; `election.js` already holds the county's lookup URL.)
 - `src/index.css`: a focus-visible rule
 - `src/App.test.jsx`: home page assertions
-- `docs/data.md` if it describes the lookup flow
+- `docs/data.md`: the geocoder interface and the landing screen lookup (Geocoding), and the
+  new `election.js` entries in the list of issue #1 decisions (Election config)
 
 ## Order of work
 
