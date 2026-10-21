@@ -24,6 +24,7 @@ describe('App', () => {
 
     expect(screen.getByRole('main')).toBeInTheDocument();
     expect(heading()).toHaveTextContent('St. Louis County Voter Guide');
+    expect(screen.getByRole('combobox', { name: 'Enter your address' })).toBeInTheDocument();
   });
 
   it('renders the home page from the real browser location without a Router', () => {
@@ -69,14 +70,15 @@ describe('App', () => {
       const main = screen.getByRole('main');
       expect(heading()).toHaveTextContent('Page not found');
       expect(main).toContainElement(heading());
-      expect(screen.getByRole('link', { name: /home/i })).toHaveAttribute('href', '/');
+      expect(screen.getByRole('link', { name: /home page/i })).toHaveAttribute('href', '/');
+      expect(screen.getByRole('combobox', { name: 'Enter your address' })).toBeInTheDocument();
     },
   );
 
   it('navigates home from the not-found page without a full reload', async () => {
     const location = renderAt('/nope');
 
-    await userEvent.click(screen.getByRole('link', { name: /home/i }));
+    await userEvent.click(screen.getByRole('link', { name: /home page/i }));
 
     expect(location.history).toEqual(['/nope', '/']);
     expect(heading()).toHaveTextContent('St. Louis County Voter Guide');

@@ -103,8 +103,10 @@ still stands.
 - `src/features/lookup/HomePage.jsx`, `src/features/lookup/homeCopy.js` (new),
   `src/features/lookup/HomePage.test.jsx` (new)
 - `src/components/NotFoundPage.jsx`
-- `src/config/election.js`: `voteAnywhere` with source and verification date
-- `src/config/referrals.js`: the county election board's site; its header comment widens
+- `src/config/election.js`: `voteAnywhere` with source and verification date, and
+  `countySiteUrl`, the county election board's site. (The plan first put the site in
+  `referrals.js`, but its root URL is a prefix of the FAQ source in `election.js`, so the
+  referral-link test flagged it; `election.js` already holds the county's lookup URL.)
 - `src/index.css`: a focus-visible rule
 - `src/App.test.jsx`: home page assertions
 - `docs/data.md` if it describes the lookup flow

@@ -20,6 +20,7 @@ const REQUIRED_KEYS = [
   'sampleBallotUrlPattern',
   'congressionalField',
   'officialLookupUrl',
+  'countySiteUrl',
   'nearbyPollCount',
   'earlyVoting.sources',
   'earlyVoting.lastVerified',
@@ -30,6 +31,8 @@ const REQUIRED_KEYS = [
   'electionDayHours.inLineAtCloseMayVote',
   'electionDayHours.sources',
   'electionDayHours.lastVerified',
+  'voteAnywhere.sources',
+  'voteAnywhere.lastVerified',
 ];
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -212,5 +215,13 @@ describe('Election Day hours', () => {
   it('cites sources and a verified date', () => {
     expectSources(hours.sources);
     expect(hours.lastVerified).toMatch(ISO_DATE);
+  });
+});
+
+describe('vote anywhere in the county', () => {
+  it('cites the county FAQ and a verified date', () => {
+    expectSources(election.voteAnywhere.sources);
+    expect(election.voteAnywhere.sources[0]).toMatch(/^https:\/\/stlouiscovotes\.info\//);
+    expect(election.voteAnywhere.lastVerified).toMatch(ISO_DATE);
   });
 });

@@ -29,12 +29,15 @@
  *   congressional district.
  * @property {string} officialLookupUrl The county's own lookup app, the
  *   fallback when ours fails.
+ * @property {string} countySiteUrl The county election board's website.
  * @property {number} nearbyPollCount How many nearby polling places to show.
  * @property {{ sources: string[], lastVerified: string,
  *   schedules: Record<string, ScheduleEntry[]> }} earlyVoting In-person
  *   absentee hours, keyed by the polls layer's `abs_type`.
  * @property {{ open: string, close: string, inLineAtCloseMayVote: boolean,
  *   sources: string[], lastVerified: string }} electionDayHours
+ * @property {{ sources: string[], lastVerified: string }} voteAnywhere Where
+ *   the rule that a county voter may vote at any polling place is stated.
  */
 
 function deepFreeze(value) {
@@ -65,6 +68,10 @@ const election = deepFreeze({
   congressionalField: 'congressional_district_25',
   officialLookupUrl:
     'https://stlouiscovotes.maps.arcgis.com/apps/instant/lookup/index.html?appid=4c3116b104af40bea77ebea20aaae275',
+  // Decided in issue #1: link the .info site directly, since
+  // stlouiscountymovotes.gov redirects to it and stlouiscovotes.gov does not
+  // resolve.
+  countySiteUrl: 'https://stlouiscovotes.info/',
   nearbyPollCount: 3,
 
   // From the county's Absentee Voting Lookup app introduction. Re-check it
@@ -100,6 +107,14 @@ const election = deepFreeze({
       'https://stlouiscovotes.info/faq/',
     ],
     lastVerified: '2026-10-20',
+  },
+
+  // Decided in issue #1: "Voters in Saint Louis County may vote at any polling
+  // place." Confirm with the Board (314-615-1800) before each election that it
+  // still applies; if not, remove the line from the home page.
+  voteAnywhere: {
+    sources: ['https://stlouiscovotes.info/faq/'],
+    lastVerified: '2026-10-21',
   },
 });
 
