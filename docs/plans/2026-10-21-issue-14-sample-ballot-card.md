@@ -1,8 +1,9 @@
 # Plan: Sample ballot card (issue #14)
 
 Risk tier: Medium. A small, unit-testable card that renders one parsed link, but it replaces
-the pending placeholder in an existing screen (altering behavior) and its link opening a
-PDF in a new tab is only fully shown by a live drive. Nothing touches auth, money, data
+the pending placeholder in an existing screen (altering behavior) and what its link does
+in a browser (a new tab, or a download of the county's PDF) is only fully shown by a live
+drive. Nothing touches auth, money, data
 writes or outward messages, so nothing forces High. The run is unattended (dispatched by the
 owner's orchestrator, which asks for sensible calls on low-stakes choices), so the plan is
 committed without an interactive approval; the PR says so.
