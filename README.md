@@ -94,8 +94,8 @@ zoom on a desktop; and Windows High Contrast (forced colors).
 The target is a mid-range phone on a weak signal (#27). `npm run test:perf` runs
 `e2e/lighthouse.js`: Lighthouse's mobile emulation at 360 x 640 px on simulated slow 4G with a
 4x CPU slowdown, three runs each of `/`, `/p/CC007` and `/learn` against the production build
-(`vite preview`). It fails when a page's median run scores under 90 for performance, has an
-LCP of 2.5 s or more, or ends without the page's content, and writes the median run's report
+(`vite preview`). It fails when a page's median performance score is under 90, its median LCP
+is 2.5 s or more, or any run ends without the page's own content, and writes the median run's report
 to `lighthouse-reports/` (CI keeps it as the `lighthouse-reports` artifact). No live service
 is called: Chromium resolves the county's ArcGIS host and the basemap host to a local HTTPS
 server that answers from `docs/raw/fixtures/` (shaped to the query's `outFields`, gzipped like

@@ -36,17 +36,43 @@ const MAX_LCP_MS = 2500;
 /**
  * The pages the issue names: landing, results (fixture precinct) and a learn
  * page. `shows` checks, in the page, that the run measured the real content
- * and not an error or a loading state.
+ * and not the not-found page, an error or a loading state. On the results page
+ * it also checks content built from the precinct and poll fields the app asks
+ * ArcGIS for: the municipality, the districts, the sample ballot link and each
+ * polling place's name and address.
  */
 const ROUTES = [
-  { path: '/', shows: () => Boolean(document.querySelector('[role="combobox"]')) },
+  {
+    path: '/',
+    shows: () =>
+      document.querySelector('h1')?.textContent === 'St. Louis County Voter Guide' &&
+      Boolean(document.querySelector('[role="combobox"]')),
+  },
   {
     path: `/p/${CODE}`,
-    shows: () =>
-      document.querySelectorAll('ol[aria-label="Nearest polling places"] > li').length > 0 &&
-      !document.querySelector('[role="alert"]')?.textContent.trim(),
+    shows: (code) => {
+      const rows = [...document.querySelectorAll('ol[aria-label="Nearest polling places"] > li')];
+      return (
+        document.querySelector('h1')?.textContent === `Precinct ${code}` &&
+        !document.querySelector('[role="alert"]')?.textContent.trim() &&
+        Boolean(document.querySelector('[data-testid="municipality"]')?.textContent.trim()) &&
+        document.querySelectorAll('dl dd').length >= 3 &&
+        Boolean(document.querySelector('a[href*="/sharing/rest/content/items/"]')) &&
+        rows.length > 0 &&
+        rows.every(
+          (li) =>
+            !/^Polling place\b/.test(li.querySelector('h3')?.textContent ?? '') &&
+            /\d{5}/.test(li.querySelector('p')?.textContent ?? ''),
+        )
+      );
+    },
   },
-  { path: '/learn', shows: () => document.querySelectorAll('h1').length === 1 },
+  {
+    path: '/learn',
+    shows: () =>
+      document.querySelectorAll('h1').length === 1 &&
+      document.querySelector('h1').textContent === 'How to vote',
+  },
 ];
 
 const RUNS = 3;
@@ -125,7 +151,7 @@ async function measure(browser, { path: route, shows }) {
       tbt: audit('total-blocking-time'),
       cls: audit('cumulative-layout-shift'),
       si: audit('speed-index'),
-      shown: await page.evaluate(shows),
+      shown: await page.evaluate(shows, CODE),
       report: result.report,
     };
   } finally {
@@ -133,8 +159,13 @@ async function measure(browser, { path: route, shows }) {
   }
 }
 
+// The median run by score, and the median LCP of all runs, which can differ
+// when scores tie.
 function median(runs) {
-  return [...runs].sort((a, b) => a.score - b.score)[Math.floor(runs.length / 2)];
+  const middle = Math.floor(runs.length / 2);
+  const run = [...runs].sort((a, b) => a.score - b.score)[middle];
+  const lcp = runs.map((r) => r.lcp).sort((a, b) => a - b)[middle];
+  return { ...run, lcp };
 }
 
 async function main() {
@@ -149,7 +180,13 @@ async function main() {
   const browser = await puppeteer.launch({
     executablePath: chromium.executablePath(),
     headless: true,
-    args: [`--host-resolver-rules=${rules.join(', ')}`, '--ignore-certificate-errors'],
+    // No sandbox, as Playwright launches Chromium: Ubuntu 24.04 runners block
+    // the user namespaces Chromium's sandbox needs.
+    args: [
+      `--host-resolver-rules=${rules.join(', ')}`,
+      '--ignore-certificate-errors',
+      '--no-sandbox',
+    ],
   });
   await mkdir(REPORTS, { recursive: true });
   const failures = [];

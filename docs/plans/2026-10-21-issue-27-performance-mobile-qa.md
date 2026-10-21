@@ -95,8 +95,11 @@ county layers from `docs/raw/fixtures/`, every other outside request blocked:
 
 - Narrowing `outFields` drops a field some code reads: every reader was grepped (precinct:
   `precinct`, `in_election`, `html`, `municipality`, the district fields; polls: `loc`, `name`,
-  `address`, `zipcode`, `abs_type`, `notes_abs`), and the e2e fixture projection makes the
-  browser runs see only the requested fields, so a missed field shows up there.
+  `address`, `zipcode`, `abs_type`, `notes_abs`), and the fixture projection makes the
+  browser runs see only the requested fields. The Lighthouse run's results page check needs
+  the municipality, the districts, the sample ballot link and each place's name and ZIP, so a
+  dropped field among those fails it; a field a future component starts to read must be added
+  to `PRECINCT_FIELDS` or `POLL_FIELDS` by hand.
 - Lighthouse scores vary between runs and runners: three runs per route, the median is
   compared, and the results page target is met with margin, not at 90 exactly.
 - Moving the map after the list and loading it on view changes #13's layout; the map is
@@ -126,8 +129,10 @@ county layers from `docs/raw/fixtures/`, every other outside request blocked:
   charges them a full connection setup. The run now maps the ArcGIS and basemap hosts to a
   local HTTPS server (`--host-resolver-rules`, a throwaway `openssl` certificate) that answers
   from the same fixtures, gzipped like the county's service, and maps every other host to
-  nothing. Each run also checks, in the page, that it showed the route's content, so an error
-  state can never pass.
+  nothing. Each run also checks, in the page, that it showed the route's own content (its
+  heading, and on the results page the fields-based content), so an error state or the
+  not-found page cannot pass. LCP is compared as the median of all runs, not the LCP of the
+  median-score run.
 - `src/test/build.test.js` now builds with `NODE_ENV=production`: under Vitest it built React's
   development bundle, which the JS budget would have measured (159 KB instead of 95 KB).
 - A `preconnect` to the ArcGIS host was tried and dropped: no measurable change in the
