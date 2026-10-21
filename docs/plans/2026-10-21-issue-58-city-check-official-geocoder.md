@@ -36,7 +36,10 @@ Domain skills:
    text skipped the check and gave FER022), and so does an edit of the label that keeps its
    ZIP, like a unit added (revision after review finding 3). Editing the label and restoring
    it exactly still sends typed text: the frozen test `AddressSearch.repick58.test.jsx`
-   asserts that, and rewriting it needs the owner's approval.
+   asserts that, and rewriting it needs the owner's approval. Once the label's ZIP leaves the
+   box, the pick is forgotten, so a ZIP typed later is the voter's own (revision after review
+   finding 4: a county voter retyping their address with a county-only ZIP got the City
+   referral; frozen `AddressSearch.retype58.test.jsx`).
 4. A City match counts when a City `PointAddress` has the typed house number and the typed
    whole street under the strict rules (`matchesStreet` in `addressMatch.js`), and its ZIP
    equals the typed ZIP when one is typed (a candidate with no ZIP counts). Then the answer is

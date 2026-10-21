@@ -3,6 +3,9 @@ import { typedZip } from '../../data/addressMatch.js';
 import { copy } from './addressSearchCopy.js';
 import { useGeocoder } from './geocoderContext.js';
 
+// Whether text holds a ZIP (five digits, from typedZip) as a whole word.
+const hasZip = (text, zip) => new RegExp(`\\b${zip}\\b`).test(text);
+
 /** How long typing must pause before suggestions are requested. */
 export const DEBOUNCE_MS = 250;
 /** The shortest trimmed text that gets suggestions. */
@@ -82,7 +85,13 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
 
   function handleChange(event) {
     const value = event.target.value;
-    if (pickedRef.current) pickedRef.current.edited = true;
+    if (pickedRef.current) {
+      pickedRef.current.edited = true;
+      // Once the label's ZIP has left the box, a ZIP typed later is the
+      // voter's own, even the same one.
+      const zip = typedZip(pickedRef.current.suggestion.label);
+      if (!zip || !hasZip(value, zip)) pickedRef.current = null;
+    }
     setText(value);
     onEdit?.();
     setEmpty(false);
@@ -117,7 +126,7 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
     const label = suggestion.label.trim();
     if (trimmed === label) return edited ? undefined : suggestion;
     const zip = typedZip(label);
-    if (zip && new RegExp(`\\b${zip}\\b`).test(trimmed)) {
+    if (zip && hasZip(trimmed, zip)) {
       return { id: `${suggestion.id}-edited`, label: trimmed };
     }
     return undefined;
