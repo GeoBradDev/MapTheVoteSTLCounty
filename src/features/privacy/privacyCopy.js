@@ -36,7 +36,7 @@ export const copy = {
   never: {
     heading: 'What this site never does',
     items: [
-      "It never saves your address or your location: they are not put in the page address (URL), in browser storage or in cookies. Your browser's own cache is covered under Finding your precinct, below.",
+      "It never saves your address or your location: they are not put in the page address (URL), in browser storage, in cookies or in your browser's cache. Your browser history and cache do keep the precinct pages you open, like /p/CC007.",
       'It has no analytics, ads or tracking, and sets no cookies.',
       'A shared link holds only your precinct code, like /p/CC007, never your address.',
     ],
@@ -49,11 +49,11 @@ export const copy = {
     items: [
       {
         heading: 'Address search',
-        text: `What you type in the address box goes first to St. Louis County's address points (${hosts.countyAddresses}), or to the county's copy of them on Esri's ArcGIS Online (${hosts.countyAddressesCopy}) when the first cannot be reached. The county gets it in the body of the request, not in its web address. It also goes to ${openSearch.service} by ${openSearch.serviceBy} (${hosts.openSearch}) when the county has no match or cannot be reached; ${openSearch.service} gets it as part of the request's web address. When you search for an address and it is found outside St. Louis City, its house number and street (not the town, ZIP code or unit) also go to the City of St. Louis's address search (${hosts.cityAddresses}), in the body of the request, to check that the City does not have the same address. It is skipped when you typed a ZIP code that is entirely outside the City, or when the address was found in another county. Suggestions are looked up as you type, so the county and ${openSearch.service} get each part of the address as you type it; the City gets only the address you search for.`,
+        text: `What you type in the address box goes first to St. Louis County's address points (${hosts.countyAddresses}), or to the county's copy of them on Esri's ArcGIS Online (${hosts.countyAddressesCopy}) when the first cannot be reached. The county gets it in the body of the request, not in its web address. It also goes to ${openSearch.service} by ${openSearch.serviceBy} (${hosts.openSearch}) when the county has no match or cannot be reached; ${openSearch.service} gets it as part of the request's web address. When you search for an address and it is found outside St. Louis City, its house number and street (not the town, ZIP code or unit) also go to the City of St. Louis's address search (${hosts.cityAddresses}), in the body of the request, to check that the City does not have the same address. It is skipped when you typed a ZIP code that is entirely outside the City, or when the address was found in another county. Suggestions are looked up as you type, so the county and ${openSearch.service} get each part of the address as you type it; the City gets only the address you search for. Your browser does not keep any of these requests or their answers in its cache.`,
       },
       {
         heading: 'Finding your precinct',
-        text: `The point where your address was found, or your device's location if you choose Use my location, goes to St. Louis County's election maps on Esri's ArcGIS Online (${hosts.electionMaps}). The coordinates are part of the request's web address, so the service may record them in its logs, and your browser may keep the request, coordinates included, and its answer in its ordinary cache until you clear your browsing data. Opening a shared link sends only the precinct code. When the address you type has several entries in the county's address points, like the units of an apartment building, the points of all of them go there first, in the body of the request, to check that they are in one precinct.`,
+        text: `The point where your address was found, or your device's location if you choose Use my location, goes to St. Louis County's election maps on Esri's ArcGIS Online (${hosts.electionMaps}), in the body of the request, not in its web address. When the address you type has several entries in the county's address points, like the units of an apartment building, the points of all of them go there first, the same way, to check that they are in one precinct. Your browser does not keep these requests or their answers in its cache. Opening a shared link sends only the precinct code.`,
       },
       {
         heading: 'Use my location',
