@@ -65,12 +65,13 @@ Domain skills:
   `isAppleMobile(navigator)`.
 - `src/features/lookup/nearbyPolls.test.js` (new): unit tests, including the 3 distance
   cases against the pyproj reference values.
-- `src/features/lookup/lookupPoint.js` (new): `rememberLookupPoint(code, point)` and
+- `src/features/lookup/lookupPoint.js` and `lookupPoint.test.js` (new): `rememberLookupPoint(code, point)` and
   `lookupPointFor(code)`, in memory only.
 - `src/features/lookup/AddressLookup.jsx`: remember the point for the precinct code before
   navigating.
 - `src/features/lookup/PollsCard.jsx` (new): the card body: fetches, sorting, rows,
-  hours, note, Show more.
+  hours, note, Show more. The list is a numbered `ol` (`list-decimal`, not flex), since
+  WebKit drops the list role from a list with `list-style: none` (review finding 2).
 - `src/features/lookup/PollsCard.test.jsx` (new).
 - `src/features/lookup/ResultsCards.jsx`: render `PollsCard` in the polls slot; take
   `code` and `origin` props.
