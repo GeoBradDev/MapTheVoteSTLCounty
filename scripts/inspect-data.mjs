@@ -82,7 +82,10 @@ async function main() {
   }
 
   const appConfig = await getJson(`${PORTAL}/${INSTANT_APP_ID}/data?f=json`);
-  await writeFile(path.join(OUT_DIR, 'instant_app_config.json'), JSON.stringify(appConfig, null, 2));
+  await writeFile(
+    path.join(OUT_DIR, 'instant_app_config.json'),
+    JSON.stringify(appConfig, null, 2),
+  );
   const appItem = await getJson(`${PORTAL}/${INSTANT_APP_ID}?f=json`);
   await writeFile(path.join(OUT_DIR, 'instant_app_item.json'), JSON.stringify(appItem, null, 2));
   console.log('ok   instant app config');
