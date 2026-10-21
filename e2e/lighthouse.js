@@ -205,6 +205,9 @@ async function main() {
       if (!runs.every((r) => r.shown)) {
         failures.push(`${route.path}: a run ended without the page's content`);
       }
+      if (!runs.every((r) => Number.isFinite(r.lcp))) {
+        failures.push(`${route.path}: a run reported no LCP`);
+      }
       if (m.score < MIN_SCORE)
         failures.push(`${route.path}: score ${m.score} is below ${MIN_SCORE}`);
       if (m.lcp >= MAX_LCP_MS) {

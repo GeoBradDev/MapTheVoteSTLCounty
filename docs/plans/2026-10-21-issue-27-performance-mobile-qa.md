@@ -107,8 +107,10 @@ county layers from `docs/raw/fixtures/`, every other outside request blocked:
 - Prefetching the polls layer for a code that turns out not to exist wastes one request;
   `checkCode` stops malformed codes first.
 - The map in CI uses software WebGL; the blank style keeps tile and glyph traffic off the
-  network. The map loads only on scroll, so the Lighthouse run (which does not scroll) does
-  not measure MapLibre at all; that is the behavior real phones get too.
+  network. At 360 x 640 the map starts below the fold, so the Lighthouse run (which does not
+  scroll) does not load MapLibre. On a taller phone (412 x 915) the map's box is in the first
+  screen, so it loads at once, as on main: the results page then scores 93 with TBT 267 ms.
+  CI measures 360 px, the width the issue names.
 
 ## Proof
 
@@ -140,3 +142,7 @@ county layers from `docs/raw/fixtures/`, every other outside request blocked:
 - `README.md` gets a Performance section, including the by-hand phone checks.
 - Results with the final harness: main scores 100, 82 (LCP 2.4 s, TBT 226 ms, CLS 0.23) and
   100; this branch 100, 98 (LCP 2.3 s, TBT 0, CLS 0) and 100.
+- Review: `ResultsSkeleton` is now at least a screen tall. At 390 x 844 the footer started on
+  screen under the shorter placeholders and was pushed off when the results arrived (CLS
+  0.143, the same on main); now 0.005. Results page by viewport after the fix: 360 x 640 98,
+  390 x 844 98, 412 x 915 93.

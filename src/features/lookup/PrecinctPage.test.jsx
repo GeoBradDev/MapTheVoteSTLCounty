@@ -137,6 +137,8 @@ describe('PrecinctPage', () => {
     expect(liveRegion()).toHaveTextContent(/^$/);
     const skeleton = screen.getByTestId('results-skeleton');
     expect(skeleton).toHaveAttribute('aria-hidden', 'true');
+    // At least a screen tall, so the footer does not jump when results arrive (#27).
+    expect(skeleton).toHaveClass('min-h-screen');
     expect(skeleton.querySelector('.motion-reduce\\:animate-none')).not.toBeNull();
     expect(screen.queryAllByRole('heading', { level: 2 })).toEqual([]);
     expect(screen.getByRole('link', { name: copy.searchAnother })).toHaveAttribute('href', '/');
