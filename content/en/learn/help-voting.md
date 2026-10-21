@@ -44,18 +44,18 @@ Your helper does not have to be 18 or a registered voter.[^sos-election-day]
 
 ## Get help from election judges
 
-You can ask the election judges for help instead. Two judges from different parties go to the
+You can ask the election judges for help instead.[^rsmo-115-445] Two judges from different parties go to the
 booth with you and mark your ballot the way you say.[^rsmo-115-445][^sos-election-day]
 
-If you only need instructions, two judges from different parties will explain. Then they leave
+If you only need instructions, two judges from different parties will explain.[^rsmo-115-445] Then they leave
 so you can vote in private.[^rsmo-115-445]
 
 ## Other ways to vote
 
-- You may be able to vote curbside, outside the polling place. Every polling place must have
+- You may be able to vote curbside, outside the polling place.[^sos-election-day] Every polling place must have
   accessible voting equipment.[^sos-election-day] See
   [Accessible voting and curbside voting](/learn/accessible-voting).
-- You can vote absentee if you are sick or have a physical disability. You can also vote
+- You can vote absentee if you are sick or have a physical disability.[^rsmo-115-277] You can also vote
   absentee if you are the main person who gives physical care to someone at your address who
   is.[^rsmo-115-277] See [Absentee and early in-person voting](/learn/absentee).
 
@@ -86,5 +86,5 @@ This applies if, after the request deadline, you:[^rsmo-115-287]
 - became confined because of illness or injury, or[^rsmo-115-287]
 - will be in a nursing or care facility in St. Louis County on Election Day.[^rsmo-115-287]
 
-The county board sends a team to help you apply and vote. The team is two registered voters,
+The county board sends a team to help you apply and vote.[^rsmo-115-287] The team is two registered voters,
 one from each major party.[^rsmo-115-287] Call 314-615-1800.[^county-contact]

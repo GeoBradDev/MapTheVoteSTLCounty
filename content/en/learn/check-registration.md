@@ -39,7 +39,7 @@ You must be registered to vote.[^sos-voting-rights] Here is how to check your re
 
 ## If you registered by mail
 
-The election office sends you a notice after it gets your form. If you do not get it within
+The election office sends you a notice after it gets your form.[^sos-other-questions] If you do not get it within
 seven to ten days, call the county board to make sure your form was received.[^sos-other-questions]
 
 ## If you are not registered

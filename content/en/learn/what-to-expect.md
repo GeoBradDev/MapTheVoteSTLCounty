@@ -39,7 +39,7 @@ the polls close, you cannot vote.[^sos-election-day]
 
 ## Where
 
-Check where to vote before Election Day. The county board can tell you your polling place;
+Check where to vote before Election Day.[^sos-election-day] The county board can tell you your polling place;
 checking ahead helps you avoid problems.[^sos-election-day] Call 314-615-1800.[^county-contact]
 
 To find polling places near you, look up your address on the [home page](/) or use the
@@ -51,7 +51,7 @@ county's
 1. Bring a photo ID. See [What ID to bring](/learn/voter-id).[^sos-how-to-vote]
 2. Show your ID to the election judges and sign the poll book.[^sos-how-to-vote]
 3. Take your ballot to a voting booth and mark it alone.[^rsmo-115-439][^rsmo-115-445]
-4. Mark each race on its own. Missouri has no "straight party" option.[^sos-how-to-vote]
+4. Mark each race on its own.[^sos-how-to-vote] Missouri has no "straight party" option.[^sos-how-to-vote]
 5. Read the instructions posted at the polling place, or ask an election judge to show you how
    the voting equipment works.[^sos-how-to-vote]
 

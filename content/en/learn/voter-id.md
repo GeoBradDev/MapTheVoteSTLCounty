@@ -56,5 +56,5 @@ See [Provisional ballots](/learn/provisional-ballots).
   a photo ID to vote.[^sos-voter-id][^rsmo-115-427] Call 573-526-8683 to learn more.[^sos-voter-id]
 - The state also gives one free copy of papers you may need for that ID, such as a birth
   certificate.[^rsmo-115-427]
-- The Secretary of State's office can help you get those papers. Call 866-868-3245 toll
+- The Secretary of State's office can help you get those papers.[^sos-voter-id] Call 866-868-3245 toll
   free.[^sos-voter-id]

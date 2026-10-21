@@ -23,7 +23,7 @@ sources:
 ---
 
 A provisional ballot lets you vote when there is a question about your ID or your
-registration.[^rsmo-115-430][^rsmo-115-427] Your ballot goes in a sealed envelope. It is
+registration.[^rsmo-115-430][^rsmo-115-427] Your ballot goes in a sealed envelope.[^rsmo-115-430] It is
 counted after the county board checks that you can vote.[^rsmo-115-430]
 
 ## When you might vote a provisional ballot
@@ -38,7 +38,7 @@ ballot.[^sos-other-questions]
 
 ## How it works
 
-1. You fill out the form on the provisional ballot envelope. It asks for your name, address,
+1. You fill out the form on the provisional ballot envelope.[^rsmo-115-427] It asks for your name, address,
    date of birth and the last four digits of your Social Security number.[^rsmo-115-427][^rsmo-115-430]
 2. You mark your ballot and seal it in the envelope.[^rsmo-115-430]
 3. You get a stub from the envelope with steps to check on your ballot.[^sos-voter-id]
@@ -59,7 +59,7 @@ eligible to vote in this election.[^rsmo-115-430]
 ## Vote at the right polling place
 
 A provisional ballot cast at the wrong polling place is not counted.[^rsmo-115-430] If the
-election judges find you are at the wrong place, they tell you where to go. You can go to your
+election judges find you are at the wrong place, they tell you where to go.[^rsmo-115-430] You can go to your
 correct polling place or a central polling place.[^rsmo-115-430][^sos-other-questions]
 
 ## Find out if your ballot counted

@@ -46,13 +46,13 @@ sources:
     url: https://www.sos.mo.gov/elections/goVoteMissouri/votingquestions
 ---
 
-Absentee voting lets you vote before Election Day. You can vote absentee in person, or get a
+Absentee voting lets you vote before Election Day.[^sos-voting-rights] You can vote absentee in person, or get a
 ballot by mail if you have a reason the law allows.[^rsmo-115-277]
 
 ## Vote early in person, no reason needed
 
 From **Tuesday, October 20 through Monday, November 2, 2026**, any registered voter can vote
-absentee in person. You do not need a reason.[^rsmo-115-277][^county-absentee-app]
+absentee in person.[^rsmo-115-277][^county-absentee-app] You do not need a reason.[^rsmo-115-277][^county-absentee-app]
 
 - You must show a photo ID.[^rsmo-115-277] See [What ID to bring](/learn/voter-id).
 - If you do not have one, you can vote a provisional ballot.[^rsmo-115-427][^sos-how-to-vote]
@@ -66,7 +66,7 @@ Satellite sites are open:[^county-absentee-app]
 - Saturday, October 24 and Saturday, October 31, 9 a.m. to 1 p.m.[^county-absentee-app]
 - Monday, November 2, 8 a.m. to 5 p.m.[^county-absentee-app]
 
-The Board of Elections office, 725 Northwest Plaza Drive, St. Ann, has the same hours. It
+The Board of Elections office, 725 Northwest Plaza Drive, St. Ann, has the same hours.[^county-absentee-app] It
 also opened earlier, on Tuesday, September 22.[^county-absentee-app][^county-contact] Before
 October 20, you need one of the reasons below to vote there.[^rsmo-115-277]
 

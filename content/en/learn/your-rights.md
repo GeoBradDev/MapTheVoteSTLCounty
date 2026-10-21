@@ -77,7 +77,7 @@ It is a crime to interfere with a voter inside a polling place.[^rsmo-115-637]
 ## If something goes wrong
 
 - Call the St. Louis County Board of Elections at 314-615-1800.[^county-contact]
-- You can file a complaint with the Missouri Secretary of State. Call the Elections Complaint
+- You can file a complaint with the Missouri Secretary of State.[^sos-integrity] Call the Elections Complaint
   line at 800-669-8683.[^sos-integrity]
 - The complaint form is on the Secretary of State's
   [Elections Integrity page](https://www.sos.mo.gov/elections/elections_integrity).[^sos-integrity]

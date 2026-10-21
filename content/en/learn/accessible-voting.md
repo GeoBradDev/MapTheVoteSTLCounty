@@ -27,8 +27,8 @@ place.[^sos-how-to-vote]
 1. Go to your polling place.[^sos-how-to-vote]
 2. Ask someone to go in and ask the poll workers to bring a ballot out to you.[^sos-how-to-vote]
 3. Two election judges, one from each major party, bring you a ballot and what you need to
-   vote. You must be within 200 feet of the polling place.[^rsmo-115-436]
-4. You mark the ballot. The judges seal it in an envelope and put it in the ballot
+   vote.[^rsmo-115-436] You must be within 200 feet of the polling place.[^rsmo-115-436]
+4. You mark the ballot.[^rsmo-115-436] The judges seal it in an envelope and put it in the ballot
    box.[^rsmo-115-436]
 
 The poll workers should bring you a ballot within a reasonable time.[^sos-how-to-vote]
@@ -49,7 +49,7 @@ Call the county board at 314-615-1800 to ask.[^county-contact]
 
 ## Absentee ballots for voters with a permanent disability
 
-If you have a permanent physical disability, you can ask to be put on a special list. Then
+If you have a permanent physical disability, you can ask to be put on a special list.[^sos-how-to-vote] Then
 the county board mails you an absentee ballot application before each
 election.[^sos-how-to-vote] See
 [Voting with a disability, and getting help at the polls](/learn/help-voting).

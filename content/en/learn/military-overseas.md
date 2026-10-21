@@ -63,16 +63,16 @@ fax.[^rsmo-115-914]
 
 ## If you missed the registration deadline
 
-Active members of the armed forces and their dependents can still vote for federal offices.
+Active members of the armed forces and their dependents can still vote for federal offices.[^sos-overseas]
 Use the portal or the Federal Write-In Absentee Ballot.[^sos-overseas]
 
 State law goes further. A military or overseas voter who is eligible but not registered can
-vote for federal, statewide and state legislative offices and statewide ballot initiatives. Send
+vote for federal, statewide and state legislative offices and statewide ballot initiatives.[^rsmo-115-277] Send
 a Federal Post Card Application to ask for an absentee ballot, or turn one in at the county
 board on Election Day.[^rsmo-115-277]
 
 If you were discharged, came home from deployment, or left a job overseas after the deadline,
-you can register in person at the county board. Do it by 5 p.m. on Friday, October 30,
+you can register in person at the county board.[^rsmo-115-135] Do it by 5 p.m. on Friday, October 30,
 2026.[^rsmo-115-135] Bring papers that show you qualify.[^rsmo-115-135]
 
 ## Send your ballot back
@@ -86,7 +86,7 @@ you can register in person at the county board. Do it by 5 p.m. on Friday, Octob
 
 ## Deadline
 
-Send your ballot by 12:01 a.m. on Election Day, November 3, where you are. That is just after midnight, at the very start of Election Day.[^rsmo-115-916]
+Send your ballot by 12:01 a.m. on Election Day, November 3, where you are.[^rsmo-115-916] That is just after midnight, at the very start of Election Day.[^rsmo-115-916]
 The county board must receive it by noon on Friday, November 6, 2026.[^rsmo-115-920][^sos-overseas]
 A ballot that arrives at the county board by 7 p.m. on Election Day also counts.[^rsmo-115-916]
 

@@ -25,19 +25,19 @@ sources:
     url: https://stlouiscovotes.info/registration/
 ---
 
-Tell the county board when you move or change your name. It is best to do this before
+Tell the county board when you move or change your name.[^sos-other-questions] It is best to do this before
 Election Day.[^sos-other-questions] Call 314-615-1800 with questions.[^county-registration]
 
 ## You moved within St. Louis County
 
 If you are still on the voter list, you can still vote.[^rsmo-115-165] On Election Day, go to
-the polling place for your new address, or to a central polling place. Update your address
+the polling place for your new address, or to a central polling place.[^sos-other-questions][^rsmo-115-165] Update your address
 there and vote.[^sos-other-questions][^rsmo-115-165] You tell the election judges your new
 address, out loud or in writing.[^rsmo-115-165]
 
 ## You moved to St. Louis County from another Missouri county
 
-If you are still registered at your old address, you can update your address on Election Day.
+If you are still registered at your old address, you can update your address on Election Day.[^rsmo-115-165][^sos-other-questions]
 Do it in person at the St. Louis County Board of Elections office.[^rsmo-115-165][^sos-other-questions]
 You must show a photo ID.[^rsmo-115-165][^rsmo-115-427] See
 [What ID to bring](/learn/voter-id).

@@ -30,12 +30,12 @@ mailed form must be postmarked by that day.[^sos-register]
 ## If you missed it
 
 - If you register now, you can vote in later elections.[^rsmo-115-135]
-- If you are already registered and moved, you may still be able to vote. See
+- If you are already registered and moved, you may still be able to vote.[^sos-other-questions] See
   [If you moved or changed your name](/learn/moved-or-changed-name).[^sos-other-questions]
 
 ## Military voters who just came home
 
-Some members of the military, and people who just finished a job overseas, can register late.
+Some members of the military, and people who just finished a job overseas, can register late.[^rsmo-115-135]
 This is for people who were discharged, came back from deployment, or left a job outside the
 United States after the deadline.[^rsmo-115-135] They can register in person at the county
 board until 5 p.m. on the Friday before the election.[^rsmo-115-135] They must bring papers
