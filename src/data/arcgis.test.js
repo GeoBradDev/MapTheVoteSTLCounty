@@ -126,6 +126,11 @@ describe('getPrecinctById', () => {
       expect(fetchMock).not.toHaveBeenCalled();
     },
   );
+
+  it('rejects a value JSON cannot serialize with NotFound and sends nothing', async () => {
+    await expect(client.getPrecinctById(10n)).rejects.toBeInstanceOf(client.NotFound);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });
 
 describe('exports', () => {
@@ -275,6 +280,30 @@ describe('errors', () => {
   it('rejects a body that is not JSON with ServiceError', async () => {
     fetchMock.mockResolvedValue(new Response('<html>', { status: 200 }));
     await expect(client.getPrecinctById('CC007')).rejects.toBeInstanceOf(client.ServiceError);
+  });
+
+  it('retries a connection that drops while the body downloads', async () => {
+    vi.useFakeTimers();
+    const dropped = {
+      ok: true,
+      status: 200,
+      json: () => Promise.reject(new TypeError('terminated')),
+    };
+    fetchMock.mockResolvedValueOnce(dropped).mockResolvedValueOnce(respond(byId));
+    const result = client.getPrecinctById('CC007');
+    await vi.advanceTimersByTimeAsync(client.RETRY_DELAY_MS);
+    expect((await result).precinct).toBe('CC007');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('rejects a JSON feature that has properties instead of attributes with ServiceError', async () => {
+    fetchMock.mockResolvedValue(respond({ features: [{ properties: { precinct: 'CC007' } }] }));
+    await expect(client.getPrecinctById('CC007')).rejects.toBeInstanceOf(client.ServiceError);
+  });
+
+  it('rejects a GeoJSON feature that has attributes instead of properties with ServiceError', async () => {
+    fetchMock.mockResolvedValue(respond({ features: [{ attributes: { loc: '001' } }] }));
+    await expect(client.getPolls()).rejects.toBeInstanceOf(client.ServiceError);
   });
 
   it.each([{}, null, { features: 'none' }])(
