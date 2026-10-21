@@ -23,8 +23,8 @@ function respond(body, status = 200) {
 }
 
 // Answers the polls, absentee sites and precinct outline queries from their
-// fixtures, and the
-// precinct query with `precinct` (a body, or a function of the URL).
+// fixtures, and the precinct query with `precinct` (a body, or a function of
+// the URL).
 function routeFetch(precinct) {
   fetchMock.mockImplementation((input) => {
     const url = new URL(input);

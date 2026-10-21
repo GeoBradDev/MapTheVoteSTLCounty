@@ -49,6 +49,11 @@ Domain skills:
 
 - `src/data/arcgis.js`: `getAbsenteeSites()`, query `where: election.absenteeWhere`,
   `outFields: '*'`, `outSR: '4326'`, `f: 'geojson'`, normalized and shared like `getPolls`.
+  Both now come from one `sharedLayer(layer, where)` helper (same behavior for `getPolls`).
+- `src/features/lookup/distanceOrigin.js` (new): the "looked-up point, else precinct
+  center" logic moved out of `PollsCard.jsx` so both cards share it.
+- `src/features/lookup/PollsCard.jsx`: uses `distanceOrigin`; its `sourceName` helper moves
+  to `resultsCopy.js` (exported) so the early voting card can name its source too.
 - `src/data/arcgis.test.js`: request shape, normalization, sharing.
 - `scripts/record-fixtures.mjs` + `docs/raw/fixtures/absentee-sites.json` (new, live).
 - `src/features/lookup/nearbyPolls.js`: rows also carry `absType` and `absNote`.
@@ -72,7 +77,8 @@ Domain skills:
 ## Risks
 
 - Wrong time zone: the device may not be in Chicago. All "today" logic uses
-  `Intl.DateTimeFormat` with `timeZone`, and tests run with UTC process time.
+  `Intl.DateTimeFormat` with `timeZone`; a test sets the process `TZ` to zones far from
+  Chicago (UTC+14, UTC-11, UTC) and checks the status and dates are unchanged.
 - Overlapping entries (the BOE weekday range spans the Saturday entries): weekday ranges
   skip Saturday and Sunday; if two entries match a date, the narrowest range wins.
 - The hardcoding test scans test files too, so tests build dates from numbers or from the

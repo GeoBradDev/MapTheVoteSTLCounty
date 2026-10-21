@@ -171,6 +171,26 @@ describe('earlyVotingStatus with the election config', () => {
   });
 });
 
+describe('on a device in another time zone', () => {
+  // Node reads TZ again when it changes, so this stands in for a voter's
+  // device set to a zone far from Chicago.
+  const saved = process.env.TZ;
+  afterEach(() => {
+    if (saved === undefined) delete process.env.TZ;
+    else process.env.TZ = saved;
+  });
+
+  it.each(['Pacific/Kiritimati', 'Pacific/Pago_Pago', 'UTC'])('%s: still Chicago time', (zone) => {
+    process.env.TZ = zone;
+    // 11:30 p.m. Wednesday in Chicago.
+    expect(status(abs, cdt(10, 21, 23, 30))).toMatchObject({ kind: 'opensOn', date: day(10, 22) });
+    // 12:30 a.m. Thursday in Chicago.
+    expect(status(abs, cdt(10, 22, 0, 30))).toMatchObject({ kind: 'opensToday' });
+    expect(formatLongDate(day(10, 24))).toBe('Saturday, October 24');
+    expect(scheduleLines(abs)[1].from).toBe('Saturday, October 24');
+  });
+});
+
 describe('formatLongDate', () => {
   it('reads a date with its weekday, whatever the device zone', () => {
     expect(formatLongDate(day(10, 24))).toBe('Saturday, October 24');
