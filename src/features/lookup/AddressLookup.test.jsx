@@ -114,9 +114,10 @@ describe('AddressLookup', () => {
       election.officialLookupUrl,
     );
     expect(locate).not.toHaveBeenCalled();
+    expect(copy.errors.noMatch).toMatch(/Use my location/);
   });
 
-  it('says address search is unavailable when no geocoder is configured', async () => {
+  it('says address search is unavailable when the geocoder cannot be reached', async () => {
     renderLookup({
       value: {
         suggest: async () => [],
@@ -128,6 +129,11 @@ describe('AddressLookup', () => {
     await search();
     expect(await screen.findByText(copy.errors.unavailable)).toBeInTheDocument();
     expect(copy.errors.unavailable).toMatch(/Use my location/);
+    expect(screen.getByRole('link', { name: copy.officialLookup })).toHaveAttribute(
+      'href',
+      election.officialLookupUrl,
+    );
+    expect(locate).not.toHaveBeenCalled();
   });
 
   it('says the lookup failed, not unavailable, when the geocoder errors', async () => {
@@ -257,6 +263,14 @@ describe('AddressLookup', () => {
       JSON.stringify({ ...sessionStorage }),
     ].join(' ');
     for (const needle of ['7700', 'Fine', '38.5', '-90.3']) expect(seen).not.toContain(needle);
+  });
+
+  it('credits OpenStreetMap contributors next to the address box', () => {
+    renderLookup();
+    expect(screen.getByRole('link', { name: 'OpenStreetMap contributors' })).toHaveAttribute(
+      'href',
+      'https://www.openstreetmap.org/copyright',
+    );
   });
 
   it('has error copy that names no party or candidate', () => {
