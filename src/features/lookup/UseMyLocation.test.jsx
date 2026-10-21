@@ -193,6 +193,21 @@ describe('UseMyLocation', () => {
     expect(onLocate).toHaveBeenCalledWith({ lat: 38.62, lng: -90.33 });
   });
 
+  it('keeps the request when a touch scroll starts on the address box', async () => {
+    // A finger that lands on the box and then scrolls fires pointerdown and
+    // pointercancel, never a click.
+    const onLocate = vi.fn();
+    render(<Harness onLocate={onLocate} />);
+    await userEvent.click(button());
+    act(() => {
+      address().dispatchEvent(new Event('pointerdown', { bubbles: true }));
+      address().dispatchEvent(new Event('pointercancel', { bubbles: true }));
+    });
+    expect(button()).toHaveTextContent(copy.busy);
+    await answer(({ ok }) => ok(POSITION));
+    expect(onLocate).toHaveBeenCalledWith({ lat: 38.62, lng: -90.33 });
+  });
+
   it('drops a late result once the address form is submitted', async () => {
     const onLocate = vi.fn();
     render(
