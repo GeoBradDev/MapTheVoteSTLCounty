@@ -112,6 +112,18 @@ describe('UseMyLocation', () => {
     expect(address()).toHaveFocus();
   });
 
+  it('replaces the message node on a repeated instant failure so it is announced again', async () => {
+    vi.stubGlobal('isSecureContext', false);
+    render(<Harness />);
+    await userEvent.click(button());
+    const first = screen.getByRole('alert').firstElementChild;
+    expect(first).toHaveTextContent(copy.errors.insecure);
+    await userEvent.click(button());
+    const second = screen.getByRole('alert').firstElementChild;
+    expect(second).toHaveTextContent(copy.errors.insecure);
+    expect(second).not.toBe(first);
+  });
+
   it('says so when the browser has no location support', async () => {
     vi.stubGlobal('navigator', { ...navigator, geolocation: undefined });
     render(<Harness />);
