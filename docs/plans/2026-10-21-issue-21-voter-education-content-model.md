@@ -146,3 +146,7 @@ applicable because the app is a frontend-only React site.
   control characters are rejected anywhere in the body, the title and source labels.
 - Finder 4: list item text that starts with `#` but is not a heading (`#2 pencil`) is
   allowed again; only `#` to `######` followed by a space is heading syntax.
+- Verifier 1: no app code imports `topics.js` until #23, so the plugin's transform never ran
+  in the app build and a bad topic built cleanly. The plugin now also checks every
+  `content/<locale>/learn/*.md` file when the build or dev server starts, whether or not
+  anything imports it; a real-build test proves a bad, unimported topic fails the build.
