@@ -101,6 +101,11 @@ describe('a real build', () => {
     await expect(run()).rejects.toThrow(/voter-id\.md has 1 problem/);
   });
 
+  it('skips a directory whose name ends in .md', async () => {
+    await mkdir(path.join(dir, 'content/en/learn/folder.md'));
+    await expect(run()).resolves.toBeDefined();
+  });
+
   it('builds when the content folder is missing', async () => {
     await rm(path.join(dir, 'content'), { recursive: true });
     await expect(run()).resolves.toBeDefined();
