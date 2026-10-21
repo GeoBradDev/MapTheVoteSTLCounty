@@ -22,8 +22,8 @@ Domain skills:
 OpenFreeMap's Positron style (`https://tiles.openfreemap.org/styles/positron`): free, no API
 key, no registration, and its terms (openfreemap.org/tos, updated 2026-10-14) allow embedding
 in a website. Style, TileJSON, vector tiles, raster tiles, sprites and glyphs all come from
-the one origin `https://tiles.openfreemap.org`. Positron is a light gray style, which keeps the
-map neutral. Attribution required by the tiles: "OpenFreeMap, (c) OpenMapTiles, Data from
+the one origin `https://tiles.openfreemap.org`. Positron is a light gray style; its only party color is the blue of its
+water labels, so the map draws every label in the `muted` token (found in review). Attribution required by the tiles: "OpenFreeMap, (c) OpenMapTiles, Data from
 OpenStreetMap" (the TileJSON `attribution`); OpenStreetMap's ODbL asks for "(c) OpenStreetMap
 contributors". Both are shown as text links under the map.
 
@@ -86,6 +86,7 @@ contributors". Both are shown as text links under the map.
 - `render.yaml`, `src/test/render.test.js`: the policy.
 - `src/test/build.test.js`: the entry chunk has no MapLibre code; a separate chunk and the
   worker file exist.
+- `docs/data.md`: a Basemap section (choice, terms, origin, attribution, privacy).
 - `README.md`: a Map section (basemap, attribution, CSP, how to swap the style).
 
 ## Order of work

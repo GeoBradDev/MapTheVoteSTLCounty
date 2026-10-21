@@ -5,7 +5,11 @@
 // connect-src. To change the basemap, change this file and the
 // policy together.
 
-/** The MapLibre style URL. Positron is light gray, so the map stays neutral. */
+/**
+ * The MapLibre style URL. Positron is light gray; its water labels are blue,
+ * so precinctMapView.js draws every label in the muted token. When changing
+ * the style, check its fill and line colors for red or blue too.
+ */
 export const BASEMAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
 
 /**

@@ -17,7 +17,8 @@ const FIT = { padding: 40, maxZoom: 16, animate: false };
 
 const POLL_MARKER =
   'flex size-7 items-center justify-center rounded-full border-2 border-surface bg-primary text-sm font-semibold text-on-primary shadow';
-const ORIGIN_MARKER = 'block size-4 rounded-full border-2 border-surface bg-ink shadow';
+// Above the numbered markers, so a polling place at the address does not hide it.
+const ORIGIN_MARKER = 'z-1 block size-4 rounded-full border-2 border-surface bg-ink shadow';
 
 function markerElement(className, text) {
   const element = document.createElement('div');
@@ -43,8 +44,10 @@ function markerElement(className, text) {
  * @throws When WebGL is unavailable or the inputs give nothing to show.
  */
 export function createPrecinctMap(container, { geometry, origin, polls, onReady, onFail }) {
-  const color = oklchToRgb(getComputedStyle(container).getPropertyValue('--color-primary'));
-  if (!color) throw new Error('The --color-primary token is not an oklch color');
+  const tokens = getComputedStyle(container);
+  const color = oklchToRgb(tokens.getPropertyValue('--color-primary'));
+  const labelColor = oklchToRgb(tokens.getPropertyValue('--color-muted'));
+  if (!color || !labelColor) throw new Error('The map color tokens are not oklch colors');
   const boundsOf = (places) => mapBounds({ geometry, points: [origin, ...places] });
   const bounds = boundsOf(polls);
   if (!bounds) throw new Error('Nothing to show on the map');
@@ -92,6 +95,12 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
 
   map.on('load', () => {
     try {
+      // The basemap's own colors are grays, except its water labels, which
+      // are blue. Draw every label in the muted token, so no party color
+      // shows whatever the style changes.
+      for (const layer of map.getStyle().layers) {
+        if (layer.type === 'symbol') map.setPaintProperty(layer.id, 'text-color', labelColor);
+      }
       map.addSource('precinct', { type: 'geojson', data: { type: 'Feature', geometry } });
       map.addLayer({
         id: 'precinct-fill',
