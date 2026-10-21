@@ -53,9 +53,10 @@ text. A rejected link, or markup the parser does not know (it reads only text,
 comments, a few formatting tags, and the attributes `href`, `target`, `title` and
 `rel`), comes back as nothing. Never render `html` as raw
 HTML; a test fails on `dangerouslySetInnerHTML` anywhere under `src/`.
-`node scripts/check-sample-ballots.mjs` runs the parser over every precinct on the live
-layer and exits 1 unless each `In Election` precinct has its own valid link and every
-other precinct a message. Run it before each election.
+The data health check (`node scripts/check-config.mjs`, see the README) runs the parser
+over every precinct on the live layer and fails unless each `In Election` precinct has its
+own valid link and every other precinct a message. It also sends a `HEAD` request to 5
+random links and expects `application/pdf`.
 
 Do not use `lookup_view_sample_ballot`. Despite its name, it is a stale view of
 `precincts_2024_08_ToPublish` (1199 rows) with older ballot item IDs.
