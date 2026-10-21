@@ -144,6 +144,29 @@ test('going home from a page focuses the home heading at the top', async ({ page
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
 });
 
+test('Back and Forward leave the scroll position to the browser', async ({ page }) => {
+  // Count the app's own scrolls to the top.
+  await page.addInitScript(() => {
+    const scrollTo = window.scrollTo.bind(window);
+    window.scrollsToTop = 0;
+    window.scrollTo = (...args) => {
+      if (args[0] === 0 && args[1] === 0) window.scrollsToTop += 1;
+      return scrollTo(...args);
+    };
+  });
+  await answerFromFixtures(page);
+  await page.goto('/');
+  await page.getByRole('link', { name: 'How to vote' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('How to vote');
+  // A link to a new page starts it at the top.
+  expect(await page.evaluate(() => window.scrollsToTop)).toBe(1);
+  await page.goBack();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('St. Louis County Voter Guide');
+  await page.goForward();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('How to vote');
+  expect(await page.evaluate(() => window.scrollsToTop)).toBe(1);
+});
+
 test.describe('with reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
 
