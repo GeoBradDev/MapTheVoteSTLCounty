@@ -318,8 +318,55 @@ describe('PrecinctPage', () => {
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent(copy.errors.notFound);
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(screen.queryAllByRole('heading', { level: 2 })).toEqual([]);
+    // No result cards: only the search offered instead.
+    expect(cardHeadings()).toEqual([copy.searchInstead]);
     expect(screen.getByRole('link', { name: copy.searchAnother })).toHaveAttribute('href', '/');
+  });
+
+  it.each(['nope', 'ZZ999'])(
+    'offers the address search and Use my location for %s',
+    async (code) => {
+      fetchMock.mockImplementation(() => respond({ ...byId, features: [] }));
+      renderAt(code);
+      const section = await screen.findByRole('region', { name: copy.searchInstead });
+      expect(within(section).getByRole('combobox')).toBeInTheDocument();
+      expect(within(section).getByRole('button', { name: /use my location/i })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: copy.share.button })).toBeNull();
+    },
+  );
+
+  it('offers no search when the precinct failed to load for another reason', async () => {
+    fetchMock.mockImplementation(() => respond({}, 404));
+    renderAt('CC007');
+    await screen.findByText(copy.errors.failed, { exact: false });
+    expect(screen.queryByRole('region', { name: copy.searchInstead })).toBeNull();
+  });
+
+  it('shows the share button and note once the precinct loads', async () => {
+    routeFetch(byId);
+    renderAt('CC007');
+    expect(screen.queryByRole('button', { name: copy.share.button })).toBeNull();
+    await ready('CC007');
+    expect(screen.getByRole('button', { name: copy.share.button })).toBeInTheDocument();
+    expect(screen.getByText(copy.share.note('CC007'))).toBeInTheDocument();
+  });
+
+  it('titles the tab with the precinct code only, and restores the title on leaving', async () => {
+    document.title = 'Before';
+    routeFetch(byId);
+    const location = renderAt('CC007');
+    expect(document.title).toBe(copy.pageTitle('CC007'));
+    await ready('CC007');
+    await userEvent.click(screen.getByRole('link', { name: copy.searchAnother }));
+    expect(location.history).toEqual(['/p/CC007', '/']);
+    expect(document.title).toBe('Before');
+  });
+
+  it('leaves the title alone for URL text that is not a precinct code', async () => {
+    document.title = 'Before';
+    renderAt('Polls%20moved');
+    await screen.findByRole('region', { name: copy.searchInstead });
+    expect(document.title).toBe('Before');
   });
 
   it('never puts URL text that is not a precinct code in the heading', async () => {

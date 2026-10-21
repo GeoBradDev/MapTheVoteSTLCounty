@@ -53,7 +53,9 @@ payments, email: not applicable because the app is a frontend-only React site.
   `ShareLink` in the header once loaded, `AddressLookup` under the not-found message.
 - `src/features/lookup/resultsCopy.js`: share and title copy.
 - `src/features/lookup/PrecinctPage.test.jsx`: tests for criteria 2, 3, 6.
-- `src/App.test.jsx`: end-to-end privacy test for criterion 7.
+- `src/features/lookup/sharePrivacy.test.jsx` (new): end-to-end privacy test for criterion 7
+  through `App` and the real browser location. (Planned for `src/App.test.jsx`, but that file
+  never answers fetch, and this test needs the fixtures.)
 - `README.md`: one line on share URLs using the production origin.
 
 No new route, so `render.yaml` does not change.
@@ -82,7 +84,7 @@ No new route, so `render.yaml` does not change.
 
 - Criterion 1, 4, 5: `ShareLink.test.jsx`.
 - Criterion 2, 3, 6: `PrecinctPage.test.jsx`.
-- Criterion 7: `App.test.jsx` privacy test.
+- Criterion 7: `sharePrivacy.test.jsx`.
 - Criterion 8: existing "from a link" test plus live drive: search an address, click Share,
   open the copied path in a fresh browser context, compare heading, ballot link and districts;
   check `location.href`, `document.title`, `history.state` for the address. Also drive
