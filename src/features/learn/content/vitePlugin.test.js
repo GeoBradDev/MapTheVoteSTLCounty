@@ -95,6 +95,17 @@ describe('a real build', () => {
     await expect(run()).rejects.toThrow(/sources: list at least one source/);
   });
 
+  it('fails on a bad topic even when no app code imports the topics yet', async () => {
+    await writeFile(path.join(dir, 'main.js'), 'export const nothing = 1;\n');
+    await writeFile(path.join(dir, 'content/en/learn/voter-id.md'), topic({ sources: false }));
+    await expect(run()).rejects.toThrow(/voter-id\.md has 1 problem/);
+  });
+
+  it('builds when the content folder is missing', async () => {
+    await rm(path.join(dir, 'content'), { recursive: true });
+    await expect(run()).resolves.toBeDefined();
+  });
+
   it('inlines a valid topic as data, with no parser in the bundle', async () => {
     await writeFile(path.join(dir, 'content/en/learn/voter-id.md'), topic());
     await run();
