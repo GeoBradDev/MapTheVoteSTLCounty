@@ -68,6 +68,8 @@ const OUT_FIELDS = [
   'MUNI',
 ].join(',');
 const CURRENT = "STATUS = 'Current'";
+// UNITDESC codes of records that are not homes.
+const NOT_AN_ADDRESS = new Set(['UP', 'CELL TOWER', 'BILLBOARD', 'ATM', 'SUBSTATION']);
 const MAX_HOUSE_NUMBER_DIGITS = 6;
 
 // Every spelling of a word that words() turns into one form: "mt" asks for
@@ -79,7 +81,8 @@ for (const [spelling, canonical] of Object.entries(CANONICAL)) {
 }
 
 // Words that need no spelling variants: not a key or value of CANONICAL.
-const isPlain = (word) => !(word in CANONICAL) && !SPELLINGS.has(word) && /^[a-z]+$/.test(word);
+const isPlain = (word) =>
+  !Object.hasOwn(CANONICAL, word) && !SPELLINGS.has(word) && /^[a-z]+$/.test(word);
 const isType = (word) => STREET_TYPES.has(word) || word === 'st';
 
 function abortError() {
@@ -205,12 +208,14 @@ export function suggestWhere(text) {
     // A short last word may still be partial ("Av" of "Avalon"); a long one
     // in the list is whole ("Avenue").
     if (i === parts.length - 1 && !lastIsWhole && word.length < 5) return word;
-    if (i === 1 && parts.length > 2 && DIRECTION_SPELLING[word]) return DIRECTION_SPELLING[word];
+    if (i === 1 && parts.length > 2 && Object.hasOwn(DIRECTION_SPELLING, word)) {
+      return DIRECTION_SPELLING[word];
+    }
     // A street type in the middle is part of the name ("Olive Street Rd"),
     // unless a unit follows it ("Main Street Apt 2").
     const asType = i === parts.length - 1 || UNIT.has(parts[i + 1]);
     if (!asType && STREET_TYPE_WORDS.has(word)) return word;
-    return COUNTY_SPELLING[word] ?? word;
+    return Object.hasOwn(COUNTY_SPELLING, word) ? COUNTY_SPELLING[word] : word;
   });
   const prefix = `${spelled.join(' ').toUpperCase()}${/\s$/.test(streetPart) ? ' ' : ''}`;
   const zip = raw.includes(',') ? typedZip(raw) : undefined;
@@ -236,6 +241,8 @@ function recordOf(feature) {
   const a = feature?.attributes;
   const { x, y } = feature?.geometry ?? {};
   if (!a || a.STATUS !== 'Current' || !Number.isFinite(x) || !Number.isFinite(y)) return null;
+  // A pole, tower, billboard, ATM or substation is not where anyone lives.
+  if (NOT_AN_ADDRESS.has(text(a.UNITDESC).toUpperCase())) return null;
   if (!Number.isInteger(a.ADRNO) || a.ADRNO < 0 || !text(a.ADRSTR)) return null;
   const direction = text(a.ADRDIR).toUpperCase();
   const street = [direction, titleCase(a.ADRSTR), titleCase(a.ADRSUF)].filter(Boolean).join(' ');
@@ -249,7 +256,16 @@ function recordOf(feature) {
   };
   const unitNo = text(a.UNITNO).toUpperCase();
   const unit = unitNo ? `${titleCase(a.UNITDESC) || 'Unit'} ${unitNo}` : '';
-  return { props, lat: y, lng: x, unit, unitKey: unitNo.replace(/-/g, ''), muni: text(a.MUNI) };
+  return {
+    props,
+    lat: y,
+    lng: x,
+    unit,
+    unitKey: unitNo.replace(/-/g, ''),
+    // A unit number with a space ("2 FL") would not read back as a unit.
+    unitReadable: !/\s/.test(unitNo),
+    muni: text(a.MUNI),
+  };
 }
 
 /** @returns {import('./geocoder.js').GeocodedPlace} */
@@ -370,18 +386,18 @@ export function createCountyAddressSource({
       // One number, street and ZIP, but two houses: no answer, even for a unit.
       const houses = matches.filter((m) => !m.unitKey);
       if (!houses.every((h) => sameHouse(h, houses[0]))) return { status: 'ambiguous' };
-      // The typed unit's point when exactly one record has it, else the
-      // house's own point, else its units' point when they are close together
-      // in one municipality. Units spread over a large parcel, with no point
-      // of the house itself, could be in two precincts.
+      // The typed unit's point when exactly one record has it. Else the
+      // house's own point, or its units' point when they are close together
+      // with no point of the house itself; either way only when every record
+      // of the address is in one municipality, because a unit can sit across
+      // a town line from its house (1950 Walton Rd 63114: the house in
+      // Overland, Unit R in Vinita Park, two precincts).
       const unit = typedUnit(typed);
       const units = unit ? matches.filter((m) => m.unitKey === unit) : [];
       const ownUnit = units.length === 1 ? units[0] : undefined;
       const chosen = ownUnit ?? houses[0];
-      if (
-        !chosen &&
-        !matches.every((m) => m.muni === first.muni && within(m, first, SAME_SITE_DEGREES))
-      ) {
+      if (!ownUnit && !matches.every((m) => m.muni === first.muni)) return { status: 'ambiguous' };
+      if (!chosen && !matches.every((m) => within(m, first, SAME_SITE_DEGREES))) {
         return { status: 'ambiguous' };
       }
       return {
@@ -417,7 +433,7 @@ export function createCountyAddressSource({
       for (const feature of json.features) {
         const record = recordOf(feature);
         if (!record) continue;
-        const place = placeOf(record, { withUnit: showUnits });
+        const place = placeOf(record, { withUnit: showUnits && record.unitReadable });
         if (seen.has(place.label)) continue;
         seen.add(place.label);
         suggestions.push({

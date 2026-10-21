@@ -21,8 +21,9 @@ export { GeocoderUnavailableError } from './geocoderError.js';
 
 /**
  * A suggestion for partly typed text. A source may add its own fields that
- * only geocode() reads (both sources add `place`, the geocoded place, so a
- * pick needs no second request).
+ * only geocode() reads: Photon's suggestions add `place`, the geocoded place,
+ * so a pick needs no second request. County suggestions carry no place (one
+ * label can be two houses), so a pick is geocoded again by its label.
  * @typedef {object} Suggestion
  * @property {string} id Unique among one suggest() result.
  * @property {string} label What the voter sees.
@@ -149,7 +150,9 @@ export function createGeocoder({ sources, fallback }) {
       // The official data has two addresses that fit: ask for a ZIP.
       if (county?.status === 'ambiguous') return null;
       if (county?.status === 'match') {
-        if (!county.confirmed && (await alsoInCity(text, signal))) return null;
+        const inCity = !county.confirmed && (await alsoInCity(text, signal));
+        if (signal?.aborted) throw abortError();
+        if (inCity) return null;
         return county.place;
       }
       try {

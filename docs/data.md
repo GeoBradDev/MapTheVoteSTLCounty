@@ -421,9 +421,14 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
   answer is no match, even with the ZIP, town or a unit typed; the voter is pointed to
   "Use my location" and the county's official lookup.
 - **Units:** a typed unit ("Apt 13B", "#2") picks its own record when exactly one record
-  has it, else the house's own record (no unit), else a unit's point when all units are
-  in one municipality within about 300 m. Units spread further with no record of the
-  house itself are no match. A complex can have over
+  has it. Otherwise every record of the address, units included, must be in one
+  municipality, since a unit can sit across a town line from its house (1950 Walton Rd
+  63114: the house in Overland, MID002; Unit R in Vinita Park, UNV031; about 110 such
+  addresses in the county), and then the house's own record (no unit) answers, else a
+  unit's point when all units are within about 300 m. Anything else is no match.
+  Records for utility poles, cell towers, billboards, ATMs and substations (`UNITDESC`
+  `UP`, `CELL TOWER`, `BILLBOARD`, `ATM`, `SUBSTATION`) are not homes and are ignored.
+  A unit number with a space ("2 FL") is suggested as its address, without the unit. A complex can have over
   300 units at one number, so a find asks for up to 1000 records; more counts as the
   layer being unavailable.
 - **Two addresses fit** (two ZIPs or two streets): no match, with no fallback, since

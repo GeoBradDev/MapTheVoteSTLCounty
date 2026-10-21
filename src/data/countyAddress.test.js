@@ -140,6 +140,19 @@ describe('findWhere', () => {
     expect(findWhere('1234567 Ross Ave')).toBeNull();
   });
 
+  it('treats words like constructor as plain words, not object keys', () => {
+    expect(findWhere('100 constructor')).toBe(
+      "ADRNO = 100 AND STATUS = 'Current' AND (ADRSTR LIKE '%CONSTRUCTOR%')",
+    );
+    expect(findWhere('100 toString Ave')).toContain("'%TOSTRING%'");
+    expect(suggestWhere('100 constructor ')).toBe(
+      "STATUS = 'Current' AND FULL_ADDRESS LIKE '100 CONSTRUCTOR %'",
+    );
+    expect(suggestWhere('100 n __proto__ hasOwnProperty ')).toBe(
+      "STATUS = 'Current' AND FULL_ADDRESS LIKE '100 N PROTO HASOWNPROPERTY %'",
+    );
+  });
+
   it('never lets typed quotes, wildcards or SQL into the clause', () => {
     const attacks = [
       "1318 Ross' OR '1'='1",
@@ -400,6 +413,62 @@ describe('find', () => {
       });
     });
 
+    it('are ambiguous when a unit of the address is in another municipality', async () => {
+      // Live data: 1950 Walton Rd 63114, the house in Overland (MID002) and
+      // Unit R in Vinita Park (UNV031), about 60 m apart.
+      const house = point(
+        { OBJECTID: 1, ADRNO: 1950, ADRSTR: 'WALTON', ADRSUF: 'RD', ZIPCODE: '63114', MUNI: 'OVR' },
+        [-90.34695, 38.69134],
+      );
+      const unitR = point(
+        {
+          OBJECTID: 2,
+          ADRNO: 1950,
+          ADRSTR: 'WALTON',
+          ADRSUF: 'RD',
+          ZIPCODE: '63114',
+          MUNI: 'VIP',
+          UNITDESC: 'UNIT',
+          UNITNO: 'R',
+        },
+        [-90.3463, 38.69161],
+      );
+      await expect(source(answering(house, unitR)).find('1950 Walton Rd 63114')).resolves.toEqual({
+        status: 'ambiguous',
+      });
+      // The unit typed names one record.
+      await expect(
+        source(answering(house, unitR)).find('1950 Walton Rd Unit R, 63114'),
+      ).resolves.toMatchObject({ status: 'match', place: { lng: -90.3463 } });
+    });
+
+    it('ignore records that are not addresses: poles, towers, billboards, ATMs, substations', async () => {
+      const pole = (desc, no, i) =>
+        point(
+          {
+            OBJECTID: 10 + i,
+            UNITDESC: desc,
+            UNITNO: no,
+            MUNI: 'OTHER',
+            FULL_ADDRESS: `1318 ROSS AVE ${desc} ${no}`,
+          },
+          [-90.3, 38.6],
+        );
+      const others = ['UP', 'CELL TOWER', 'BILLBOARD', 'ATM', 'SUBSTATION'].map((d, i) =>
+        pole(d, `X${i}`, i),
+      );
+      await expect(
+        source(answering(ROSS, ...others)).find('1318 Ross Ave 63146'),
+      ).resolves.toMatchObject({
+        status: 'match',
+        place: { lat: 38.6822 },
+      });
+      await expect(source(answering(...others)).find('1318 Ross Ave 63146')).resolves.toEqual({
+        status: 'none',
+      });
+      expect(await source(answering(...others)).suggest('1318 Ross Ave #')).toEqual([]);
+    });
+
     it('are ambiguous even when a typed unit exists at only one of them', async () => {
       const unitAtOne = point(
         {
@@ -615,6 +684,22 @@ describe('suggest', () => {
       '8025 Maryland Ave Apt 10B, Saint Louis, MO 63105',
       '8025 Maryland Ave Apt 10C, Saint Louis, MO 63105',
     ]);
+  });
+
+  it('shows the address, not a unit it could not find again, for a unit number with a space', async () => {
+    const floor = point({
+      ADRNO: 7035,
+      ADRSTR: 'AMHERST',
+      UNITDESC: 'UNIT',
+      UNITNO: '2 FL',
+      ZIPCODE: '63130',
+      FULL_ADDRESS: '7035 AMHERST AVE UNIT 2 FL',
+    });
+    const [suggestion] = await source(answering(floor)).suggest('7035 Amherst Ave Unit');
+    expect(suggestion.label).toBe('7035 Amherst Ave, Saint Louis, MO 63130');
+    await expect(source(answering(floor)).find(suggestion.label)).resolves.toMatchObject({
+      status: 'match',
+    });
   });
 
   it('shows at most five', async () => {

@@ -103,7 +103,7 @@ export function words(text) {
     .split(/[^a-z0-9]+/)
     .filter(Boolean)
     .map((word) => word.replace(/^(\d+)(st|nd|rd|th)$/, '$1'))
-    .map((word) => CANONICAL[word] ?? word);
+    .map((word) => (Object.hasOwn(CANONICAL, word) ? CANONICAL[word] : word));
 }
 
 export function labelOf(props) {

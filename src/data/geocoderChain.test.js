@@ -249,6 +249,23 @@ describe('geocode', () => {
       expect(error.name).toBe('AbortError');
     });
 
+    it('rejects with AbortError when aborted as the City cross-check answers', async () => {
+      const controller = new AbortController();
+      const { geocoder } = chain({
+        live: countySource({ find: match(false) }),
+        fallback: photon({
+          findPlaces: async () => {
+            controller.abort();
+            return [];
+          },
+        }),
+      });
+      const error = await geocoder
+        .geocode('1318 Ross Ave', { signal: controller.signal })
+        .catch((e) => e);
+      expect(error.name).toBe('AbortError');
+    });
+
     it('rejects with AbortError during the City cross-check', async () => {
       const { geocoder } = chain({
         live: countySource({ find: match(false) }),
@@ -277,7 +294,7 @@ describe('geocode', () => {
 });
 
 describe('suggest', () => {
-  const COUNTY_SUGGESTION = { id: 'c', label: ROSS.label, place: ROSS };
+  const COUNTY_SUGGESTION = { id: 'c', label: ROSS.label };
 
   it('lists county suggestions, asking nothing else', async () => {
     const { geocoder, hosted, fallback } = chain({

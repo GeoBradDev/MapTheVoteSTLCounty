@@ -355,3 +355,21 @@ describe('findPlaces', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 });
+
+describe('words that are object keys', () => {
+  it('match as plain words', async () => {
+    const constructorSt = feature({
+      housenumber: '100',
+      street: 'Constructor Street',
+      county: 'Saint Louis County',
+      state: 'Missouri',
+      postcode: '63129',
+    });
+    const fetch = fakeFetch(() => respond(collection(constructorSt)));
+    await expect(
+      createPhotonGeocoder({ fetch }).geocode('100 Constructor St 63129'),
+    ).resolves.toMatchObject({
+      label: '100 Constructor Street, Saint Louis County, MO 63129',
+    });
+  });
+});

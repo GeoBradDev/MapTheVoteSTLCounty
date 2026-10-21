@@ -156,3 +156,10 @@ Domain skills:
   Center, a street type inside a street name stays as typed in suggestions, the chain
   rejects with AbortError when aborted right after a county answer, and the check
   script uses the app's hosted timeout.
+- Review round 2 (finder): a unit of an address can be in another municipality than its
+  house (1950 Walton Rd 63114, two precincts, about 110 such addresses). Without exactly
+  one record for a typed unit, every record of the address must share one `MUNI`, else
+  no match. Non-home records (poles, towers, billboards, ATMs, substations) are ignored.
+  Word lookups use `Object.hasOwn`, so "constructor" is a plain word. A unit number with
+  a space is suggested as its address. The chain checks for an abort after the City
+  cross-check.
