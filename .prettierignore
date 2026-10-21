@@ -1,0 +1,8 @@
+dist
+coverage
+package-lock.json
+docs/raw
+# Claude worktrees: full copies of the repo on other branches.
+.claude
+# Hand-written docs: Prettier pads Markdown tables to the widest cell.
+*.md
