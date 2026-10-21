@@ -272,15 +272,19 @@ lookup. Results are recorded in `docs/data.md` under Geocoding.
 ## Errors
 
 When a service is slow or down, the app says so and offers a way forward (#18); it never
-guesses a precinct. "We could not find that address" is shown only when every source
-answered and none has the address; a lookup that could not finish (a geocoder, the City
-check or the county's precinct check failing or slow) says address search is not working.
+guesses a precinct. "We could not find that address" means the sources that answered had
+no single answer: none has the address, two addresses fit, or the county and the City both
+list it. A lookup that could not finish says address search is not working instead: every
+source down, the City check or the county's precinct check failing or slow, Photon down after a county no
+match, or no county layer answering with Photon finding nothing. (With the live county
+layer down, the 2023 hosted copy's no match counts as an answer.)
 `createGeocoder` reports that as a `GeocoderUnavailableError` only when the caller passes
 `reportUnavailable`, which the app does; without it the chain answers no match, as the #49
 and #58 tests and `scripts/check-geocoder.mjs` expect. Every lookup error links the
 county's official lookup next to Use my location, and every one but a no match has a Try
-again button that repeats the same search or location. The precinct page and its cards show
-their own failures, each with Try again; a failed page load moves focus to its message.
+again button that repeats the same search or location. The precinct page and its polling places
+and early voting cards show their own failures, each with Try again (the map still removes
+itself, #13); a failed page load moves focus to its message.
 After `SLOW_MS` (`src/features/lookup/slowNotice.js`), the lookup and the precinct page say
 they are still working. When the browser reports no connection, the message says the voter
 appears to be offline (cached polling places wait for the PWA, #25). A page that throws

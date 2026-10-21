@@ -60,9 +60,11 @@ export { GeocoderUnavailableError };
  *   Promise<GeocodedPlace | null>} geocode The best match for typed text or a
  *   suggestion, or null when nothing matches. Rejects when the provider cannot
  *   answer. With `reportUnavailable` (#18), a null that only a failed step
- *   caused (the City check, or the fallback after a county no match) rejects
- *   with a GeocoderUnavailableError instead, so the voter hears "try again",
- *   not "no such address". It never turns a failure into a place.
+ *   caused rejects with a GeocoderUnavailableError instead, so the voter
+ *   hears "try again", not "no such address": the City check failing, the
+ *   county's precinct check failing (find() answers `unavailable`), the
+ *   fallback down after a county no match, or no county source answering
+ *   and the fallback finding nothing. It never turns a failure into a place.
  */
 
 /** Who to credit for address search, shown next to the address box. */
