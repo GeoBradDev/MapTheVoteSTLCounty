@@ -81,6 +81,28 @@ describe('AddressLookup', () => {
     expect(location.history).toEqual(['/']);
   });
 
+  it('gives the notice an h2 by default', async () => {
+    locate.mockResolvedValue({ kind: 'stl-city' });
+    renderLookup();
+    await search();
+    const name = noticeCopy['stl-city'].heading;
+    expect((await screen.findByRole('heading', { name })).tagName).toBe('H2');
+  });
+
+  it('gives the notice the heading level it is asked for', async () => {
+    locate.mockResolvedValue({ kind: 'stl-city' });
+    render(
+      <GeocoderContext.Provider value={geocoder}>
+        <Router hook={memoryLocation({ path: '/' }).hook}>
+          <AddressLookup noticeHeadingLevel={3} />
+        </Router>
+      </GeocoderContext.Provider>,
+    );
+    await search();
+    const name = noticeCopy['stl-city'].heading;
+    expect((await screen.findByRole('heading', { name })).tagName).toBe('H3');
+  });
+
   it('sends a "Use my location" point through locate and shows the unknown notice', async () => {
     locate.mockResolvedValue({ kind: 'unknown' });
     renderLookup();

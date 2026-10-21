@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
@@ -178,6 +178,32 @@ describe('App', () => {
     location.navigate('/missing');
     await screen.findByText('Page not found');
 
+    expect(heading()).toHaveFocus();
+  });
+
+  it('moves focus to the heading when a click left focus on main, as Safari does', async () => {
+    // WebKit does not focus a clicked link: focus goes to the nearest focusable
+    // ancestor, which is main.
+    const location = renderAt('/privacy');
+    screen.getByRole('main').focus();
+
+    act(() => location.navigate('/'));
+
+    expect(heading()).toHaveTextContent('St. Louis County Voter Guide');
+    expect(heading()).toHaveFocus();
+  });
+
+  it('keeps the browser scroll position on Back and Forward', () => {
+    const location = renderAt('/privacy');
+    window.scrollTo.mockClear();
+
+    act(() => {
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      location.navigate('/');
+    });
+
+    expect(heading()).toHaveTextContent('St. Louis County Voter Guide');
+    expect(window.scrollTo).not.toHaveBeenCalled();
     expect(heading()).toHaveFocus();
   });
 
