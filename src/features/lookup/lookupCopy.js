@@ -17,7 +17,7 @@ export const copy = {
     then: 'or, when needed,',
     by: 'by',
     data: 'data \u00a9',
-    cityCheck: 'An address found outside St. Louis City is also checked with the',
+    cityCheck: 'An address found outside St. Louis City may also be checked with the',
     privacy:
       'Your address is sent only to these services, to find your precinct. This site does not save it.',
   },

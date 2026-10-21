@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import { typedZip } from '../../data/addressMatch.js';
 import { copy } from './addressSearchCopy.js';
 import { useGeocoder } from './geocoderContext.js';
 
@@ -37,10 +38,11 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
   const [empty, setEmpty] = useState(false);
   const formRef = useRef(null);
   const pointerPickRef = useRef(null);
-  // The last picked suggestion, while the box still holds its label. Searching
-  // again sends the pick, not the label as typed text: the label's ZIP is the
-  // source's, not one the voter typed, and the geocoder's City check treats
-  // the two differently (#58).
+  // The last picked suggestion, and whether the box was edited since. The
+  // label's ZIP is the source's, not one the voter typed, and the geocoder's
+  // City check treats the two differently (#58), so a search goes as a pick
+  // while the box holds the label unchanged, or an edit of it that keeps its
+  // ZIP (a unit added).
   const pickedRef = useRef(null);
   const id = useId();
   const listboxId = `${id}-listbox`;
@@ -80,7 +82,7 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
 
   function handleChange(event) {
     const value = event.target.value;
-    pickedRef.current = null;
+    if (pickedRef.current) pickedRef.current.edited = true;
     setText(value);
     onEdit?.();
     setEmpty(false);
@@ -92,7 +94,7 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
 
   function pick(suggestion) {
     if (busy) return;
-    pickedRef.current = suggestion;
+    pickedRef.current = { suggestion, edited: false };
     setText(suggestion.label);
     reset();
     onSubmit(suggestion);
@@ -105,6 +107,20 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
     pointerPickRef.current = suggestion;
     formRef.current?.requestSubmit();
     pointerPickRef.current = null;
+  }
+
+  // The text as a pick, when it is the picked label or an edit of it that
+  // still holds the label's ZIP; otherwise undefined.
+  function asPick(trimmed) {
+    const { suggestion, edited } = pickedRef.current ?? {};
+    if (!suggestion) return undefined;
+    const label = suggestion.label.trim();
+    if (trimmed === label) return edited ? undefined : suggestion;
+    const zip = typedZip(label);
+    if (zip && new RegExp(`\\b${zip}\\b`).test(trimmed)) {
+      return { id: `${suggestion.id}-edited`, label: trimmed };
+    }
+    return undefined;
   }
 
   function handleSubmit(event) {
@@ -124,8 +140,7 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
       return;
     }
     reset();
-    const picked = pickedRef.current;
-    onSubmit(picked && picked.label.trim() === trimmed ? picked : trimmed);
+    onSubmit(asPick(trimmed) ?? trimmed);
   }
 
   function handleKeyDown(event) {

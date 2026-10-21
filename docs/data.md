@@ -513,7 +513,9 @@ answer with the typed text itself:
   check ignores it: it neither skips the check nor rules out a City parcel in another ZIP
   (a City voter typing `6135 Washington` is offered only the county's 63134 address).
   Searching again while the box still holds the picked label sends the pick again
-  (`src/features/lookup/AddressSearch.jsx`), not the label as typed text.
+  (`src/features/lookup/AddressSearch.jsx`), not the label as typed text, and so does an
+  edit of the label that keeps its ZIP (a unit added). Left open: editing the label and
+  restoring it exactly sends it as typed text.
 - **A City match:** a `PointAddress` (a City parcel; interpolated `StreetAddress` ranges do
   not count) with the typed house number and whole street under the strict rules
   (`matchesStreet` in `addressMatch.js`), and the typed ZIP when one is typed (a parcel
