@@ -9,6 +9,7 @@
 // source.
 import {
   CANONICAL,
+  CITY_COUNTY,
   DIRECTIONS,
   isConfirmed,
   labelOf,
@@ -19,6 +20,7 @@ import {
   UNIT,
   words,
 } from './addressMatch.js';
+import { getPrecinctCodesAtPoints } from './arcgis.js';
 import { GeocoderUnavailableError } from './geocoderError.js';
 
 /** The county's live address layer, edited daily. */
@@ -48,10 +50,6 @@ const FIND_LIMIT = 1000;
 // Units of one building fill the list, so ask for more than we show.
 const SUGGEST_LIMIT = 25;
 const MAX_SUGGESTIONS = 5;
-// About 300 m: the units of one apartment complex, which share a number.
-const SAME_SITE_DEGREES = 0.003;
-// About 50 m: one house the county lists twice (a building and a parcel point).
-const SAME_HOUSE_DEGREES = 0.0005;
 
 const OUT_FIELDS = [
   'OBJECTID',
@@ -252,7 +250,9 @@ function recordOf(feature) {
     postcode: text(a.ZIPCODE) || undefined,
     city: titleCase(a.MAILINGCITY) || undefined,
     state: 'Missouri',
-    county: 'Saint Louis County',
+    // The layer holds a few St. Louis City addresses (MUNI STL); they get the
+    // City's referral, not a county precinct.
+    county: text(a.MUNI) === 'STL' ? CITY_COUNTY : 'Saint Louis County',
   };
   const unitNo = text(a.UNITNO).toUpperCase();
   const unit = unitNo ? `${titleCase(a.UNITDESC) || 'Unit'} ${unitNo}` : '';
@@ -264,7 +264,6 @@ function recordOf(feature) {
     unitKey: unitNo.replace(/-/g, ''),
     // A unit number with a space ("2 FL") would not read back as a unit.
     unitReadable: !/\s/.test(unitNo),
-    muni: text(a.MUNI),
   };
 }
 
@@ -280,14 +279,12 @@ function placeOf(record, { withUnit = false } = {}) {
 const siteKey = ({ props }) =>
   `${props.housenumber}|${words(props.street).join(' ')}|${props.postcode ?? ''}`;
 
-const within = (a, b, degrees) =>
-  Math.abs(a.lat - b.lat) <= degrees && Math.abs(a.lng - b.lng) <= degrees;
-
-// Two records of one address are one house only in one municipality and a few
-// metres apart: the county has the same number, street and ZIP as separate
-// houses in two towns (50 Country Club Ln 63033, Black Jack and Florissant,
-// in two precincts) and 100 m apart in one ZIP (2100 Walton Rd 63114).
-const sameHouse = (a, b) => a.muni === b.muni && within(a, b, SAME_HOUSE_DEGREES);
+// The distinct points of some records, to about 10 cm.
+function distinctPoints(records) {
+  const seen = new Map();
+  for (const { lat, lng } of records) seen.set(`${lat.toFixed(6)},${lng.toFixed(6)}`, { lat, lng });
+  return [...seen.values()];
+}
 
 /**
  * @typedef {{ status: 'match', place: import('./geocoder.js').GeocodedPlace, confirmed: boolean }
@@ -297,12 +294,19 @@ const sameHouse = (a, b) => a.muni === b.muni && within(a, b, SAME_HOUSE_DEGREES
  */
 
 /**
- * @param {{ url: string, fetch?: typeof fetch, timeoutMs?: number }} options
+ * @param {{
+ *   url: string,
+ *   fetch?: typeof fetch,
+ *   timeoutMs?: number,
+ *   precinctsAt?: (points: { lat: number, lng: number }[]) => Promise<Set<string>>,
+ * }} options `precinctsAt` gives the precinct codes at some points
+ *   (getPrecinctCodesAtPoints in src/data/arcgis.js).
  */
 export function createCountyAddressSource({
   url,
   fetch = (...args) => globalThis.fetch(...args),
   timeoutMs = TIMEOUT_MS,
+  precinctsAt = getPrecinctCodesAtPoints,
 }) {
   const queryUrl = `${url.replace(/\/+$/, '')}/query`;
 
@@ -383,27 +387,39 @@ export function createCountyAddressSource({
       // guessing.
       const [first] = matches;
       if (!matches.every((m) => siteKey(m) === siteKey(first))) return { status: 'ambiguous' };
-      // One number, street and ZIP, but two houses: no answer, even for a unit.
-      const houses = matches.filter((m) => !m.unitKey);
-      if (!houses.every((h) => sameHouse(h, houses[0]))) return { status: 'ambiguous' };
-      // The typed unit's point when exactly one record has it. Else the
-      // house's own point, or its units' point when they are close together
-      // with no point of the house itself; either way only when every record
-      // of the address is in one municipality, because a unit can sit across
-      // a town line from its house (1950 Walton Rd 63114: the house in
-      // Overland, Unit R in Vinita Park, two precincts).
+      // A typed unit that exactly one record has is that record's point.
       const unit = typedUnit(typed);
       const units = unit ? matches.filter((m) => m.unitKey === unit) : [];
-      const ownUnit = units.length === 1 ? units[0] : undefined;
-      const chosen = ownUnit ?? houses[0];
-      if (!ownUnit && !matches.every((m) => m.muni === first.muni)) return { status: 'ambiguous' };
-      if (!chosen && !matches.every((m) => within(m, first, SAME_SITE_DEGREES))) {
-        return { status: 'ambiguous' };
+      if (units.length === 1) {
+        return {
+          status: 'match',
+          place: placeOf(units[0], { withUnit: true }),
+          confirmed: isConfirmed(typed, units[0].props),
+        };
+      }
+      // Otherwise the address's own record (no unit), else its first unit,
+      // answers only when every record of the address is in one precinct. The
+      // county has one number, street and ZIP as two houses in two towns (50
+      // Country Club Ln 63033), a unit across a town line from its house (1950
+      // Walton Rd 63114) and complexes that span two precincts (4005 Ripa Ave
+      // 63125).
+      const chosen = matches.find((m) => !m.unitKey) ?? first;
+      const points = distinctPoints(matches);
+      if (points.length > 1) {
+        let codes;
+        try {
+          codes = await precinctsAt(points);
+        } catch {
+          if (signal?.aborted) throw abortError();
+          return { status: 'ambiguous' };
+        }
+        if (signal?.aborted) throw abortError();
+        if (codes.size > 1) return { status: 'ambiguous' };
       }
       return {
         status: 'match',
-        place: placeOf(chosen ?? first, { withUnit: Boolean(ownUnit) }),
-        confirmed: isConfirmed(typed, (chosen ?? first).props),
+        place: placeOf(chosen),
+        confirmed: isConfirmed(typed, chosen.props),
       };
     },
 

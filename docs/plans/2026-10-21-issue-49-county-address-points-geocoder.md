@@ -163,3 +163,12 @@ Domain skills:
   Word lookups use `Object.hasOwn`, so "constructor" is a plain word. A unit number with
   a space is suggested as its address. The chain checks for an abort after the City
   cross-check.
+- Review round 3 (finder): complexes in one town whose units span two precincts (4005
+  Ripa Ave 63125, about 20 such), so the municipality and distance rules of rounds 1
+  and 2 are replaced by one rule: unless a typed unit is exactly one record, an address
+  with more than one point answers only when the precinct layer finds one precinct at
+  all its points (new `getPrecinctCodesAtPoints` in `src/data/arcgis.js`, one POST
+  multipoint query); two precincts or a failed check is no match. `MUNI = 'STL'`
+  records (44 City addresses in the layer) get the City as their county, so criterion
+  4 holds for them. Accepted and documented: the 2023 hosted copy can miss a second
+  house added since, which matters only while the live layer is down.

@@ -412,25 +412,26 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
   St. Louis needs its town or ZIP) then decide in the browser
   (`src/data/addressMatch.js`, shared by both providers). County street types
   (`PLZ`, `XING`, `CV` and others) compare equal to their full words.
-- **One address, two houses:** the county has records with the same number, street
-  and ZIP that are separate houses: 50 Country Club Ln 63033 is in Black Jack and in
-  Florissant, about 470 m apart, in precincts SPL021 and SPL026, and 2100 Walton Rd
-  63114 is in Vinita Park and Overland, about 100 m apart, in UNV031 and MID002. Two
-  records with no unit count as one house only when they have the same municipality
-  (`MUNI`) and lie within about 50 m (a building and a parcel point). Otherwise the
-  answer is no match, even with the ZIP, town or a unit typed; the voter is pointed to
-  "Use my location" and the county's official lookup.
-- **Units:** a typed unit ("Apt 13B", "#2") picks its own record when exactly one record
-  has it. Otherwise every record of the address, units included, must be in one
-  municipality, since a unit can sit across a town line from its house (1950 Walton Rd
-  63114: the house in Overland, MID002; Unit R in Vinita Park, UNV031; about 110 such
-  addresses in the county), and then the house's own record (no unit) answers, else a
-  unit's point when all units are within about 300 m. Anything else is no match.
-  Records for utility poles, cell towers, billboards, ATMs and substations (`UNITDESC`
-  `UP`, `CELL TOWER`, `BILLBOARD`, `ATM`, `SUBSTATION`) are not homes and are ignored.
-  A unit number with a space ("2 FL") is suggested as its address, without the unit. A complex can have over
-  300 units at one number, so a find asks for up to 1000 records; more counts as the
-  layer being unavailable.
+- **One address, several records:** the county has one number, street and ZIP as two
+  houses in two towns (50 Country Club Ln 63033: Black Jack, SPL021, and Florissant,
+  SPL026), a unit across a town line from its house (1950 Walton Rd 63114: the house in
+  Overland, MID002; Unit R in Vinita Park, UNV031) and apartment complexes whose units
+  span two precincts (4005 Ripa Ave 63125: 7 records in LEM012, 38 in LEM021). So a typed
+  unit ("Apt 13B", "#2") that exactly one record has answers with that record's point.
+  Otherwise the address's own record (no unit), else its first unit, answers only when
+  every record of the address is in one precinct: one POST multipoint query to the
+  precinct layer (`getPrecinctCodesAtPoints` in `src/data/arcgis.js`), sent only when
+  the address has more than one point. Two precincts, or a failed check, is no match,
+  with no fallback; the voter is pointed to "Use my location" and the county's official
+  lookup, or can type the unit. A scan of the hosted copy found about 20 such
+  single-town complexes and about 110 addresses with a unit in another town.
+- **Not homes:** records for utility poles, cell towers, billboards, ATMs and
+  substations (`UNITDESC` `UP`, `CELL TOWER`, `BILLBOARD`, `ATM`, `SUBSTATION`) are
+  ignored. A unit number with a space ("2 FL") is suggested as its address, without
+  the unit.
+- **City records:** the layers hold a few St. Louis City addresses (`MUNI = 'STL'`, 44
+  in the live layer); they are given the City as their county, so they get the City
+  referral.
 - **Two addresses fit** (two ZIPs or two streets): no match, with no fallback, since
   the official data says the text is ambiguous. A ZIP picks one.
 - **No match in the live layer:** Photon. The hosted copy is not asked, because the
@@ -439,9 +440,13 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
   error body, malformed body, too many records, or no answer in 2.5 s for the live
   layer, 3 s for the hosted copy): the next source. Every source unavailable is a
   `GeocoderUnavailableError`; a county "no match" with Photon unavailable is no
-  match.
-- **St. Louis City:** the county layers hold no City addresses, so a City address
-  falls through to Photon and keeps the City referral (#8). A county match that
+  match. The hosted copy is from 2023: when it answers, an address that became two
+  houses since then still resolves to the one it knows. That needs the live layer to
+  be down at the same time, and the owner chose the copy as the first fallback knowing
+  it is older.
+- **St. Louis City:** apart from those few records, the county layers hold no City
+  addresses, so a City address falls through to Photon and keeps the City referral
+  (#8). A county match that
   neither a typed ZIP nor a typed town other than St. Louis confirms is checked
   against Photon (at most 3 s): if Photon finds the same text in St. Louis City, the
   answer is no match (add the ZIP). If Photon is down or slow, the county match

@@ -69,7 +69,11 @@ function fakeFetch(answer) {
 }
 
 const answering = (...features) => fakeFetch(() => respond({ features }));
-const source = (fetch, options) => createCountyAddressSource({ url: LIVE_URL, fetch, ...options });
+// The precinct check: every point in one precinct unless a test says otherwise.
+const onePrecinct = vi.fn(async () => new Set(['P1']));
+const twoPrecincts = async () => new Set(['P1', 'P2']);
+const source = (fetch, options) =>
+  createCountyAddressSource({ url: LIVE_URL, fetch, precinctsAt: onePrecinct, ...options });
 
 describe('the county layers', () => {
   it('are the live county server first and the hosted copy second', () => {
@@ -357,9 +361,9 @@ describe('find', () => {
     });
   });
 
-  describe('two records with no unit at one address', () => {
-    // Live data: 50 Country Club Ln 63033 is in Black Jack and in Florissant,
-    // about 470 m apart, in precincts SPL021 and SPL026.
+  describe('an address with more than one record', () => {
+    // Live data: 50 Country Club Ln 63033 is two houses, in Black Jack and in
+    // Florissant, in precincts SPL021 and SPL026.
     const blackJack = point(
       {
         OBJECTID: 70176,
@@ -384,113 +388,6 @@ describe('find', () => {
       },
       [-90.28282, 38.80534],
     );
-
-    it('are ambiguous in two municipalities, even with the ZIP and town typed', async () => {
-      await expect(
-        source(answering(blackJack, florissant)).find('50 Country Club Ln, Florissant, MO 63033'),
-      ).resolves.toEqual({ status: 'ambiguous' });
-    });
-
-    it('are ambiguous in one municipality when they are not one house (Walton Rd, 100 m)', async () => {
-      const a = point(
-        { OBJECTID: 1, ADRNO: 2100, ADRSTR: 'WALTON', ADRSUF: 'RD', ZIPCODE: '63114' },
-        [-90.34, 38.7],
-      );
-      const b = point(
-        { OBJECTID: 2, ADRNO: 2100, ADRSTR: 'WALTON', ADRSUF: 'RD', ZIPCODE: '63114' },
-        [-90.3412, 38.7],
-      );
-      await expect(source(answering(a, b)).find('2100 Walton Rd, 63114')).resolves.toEqual({
-        status: 'ambiguous',
-      });
-    });
-
-    it('are one house when in one municipality and a few metres apart', async () => {
-      const a = point({ OBJECTID: 1 }, [-90.4581, 38.6822]);
-      const b = point({ OBJECTID: 2 }, [-90.4582, 38.6823]);
-      await expect(source(answering(a, b)).find('1318 Ross Ave 63146')).resolves.toMatchObject({
-        status: 'match',
-      });
-    });
-
-    it('are ambiguous when a unit of the address is in another municipality', async () => {
-      // Live data: 1950 Walton Rd 63114, the house in Overland (MID002) and
-      // Unit R in Vinita Park (UNV031), about 60 m apart.
-      const house = point(
-        { OBJECTID: 1, ADRNO: 1950, ADRSTR: 'WALTON', ADRSUF: 'RD', ZIPCODE: '63114', MUNI: 'OVR' },
-        [-90.34695, 38.69134],
-      );
-      const unitR = point(
-        {
-          OBJECTID: 2,
-          ADRNO: 1950,
-          ADRSTR: 'WALTON',
-          ADRSUF: 'RD',
-          ZIPCODE: '63114',
-          MUNI: 'VIP',
-          UNITDESC: 'UNIT',
-          UNITNO: 'R',
-        },
-        [-90.3463, 38.69161],
-      );
-      await expect(source(answering(house, unitR)).find('1950 Walton Rd 63114')).resolves.toEqual({
-        status: 'ambiguous',
-      });
-      // The unit typed names one record.
-      await expect(
-        source(answering(house, unitR)).find('1950 Walton Rd Unit R, 63114'),
-      ).resolves.toMatchObject({ status: 'match', place: { lng: -90.3463 } });
-    });
-
-    it('ignore records that are not addresses: poles, towers, billboards, ATMs, substations', async () => {
-      const pole = (desc, no, i) =>
-        point(
-          {
-            OBJECTID: 10 + i,
-            UNITDESC: desc,
-            UNITNO: no,
-            MUNI: 'OTHER',
-            FULL_ADDRESS: `1318 ROSS AVE ${desc} ${no}`,
-          },
-          [-90.3, 38.6],
-        );
-      const others = ['UP', 'CELL TOWER', 'BILLBOARD', 'ATM', 'SUBSTATION'].map((d, i) =>
-        pole(d, `X${i}`, i),
-      );
-      await expect(
-        source(answering(ROSS, ...others)).find('1318 Ross Ave 63146'),
-      ).resolves.toMatchObject({
-        status: 'match',
-        place: { lat: 38.6822 },
-      });
-      await expect(source(answering(...others)).find('1318 Ross Ave 63146')).resolves.toEqual({
-        status: 'none',
-      });
-      expect(await source(answering(...others)).suggest('1318 Ross Ave #')).toEqual([]);
-    });
-
-    it('are ambiguous even when a typed unit exists at only one of them', async () => {
-      const unitAtOne = point(
-        {
-          OBJECTID: 3,
-          ADRNO: 50,
-          ADRSTR: 'COUNTRY CLUB',
-          ADRSUF: 'LN',
-          MAILINGCITY: 'FLORISSANT',
-          ZIPCODE: '63033',
-          MUNI: 'FLO',
-          UNITDESC: 'APT',
-          UNITNO: '2',
-        },
-        [-90.28282, 38.80534],
-      );
-      await expect(
-        source(answering(blackJack, florissant, unitAtOne)).find('50 Country Club Ln Apt 2, 63033'),
-      ).resolves.toEqual({ status: 'ambiguous' });
-    });
-  });
-
-  describe('units', () => {
     const unit = (no, objectId, xy) =>
       point(
         {
@@ -511,7 +408,24 @@ describe('find', () => {
     const a5 = unit('5A', 3, [-90.34087, 38.65221]);
     const b13 = unit('13B', 4, [-90.34077, 38.65246]);
 
-    it('are one place: the building without a unit typed', async () => {
+    it('is no match when its records are in two precincts, even with ZIP and town', async () => {
+      const result = await source(answering(blackJack, florissant), {
+        precinctsAt: twoPrecincts,
+      }).find('50 Country Club Ln, Florissant, MO 63033');
+      expect(result).toEqual({ status: 'ambiguous' });
+    });
+
+    it('asks the precinct layer once, with every distinct point of the address', async () => {
+      const precinctsAt = vi.fn(async () => new Set(['P1']));
+      const twin = point({ ...a5.attributes, OBJECTID: 5 }, [-90.34087, 38.65221]);
+      await source(answering(a5, b13, twin, building), { precinctsAt }).find(
+        '8025 Maryland Ave 63105',
+      );
+      expect(precinctsAt).toHaveBeenCalledTimes(1);
+      expect(precinctsAt.mock.calls[0][0]).toHaveLength(3);
+    });
+
+    it('answers with the point of the address itself when all are in one precinct', async () => {
       const result = await source(answering(a5, b13, building)).find('8025 Maryland Ave 63105');
       expect(result).toMatchObject({
         status: 'match',
@@ -519,17 +433,58 @@ describe('find', () => {
       });
     });
 
-    it('pick the typed unit when it exists', async () => {
-      const result = await source(answering(a5, b13, building)).find(
+    it('answers with a unit point when there is no record of the address itself', async () => {
+      const result = await source(answering(a5, b13)).find('8025 Maryland Ave #7, 63105');
+      expect(result).toMatchObject({
+        status: 'match',
+        place: { label: '8025 Maryland Ave, Saint Louis, MO 63105' },
+      });
+    });
+
+    it('is no match when its units span two precincts (4005 Ripa Ave)', async () => {
+      const result = await source(answering(a5, b13, building), {
+        precinctsAt: twoPrecincts,
+      }).find('8025 Maryland Ave 63105');
+      expect(result).toEqual({ status: 'ambiguous' });
+    });
+
+    it('is no match when the precinct check fails', async () => {
+      const result = await source(answering(a5, b13, building), {
+        precinctsAt: async () => {
+          throw new Error('down');
+        },
+      }).find('8025 Maryland Ave 63105');
+      expect(result).toEqual({ status: 'ambiguous' });
+    });
+
+    it('needs no precinct check for one record', async () => {
+      const precinctsAt = vi.fn(twoPrecincts);
+      await expect(
+        source(answering(ROSS), { precinctsAt }).find('1318 Ross Ave 63146'),
+      ).resolves.toMatchObject({ status: 'match' });
+      expect(precinctsAt).not.toHaveBeenCalled();
+    });
+
+    it('answers a typed unit that exactly one record has, with no precinct check', async () => {
+      const precinctsAt = vi.fn(twoPrecincts);
+      const result = await source(answering(a5, b13, building), { precinctsAt }).find(
         '8025 Maryland Ave Apt 13B, 63105',
       );
       expect(result).toMatchObject({
         status: 'match',
         place: { lat: 38.65246, label: '8025 Maryland Ave Apt 13B, Saint Louis, MO 63105' },
       });
+      expect(precinctsAt).not.toHaveBeenCalled();
     });
 
-    it('may start with a letter', async () => {
+    it('checks every record when the typed unit is not one record', async () => {
+      const result = await source(answering(a5, b13, building), {
+        precinctsAt: twoPrecincts,
+      }).find('8025 Maryland Ave Apt 100, 63105');
+      expect(result).toEqual({ status: 'ambiguous' });
+    });
+
+    it('lets a unit number start with a letter', async () => {
       const n230 = point({
         ADRNO: 6,
         ADRSTR: 'MILLSTONE CAMPUS',
@@ -546,25 +501,38 @@ describe('find', () => {
       });
     });
 
-    it('fall back to a unit of the building when there is no building record', async () => {
-      const result = await source(answering(a5, b13)).find('8025 Maryland Ave #7, 63105');
-      expect(result).toMatchObject({
-        status: 'match',
-        place: { label: '8025 Maryland Ave, Saint Louis, MO 63105' },
+    it('ignores records that are not homes: poles, towers, billboards, ATMs, substations', async () => {
+      const others = ['UP', 'CELL TOWER', 'BILLBOARD', 'ATM', 'SUBSTATION'].map((desc, i) =>
+        point(
+          {
+            OBJECTID: 10 + i,
+            UNITDESC: desc,
+            UNITNO: `X${i}`,
+            FULL_ADDRESS: `1318 ROSS AVE ${desc} X${i}`,
+          },
+          [-90.3, 38.6],
+        ),
+      );
+      const precinctsAt = vi.fn(twoPrecincts);
+      await expect(
+        source(answering(ROSS, ...others), { precinctsAt }).find('1318 Ross Ave 63146'),
+      ).resolves.toMatchObject({ status: 'match', place: { lat: 38.6822 } });
+      expect(precinctsAt).not.toHaveBeenCalled();
+      await expect(source(answering(...others)).find('1318 Ross Ave 63146')).resolves.toEqual({
+        status: 'none',
       });
+      expect(await source(answering(...others)).suggest('1318 Ross Ave #')).toEqual([]);
     });
+  });
 
-    it('on a large parcel, far apart, still have the building point as the address', async () => {
-      const far = unit('99', 5, [-90.3, 38.7]);
-      const result = await source(answering(a5, far, building)).find('8025 Maryland Ave 63105');
-      expect(result).toMatchObject({ status: 'match', place: { lat: 38.6522 } });
-    });
-
-    it('are not one place when they are far apart and there is no building point', async () => {
-      const far = unit('99', 5, [-90.3, 38.7]);
-      await expect(source(answering(a5, far)).find('8025 Maryland Ave 63105')).resolves.toEqual({
-        status: 'ambiguous',
-      });
+  it('gives St. Louis City records in the county layer the City as their county', async () => {
+    const city = point(
+      { ADRNO: 1201, ADRSTR: 'MACKLIND', MAILINGCITY: '', ZIPCODE: '63110', MUNI: 'STL' },
+      [-90.28, 38.62],
+    );
+    await expect(source(answering(city)).find('1201 Macklind Ave, 63110')).resolves.toMatchObject({
+      status: 'match',
+      place: { county: 'St. Louis city', label: '1201 Macklind Ave, St. Louis city, MO 63110' },
     });
   });
 

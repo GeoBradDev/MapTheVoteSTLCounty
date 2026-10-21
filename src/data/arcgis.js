@@ -68,7 +68,7 @@ function isObject(value) {
 // One attempt. The timeout covers reading the body too. `fieldsKey` is where
 // each feature keeps its fields: `attributes` for f=json, `properties` for
 // f=geojson.
-async function fetchOnce(url, fieldsKey) {
+async function fetchOnce(url, fieldsKey, init = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   const fail = (error, message, details) =>
@@ -78,7 +78,7 @@ async function fetchOnce(url, fieldsKey) {
   try {
     let res;
     try {
-      res = await fetch(url, { signal: controller.signal });
+      res = await fetch(url, { ...init, signal: controller.signal });
     } catch (error) {
       throw fail(error, 'Network request failed');
     }
@@ -118,15 +118,20 @@ function isTransient(error) {
   return status === undefined || status === 429 || status >= 500;
 }
 
-async function query(layer, params) {
-  const url = queryUrl(layer, params);
+// A GET query, or a POST with the parameters in the body when `post` is set
+// (for a geometry too long for a URL).
+async function query(layer, params, { post = false } = {}) {
+  const url = post
+    ? `${election.serviceRoot}/${election.layers[layer]}/query`
+    : queryUrl(layer, params);
+  const init = post ? { method: 'POST', body: new URLSearchParams(params) } : {};
   const fieldsKey = params.f === 'geojson' ? 'properties' : 'attributes';
   try {
-    return await fetchOnce(url, fieldsKey);
+    return await fetchOnce(url, fieldsKey, init);
   } catch (error) {
     if (!isTransient(error)) throw error;
     await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
-    return fetchOnce(url, fieldsKey);
+    return fetchOnce(url, fieldsKey, init);
   }
 }
 
@@ -155,6 +160,36 @@ export async function getPrecinctAtPoint({ lat, lng }) {
   const body = await query('precincts', pointParams('getPrecinctAtPoint', { lat, lng }, '*'));
   const feature = body.features[0];
   return feature ? normalize(feature.attributes) : null;
+}
+
+/**
+ * The codes of the precincts containing any of the points, in one query.
+ * Address search (src/data/countyAddress.js) uses it to see whether every
+ * record of one address is in one precinct.
+ * @param {{ lat: number, lng: number }[]} points WGS 84 coordinates.
+ * @returns {Promise<Set<string>>}
+ */
+export async function getPrecinctCodesAtPoints(points) {
+  const coordinates = points.map(({ lat, lng }) => {
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      throw new TypeError('getPrecinctCodesAtPoints needs numeric lat and lng');
+    }
+    return [lng, lat];
+  });
+  const body = await query(
+    'precincts',
+    {
+      geometry: JSON.stringify({ points: coordinates, spatialReference: { wkid: 4326 } }),
+      geometryType: 'esriGeometryMultipoint',
+      inSR: '4326',
+      spatialRel: 'esriSpatialRelIntersects',
+      outFields: 'precinct',
+      returnGeometry: 'false',
+      f: 'json',
+    },
+    { post: true },
+  );
+  return new Set(body.features.map((f) => normalize(f.attributes).precinct).filter(Boolean));
 }
 
 /**
