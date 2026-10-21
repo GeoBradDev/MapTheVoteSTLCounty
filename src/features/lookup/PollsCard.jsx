@@ -148,7 +148,7 @@ export default function PollsCard({ code, origin }) {
       {rows && rows.length > 0 && (
         <>
           {!origin && <p className="text-muted">{copy.polls.fromCenter(code)}</p>}
-          <ol aria-label={copy.polls.listLabel} className="mt-3 flex flex-col gap-3">
+          <ol aria-label={copy.polls.listLabel} className="mt-3 list-decimal space-y-3 pl-6">
             {rows.slice(0, shown).map((poll, i) => (
               <PollRow
                 key={`${poll.loc}:${i}`}
