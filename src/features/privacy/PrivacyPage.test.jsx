@@ -51,14 +51,14 @@ describe('PrivacyPage', () => {
     expect(hosts.electionMaps).toBe(new URL(election.serviceRoot).host);
   });
 
-  it('says where the typed address goes: the county service, then Photon as a backup', () => {
+  it('says where the typed address goes: the county service and Photon', () => {
     render(<PrivacyPage />);
     const item = within(section(copy.sent.heading))
       .getByRole('heading', { name: 'Address search' })
       .closest('div');
 
     expect(item).toHaveTextContent(
-      "St. Louis County's address service (maps.stlouisco.com and services2.arcgis.com) and, as a backup, to Photon by komoot (photon.komoot.io)",
+      "St. Louis County's address service and to Photon by komoot (photon.komoot.io), which this site uses to find addresses and to check them",
     );
   });
 
@@ -80,6 +80,9 @@ describe('PrivacyPage', () => {
     const text = section(copy.never.heading).textContent;
 
     expect(text).toContain('never saves your address or your location');
+    // The HTTP cache (#38) is described, not denied.
+    expect(text).not.toMatch(/gone when|close the page/);
+    expect(text).toContain("Your browser's own cache is covered under Finding your precinct");
     expect(text).toContain('browser storage');
     expect(text).toContain('no analytics, ads or tracking');
     expect(text).toContain('sets no cookies');

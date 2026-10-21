@@ -110,8 +110,9 @@ logs or analytics, and v1 has no analytics. The plain-language notice at `/priva
 (`src/features/privacy/privacyCopy.js`) says what each third party gets; change it in the same
 change as any new service or any change to what is sent. `src/test/no-storage.test.js` fails
 when app code under `src` uses browser storage, cookies or the console, and
-`src/test/addressPrivacy.test.jsx` runs a lookup and checks storage, cookies, Cache Storage,
-IndexedDB, the URL and the console for the address. A test also fails when the
+`src/test/addressPrivacy.test.jsx` runs a lookup and checks storage, cookies, Cache Storage
+entries, IndexedDB database names, the URL and the console for the address (jsdom has no
+Cache Storage or IndexedDB, so those two run only where they exist). A test also fails when the
 Content-Security-Policy allows an origin the notice does not name.
 
 The tests run in jsdom, so check a real browser by hand before each election: look up an

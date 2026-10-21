@@ -34,7 +34,8 @@ email: not applicable because the app is a frontend-only React site.
    search services get the typed text (St. Louis County's address service and, as a backup,
    Photon); the county's election maps on Esri's ArcGIS Online get coordinates or a precinct
    code; the basemap host gets tile requests for the area on screen; the web host sees the
-   pages opened. It names each service by its host name.
+   pages opened. It names each third party the browser calls by its host name, except the county
+   address service's hosts, which #49 adds (see Revisions).
 2. The notice says what the site never does: no address or location in the URL, browser
    storage or cookies; no analytics, ads or tracking; no server or account of its own.
 3. The notice says nothing false while #38 is open: it says plainly that point queries carry
@@ -104,3 +105,14 @@ email: not applicable because the app is a frontend-only React site.
 - Live drive: in Chrome, look up an address, then read `localStorage`, `sessionStorage`,
   `document.cookie`, `caches.keys()`, `indexedDB.databases()` and the URL; open `/privacy`
   from the footer.
+
+## Revisions
+
+- Review round 1: #49's `geocoder.test.js` forbids `stlouisco.com` outside its provider
+  modules, so the notice does not write the county address service's hosts; #49 must add them
+  (from its own module) when it adds their `connect-src` origins, or `PrivacyPage.test.jsx`
+  fails. The address search text no longer calls Photon only a backup: today it is the only
+  geocoder, and after #49 it also checks some county matches. The "never saves" item no longer
+  says the location is gone when the page closes, since the HTTP cache may keep point queries
+  (#38); it points to that paragraph instead. The Cache Storage check reads cached request
+  URLs, not only cache names, with a self-check that stubs `caches`.

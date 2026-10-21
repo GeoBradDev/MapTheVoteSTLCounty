@@ -52,7 +52,16 @@ async function kept() {
     ...entries(window.localStorage),
     ...entries(window.sessionStorage),
   ];
-  if (globalThis.caches) parts.push(...(await globalThis.caches.keys()));
+  // Cache Storage (a service worker, #25): every cached request URL, not just
+  // the cache names. jsdom has none, so this runs only where it exists.
+  if (globalThis.caches) {
+    for (const name of await globalThis.caches.keys()) {
+      const cache = await globalThis.caches.open(name);
+      parts.push(name, ...(await cache.keys()).map((request) => request.url));
+    }
+  }
+  // IndexedDB: database names only (the app opens none; no-storage.test.js
+  // fails if it starts to). jsdom has none either.
   if (globalThis.indexedDB?.databases) {
     parts.push(...(await globalThis.indexedDB.databases()).map((db) => db.name));
   }
@@ -136,11 +145,20 @@ it('keeps no trace of the device location after Use my location', async () => {
   await expectNothingKept();
 });
 
-it('looks in storage and cookies for real, so a stored address would fail', async () => {
+it('looks in storage for real, so a stored address would fail', async () => {
   window.localStorage.setItem('last', ADDRESS);
   try {
     expect(await kept()).toContain('7700');
   } finally {
     window.localStorage.clear();
   }
+});
+
+it('looks inside Cache Storage entries, so a cached point query would fail', async () => {
+  const url = 'https://example.org/query?geometry=-90.312345%2C38.512345';
+  vi.stubGlobal('caches', {
+    keys: async () => ['v1'],
+    open: async () => ({ keys: async () => [new Request(url)] }),
+  });
+  expect(await kept()).toContain('38.51');
 });
