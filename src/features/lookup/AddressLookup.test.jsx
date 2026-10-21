@@ -130,6 +130,43 @@ describe('AddressLookup', () => {
     expect(copy.errors.unavailable).toMatch(/Use my location/);
   });
 
+  it('says the lookup failed, not unavailable, when the geocoder errors', async () => {
+    renderLookup({
+      value: { suggest: async () => [], geocode: vi.fn().mockRejectedValue(new Error('500')) },
+    });
+    await search();
+    expect(await screen.findByText(copy.errors.failed)).toBeInTheDocument();
+  });
+
+  it('geocodes once for two submits in the same tick', async () => {
+    const value = { suggest: async () => [], geocode: vi.fn(() => new Promise(() => {})) };
+    renderLookup({ value });
+    await userEvent.type(input(), ADDRESS);
+    act(() => {
+      input().form.requestSubmit();
+      input().form.requestSubmit();
+    });
+    expect(value.geocode).toHaveBeenCalledTimes(1);
+  });
+
+  it('drops a late "Use my location" answer once a suggestion is picked with a pointer', async () => {
+    locate.mockResolvedValue({ kind: 'missouri' });
+    const value = createFakeGeocoder([PLACE]);
+    renderLookup({ value });
+    await userEvent.type(input(), '7700');
+    const option = await screen.findByRole('option', {}, { timeout: 2000 });
+    await userEvent.click(screen.getByRole('button', { name: /use my location/i }));
+    input().focus();
+    await userEvent.keyboard('{ArrowDown}');
+    await userEvent.click(option.isConnected ? option : screen.getByRole('option'));
+    await screen.findByRole('heading', { name: noticeCopy.missouri.heading });
+    await act(async () => {
+      pending.shift().ok({ coords: { latitude: 1, longitude: 2, accuracy: 10 }, timestamp: 1 });
+    });
+    expect(locate).toHaveBeenCalledTimes(1);
+    expect(locate).not.toHaveBeenCalledWith({ lat: 1, lng: 2 });
+  });
+
   it('says the lookup failed when locate throws, and keeps the address for a retry', async () => {
     locate.mockRejectedValue(new Error('ArcGIS down'));
     renderLookup();

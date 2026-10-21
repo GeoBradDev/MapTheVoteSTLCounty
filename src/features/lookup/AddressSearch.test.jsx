@@ -137,6 +137,31 @@ describe('AddressSearch', () => {
     expect(input()).not.toHaveAttribute('aria-activedescendant');
   });
 
+  it('drops the old suggestions and active option as soon as the text changes', async () => {
+    const { onSubmit } = renderSearch();
+    await user.type(input(), '770');
+    await settle();
+    await user.keyboard('{ArrowDown}');
+    await user.type(input(), '9 Oak St');
+    expect(listbox()).not.toBeInTheDocument();
+    expect(input()).not.toHaveAttribute('aria-activedescendant');
+    expect(input()).toHaveAttribute('aria-expanded', 'false');
+    await user.keyboard('{Enter}');
+    expect(onSubmit).toHaveBeenCalledWith('7709 Oak St');
+  });
+
+  it('submits the form when a suggestion is picked with a pointer', async () => {
+    const onFormSubmit = vi.fn();
+    const { onSubmit } = renderSearch();
+    input().form.addEventListener('submit', onFormSubmit);
+    await user.type(input(), '770');
+    await settle();
+    await user.click(options()[1]);
+    expect(onFormSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ label: PLACES[1].label });
+  });
+
   it('closes the list with Escape and keeps the text', async () => {
     const { onSubmit } = renderSearch();
     await user.type(input(), '770');
