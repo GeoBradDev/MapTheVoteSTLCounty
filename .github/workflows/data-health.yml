@@ -1,0 +1,87 @@
+# Checks the live election layers and the geocoder every day through Election
+# Day, and opens an issue (or comments on the open one) when a check fails.
+# It has no pull_request or push trigger, so a live outage can never block a
+# merge: the CI workflow (ci.yml) never calls a live service.
+
+name: Data health
+
+on:
+  schedule:
+    # 12:00 UTC: 7 a.m. in Chicago while daylight time lasts, 6 a.m. after.
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: data-health
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - run: npm ci
+
+      # Scheduled runs stop once Election Day is over in the config's time zone.
+      # A manual run always checks.
+      - name: Election window
+        id: window
+        run: |
+          past=$(node --input-type=module -e "
+            import election from './src/config/election.js';
+            import { isPastElection } from './scripts/check-config.mjs';
+            console.log(isPastElection(election));
+          ")
+          if [ "$past" = true ] && [ "$GITHUB_EVENT_NAME" = schedule ]; then
+            echo "Election Day is over: skipping the scheduled checks."
+            echo "active=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "active=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Election config check
+        id: config
+        if: steps.window.outputs.active == 'true'
+        run: node scripts/check-config.mjs
+
+      # Runs even when the config check failed, so one issue reports both.
+      - name: Geocoder check
+        id: geocoder
+        if: ${{ !cancelled() && steps.window.outputs.active == 'true' }}
+        run: node scripts/check-geocoder.mjs
+
+      - name: Report the failure as an issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CONFIG_OUTCOME: ${{ steps.config.outcome }}
+          GEOCODER_OUTCOME: ${{ steps.geocoder.outcome }}
+        run: |
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          body="The data health check failed on $(date -u +%Y-%m-%d).
+
+          - Election config check (scripts/check-config.mjs): $CONFIG_OUTCOME
+          - Geocoder check (scripts/check-geocoder.mjs): $GEOCODER_OUTCOME
+
+          Log: $run_url"
+          gh label create "data health" --repo "$GITHUB_REPOSITORY" --color fbca04 \
+            --description "Failures from the scheduled data health check" 2>/dev/null || true
+          open=$(gh issue list --repo "$GITHUB_REPOSITORY" --label "data health" --state open \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$open" ]; then
+            gh issue comment "$open" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "Data health check failed" \
+              --label "data health" --body "$body"
+          fi
