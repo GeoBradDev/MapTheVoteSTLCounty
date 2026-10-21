@@ -50,7 +50,8 @@ small, strict tokenizer. It takes the `href` of the first `<a>` tag that has one
 accepts it only when it matches `sampleBallotUrlPattern` in `src/config/election.js`,
 and takes the file name from the link text. A field with no link comes back as plain
 text. A rejected link, or markup the parser does not know (it reads only text,
-comments and a few formatting tags), comes back as nothing. Never render `html` as raw
+comments, a few formatting tags, and the attributes `href`, `target`, `title` and
+`rel`), comes back as nothing. Never render `html` as raw
 HTML; a test fails on `dangerouslySetInnerHTML` anywhere under `src/`.
 `node scripts/check-sample-ballots.mjs` runs the parser over every precinct on the live
 layer and exits 1 unless each `In Election` precinct has its own valid link and every
