@@ -76,6 +76,8 @@ const CANONICAL = {
   ninth: '9',
   tenth: '10',
 };
+// The county name locate() reads as St. Louis City.
+const CITY_COUNTY = 'St. Louis city';
 // St. Louis in words() form.
 const ST_LOUIS = 'st louis';
 const DIRECTIONS = new Set(['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw']);
@@ -125,7 +127,7 @@ function labelOf(props) {
 function countyOf(props) {
   if (props.county) return props.county;
   if (props.state === 'Missouri' && words(props.city).join(' ') === ST_LOUIS) {
-    return 'St. Louis city';
+    return CITY_COUNTY;
   }
   return undefined;
 }
@@ -167,15 +169,18 @@ const ST_LOUIS_NAMES = new Set([ST_LOUIS, `${ST_LOUIS} city`]);
 const isUnitNumber = (word) => /^\d/.test(word ?? '') || word?.length === 1;
 
 // The town in the words typed after the street, with or without commas:
-// what is left once units ("Apt 2", "Unit 2-B"), the state, the country,
-// numbers and single letters are dropped. "Ste Genevieve" is a town, not a
-// suite, because no unit number follows "Ste".
+// what is left once units ("Apt 2", "Unit 2-B"), the state, the country and
+// numbers are dropped. "Ste Genevieve" is a town, not a suite, because no unit
+// number follows "Ste"; a direction stays ("East St. Louis" is not St. Louis).
 function typedTown(after) {
   const kept = [];
   for (let i = 0; i < after.length; i += 1) {
     const word = after[i];
-    if (UNIT.has(word) && isUnitNumber(after[i + 1])) i += 1;
-    else if (!isUnitNumber(word) && !NOT_TOWN.has(word)) kept.push(word);
+    if (UNIT.has(word) && isUnitNumber(after[i + 1])) {
+      i += 1;
+      // The letter of a unit like "2-B".
+      if (/^\d/.test(after[i]) && after[i + 1]?.length === 1) i += 1;
+    } else if (!/^\d/.test(word) && !NOT_TOWN.has(word)) kept.push(word);
   }
   return kept.join(' ');
 }
@@ -212,7 +217,7 @@ function matchesTyped(text, props) {
   if (zip && !postcode && town === ST_LOUIS) return false;
   const typedPlace = typedTown(words(text).slice(1 + street.length));
   // "St. Louis City" says the City, so a county result is not it.
-  if (typedPlace === `${ST_LOUIS} city` && town !== ST_LOUIS) return false;
+  if (typedPlace === `${ST_LOUIS} city` && countyOf(props) !== CITY_COUNTY) return false;
   if (typedPlace && town && typedPlace !== town && !ST_LOUIS_NAMES.has(typedPlace)) return false;
   const confirmed = (zip && zip === postcode) || (typedPlace && typedPlace === town);
   return !town || town === ST_LOUIS || Boolean(confirmed);
