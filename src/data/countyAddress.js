@@ -296,6 +296,12 @@ function withoutDirection({ props, direction }) {
   return { ...props, street: props.street.slice(direction.length).trim() };
 }
 
+// A record's fields with its street as the text typed it: without its
+// direction when the text left the direction out.
+function alignedProps(typed, record) {
+  return matchesStreet(typed, record.props) ? record.props : withoutDirection(record);
+}
+
 // The distinct points of some records, to about 10 cm.
 function distinctPoints(records) {
   const seen = new Map();
@@ -433,7 +439,10 @@ export function createCountyAddressSource({
       // counts though the strict rules leave it out for want of its town: 2
       // Colonial Ct is in Ladue (mailing city Saint Louis) and in Florissant.
       const zip = typedZip(typed);
-      const place = sameStreet.length ? typedPlaceAfter(typed, sameStreet[0].props) : '';
+      // The town typed after the street as typed: a record's own street
+      // only lines up with the text when its direction was typed too.
+      const aligned = sameStreet[0] && alignedProps(typed, sameStreet[0]);
+      const place = aligned ? typedPlaceAfter(typed, aligned) : '';
       let pool = sameStreet;
       if (zip) pool = sameStreet.filter((r) => r.props.postcode === zip);
       else if (place && place !== ST_LOUIS) pool = matches;

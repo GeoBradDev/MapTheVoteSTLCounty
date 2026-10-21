@@ -347,6 +347,12 @@ describe('find', () => {
       await expect(find('101 Elm Ave, St. Louis')).resolves.toEqual({ status: 'ambiguous' });
     });
 
+    it('reads the typed town after the street as typed, whichever record comes first', async () => {
+      const find2 = (text) => source(answering(northElm, elm)).find(text);
+      await expect(find2('101 Elm Ave, St. Louis, MO')).resolves.toEqual({ status: 'ambiguous' });
+      await expect(find2('101 Elm Ave St Louis MO')).resolves.toEqual({ status: 'ambiguous' });
+    });
+
     it('is found with the direction typed, or with the ZIP of the street without one', async () => {
       await expect(find('101 N Elm Ave')).resolves.toMatchObject({
         status: 'match',

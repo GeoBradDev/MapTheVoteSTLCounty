@@ -199,3 +199,7 @@ Domain skills:
   second extra finder in a row whose findings needed fixes, so the review loop stopped
   here per the workflow; the fixes are covered by tests and live checks, not by a
   further finder.
+- Live drive after round 6: "101 Elm Ave, St. Louis, MO" still answered JEF008, because
+  the typed town was read against the first record's street ("N Elm Ave", one word
+  longer than typed). The town is now read against the street as typed. Fixed with a
+  test and re-driven in Chrome (now "add your ZIP").
