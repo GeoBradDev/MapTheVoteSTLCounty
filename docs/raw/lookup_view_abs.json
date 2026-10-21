@@ -1,0 +1,87 @@
+{
+  "service": "lookup_view_abs",
+  "layers": [
+    {
+      "id": 0,
+      "url": "https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/lookup_view_abs/FeatureServer/0",
+      "name": "polls_2024_04",
+      "geometryType": "esriGeometryPoint",
+      "maxRecordCount": 2000,
+      "supportedQueryFormats": "JSON, geoJSON, PBF",
+      "count": 7,
+      "fields": [
+        {
+          "name": "OBJECTID",
+          "type": "esriFieldTypeOID",
+          "alias": "OBJECTID",
+          "domain": null
+        },
+        {
+          "name": "name",
+          "type": "esriFieldTypeString",
+          "alias": "name",
+          "domain": null
+        },
+        {
+          "name": "address",
+          "type": "esriFieldTypeString",
+          "alias": "address",
+          "domain": null
+        },
+        {
+          "name": "zipcode",
+          "type": "esriFieldTypeString",
+          "alias": "zipcode",
+          "domain": null
+        },
+        {
+          "name": "gmap",
+          "type": "esriFieldTypeString",
+          "alias": "gmap",
+          "domain": null
+        },
+        {
+          "name": "inline",
+          "type": "esriFieldTypeString",
+          "alias": "inline",
+          "domain": null
+        },
+        {
+          "name": "notes",
+          "type": "esriFieldTypeString",
+          "alias": "notes",
+          "domain": null
+        }
+      ],
+      "samples": [
+        {
+          "OBJECTID": 1,
+          "name": "BOARD OF ELECTIONS",
+          "address": "725 Northwest Plaza Dr",
+          "zipcode": "63074",
+          "gmap": "https://www.google.com/maps/search/?api=1&query=38.731322%2C-90.400235",
+          "inline": "0 voters in line at 06:30 PM",
+          "notes": null
+        },
+        {
+          "OBJECTID": 38,
+          "name": "MID COUNTY BRANCH LIBRARY",
+          "address": "7821 Maryland Ave",
+          "zipcode": "63105",
+          "gmap": "https://www.google.com/maps/search/?api=1&query=38.651974%2C-90.337613",
+          "inline": "0 voters in line at 06:30 PM",
+          "notes": null
+        },
+        {
+          "OBJECTID": 41,
+          "name": "GRANTS VIEW BRANCH LIBRARY",
+          "address": "9700 Musick Rd",
+          "zipcode": "63123",
+          "gmap": "https://www.google.com/maps/search/?api=1&query=38.545407%2C-90.351332",
+          "inline": "0 voters in line at 06:32 PM",
+          "notes": null
+        }
+      ]
+    }
+  ]
+}

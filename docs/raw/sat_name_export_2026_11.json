@@ -1,0 +1,64 @@
+{
+  "service": "sat_name_export_2026_11",
+  "layers": [
+    {
+      "id": 0,
+      "url": "https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/sat_name_export_2026_11/FeatureServer/0",
+      "name": "sat_name_export",
+      "geometryType": "esriGeometryPoint",
+      "maxRecordCount": 2000,
+      "supportedQueryFormats": "JSON, geoJSON, PBF",
+      "count": 21,
+      "fields": [
+        {
+          "name": "OBJECTID",
+          "type": "esriFieldTypeOID",
+          "alias": "OBJECTID",
+          "domain": null
+        },
+        {
+          "name": "abs_site",
+          "type": "esriFieldTypeString",
+          "alias": "Satellite Site",
+          "domain": [
+            "abs_boe",
+            "abs_thornhill",
+            "abs_cliffcave",
+            "abs_clark",
+            "abs_danielboone",
+            "abs_grandglaize",
+            "abs_grantsview",
+            "abs_lewisandclark",
+            "abs_midcounty",
+            "abs_nocorec",
+            "abs_umsl",
+            "abs_wildwood",
+            "abs_stjohnucc",
+            "abs_flochurch",
+            "abs_dellwood",
+            "abs_jfk",
+            "abs_christking",
+            "abs_stlcc",
+            "abs_stlouisfam",
+            "abs_olivette",
+            "abs_galleria"
+          ]
+        }
+      ],
+      "samples": [
+        {
+          "OBJECTID": 1,
+          "abs_site": "abs_boe"
+        },
+        {
+          "OBJECTID": 2,
+          "abs_site": "abs_christking"
+        },
+        {
+          "OBJECTID": 3,
+          "abs_site": "abs_clark"
+        }
+      ]
+    }
+  ]
+}

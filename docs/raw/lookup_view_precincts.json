@@ -1,0 +1,78 @@
+{
+  "service": "lookup_view_precincts",
+  "layers": [
+    {
+      "id": 0,
+      "url": "https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/lookup_view_precincts/FeatureServer/0",
+      "name": "precincts_2024_04",
+      "geometryType": "esriGeometryPolygon",
+      "maxRecordCount": 2000,
+      "supportedQueryFormats": "JSON, geoJSON, PBF",
+      "count": 1200,
+      "fields": [
+        {
+          "name": "OBJECTID",
+          "type": "esriFieldTypeOID",
+          "alias": "OBJECTID",
+          "domain": null
+        },
+        {
+          "name": "precinct",
+          "type": "esriFieldTypeString",
+          "alias": "precinct",
+          "domain": null
+        },
+        {
+          "name": "precinct_type",
+          "type": "esriFieldTypeString",
+          "alias": "precinct_type",
+          "domain": null
+        },
+        {
+          "name": "districts",
+          "type": "esriFieldTypeString",
+          "alias": "districts",
+          "domain": null
+        },
+        {
+          "name": "html",
+          "type": "esriFieldTypeString",
+          "alias": "html",
+          "domain": null
+        },
+        {
+          "name": "in_election",
+          "type": "esriFieldTypeString",
+          "alias": "in_election",
+          "domain": null
+        }
+      ],
+      "samples": [
+        {
+          "OBJECTID": 1,
+          "precinct": "AP001",
+          "precinct_type": "Voting Precinct",
+          "districts": "US Representative District 1<br>State Senate District 14<br>State House District 73<br>County Council District 2<br>Airport Township<br>City of Woodson Terrace<br>City of Woodson Terrace Ward 2<br>Ritenour School District<br>St. Louis Community College Subdistrict #1<br>Community Fire Protection District<br>St. Louis County Library<br>Metropolitan St. Louis Sewer District<br>",
+          "html": "Sample Ballot: <a href=https://stlouiscovotes.maps.arcgis.com/sharing/rest/content/items/3ec161df1a8146b9a74ec64c899672d9/data>AP-001.pdf</a>",
+          "in_election": "In Election"
+        },
+        {
+          "OBJECTID": 2,
+          "precinct": "AP002",
+          "precinct_type": "Voting Precinct",
+          "districts": "US Representative District 1<br>State Senate District 14<br>State House District 73<br>County Council District 2<br>Airport Township<br>City of Woodson Terrace<br>City of Woodson Terrace Ward 1<br>Ritenour School District<br>St. Louis Community College Subdistrict #1<br>Community Fire Protection District<br>St. Louis County Library<br>Metropolitan St. Louis Sewer District<br>",
+          "html": "Sample Ballot: <a href=https://stlouiscovotes.maps.arcgis.com/sharing/rest/content/items/517b943234e844838d4fd9753a9033c5/data>AP-002.pdf</a>",
+          "in_election": "In Election"
+        },
+        {
+          "OBJECTID": 3,
+          "precinct": "AP003",
+          "precinct_type": "Voting Precinct",
+          "districts": "US Representative District 1<br>State Senate District 14<br>State House District 73<br>County Council District 1<br>Airport Township<br>City of Woodson Terrace<br>City of Woodson Terrace Ward 2<br>Ritenour School District<br>St. Louis Community College Subdistrict #1<br>Community Fire Protection District<br>St. Louis County Library<br>Metropolitan St. Louis Sewer District<br>",
+          "html": "Sample Ballot: <a href=https://stlouiscovotes.maps.arcgis.com/sharing/rest/content/items/7221a53e44b94ceaadeb8c2e9bcab1ee/data>AP-003.pdf</a>",
+          "in_election": "In Election"
+        }
+      ]
+    }
+  ]
+}

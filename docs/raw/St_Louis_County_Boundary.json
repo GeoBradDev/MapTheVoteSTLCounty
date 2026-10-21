@@ -1,0 +1,55 @@
+{
+  "service": "St_Louis_County_Boundary",
+  "layers": [
+    {
+      "id": 0,
+      "url": "https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/St_Louis_County_Boundary/FeatureServer/0",
+      "name": "St_Louis_County_Boundary",
+      "geometryType": "esriGeometryPolygon",
+      "maxRecordCount": 2000,
+      "supportedQueryFormats": "JSON, geoJSON, PBF",
+      "count": 1,
+      "fields": [
+        {
+          "name": "OBJECTID",
+          "type": "esriFieldTypeOID",
+          "alias": "OBJECTID",
+          "domain": null
+        },
+        {
+          "name": "SQ_MI",
+          "type": "esriFieldTypeDouble",
+          "alias": "SQ_MI",
+          "domain": null
+        },
+        {
+          "name": "last_edited_date",
+          "type": "esriFieldTypeDate",
+          "alias": "last_edited_date",
+          "domain": null
+        },
+        {
+          "name": "Shape__Area",
+          "type": "esriFieldTypeDouble",
+          "alias": "Shape__Area",
+          "domain": null
+        },
+        {
+          "name": "Shape__Length",
+          "type": "esriFieldTypeDouble",
+          "alias": "Shape__Length",
+          "domain": null
+        }
+      ],
+      "samples": [
+        {
+          "OBJECTID": 1,
+          "SQ_MI": 523.984,
+          "last_edited_date": 1410268328000,
+          "Shape__Area": 2227206658.15625,
+          "Shape__Length": 284528.7054478316
+        }
+      ]
+    }
+  ]
+}

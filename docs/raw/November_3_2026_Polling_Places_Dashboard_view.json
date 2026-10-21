@@ -1,0 +1,426 @@
+{
+  "service": "November_3_2026_Polling_Places_Dashboard_view",
+  "layers": [
+    {
+      "id": 0,
+      "url": "https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/November_3_2026_Polling_Places_Dashboard_view/FeatureServer/0",
+      "name": "November 3 2026 Polling Places Dashboard",
+      "geometryType": "esriGeometryPoint",
+      "maxRecordCount": 2000,
+      "supportedQueryFormats": "JSON, geoJSON, PBF",
+      "count": 221,
+      "fields": [
+        {
+          "name": "OBJECTID",
+          "type": "esriFieldTypeOID",
+          "alias": "OBJECTID",
+          "domain": null
+        },
+        {
+          "name": "NAME",
+          "type": "esriFieldTypeString",
+          "alias": "NAME",
+          "domain": null
+        },
+        {
+          "name": "ADDRESS",
+          "type": "esriFieldTypeString",
+          "alias": "ADDRESS",
+          "domain": null
+        },
+        {
+          "name": "ZIPCODE",
+          "type": "esriFieldTypeDouble",
+          "alias": "ZIPCODE",
+          "domain": null
+        },
+        {
+          "name": "TOWNSHIP",
+          "type": "esriFieldTypeString",
+          "alias": "TOWNSHIP",
+          "domain": null
+        },
+        {
+          "name": "TURNIN",
+          "type": "esriFieldTypeDouble",
+          "alias": "TURNIN",
+          "domain": null
+        },
+        {
+          "name": "SEQ_NUMBER",
+          "type": "esriFieldTypeString",
+          "alias": "SEQ_NUMBER",
+          "domain": null
+        },
+        {
+          "name": "ROUTE_CAPTAIN",
+          "type": "esriFieldTypeString",
+          "alias": "ROUTE_CAPTAIN",
+          "domain": null
+        },
+        {
+          "name": "JUDGE_DEPUTY",
+          "type": "esriFieldTypeString",
+          "alias": "JUDGE_DEPUTY",
+          "domain": null
+        },
+        {
+          "name": "DEPUTY",
+          "type": "esriFieldTypeString",
+          "alias": "DEPUTY",
+          "domain": null
+        },
+        {
+          "name": "ACTIVE",
+          "type": "esriFieldTypeString",
+          "alias": "ACTIVE",
+          "domain": null
+        },
+        {
+          "name": "TECH_AREA",
+          "type": "esriFieldTypeString",
+          "alias": "TECH_AREA",
+          "domain": null
+        },
+        {
+          "name": "LOCATION_ID",
+          "type": "esriFieldTypeSmallInteger",
+          "alias": "LOCATION_ID",
+          "domain": null
+        },
+        {
+          "name": "PHOTO_URL",
+          "type": "esriFieldTypeString",
+          "alias": "PHOTO_URL",
+          "domain": null
+        },
+        {
+          "name": "SEQUENCE_ID",
+          "type": "esriFieldTypeInteger",
+          "alias": "SEQUENCE_ID",
+          "domain": null
+        },
+        {
+          "name": "ACTIVE_ROOM",
+          "type": "esriFieldTypeString",
+          "alias": "ACTIVE_ROOM",
+          "domain": null
+        },
+        {
+          "name": "LARGE_ROOM",
+          "type": "esriFieldTypeString",
+          "alias": "LARGE_ROOM",
+          "domain": null
+        },
+        {
+          "name": "SMALL_ROOM",
+          "type": "esriFieldTypeString",
+          "alias": "SMALL_ROOM",
+          "domain": null
+        },
+        {
+          "name": "SUPER_CAPTAIN",
+          "type": "esriFieldTypeString",
+          "alias": "SUPER_CAPTAIN",
+          "domain": null
+        },
+        {
+          "name": "CAPTAIN",
+          "type": "esriFieldTypeString",
+          "alias": "CAPTAIN",
+          "domain": null
+        },
+        {
+          "name": "ORGANIZATION",
+          "type": "esriFieldTypeString",
+          "alias": "ORGANIZATION",
+          "domain": null
+        },
+        {
+          "name": "ORGTYPE",
+          "type": "esriFieldTypeString",
+          "alias": "ORGTYPE",
+          "domain": null
+        },
+        {
+          "name": "GlobalID",
+          "type": "esriFieldTypeGlobalID",
+          "alias": "GlobalID",
+          "domain": null
+        },
+        {
+          "name": "created_user",
+          "type": "esriFieldTypeString",
+          "alias": "created_user",
+          "domain": null
+        },
+        {
+          "name": "created_date",
+          "type": "esriFieldTypeDate",
+          "alias": "created_date",
+          "domain": null
+        },
+        {
+          "name": "last_edited_user",
+          "type": "esriFieldTypeString",
+          "alias": "last_edited_user",
+          "domain": null
+        },
+        {
+          "name": "last_edited_date",
+          "type": "esriFieldTypeDate",
+          "alias": "last_edited_date",
+          "domain": null
+        },
+        {
+          "name": "NEAR_FID",
+          "type": "esriFieldTypeInteger",
+          "alias": "NEAR_FID",
+          "domain": null
+        },
+        {
+          "name": "CITY",
+          "type": "esriFieldTypeString",
+          "alias": "CITY",
+          "domain": null
+        },
+        {
+          "name": "CreationDate",
+          "type": "esriFieldTypeDate",
+          "alias": "CreationDate",
+          "domain": null
+        },
+        {
+          "name": "Creator",
+          "type": "esriFieldTypeString",
+          "alias": "Creator",
+          "domain": null
+        },
+        {
+          "name": "EditDate",
+          "type": "esriFieldTypeDate",
+          "alias": "EditDate",
+          "domain": null
+        },
+        {
+          "name": "Editor",
+          "type": "esriFieldTypeString",
+          "alias": "Editor",
+          "domain": null
+        },
+        {
+          "name": "Spec_Signs",
+          "type": "esriFieldTypeString",
+          "alias": "Spec_Signs",
+          "domain": null
+        },
+        {
+          "name": "esritask_type",
+          "type": "esriFieldTypeInteger",
+          "alias": "Task Type",
+          "domain": [
+            0
+          ]
+        },
+        {
+          "name": "esritask_assignee",
+          "type": "esriFieldTypeString",
+          "alias": "Assignee",
+          "domain": [
+            "assignee_username"
+          ]
+        },
+        {
+          "name": "esritask_status",
+          "type": "esriFieldTypeInteger",
+          "alias": "Status",
+          "domain": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "name": "esritask_priority",
+          "type": "esriFieldTypeInteger",
+          "alias": "Priority",
+          "domain": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "name": "esritask_duedate",
+          "type": "esriFieldTypeDate",
+          "alias": "Due Date",
+          "domain": null
+        },
+        {
+          "name": "esritask_description",
+          "type": "esriFieldTypeString",
+          "alias": "Description",
+          "domain": null
+        },
+        {
+          "name": "esritask_notes",
+          "type": "esriFieldTypeString",
+          "alias": "Notes",
+          "domain": null
+        },
+        {
+          "name": "ED_VOTES",
+          "type": "esriFieldTypeDouble",
+          "alias": "ED_VOTES",
+          "domain": null
+        },
+        {
+          "name": "ABS_VOTES",
+          "type": "esriFieldTypeDouble",
+          "alias": "ABS_VOTES",
+          "domain": null
+        }
+      ],
+      "samples": [
+        {
+          "OBJECTID": 1,
+          "NAME": "THORNHILL BRANCH LIBRARY",
+          "ADDRESS": "12863 WILLOWYCK DR",
+          "ZIPCODE": 63146,
+          "TOWNSHIP": "MHT",
+          "TURNIN": 1,
+          "SEQ_NUMBER": "16117",
+          "ROUTE_CAPTAIN": "C",
+          "JUDGE_DEPUTY": "3",
+          "DEPUTY": "3",
+          "ACTIVE": "ACTIVE",
+          "TECH_AREA": "C05",
+          "LOCATION_ID": 172,
+          "PHOTO_URL": "https://stlouiscovotes.maps.arcgis.com/sharing/rest/content/items/d83ba868bf794067ab8eb1526ba6e391/data",
+          "SEQUENCE_ID": null,
+          "ACTIVE_ROOM": "MEETING ROOM 1",
+          "LARGE_ROOM": "MEETING ROOM 1",
+          "SMALL_ROOM": "MEETING ROOM 1",
+          "SUPER_CAPTAIN": "C",
+          "CAPTAIN": "C",
+          "ORGANIZATION": "St. Louis County Libraries",
+          "ORGTYPE": "Public:Library (SLCL)",
+          "GlobalID": "5d0bcfb1-bb2d-45a9-b5a5-3d8671369627",
+          "created_user": "SDEDBO",
+          "created_date": 1596603339000,
+          "last_edited_user": "EL0R1R",
+          "last_edited_date": 1653078931000,
+          "NEAR_FID": null,
+          "CITY": "ST LOUIS",
+          "CreationDate": 1704733120242,
+          "Creator": "rryan_edboec",
+          "EditDate": 1788383584304,
+          "Editor": "rryan_edboec",
+          "Spec_Signs": null,
+          "esritask_type": null,
+          "esritask_assignee": null,
+          "esritask_status": null,
+          "esritask_priority": null,
+          "esritask_duedate": null,
+          "esritask_description": null,
+          "esritask_notes": null,
+          "ED_VOTES": 0,
+          "ABS_VOTES": null
+        },
+        {
+          "OBJECTID": 2,
+          "NAME": "CROSSPOINT CHURCH",
+          "ADDRESS": "5001 LITTLE ROCK RD",
+          "ZIPCODE": 63128,
+          "TOWNSHIP": "TSF",
+          "TURNIN": 10,
+          "SEQ_NUMBER": "26049",
+          "ROUTE_CAPTAIN": "F",
+          "JUDGE_DEPUTY": "6",
+          "DEPUTY": "6",
+          "ACTIVE": "ACTIVE",
+          "TECH_AREA": "F01",
+          "LOCATION_ID": 38,
+          "PHOTO_URL": "https://stlouiscovotes.maps.arcgis.com/sharing/rest/content/items/fb661d3e0493455ab51a0701d1604e9e/data",
+          "SEQUENCE_ID": null,
+          "ACTIVE_ROOM": "GYM",
+          "LARGE_ROOM": "GYM",
+          "SMALL_ROOM": null,
+          "SUPER_CAPTAIN": "F",
+          "CAPTAIN": "F",
+          "ORGANIZATION": "Crosspoint Church",
+          "ORGTYPE": "Private:Church",
+          "GlobalID": "85bf59fe-17a4-4642-b641-a8ab56c22690",
+          "created_user": "SDEDBO",
+          "created_date": 1596603339000,
+          "last_edited_user": "EL0R1R",
+          "last_edited_date": 1625753810000,
+          "NEAR_FID": null,
+          "CITY": "ST LOUIS",
+          "CreationDate": 1704733120242,
+          "Creator": "rryan_edboec",
+          "EditDate": 1787864990500,
+          "Editor": "sfrankel_edboec",
+          "Spec_Signs": null,
+          "esritask_type": null,
+          "esritask_assignee": null,
+          "esritask_status": null,
+          "esritask_priority": null,
+          "esritask_duedate": null,
+          "esritask_description": null,
+          "esritask_notes": null,
+          "ED_VOTES": 0,
+          "ABS_VOTES": null
+        },
+        {
+          "OBJECTID": 3,
+          "NAME": "MID COUNTY BRANCH LIBRARY",
+          "ADDRESS": "7821 MARYLAND AVE",
+          "ZIPCODE": 63105,
+          "TOWNSHIP": "CLA",
+          "TURNIN": 3,
+          "SEQ_NUMBER": "05095",
+          "ROUTE_CAPTAIN": "D",
+          "JUDGE_DEPUTY": "4",
+          "DEPUTY": "4",
+          "ACTIVE": "ACTIVE",
+          "TECH_AREA": "D06",
+          "LOCATION_ID": 111,
+          "PHOTO_URL": "https://stlouiscovotes.maps.arcgis.com/sharing/rest/content/items/eefe40c78f294daa9c9d17fe096d304f/data",
+          "SEQUENCE_ID": 5095,
+          "ACTIVE_ROOM": "MEETING ROOM",
+          "LARGE_ROOM": null,
+          "SMALL_ROOM": null,
+          "SUPER_CAPTAIN": "D",
+          "CAPTAIN": "D",
+          "ORGANIZATION": "St. Louis County Libraries",
+          "ORGTYPE": "Public:Library (SLCL)",
+          "GlobalID": "f0cac163-e84e-4340-bbd0-4108d85873a7",
+          "created_user": "SDEDBO",
+          "created_date": 1596603339000,
+          "last_edited_user": "EL0R1R",
+          "last_edited_date": 1653078931000,
+          "NEAR_FID": null,
+          "CITY": "ST LOUIS",
+          "CreationDate": 1704733120242,
+          "Creator": "rryan_edboec",
+          "EditDate": 1787931789379,
+          "Editor": "sfrankel_edboec",
+          "Spec_Signs": null,
+          "esritask_type": null,
+          "esritask_assignee": null,
+          "esritask_status": null,
+          "esritask_priority": null,
+          "esritask_duedate": null,
+          "esritask_description": null,
+          "esritask_notes": null,
+          "ED_VOTES": 0,
+          "ABS_VOTES": null
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,141 @@
+{
+  "service": "polls_2026_11_view",
+  "layers": [
+    {
+      "id": 1,
+      "url": "https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/polls_2026_11_view/FeatureServer/1",
+      "name": "polls_2026_11_local",
+      "geometryType": "esriGeometryPoint",
+      "maxRecordCount": 2000,
+      "supportedQueryFormats": "JSON, geoJSON, PBF",
+      "count": 200,
+      "fields": [
+        {
+          "name": "OBJECTID",
+          "type": "esriFieldTypeOID",
+          "alias": "OBJECTID",
+          "domain": null
+        },
+        {
+          "name": "loc",
+          "type": "esriFieldTypeString",
+          "alias": "loc",
+          "domain": null
+        },
+        {
+          "name": "name",
+          "type": "esriFieldTypeString",
+          "alias": "name",
+          "domain": null
+        },
+        {
+          "name": "address",
+          "type": "esriFieldTypeString",
+          "alias": "address",
+          "domain": null
+        },
+        {
+          "name": "zipcode",
+          "type": "esriFieldTypeInteger",
+          "alias": "zipcode",
+          "domain": null
+        },
+        {
+          "name": "gmap",
+          "type": "esriFieldTypeString",
+          "alias": "gmap",
+          "domain": null
+        },
+        {
+          "name": "username",
+          "type": "esriFieldTypeString",
+          "alias": "username",
+          "domain": null
+        },
+        {
+          "name": "absentee",
+          "type": "esriFieldTypeString",
+          "alias": "absentee",
+          "domain": null
+        },
+        {
+          "name": "inline",
+          "type": "esriFieldTypeString",
+          "alias": "inline",
+          "domain": null
+        },
+        {
+          "name": "abs_type",
+          "type": "esriFieldTypeString",
+          "alias": "abs_type",
+          "domain": null
+        },
+        {
+          "name": "notes",
+          "type": "esriFieldTypeString",
+          "alias": "notes",
+          "domain": null
+        },
+        {
+          "name": "notes_abs",
+          "type": "esriFieldTypeString",
+          "alias": "notes_abs",
+          "domain": null
+        },
+        {
+          "name": "loc_abs",
+          "type": "esriFieldTypeString",
+          "alias": "loc_abs",
+          "domain": null
+        }
+      ],
+      "samples": [
+        {
+          "OBJECTID": 1,
+          "loc": "001",
+          "name": "AEROSPACE DIST LODGE 837",
+          "address": "212 UTZ LN",
+          "zipcode": 63042,
+          "gmap": "https://www.google.com/maps/search/?api=1&query=38.773187%2C-90.364734",
+          "username": "loc001boec",
+          "absentee": "",
+          "inline": "                                                  ",
+          "abs_type": "none",
+          "notes": "LOC001",
+          "notes_abs": "                                                                                                    ",
+          "loc_abs": null
+        },
+        {
+          "OBJECTID": 2,
+          "loc": "002",
+          "name": "AFFTON PAT",
+          "address": "6915 WEBER RD",
+          "zipcode": 63123,
+          "gmap": "https://www.google.com/maps/search/?api=1&query=38.556561%2C-90.335743",
+          "username": "loc002boec",
+          "absentee": "",
+          "inline": "",
+          "abs_type": "none",
+          "notes": "LOC002",
+          "notes_abs": "",
+          "loc_abs": null
+        },
+        {
+          "OBJECTID": 3,
+          "loc": "003",
+          "name": "AFFTON SR HIGH SCHOOL",
+          "address": "8309 MACKENZIE RD",
+          "zipcode": 63123,
+          "gmap": "https://www.google.com/maps/search/?api=1&query=38.559645%2C-90.322720",
+          "username": "loc003boec",
+          "absentee": "",
+          "inline": "",
+          "abs_type": "none",
+          "notes": "LOC003",
+          "notes_abs": "",
+          "loc_abs": null
+        }
+      ]
+    }
+  ]
+}

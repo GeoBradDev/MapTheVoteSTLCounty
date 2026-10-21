@@ -1,0 +1,96 @@
+{
+  "service": "lookup_view_polls",
+  "layers": [
+    {
+      "id": 0,
+      "url": "https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/lookup_view_polls/FeatureServer/0",
+      "name": "polls_2024_04",
+      "geometryType": "esriGeometryPoint",
+      "maxRecordCount": 2000,
+      "supportedQueryFormats": "JSON, geoJSON, PBF",
+      "count": 211,
+      "fields": [
+        {
+          "name": "OBJECTID",
+          "type": "esriFieldTypeOID",
+          "alias": "OBJECTID",
+          "domain": null
+        },
+        {
+          "name": "loc",
+          "type": "esriFieldTypeString",
+          "alias": "loc",
+          "domain": null
+        },
+        {
+          "name": "name",
+          "type": "esriFieldTypeString",
+          "alias": "name",
+          "domain": null
+        },
+        {
+          "name": "address",
+          "type": "esriFieldTypeString",
+          "alias": "address",
+          "domain": null
+        },
+        {
+          "name": "zipcode",
+          "type": "esriFieldTypeString",
+          "alias": "zipcode",
+          "domain": null
+        },
+        {
+          "name": "gmap",
+          "type": "esriFieldTypeString",
+          "alias": "gmap",
+          "domain": null
+        },
+        {
+          "name": "inline",
+          "type": "esriFieldTypeString",
+          "alias": "inline",
+          "domain": null
+        },
+        {
+          "name": "notes",
+          "type": "esriFieldTypeString",
+          "alias": "notes",
+          "domain": null
+        }
+      ],
+      "samples": [
+        {
+          "OBJECTID": 1,
+          "loc": "001",
+          "name": "BOARD OF ELECTIONS",
+          "address": "725 Northwest Plaza Dr",
+          "zipcode": "63074",
+          "gmap": "https://www.google.com/maps/search/?api=1&query=38.731322%2C-90.400235",
+          "inline": "0 voters in line at 06:30 PM",
+          "notes": null
+        },
+        {
+          "OBJECTID": 2,
+          "loc": "002",
+          "name": "MARVIN ELEMENTARY SCHOOL",
+          "address": "3510 Woodson Rd",
+          "zipcode": "63114",
+          "gmap": "https://www.google.com/maps/search/?api=1&query=38.716639%2C-90.359158",
+          "inline": "2 voters in line at 06:49 PM",
+          "notes": null
+        },
+        {
+          "OBJECTID": 3,
+          "loc": "003",
+          "name": "RITENOUR HIGH SCHOOL",
+          "address": "9100 St Charles Rock Rd",
+          "zipcode": "63114",
+          "gmap": "https://www.google.com/maps/search/?api=1&query=38.710389%2C-90.358034",
+          "inline": "0 voters in line at 04:34 PM",
+          "notes": null
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,303 @@
+{
+  "service": "precincts_2026_11_view",
+  "layers": [
+    {
+      "id": 1,
+      "url": "https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/precincts_2026_11_view/FeatureServer/1",
+      "name": "precincts_2026_11_local",
+      "geometryType": "esriGeometryPolygon",
+      "maxRecordCount": 2000,
+      "supportedQueryFormats": "JSON, geoJSON, PBF",
+      "count": 1213,
+      "fields": [
+        {
+          "name": "OBJECTID",
+          "type": "esriFieldTypeOID",
+          "alias": "OBJECTID",
+          "domain": null
+        },
+        {
+          "name": "precinct",
+          "type": "esriFieldTypeString",
+          "alias": "precinct",
+          "domain": null
+        },
+        {
+          "name": "precinct_type",
+          "type": "esriFieldTypeString",
+          "alias": "precinct_type",
+          "domain": null
+        },
+        {
+          "name": "congressional_district_20",
+          "type": "esriFieldTypeString",
+          "alias": "congressional_district_20",
+          "domain": null
+        },
+        {
+          "name": "congressional_district_25",
+          "type": "esriFieldTypeString",
+          "alias": "congressional_district_25",
+          "domain": null
+        },
+        {
+          "name": "state_senate_20",
+          "type": "esriFieldTypeString",
+          "alias": "state_senate_20",
+          "domain": null
+        },
+        {
+          "name": "legislative_district_20",
+          "type": "esriFieldTypeString",
+          "alias": "legislative_district_20",
+          "domain": null
+        },
+        {
+          "name": "county_council_20",
+          "type": "esriFieldTypeString",
+          "alias": "county_council_20",
+          "domain": null
+        },
+        {
+          "name": "township",
+          "type": "esriFieldTypeString",
+          "alias": "township",
+          "domain": null
+        },
+        {
+          "name": "municipality",
+          "type": "esriFieldTypeString",
+          "alias": "municipality",
+          "domain": null
+        },
+        {
+          "name": "ward",
+          "type": "esriFieldTypeString",
+          "alias": "ward",
+          "domain": null
+        },
+        {
+          "name": "school",
+          "type": "esriFieldTypeString",
+          "alias": "school",
+          "domain": null
+        },
+        {
+          "name": "junior_college_district",
+          "type": "esriFieldTypeString",
+          "alias": "junior_college_district",
+          "domain": null
+        },
+        {
+          "name": "fire",
+          "type": "esriFieldTypeString",
+          "alias": "fire",
+          "domain": null
+        },
+        {
+          "name": "ambulance",
+          "type": "esriFieldTypeString",
+          "alias": "ambulance",
+          "domain": null
+        },
+        {
+          "name": "ambulance_subdistrict",
+          "type": "esriFieldTypeString",
+          "alias": "ambulance_subdistrict",
+          "domain": null
+        },
+        {
+          "name": "library_district",
+          "type": "esriFieldTypeString",
+          "alias": "library_district",
+          "domain": null
+        },
+        {
+          "name": "sewer",
+          "type": "esriFieldTypeString",
+          "alias": "sewer",
+          "domain": null
+        },
+        {
+          "name": "light_district",
+          "type": "esriFieldTypeString",
+          "alias": "light_district",
+          "domain": null
+        },
+        {
+          "name": "road",
+          "type": "esriFieldTypeString",
+          "alias": "road",
+          "domain": null
+        },
+        {
+          "name": "community_improvement",
+          "type": "esriFieldTypeString",
+          "alias": "community_improvement",
+          "domain": null
+        },
+        {
+          "name": "business_district",
+          "type": "esriFieldTypeString",
+          "alias": "business_district",
+          "domain": null
+        },
+        {
+          "name": "transportation",
+          "type": "esriFieldTypeString",
+          "alias": "transportation",
+          "domain": null
+        },
+        {
+          "name": "neighborhood_improvement_dist",
+          "type": "esriFieldTypeString",
+          "alias": "neighborhood_improvement_dist",
+          "domain": null
+        },
+        {
+          "name": "annexation",
+          "type": "esriFieldTypeString",
+          "alias": "annexation",
+          "domain": null
+        },
+        {
+          "name": "active",
+          "type": "esriFieldTypeString",
+          "alias": "active",
+          "domain": null
+        },
+        {
+          "name": "districts",
+          "type": "esriFieldTypeString",
+          "alias": "districts",
+          "domain": null
+        },
+        {
+          "name": "html",
+          "type": "esriFieldTypeString",
+          "alias": "html",
+          "domain": null
+        },
+        {
+          "name": "in_election",
+          "type": "esriFieldTypeString",
+          "alias": "in_election",
+          "domain": null
+        },
+        {
+          "name": "Shape__Area",
+          "type": "esriFieldTypeDouble",
+          "alias": "Shape__Area",
+          "domain": null
+        },
+        {
+          "name": "Shape__Length",
+          "type": "esriFieldTypeDouble",
+          "alias": "Shape__Length",
+          "domain": null
+        }
+      ],
+      "samples": [
+        {
+          "OBJECTID": 1,
+          "precinct": "AP001",
+          "precinct_type": "Voting Precinct",
+          "congressional_district_20": "US Representative District 1 (2022)",
+          "congressional_district_25": "US Representative District 1 (2025)",
+          "state_senate_20": "State Senate District 14",
+          "legislative_district_20": "State House District 73",
+          "county_council_20": "County Council District 2",
+          "township": "Airport Township",
+          "municipality": "City of Woodson Terrace",
+          "ward": "City of Woodson Terrace Ward 2",
+          "school": "Ritenour School District",
+          "junior_college_district": "St. Louis Community College Subdistrict #1",
+          "fire": "Community Fire Protection District",
+          "ambulance": "",
+          "ambulance_subdistrict": "",
+          "library_district": "St. Louis County Library",
+          "sewer": "Metropolitan St. Louis Sewer District",
+          "light_district": "",
+          "road": "",
+          "community_improvement": "",
+          "business_district": "",
+          "transportation": "",
+          "neighborhood_improvement_dist": "",
+          "annexation": "",
+          "active": "252",
+          "districts": "US Representative District 1 (2022)<br>US Representative District 1 (2025)<br>State Senate District 14<br>State House District 73<br>County Council District 2<br>Airport Township<br>City of Woodson Terrace<br>City of Woodson Terrace Ward 2<br>Ritenour School District<br>St. Louis Community College Subdistrict #1<br>Community Fire Protection District<br>St. Louis County Library<br>Metropolitan St. Louis Sewer District",
+          "html": "Sample Ballot: <a href=https://stlouiscovotes.maps.arcgis.com/sharing/rest/content/items/64b15a43aef94b638f69efc76f68878c/data>AP-001.pdf</a>",
+          "in_election": "In Election",
+          "Shape__Area": 367530.71875,
+          "Shape__Length": 2459.3149457719214
+        },
+        {
+          "OBJECTID": 2,
+          "precinct": "AP002",
+          "precinct_type": "Voting Precinct",
+          "congressional_district_20": "US Representative District 1 (2022)",
+          "congressional_district_25": "US Representative District 1 (2025)",
+          "state_senate_20": "State Senate District 14",
+          "legislative_district_20": "State House District 73",
+          "county_council_20": "County Council District 2",
+          "township": "Airport Township",
+          "municipality": "City of Woodson Terrace",
+          "ward": "City of Woodson Terrace Ward 1",
+          "school": "Ritenour School District",
+          "junior_college_district": "St. Louis Community College Subdistrict #1",
+          "fire": "Community Fire Protection District",
+          "ambulance": "",
+          "ambulance_subdistrict": "",
+          "library_district": "St. Louis County Library",
+          "sewer": "Metropolitan St. Louis Sewer District",
+          "light_district": "",
+          "road": "",
+          "community_improvement": "",
+          "business_district": "",
+          "transportation": "",
+          "neighborhood_improvement_dist": "",
+          "annexation": "",
+          "active": "329",
+          "districts": "US Representative District 1 (2022)<br>US Representative District 1 (2025)<br>State Senate District 14<br>State House District 73<br>County Council District 2<br>Airport Township<br>City of Woodson Terrace<br>City of Woodson Terrace Ward 1<br>Ritenour School District<br>St. Louis Community College Subdistrict #1<br>Community Fire Protection District<br>St. Louis County Library<br>Metropolitan St. Louis Sewer District",
+          "html": "Sample Ballot: <a href=https://stlouiscovotes.maps.arcgis.com/sharing/rest/content/items/8d7e5104fd704f358722bf82a74478e4/data>AP-002.pdf</a>",
+          "in_election": "In Election",
+          "Shape__Area": 393563.39453125,
+          "Shape__Length": 2870.541730622893
+        },
+        {
+          "OBJECTID": 3,
+          "precinct": "AP003",
+          "precinct_type": "Voting Precinct",
+          "congressional_district_20": "US Representative District 1 (2022)",
+          "congressional_district_25": "US Representative District 1 (2025)",
+          "state_senate_20": "State Senate District 14",
+          "legislative_district_20": "State House District 73",
+          "county_council_20": "County Council District 1",
+          "township": "Airport Township",
+          "municipality": "City of Woodson Terrace",
+          "ward": "City of Woodson Terrace Ward 2",
+          "school": "Ritenour School District",
+          "junior_college_district": "St. Louis Community College Subdistrict #1",
+          "fire": "Community Fire Protection District",
+          "ambulance": "",
+          "ambulance_subdistrict": "",
+          "library_district": "St. Louis County Library",
+          "sewer": "Metropolitan St. Louis Sewer District",
+          "light_district": "",
+          "road": "",
+          "community_improvement": "",
+          "business_district": "",
+          "transportation": "",
+          "neighborhood_improvement_dist": "",
+          "annexation": "",
+          "active": "242",
+          "districts": "US Representative District 1 (2022)<br>US Representative District 1 (2025)<br>State Senate District 14<br>State House District 73<br>County Council District 1<br>Airport Township<br>City of Woodson Terrace<br>City of Woodson Terrace Ward 2<br>Ritenour School District<br>St. Louis Community College Subdistrict #1<br>Community Fire Protection District<br>St. Louis County Library<br>Metropolitan St. Louis Sewer District",
+          "html": "Sample Ballot: <a href=https://stlouiscovotes.maps.arcgis.com/sharing/rest/content/items/8ed150959a8846c898fa2424b31c5f6c/data>AP-003.pdf</a>",
+          "in_election": "In Election",
+          "Shape__Area": 236551.54296875,
+          "Shape__Length": 2191.8110226546487
+        }
+      ]
+    }
+  ]
+}

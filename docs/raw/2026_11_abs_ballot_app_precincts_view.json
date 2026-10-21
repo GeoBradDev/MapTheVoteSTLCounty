@@ -1,0 +1,78 @@
+{
+  "service": "2026_11_abs_ballot_app_precincts_view",
+  "layers": [
+    {
+      "id": 0,
+      "url": "https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/2026_11_abs_ballot_app_precincts_view/FeatureServer/0",
+      "name": "tmpkwzf045q",
+      "geometryType": "esriGeometryPolygon",
+      "maxRecordCount": 2000,
+      "supportedQueryFormats": "JSON, geoJSON, PBF",
+      "count": 1213,
+      "fields": [
+        {
+          "name": "OBJECTID",
+          "type": "esriFieldTypeOID",
+          "alias": "OBJECTID",
+          "domain": null
+        },
+        {
+          "name": "precinct",
+          "type": "esriFieldTypeString",
+          "alias": "precinct",
+          "domain": null
+        },
+        {
+          "name": "precinct_type",
+          "type": "esriFieldTypeString",
+          "alias": "precinct_type",
+          "domain": null
+        },
+        {
+          "name": "in_election",
+          "type": "esriFieldTypeString",
+          "alias": "in_election",
+          "domain": null
+        },
+        {
+          "name": "Shape__Area",
+          "type": "esriFieldTypeDouble",
+          "alias": "Shape__Area",
+          "domain": null
+        },
+        {
+          "name": "Shape__Length",
+          "type": "esriFieldTypeDouble",
+          "alias": "Shape__Length",
+          "domain": null
+        }
+      ],
+      "samples": [
+        {
+          "OBJECTID": 1,
+          "precinct": "AP001",
+          "precinct_type": "Voting Precinct",
+          "in_election": "In Election",
+          "Shape__Area": 367530.71875,
+          "Shape__Length": 2459.3149457719214
+        },
+        {
+          "OBJECTID": 2,
+          "precinct": "AP002",
+          "precinct_type": "Voting Precinct",
+          "in_election": "In Election",
+          "Shape__Area": 393563.39453125,
+          "Shape__Length": 2870.541730622893
+        },
+        {
+          "OBJECTID": 3,
+          "precinct": "AP003",
+          "precinct_type": "Voting Precinct",
+          "in_election": "In Election",
+          "Shape__Area": 236551.54296875,
+          "Shape__Length": 2191.8110226546487
+        }
+      ]
+    }
+  ]
+}
