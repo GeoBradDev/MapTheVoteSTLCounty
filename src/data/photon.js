@@ -229,13 +229,16 @@ function matchesTyped(text, props) {
 // About 50 m: one house that OSM lists twice, as a point and a building.
 const SAME_HOUSE_DEGREES = 0.0005;
 
-// Whether two matches are one house, not two houses Photon ranks in some order.
+// Whether two matching features are one address, not two houses Photon ranks
+// in some order: the same county, and the same postcode or about 50 m apart.
+// A number and street in one ZIP is one address, even on a large site that
+// OSM lists at points far apart.
 function samePlace(a, b) {
-  return (
-    a.county === b.county &&
-    Math.abs(a.lat - b.lat) <= SAME_HOUSE_DEGREES &&
-    Math.abs(a.lng - b.lng) <= SAME_HOUSE_DEGREES
-  );
+  const [pa, pb] = [a.properties, b.properties];
+  if (countyOf(pa) !== countyOf(pb)) return false;
+  if (pa.postcode && pb.postcode && String(pa.postcode) === String(pb.postcode)) return true;
+  const [[lngA, latA], [lngB, latB]] = [a.geometry.coordinates, b.geometry.coordinates];
+  return Math.abs(latA - latB) <= SAME_HOUSE_DEGREES && Math.abs(lngA - lngB) <= SAME_HOUSE_DEGREES;
 }
 
 /**
@@ -325,11 +328,11 @@ export function createPhotonGeocoder({
       const text = String((typeof query === 'object' ? query?.label : query) ?? '').trim();
       if (!text) return null;
       const features = await search(text, signal);
-      const matches = features.filter((f) => matchesTyped(text, f.properties)).map(placeOf);
+      const matches = features.filter((f) => matchesTyped(text, f.properties));
       if (!matches.length) return null;
       // Two places fit what was typed, so asking for a ZIP beats guessing.
-      if (!matches.every((place) => samePlace(place, matches[0]))) return null;
-      return matches[0];
+      if (!matches.every((match) => samePlace(match, matches[0]))) return null;
+      return placeOf(matches[0]);
     },
   });
 }
