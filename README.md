@@ -302,7 +302,8 @@ analytics. Every request that carries a typed address or coordinates uses `cache
 no cookies and no referrer, and sends them in a POST body, never the URL, where the service
 accepts one (#38): the county's address layers, the City geocoder and the precinct and boundary
 point queries. Photon has no POST endpoint, so it gets the typed text in a GET query string;
-the notice says so. A new request that carries either must do the same. The plain-language
+the notice says so. A new request that carries either must do the same, and a service worker
+(#25) must not put those requests in Cache Storage, which `no-store` does not cover. The plain-language
 notice at `/privacy` (`src/features/privacy/privacyCopy.js`) says what each third party gets;
 change it in the same change as any new service or any change to what is sent. `src/test/no-storage.test.js` fails
 when app code under `src` uses browser storage, cookies or the console, and
