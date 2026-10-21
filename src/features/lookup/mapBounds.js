@@ -1,5 +1,5 @@
 // Pure helpers for the precinct map, kept out of the MapLibre module so they
-// can be tested without WebGL and stay out of the map chunk's critical path.
+// can be tested without WebGL. They ship in the map chunk with it.
 
 function rings(geometry) {
   if (geometry?.type === 'Polygon') return geometry.coordinates ?? [];

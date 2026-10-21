@@ -17,6 +17,10 @@ const FIT = { padding: 40, maxZoom: 16, animate: false };
 
 const POLL_MARKER =
   'flex size-7 items-center justify-center rounded-full border-2 border-surface bg-primary text-sm font-semibold text-on-primary shadow';
+// Positron's interstate shield layer, and the gray shield its other roads use.
+const INTERSTATE_SHIELDS = 'highway-shield-us-interstate';
+const GRAY_SHIELD = ['concat', 'road_', ['get', 'ref_length']];
+
 // Above the numbered markers, so a polling place at the address does not hide it.
 const ORIGIN_MARKER = 'z-1 block size-4 rounded-full border-2 border-surface bg-ink shadow';
 
@@ -95,11 +99,16 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
 
   map.on('load', () => {
     try {
-      // The basemap's own colors are grays, except its water labels, which
-      // are blue. Draw every label in the muted token, so no party color
-      // shows whatever the style changes.
+      // The basemap's own colors are grays, except its blue water labels and
+      // its slate-blue interstate shields. Draw every label in the muted
+      // token, so no party color shows whatever the style changes, and draw
+      // interstates with the plain gray road shield.
       for (const layer of map.getStyle().layers) {
-        if (layer.type === 'symbol') map.setPaintProperty(layer.id, 'text-color', labelColor);
+        if (layer.type !== 'symbol') continue;
+        map.setPaintProperty(layer.id, 'text-color', labelColor);
+        if (layer.id === INTERSTATE_SHIELDS) {
+          map.setLayoutProperty(layer.id, 'icon-image', GRAY_SHIELD);
+        }
       }
       map.addSource('precinct', { type: 'geojson', data: { type: 'Feature', geometry } });
       map.addLayer({

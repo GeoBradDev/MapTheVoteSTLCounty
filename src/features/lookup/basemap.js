@@ -6,9 +6,11 @@
 // policy together.
 
 /**
- * The MapLibre style URL. Positron is light gray; its water labels are blue,
- * so precinctMapView.js draws every label in the muted token. When changing
- * the style, check its fill and line colors for red or blue too.
+ * The MapLibre style URL. Positron is light gray; its water labels are blue
+ * and its interstate shields slate blue, so precinctMapView.js draws every
+ * label in the muted token and interstates with the gray road shield. When
+ * changing the style, check its fill, line and text colors and its sprite
+ * icons for red or blue.
  */
 export const BASEMAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
 

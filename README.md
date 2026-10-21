@@ -116,10 +116,11 @@ rules (`src/features/lookup/precinctMap.css`) instead of `maplibre-gl.css`, whic
 
 The basemap is [OpenFreeMap](https://openfreemap.org)'s Positron style: free, with no API key
 or account, and its terms allow embedding it. Its attribution (OpenFreeMap, OpenMapTiles,
-OpenStreetMap contributors) is shown as links under the map. Its water labels are blue, so
-the map draws every label in the muted token. Tile requests tell OpenFreeMap (and
+OpenStreetMap contributors) is shown as links under the map. Its water labels are blue and
+its interstate shields slate blue, so the map draws every label in the muted token and
+interstates with the gray road shield. Tile requests tell OpenFreeMap (and
 Cloudflare, its CDN) which area is on screen: the precinct and its nearest polling places,
 which depend a little on the searched point within the precinct. The `no-referrer` policy
 keeps the page URL out of them. `src/features/lookup/basemap.js` holds the style URL and the
 credits; to change the basemap, change that file and the origin in `render.yaml`'s
-`connect-src` together, and check the new style's colors for red or blue.
+`connect-src` together, and check the new style's colors and sprite icons for red or blue.

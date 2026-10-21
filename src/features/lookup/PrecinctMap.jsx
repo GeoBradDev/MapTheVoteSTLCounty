@@ -131,8 +131,9 @@ export default function PrecinctMap({ code, origin, polls }) {
       <div className="relative h-64 overflow-hidden rounded-md border border-border">
         {/* MapLibre adds its own classes to this element, so React must never
             change its className. Not positioned: .maplibregl-map sets
-            position: relative, which would override a position utility. */}
-        <div ref={containerRef} className="h-full w-full" />
+            position: relative, which would override a position utility.
+            Isolated, so the markers' z-index stays under the placeholder. */}
+        <div ref={containerRef} className="isolate h-full w-full" />
         {state === 'loading' && (
           <div
             data-testid="map-placeholder"
