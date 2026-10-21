@@ -195,6 +195,34 @@ describe('PrecinctPage', () => {
     expect(cardHeadings()).toContain(copy.cards.ballot);
   });
 
+  it("links the precinct's sample ballot PDF in a new tab", async () => {
+    routeFetch(byId);
+    renderAt('CC007');
+    await ready('CC007');
+    const card = screen.getByRole('region', { name: copy.cards.ballot });
+    const link = within(card).getByRole('link', { name: /^Open your sample ballot/ });
+    expect(link).toHaveAttribute('href', byId.features[0].attributes.html.match(/href=(\S+?)>/)[1]);
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveTextContent('CC-007.pdf');
+  });
+
+  it('links the official lookup in the ballot card when the link fails validation', async () => {
+    routeFetch(
+      withAttributes(byId, {
+        html: 'Sample Ballot: <a href=https://example.org/b.pdf>CC-007.pdf</a>',
+      }),
+    );
+    renderAt('CC007');
+    await ready('CC007');
+    const card = screen.getByRole('region', { name: copy.cards.ballot });
+    expect(card).toHaveTextContent(copy.ballot.missing);
+    expect(within(card).getByRole('link', { name: copy.officialLookup })).toHaveAttribute(
+      'href',
+      election.officialLookupUrl,
+    );
+    expect(within(card).queryByRole('link', { name: /sample ballot/i })).toBeNull();
+  });
+
   it('shows the municipality as the data gives it, and no line when it is empty', async () => {
     routeFetch(withAttributes(byId, { municipality: '' }));
     renderAt('CC007');
@@ -207,7 +235,7 @@ describe('PrecinctPage', () => {
     routeFetch(byId);
     renderAt('CC007');
     await ready('CC007');
-    const built = [copy.cards.polls];
+    const built = [copy.cards.polls, copy.cards.ballot];
     for (const name of cardHeadings().filter((heading) => !built.includes(heading))) {
       const card = screen.getByRole('region', { name });
       expect(within(card).getByRole('link', { name: copy.officialLookup })).toHaveAttribute(

@@ -89,7 +89,12 @@ function PrecinctResults({ code }) {
       {status && (
         <>
           <PrecinctStatusBanner status={status} />
-          <ResultsCards code={code} origin={origin} showBallot={status.showBallot} />
+          <ResultsCards
+            code={code}
+            origin={origin}
+            showBallot={status.showBallot}
+            ballotHtml={precinct.html}
+          />
         </>
       )}
     </>

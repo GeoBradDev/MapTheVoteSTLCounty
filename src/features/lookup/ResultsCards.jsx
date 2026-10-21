@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import election from '../../config/election.js';
 import PollsCard from './PollsCard.jsx';
+import SampleBallotCard from './SampleBallotCard.jsx';
 import { copy } from './resultsCopy.js';
 
 const linkClass = 'text-primary underline';
@@ -40,16 +41,21 @@ function PendingCard() {
 /**
  * The result cards, in order.
  * @param {{ code: string, origin: { lat: number, lng: number } | null,
- *   showBallot: boolean }} props `origin` is the looked-up point, in memory
- *   only. `showBallot` false hides the sample ballot card, for a precinct with
- *   nothing on the ballot.
+ *   showBallot: boolean, ballotHtml: unknown }} props `origin` is the
+ *   looked-up point, in memory only. `showBallot` false hides the sample ballot
+ *   card, for a precinct with nothing on the ballot. `ballotHtml` is the
+ *   precinct's `html` field, which only the sample ballot parser reads.
  */
-export default function ResultsCards({ code, origin, showBallot }) {
+export default function ResultsCards({ code, origin, showBallot, ballotHtml }) {
+  const body = {
+    polls: () => <PollsCard code={code} origin={origin} />,
+    ballot: () => <SampleBallotCard html={ballotHtml} />,
+  };
   return (
     <div className="mt-6 flex flex-col gap-4">
       {CARDS.filter((card) => showBallot || !card.ballot).map(({ key }) => (
         <Card key={key} title={copy.cards[key]}>
-          {key === 'polls' ? <PollsCard code={code} origin={origin} /> : <PendingCard />}
+          {body[key] ? body[key]() : <PendingCard />}
         </Card>
       ))}
     </div>
