@@ -56,6 +56,8 @@ const FIXTURES = {
   // Two more voting precincts, for the sample ballot card's links.
   'precinct-by-id-mer013.json': [precincts, byId('MER013')],
   'precinct-by-id-flo030.json': [precincts, byId('FLO030')],
+  // Special districts (neighborhood improvement, annexation), for the districts card.
+  'precinct-by-id-nw005.json': [precincts, byId('NW005')],
   'precinct-nonresidential.json': [precincts, byId('AP200')],
   'precinct-geometry.json': [
     precincts,

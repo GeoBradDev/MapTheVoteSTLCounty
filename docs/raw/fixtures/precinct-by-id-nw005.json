@@ -1,0 +1,333 @@
+{
+  "objectIdFieldName": "OBJECTID",
+  "uniqueIdField": {
+    "name": "OBJECTID",
+    "isSystemMaintained": true
+  },
+  "globalIdFieldName": "",
+  "geometryProperties": {
+    "shapeAreaFieldName": "Shape__Area",
+    "shapeLengthFieldName": "Shape__Length",
+    "units": "esriMeters"
+  },
+  "geometryType": "esriGeometryPolygon",
+  "spatialReference": {
+    "wkid": 102100,
+    "latestWkid": 3857
+  },
+  "fields": [
+    {
+      "name": "OBJECTID",
+      "type": "esriFieldTypeOID",
+      "alias": "OBJECTID",
+      "sqlType": "sqlTypeOther",
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "precinct",
+      "type": "esriFieldTypeString",
+      "alias": "precinct",
+      "sqlType": "sqlTypeOther",
+      "length": 6,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "precinct_type",
+      "type": "esriFieldTypeString",
+      "alias": "precinct_type",
+      "sqlType": "sqlTypeOther",
+      "length": 23,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "congressional_district_20",
+      "type": "esriFieldTypeString",
+      "alias": "congressional_district_20",
+      "sqlType": "sqlTypeOther",
+      "length": 35,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "congressional_district_25",
+      "type": "esriFieldTypeString",
+      "alias": "congressional_district_25",
+      "sqlType": "sqlTypeOther",
+      "length": 35,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "state_senate_20",
+      "type": "esriFieldTypeString",
+      "alias": "state_senate_20",
+      "sqlType": "sqlTypeOther",
+      "length": 24,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "legislative_district_20",
+      "type": "esriFieldTypeString",
+      "alias": "legislative_district_20",
+      "sqlType": "sqlTypeOther",
+      "length": 24,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "county_council_20",
+      "type": "esriFieldTypeString",
+      "alias": "county_council_20",
+      "sqlType": "sqlTypeOther",
+      "length": 25,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "township",
+      "type": "esriFieldTypeString",
+      "alias": "township",
+      "sqlType": "sqlTypeOther",
+      "length": 25,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "municipality",
+      "type": "esriFieldTypeString",
+      "alias": "municipality",
+      "sqlType": "sqlTypeOther",
+      "length": 31,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "ward",
+      "type": "esriFieldTypeString",
+      "alias": "ward",
+      "sqlType": "sqlTypeOther",
+      "length": 38,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "school",
+      "type": "esriFieldTypeString",
+      "alias": "school",
+      "sqlType": "sqlTypeOther",
+      "length": 59,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "junior_college_district",
+      "type": "esriFieldTypeString",
+      "alias": "junior_college_district",
+      "sqlType": "sqlTypeOther",
+      "length": 42,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "fire",
+      "type": "esriFieldTypeString",
+      "alias": "fire",
+      "sqlType": "sqlTypeOther",
+      "length": 51,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "ambulance",
+      "type": "esriFieldTypeString",
+      "alias": "ambulance",
+      "sqlType": "sqlTypeOther",
+      "length": 26,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "ambulance_subdistrict",
+      "type": "esriFieldTypeString",
+      "alias": "ambulance_subdistrict",
+      "sqlType": "sqlTypeOther",
+      "length": 19,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "library_district",
+      "type": "esriFieldTypeString",
+      "alias": "library_district",
+      "sqlType": "sqlTypeOther",
+      "length": 26,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "sewer",
+      "type": "esriFieldTypeString",
+      "alias": "sewer",
+      "sqlType": "sqlTypeOther",
+      "length": 37,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "light_district",
+      "type": "esriFieldTypeString",
+      "alias": "light_district",
+      "sqlType": "sqlTypeOther",
+      "length": 37,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "road",
+      "type": "esriFieldTypeString",
+      "alias": "road",
+      "sqlType": "sqlTypeOther",
+      "length": 254,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "community_improvement",
+      "type": "esriFieldTypeString",
+      "alias": "community_improvement",
+      "sqlType": "sqlTypeOther",
+      "length": 45,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "business_district",
+      "type": "esriFieldTypeString",
+      "alias": "business_district",
+      "sqlType": "sqlTypeOther",
+      "length": 33,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "transportation",
+      "type": "esriFieldTypeString",
+      "alias": "transportation",
+      "sqlType": "sqlTypeOther",
+      "length": 55,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "neighborhood_improvement_dist",
+      "type": "esriFieldTypeString",
+      "alias": "neighborhood_improvement_dist",
+      "sqlType": "sqlTypeOther",
+      "length": 29,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "annexation",
+      "type": "esriFieldTypeString",
+      "alias": "annexation",
+      "sqlType": "sqlTypeOther",
+      "length": 25,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "active",
+      "type": "esriFieldTypeString",
+      "alias": "active",
+      "sqlType": "sqlTypeOther",
+      "length": 4,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "districts",
+      "type": "esriFieldTypeString",
+      "alias": "districts",
+      "sqlType": "sqlTypeOther",
+      "length": 507,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "html",
+      "type": "esriFieldTypeString",
+      "alias": "html",
+      "sqlType": "sqlTypeOther",
+      "length": 267,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "in_election",
+      "type": "esriFieldTypeString",
+      "alias": "in_election",
+      "sqlType": "sqlTypeOther",
+      "length": 23,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "Shape__Area",
+      "type": "esriFieldTypeDouble",
+      "alias": "Shape__Area",
+      "sqlType": "sqlTypeDouble",
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "Shape__Length",
+      "type": "esriFieldTypeDouble",
+      "alias": "Shape__Length",
+      "sqlType": "sqlTypeDouble",
+      "domain": null,
+      "defaultValue": null
+    }
+  ],
+  "features": [
+    {
+      "attributes": {
+        "OBJECTID": 909,
+        "precinct": "NW005",
+        "precinct_type": "Voting Precinct",
+        "congressional_district_20": "US Representative District 1 (2022)",
+        "congressional_district_25": "US Representative District 1 (2025)",
+        "state_senate_20": "State Senate District 14",
+        "legislative_district_20": "State House District 70",
+        "county_council_20": "County Council District 2",
+        "township": "Northwest Township",
+        "municipality": "City of Hazelwood",
+        "ward": "City of Hazelwood Ward 4",
+        "school": "CUMULATIVE VOTING - Ferguson-Florissant R-2 School District",
+        "junior_college_district": "St. Louis Community College Subdistrict #1",
+        "fire": "Robertson Fire Protection District",
+        "ambulance": "",
+        "ambulance_subdistrict": "",
+        "library_district": "St. Louis County Library",
+        "sewer": "Metropolitan St. Louis Sewer District",
+        "light_district": "",
+        "road": "",
+        "community_improvement": "",
+        "business_district": "",
+        "transportation": "",
+        "neighborhood_improvement_dist": "Hazelwood Annexation Area NID",
+        "annexation": "Robertson Fire Annexation",
+        "active": "0",
+        "districts": "US Representative District 1 (2022)<br>US Representative District 1 (2025)<br>State Senate District 14<br>State House District 70<br>County Council District 2<br>Northwest Township<br>City of Hazelwood<br>City of Hazelwood Ward 4<br>CUMULATIVE VOTING - Ferguson-Florissant R-2 School District<br>St. Louis Community College Subdistrict #1<br>Robertson Fire Protection District<br>St. Louis County Library<br>Metropolitan St. Louis Sewer District<br>Hazelwood Annexation Area NID<br>Robertson Fire Annexation",
+        "html": "Sample Ballot: <a href=https://stlouiscovotes.maps.arcgis.com/sharing/rest/content/items/13582e2d793a40f79e5e9de07cad3c0f/data>NW-005.pdf</a>",
+        "in_election": "In Election",
+        "Shape__Area": 3125627.75,
+        "Shape__Length": 8806.635816526152
+      }
+    }
+  ]
+}

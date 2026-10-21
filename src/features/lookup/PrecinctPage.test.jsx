@@ -113,7 +113,7 @@ describe('PrecinctPage', () => {
     renderAt('CC007');
     expect(await ready('CC007')).toBe(liveRegion());
     expect(heading()).toHaveTextContent('Precinct CC007');
-    expect(screen.getByText(copy.unincorporated)).toBeInTheDocument();
+    expect(screen.getByTestId('municipality')).toHaveTextContent(copy.unincorporated);
     expect(screen.queryByRole('region', { name: copy.status.label })).toBeNull();
     expect(cardHeadings()).toEqual([
       copy.cards.polls,
@@ -139,7 +139,7 @@ describe('PrecinctPage', () => {
     await ready('AP200');
     const banner = screen.getByRole('region', { name: copy.status.label });
     expect(banner).toHaveTextContent(nonresidential.features[0].attributes.html);
-    expect(screen.getByText('City of Bridgeton')).toBeInTheDocument();
+    expect(screen.getByTestId('municipality')).toHaveTextContent('City of Bridgeton');
     expect(cardHeadings()).toEqual([
       copy.cards.polls,
       copy.cards.earlyVoting,
@@ -223,6 +223,28 @@ describe('PrecinctPage', () => {
     expect(within(card).queryByRole('link', { name: /sample ballot/i })).toBeNull();
   });
 
+  it("lists the precinct's districts from the county data", async () => {
+    routeFetch(byId);
+    renderAt('CC007');
+    await ready('CC007');
+    const card = screen.getByRole('region', { name: copy.cards.districts });
+    const terms = [...card.querySelectorAll('dt')].map((dt) => dt.textContent);
+    const values = [...card.querySelectorAll('dd')].map((dd) => dd.textContent);
+    expect(terms[0]).toBe(copy.districts.labels.congressional);
+    expect(values[0]).toBe('US Representative District 2');
+    expect(values).toContain(copy.unincorporated);
+    expect(card).toHaveTextContent(copy.districts.source);
+    expect(card).not.toHaveTextContent('2022');
+  });
+
+  it('shows the districts card for a Nonresidential Precinct too', async () => {
+    routeFetch(nonresidential);
+    renderAt('AP200');
+    await ready('AP200');
+    const card = screen.getByRole('region', { name: copy.cards.districts });
+    expect(within(card).getByText('City of Bridgeton Ward 1')).toBeInTheDocument();
+  });
+
   it('shows the municipality as the data gives it, and no line when it is empty', async () => {
     routeFetch(withAttributes(byId, { municipality: '' }));
     renderAt('CC007');
@@ -235,7 +257,7 @@ describe('PrecinctPage', () => {
     routeFetch(byId);
     renderAt('CC007');
     await ready('CC007');
-    const built = [copy.cards.polls, copy.cards.ballot];
+    const built = [copy.cards.polls, copy.cards.ballot, copy.cards.districts];
     for (const name of cardHeadings().filter((heading) => !built.includes(heading))) {
       const card = screen.getByRole('region', { name });
       expect(within(card).getByRole('link', { name: copy.officialLookup })).toHaveAttribute(

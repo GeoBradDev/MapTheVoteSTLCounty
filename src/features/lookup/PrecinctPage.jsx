@@ -94,6 +94,7 @@ function PrecinctResults({ code }) {
             origin={origin}
             showBallot={status.showBallot}
             ballotHtml={precinct.html}
+            precinct={precinct}
           />
         </>
       )}

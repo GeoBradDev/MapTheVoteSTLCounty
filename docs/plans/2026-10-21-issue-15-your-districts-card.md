@@ -42,7 +42,9 @@ Domain skills:
 5. School strips a leading "CUMULATIVE VOTING - " (any case) for display. No cumulative
    voting note is added (see Risks).
 6. No officeholder names, party labels or candidate data: the card shows only the official
-   precinct layer's district values and fixed labels.
+   precinct layer's district values and fixed labels. A short line under the list says the
+   values come from the St. Louis County Board of Elections precinct data (the same credit
+   the map uses).
 7. When no district has a value, the card says it could not find the districts and links
    the county's official lookup.
 8. Fixture tests: CC007 (unincorporated, no ward), MER013 (a ward, `No Sewer District`),
