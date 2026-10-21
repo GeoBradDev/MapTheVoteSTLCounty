@@ -4,11 +4,17 @@
 export const copy = {
   officialLookup: "county's official lookup",
   errorAfterLink: 'You can also use the',
+  // A lookup that could not finish (#18) never says the address was not
+  // found: only noMatch does, when the sources that answered had no single
+  // answer (README, Errors).
   errors: {
     noMatch:
-      'We could not find that address. Add your ZIP code, pick a suggestion as you type, or try Use my location.',
-    unavailable: 'Address search is not available right now. Use my location instead.',
-    failed: 'We could not look up your precinct right now. Try again.',
+      'We could not find that address. Check it, add your ZIP code, pick a suggestion as you type, or try Use my location.',
+    unavailable:
+      'Address search is not working right now, so we could not check that address. Try again in a minute, or try Use my location.',
+    failed:
+      "We could not look up your precinct right now: the county's precinct map did not answer. Try again in a minute.",
+    offline: 'You appear to be offline. Check your internet connection, then try again.',
   },
   // The credit next to the address box. The service and data names and links
   // come from the geocoder module (attribution in src/data/geocoder.js).

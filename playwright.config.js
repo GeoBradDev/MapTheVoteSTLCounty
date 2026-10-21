@@ -1,9 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// The accessibility run (#26): Chromium against the production build served by
-// `vite preview`, so build first (`npm run build`). The e2e spec answers the
-// county's ArcGIS layers from recorded fixtures and blocks every other outside
-// request, so a live outage cannot fail a pull request.
+// The accessibility run (#26) and the failure states (#18): Chromium against the
+// production build served by `vite preview`, so build first (`npm run build`).
+// The specs answer the county's ArcGIS layers from recorded fixtures and block
+// or simulate every other outside request, so a live outage cannot fail a pull
+// request.
 const PORT = 4173;
 
 export default defineConfig({

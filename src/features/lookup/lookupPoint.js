@@ -25,3 +25,11 @@ export function rememberLookupPoint(code, { lat, lng } = {}) {
 export function lookupPointFor(code) {
   return latest && latest.code === code ? { ...latest.point } : null;
 }
+
+/**
+ * Forgets the remembered point. Every new search calls it when it starts
+ * (#53), so a failed search never leaves an earlier voter's point behind.
+ */
+export function forgetLookupPoint() {
+  latest = null;
+}

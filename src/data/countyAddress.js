@@ -45,7 +45,8 @@ export const attribution = Object.freeze({
 export const TIMEOUT_MS = 2500;
 /**
  * How long the precinct check for an address with several records may take;
- * longer is no match, since the lookup cannot tell those records apart.
+ * longer is no match (or, with reportUnavailable, `unavailable`, #18), since
+ * the lookup cannot tell those records apart.
  */
 export const PRECINCT_CHECK_MS = 4000;
 /** The hosted copy is the last county source, so it gets a little longer. */
@@ -311,9 +312,12 @@ function distinctPoints(records) {
 
 /**
  * @typedef {{ status: 'match', place: import('./geocoder.js').GeocodedPlace, confirmed: boolean }
- *   | { status: 'none' } | { status: 'ambiguous' }} FindResult
+ *   | { status: 'none' } | { status: 'ambiguous' } | { status: 'unavailable' }} FindResult
  *   `confirmed` is true when a typed ZIP or town (not St. Louis) pins the
- *   match down; see isConfirmed in addressMatch.js.
+ *   match down; see isConfirmed in addressMatch.js. `unavailable` comes only
+ *   with `reportUnavailable` (#18): the precinct check failed or was slow, so
+ *   the records could not be told apart. Like `ambiguous`, it is never a
+ *   place and never a reason to ask another source.
  */
 
 /**
@@ -403,10 +407,10 @@ export function createCountyAddressSource({
     /**
      * The county record the text names.
      * @param {string} input
-     * @param {{ signal?: AbortSignal }} [options]
+     * @param {{ signal?: AbortSignal, reportUnavailable?: boolean }} [options]
      * @returns {Promise<FindResult>}
      */
-    async find(input, { signal } = {}) {
+    async find(input, { signal, reportUnavailable = false } = {}) {
       const typed = String(input ?? '').trim();
       const where = findWhere(typed);
       if (!where) {
@@ -479,7 +483,8 @@ export function createCountyAddressSource({
       const points = distinctPoints(pool);
       if (points.length > 1) {
         const codes = await precinctsWithin(points, signal);
-        if (!codes || codes.size > 1) return { status: 'ambiguous' };
+        if (!codes) return { status: reportUnavailable ? 'unavailable' : 'ambiguous' };
+        if (codes.size > 1) return { status: 'ambiguous' };
       }
       return {
         status: 'match',

@@ -27,7 +27,9 @@ import {
 } from './cityAddress.js';
 import { attribution as photonAttribution, createPhotonGeocoder } from './photon.js';
 
-export { GeocoderUnavailableError } from './geocoderError.js';
+import { GeocoderUnavailableError } from './geocoderError.js';
+
+export { GeocoderUnavailableError };
 
 /**
  * A suggestion for partly typed text. A source may add its own fields
@@ -53,10 +55,16 @@ export { GeocoderUnavailableError } from './geocoderError.js';
  * @property {(text: string, options?: { signal?: AbortSignal }) => Promise<Suggestion[]>} suggest
  *   Up to a few suggestions for partly typed text. Rejects with an AbortError
  *   when the signal aborts.
- * @property {(query: string | Suggestion, options?: { signal?: AbortSignal }) =>
+ * @property {(query: string | Suggestion, options?: {
+ *   signal?: AbortSignal, reportUnavailable?: boolean }) =>
  *   Promise<GeocodedPlace | null>} geocode The best match for typed text or a
  *   suggestion, or null when nothing matches. Rejects when the provider cannot
- *   answer.
+ *   answer. With `reportUnavailable` (#18), a null that only a failed step
+ *   caused rejects with a GeocoderUnavailableError instead, so the voter
+ *   hears "try again", not "no such address": the City check failing, the
+ *   county's precinct check failing (find() answers `unavailable`), the
+ *   fallback down after a county no match, or no county source answering
+ *   and the fallback finding nothing. It never turns a failure into a place.
  */
 
 /** Who to credit for address search, shown next to the address box. */
@@ -133,9 +141,16 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
   // with the City's own geocoder, unless the text holds a ZIP entirely
   // outside the City. A City address that fits is the answer (the City
   // referral, #8), unless it is in the same ZIP as the place found; that, one
-  // the text could mean but not exactly, or a City geocoder that fails or is
-  // slow, is no match. Never the county place then.
-  async function checkedForCity(text, place, signal) {
+  // the text could mean but not exactly, is no match; a City geocoder that
+  // fails or is slow is no match too, or with reportUnavailable a
+  // GeocoderUnavailableError (#18). Never the county place then.
+  async function checkedForCity(text, place, signal, reportUnavailable) {
+    // What a failed or unreadable City check answers: no match, or with
+    // reportUnavailable a rejection. Never the county place.
+    const failed = () => {
+      if (reportUnavailable) throw new GeocoderUnavailableError('The City check did not answer');
+      return null;
+    };
     if (!place || !couldBeCounty(place) || !needsCityCheck(text)) return place;
     try {
       const city = await cityCheck.find(text, streetOf(place.label), { signal });
@@ -148,10 +163,12 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
         return zip && zip === typedZip(city.place?.label ?? '') ? null : city.place;
       }
       if (city?.status === 'none') return place;
-      return null;
-    } catch {
+      if (city?.status === 'ambiguous') return null;
+      return failed();
+    } catch (error) {
       if (signal?.aborted) throw abortError();
-      return null;
+      if (error instanceof GeocoderUnavailableError && reportUnavailable) throw error;
+      return failed();
     }
   }
 
@@ -172,7 +189,7 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
       }
     },
 
-    async geocode(query, { signal } = {}) {
+    async geocode(query, { signal, reportUnavailable = false } = {}) {
       // A picked suggestion is geocoded again by its label, county first, so
       // every rule applies to it as to typed text; a Photon suggestion's own
       // place could be one house of two the county knows.
@@ -181,23 +198,40 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
       if (!text) return null;
       // What the voter typed, for the City check.
       const typed = picked ? withoutZip(text) : text;
-      const county = await firstAnswer((source) => source.find(text, { signal }), signal);
+      // The option goes to a source only when set, as it changes what find()
+      // may answer.
+      const findOptions = reportUnavailable ? { signal, reportUnavailable } : { signal };
+      const county = await firstAnswer((source) => source.find(text, findOptions), signal);
       if (signal?.aborted) throw abortError();
       // The official data has two addresses that fit: ask for a ZIP.
       if (county?.status === 'ambiguous') return null;
+      // The county has the address but could not check which precinct its
+      // records are in (#18): no place, and no other source.
+      if (county?.status === 'unavailable') {
+        if (!reportUnavailable) return null;
+        throw new GeocoderUnavailableError('The county precinct check did not answer');
+      }
       // A county record in the City already gets the City's referral.
-      if (county?.status === 'match') return checkedForCity(typed, county.place, signal);
+      if (county?.status === 'match') {
+        return checkedForCity(typed, county.place, signal, reportUnavailable);
+      }
       let place;
       try {
         place = await fallback.geocode(text, { signal });
       } catch (error) {
         if (signal?.aborted) throw abortError();
-        // The county answered no match; with Photon down, that is the answer.
-        if (county) return null;
+        // The county answered no match; with Photon down, that is the answer,
+        // unless the caller wants to know the search could not finish.
+        if (county && !reportUnavailable) return null;
         throw error;
       }
       if (signal?.aborted) throw abortError();
-      return checkedForCity(typed, place, signal);
+      // No county source answered and Photon has nothing: the official list
+      // was never asked, so the search could not finish.
+      if (!place && !county && reportUnavailable) {
+        throw new GeocoderUnavailableError('No county source answered');
+      }
+      return checkedForCity(typed, place, signal, reportUnavailable);
     },
   });
 }

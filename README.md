@@ -10,7 +10,7 @@ npm run dev           # start the dev server
 npm run build         # build the static site into dist/
 npm run preview       # serve dist/ locally
 npm test              # run the tests once (npm run test:watch to watch)
-npm run test:e2e      # accessibility checks in Chromium; run npm run build first
+npm run test:e2e      # accessibility and failure-state checks in Chromium; run npm run build first
 npm run test:perf     # Lighthouse performance budgets; run npm run build first
 npm run lint          # ESLint, including jsx-a11y rules
 npm run format        # format with Prettier (npm run format:check to check only)
@@ -69,7 +69,7 @@ that table, so change both together.
 
 ## Accessibility
 
-The target is WCAG 2.1 AA (#26). `npm run test:e2e` runs `e2e/a11y.e2e.js` with Playwright
+The target is WCAG 2.1 AA (#26). `npm run test:e2e` runs `e2e/a11y.e2e.js` (and the failure states of #18, `e2e/failures.e2e.js`) with Playwright
 against the production build (`vite preview`), at 360 px and 1280 px. On each key route it
 runs axe-core (WCAG 2.1 A and AA plus best practice, contrast included) and checks for
 horizontal scroll (also with the WCAG text spacing override), one `h1`, the page language and
@@ -241,8 +241,8 @@ City address, for example) or neither layer answers, it falls back to the public
 [Photon](https://photon.komoot.io) geocoder (OpenStreetMap data). Every answer that could get
 a county precinct is then checked with the City of St. Louis's own geocoder, unless the text
 holds a ZIP entirely outside the City: when the City has the same address in another ZIP, the
-voter gets the City referral, when both list it in one ZIP the answer is no match, and when the City geocoder fails or is slow, the answer is no match, never a
-county precinct (#58). `src/data/geocoder.js` builds that chain, `src/data/countyAddress.js`,
+voter gets the City referral, when both list it in one ZIP the answer is no match, and when the City geocoder fails or is slow, the app says address search is not working,
+never a county precinct (#58, #18). `src/data/geocoder.js` builds that chain, `src/data/countyAddress.js`,
 `src/data/photon.js` and `src/data/cityAddress.js` implement the sources and
 `src/data/addressMatch.js` holds the strict matching rules they share; a test fails if any
 other app file names a provider. docs/data.md (Geocoding, County address points, City check)
@@ -268,6 +268,31 @@ the chain puts any address in the wrong precinct, a City address loses its refer
 shared address is not no match. "No match" is
 allowed: the app then points the voter to "Use my location" and the county's official
 lookup. Results are recorded in `docs/data.md` under Geocoding.
+
+## Errors
+
+When a service is slow or down, the app says so and offers a way forward (#18); it never
+guesses a precinct. "We could not find that address" means the sources that answered had
+no single answer: none has the address, two addresses or two precincts fit, the county and
+the City both list it in one ZIP, or the only fit is not exact. A lookup that could not finish says address search is not working instead: every
+source down, the City check or the county's precinct check failing or slow, Photon down after a county no
+match, or no county layer answering with Photon finding nothing. (With the live county
+layer down, the 2023 hosted copy's no match counts as an answer.)
+Every source down was already a `GeocoderUnavailableError`; `createGeocoder` reports the
+other cases that way only when the caller passes `reportUnavailable`, which the app does;
+without it the chain answers no match for them, as the #49 and #58 tests and
+`scripts/check-geocoder.mjs` expect. Every lookup error links the
+county's official lookup next to Use my location, and every one but a no match has a Try
+again button that repeats the same search, or the same device location without asking the
+device again, until the voter edits the address. The precinct page and its polling places
+and early voting cards show their own failures, each with Try again (the map still removes
+itself, #13); a failed page load moves focus to its message.
+After `SLOW_MS` (`src/features/lookup/slowNotice.js`), the lookup and the precinct page say
+they are still working. When the browser reports no connection, the lookup's and the precinct
+page's messages say the voter appears to be offline (cached polling places wait for the PWA, #25). A page that throws
+while rendering shows a plain error screen (`src/components/ErrorBoundary.jsx`), and
+`src/main.jsx` keeps React from logging caught errors. `e2e/failures.e2e.js` breaks each
+service in turn (network refusal, a request that never answers, 5xx) in a real browser.
 
 ## Privacy
 

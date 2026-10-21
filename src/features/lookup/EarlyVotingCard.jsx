@@ -8,6 +8,8 @@ import { distanceOrigin } from './distanceOrigin.js';
 import { earlyVotingStatus, formatLongDate, scheduleLines } from './earlyVoting.js';
 import { directionsLinks, isAppleMobile, nearestPolls } from './nearbyPolls.js';
 import { copy, sourceName } from './resultsCopy.js';
+import RetryButton from './RetryButton.jsx';
+import { useRetry } from './useRetry.js';
 
 const linkClass = 'text-primary underline';
 const tapLinkClass = `inline-flex min-h-11 items-center ${linkClass}`;
@@ -122,22 +124,30 @@ function Schedules({ now }) {
 export default function EarlyVotingCard({ code, origin }) {
   // The absentee topic, once published (#22, #23); until then, the index.
   const absentee = getTopic(CARD_TOPICS.absentee);
-  // { rows } once loaded, { error: true } on failure.
+  // { rows } once loaded, { error: true, attempt } on failure.
   const [result, setResult] = useState(null);
+  // A failed load can be tried again; it stays shown while it is (#18).
+  const { attempt, loading, retry, done, targetRef } = useRetry();
   const [showAll, setShowAll] = useState(false);
   const focusRef = useRef(null);
   const now = useNow();
 
   useEffect(() => {
     let current = true;
-    Promise.all([getAbsenteeSites(), distanceOrigin(code, origin)]).then(
-      ([sites, point]) => current && setResult({ rows: nearestPolls(sites, point) }),
-      () => current && setResult({ error: true }),
-    );
+    Promise.all([getAbsenteeSites(), distanceOrigin(code, origin)])
+      .then(
+        ([sites, point]) => ({ rows: nearestPolls(sites, point) }),
+        () => ({ error: true, attempt }),
+      )
+      .then((next) => {
+        if (!current) return;
+        setResult(next);
+        done();
+      });
     return () => {
       current = false;
     };
-  }, [code, origin]);
+  }, [code, origin, attempt, done]);
 
   useEffect(() => {
     if (showAll) focusRef.current?.focus();
@@ -149,7 +159,7 @@ export default function EarlyVotingCard({ code, origin }) {
   const apple = isAppleMobile(globalThis.navigator);
 
   return (
-    <div className="mt-2">
+    <div ref={targetRef} tabIndex={-1} className="mt-2">
       <p>{t.intro}</p>
 
       {!result && (
@@ -160,9 +170,15 @@ export default function EarlyVotingCard({ code, origin }) {
       )}
 
       {result?.error && (
-        <p className="mt-3">
-          {t.failed} <OfficialLookupLink />.
-        </p>
+        <>
+          <p role="alert" className="mt-3">
+            {/* A new node per attempt, so a repeated failure is announced again. */}
+            <span key={result.attempt}>
+              {t.failed} <OfficialLookupLink />.
+            </span>
+          </p>
+          <RetryButton onRetry={retry} busy={loading} className="mt-2" />
+        </>
       )}
 
       {rows && rows.length === 0 && (

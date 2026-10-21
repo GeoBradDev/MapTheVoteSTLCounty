@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useLocation, useParams } from 'wouter';
 import election from '../../config/election.js';
 import {
@@ -10,12 +10,15 @@ import {
   PRECINCT_CODE,
 } from '../../data/arcgis.js';
 import AddressLookup from './AddressLookup.jsx';
+import { copy as errorCopy, isOffline } from './errorCopy.js';
 import { lookupPointFor } from './lookupPoint.js';
 import { precinctStatus } from './precinctStatus.js';
 import PrecinctStatusBanner from './PrecinctStatusBanner.jsx';
 import ResultsCards, { ResultsSkeleton, SkeletonLine } from './ResultsCards.jsx';
 import { copy } from './resultsCopy.js';
+import RetryButton from './RetryButton.jsx';
 import ShareLink from './ShareLink.jsx';
+import { useSlowNotice } from './slowNotice.js';
 
 const linkClass = 'text-primary underline';
 
@@ -32,8 +35,14 @@ function municipalityName(value) {
  * @param {{ code: string }} props
  */
 function PrecinctResults({ code }) {
-  // { precinct } once loaded, { error: 'notFound' | 'failed' } on failure.
+  // { precinct } once loaded, { error: 'notFound' | 'failed' | 'offline',
+  // attempt } on failure. A failed load stays shown while it is retried.
   const [result, setResult] = useState(null);
+  // Each "Try again" is a new attempt; `loading` is the one in flight, if any.
+  const [attempt, setAttempt] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const slow = useSlowNotice(loading ? attempt : null);
+  const errorRef = useRef(null);
   // The point of the lookup that opened this page, if any. Memory only: a
   // reload or a shared link has none.
   const [origin] = useState(() => lookupPointFor(code));
@@ -46,7 +55,10 @@ function PrecinctResults({ code }) {
   // never with the URL text.
   const titled = validCode && result?.error !== 'notFound';
   const title = titled ? copy.pageTitle(code) : copy.notFoundTitle;
-  useEffect(() => {
+  // Layout effects here and for focus below: they run in the same commit as
+  // the content they belong to, so nothing (a screen reader, or a test) sees
+  // the new content before its title or focus.
+  useLayoutEffect(() => {
     const previous = document.title;
     document.title = title;
     return () => {
@@ -67,19 +79,49 @@ function PrecinctResults({ code }) {
       getAbsenteeSites().catch(ignore);
       if (!origin) getPrecinctGeometry(code).catch(ignore);
     }
+    const done = (next) => {
+      if (!current) return;
+      setResult(next);
+      setLoading(false);
+    };
     getPrecinctById(code).then(
-      (precinct) => current && setResult({ precinct }),
-      (error) => current && setResult({ error: error instanceof NotFound ? 'notFound' : 'failed' }),
+      (precinct) => done({ precinct }),
+      (error) => {
+        let kind = 'failed';
+        if (error instanceof NotFound) kind = 'notFound';
+        else if (isOffline()) kind = 'offline';
+        done({ error: kind, attempt });
+      },
     );
     return () => {
       current = false;
     };
-  }, [code, validCode, origin]);
+  }, [code, validCode, origin, attempt]);
 
   const precinct = result?.precinct;
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (precinct) headingRef.current?.focus();
   }, [precinct]);
+
+  // A load that failed for a reason other than "not found" moves focus to its
+  // message and "Try again" (#18), unless focus is already there (on the
+  // retry button), so the voter lands on the way forward. A retry that ends
+  // in "not found" takes the focused button away, so the message takes focus.
+  const retryable = result?.error && result.error !== 'notFound';
+  useLayoutEffect(() => {
+    if (!result?.error) return;
+    const block = errorRef.current;
+    const focused = document.activeElement;
+    const lost = !focused || focused === document.body;
+    const move = retryable ? !block?.contains(focused) : attempt > 0 && lost;
+    if (move) block?.focus();
+  }, [retryable, result, attempt]);
+
+  function retry() {
+    if (loading) return;
+    setLoading(true);
+    setAttempt((n) => n + 1);
+  }
 
   const status = precinct ? precinctStatus(precinct) : null;
   const municipality = municipalityName(precinct?.municipality);
@@ -112,16 +154,26 @@ function PrecinctResults({ code }) {
 
       {!result && <ResultsSkeleton />}
 
-      <p role="alert" className="mt-6 empty:hidden">
-        {result?.error && (
-          <>
-            {copy.errors[result.error]}{' '}
-            <a href={election.officialLookupUrl} rel="noreferrer" className={linkClass}>
-              {copy.officialLookup}
-            </a>
-            .
-          </>
-        )}
+      <div ref={errorRef} tabIndex={-1} className={result?.error ? 'mt-6' : undefined}>
+        <p role="alert" className="empty:hidden">
+          {result?.error && (
+            // A new node per attempt, so a repeated failure is announced again.
+            <span key={result.attempt ?? 0}>
+              {copy.errors[result.error]}{' '}
+              <a href={election.officialLookupUrl} rel="noreferrer" className={linkClass}>
+                {copy.officialLookup}
+              </a>
+              .
+            </span>
+          )}
+        </p>
+        {retryable && <RetryButton onRetry={retry} busy={loading} className="mt-3" />}
+      </div>
+
+      {/* Below the skeleton and the error, so it pushes nothing down when it
+          appears (#27). */}
+      <p role="status" className="mt-6 empty:hidden">
+        {slow ? errorCopy.slow : ''}
       </p>
 
       {result?.error === 'notFound' && (

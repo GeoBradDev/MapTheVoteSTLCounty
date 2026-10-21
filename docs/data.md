@@ -431,9 +431,11 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
   precinct layer (`getPrecinctCodesAtPoints` in `src/data/arcgis.js`), sent only when
   the address has more than one point, and capped at 4 s. Records that are partly in
   St. Louis City and partly in the county (6200 Enright Ave 63130: 27 City units, 31 in
-  University City), two precincts, or a failed or slow check is no match, with no
-  fallback; the voter is pointed to "Use my location" and the county's official
-  lookup, or can type the unit. A scan of the hosted copy found about 20 such
+  University City) or two precincts is no match, with no fallback; the voter is pointed
+  to "Use my location" and the county's official lookup, or can type the unit. A failed
+  or slow check is no match too, with no fallback, but the app asks for
+  `reportUnavailable` and so tells the voter that address search is not working and to
+  try again (#18). A scan of the hosted copy found about 20 such
   single-town complexes and about 110 addresses with a unit in another town.
 - **Not homes:** records for utility poles, cell towers, billboards, ATMs and
   substations (`UNITDESC` `UP`, `CELL TOWER`, `BILLBOARD`, `ATM`, `SUBSTATION`) are
@@ -461,7 +463,9 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
   error body, malformed body, too many records, or no answer in 2.5 s for the live
   layer, 3 s for the hosted copy): the next source. Every source unavailable is a
   `GeocoderUnavailableError`; a county "no match" with Photon unavailable is no
-  match. The hosted copy is from 2023: when it answers, an address that became two
+  match, and so is every county source unavailable with Photon finding nothing, except
+  that with `reportUnavailable` (which the app passes, #18) both are a
+  `GeocoderUnavailableError`: the search could not finish. The hosted copy is from 2023: when it answers, an address that became two
   houses since then still resolves to the one it knows. That needs the live layer to
   be down at the same time, and the owner chose the copy as the first fallback knowing
   it is older.
@@ -541,12 +545,14 @@ answer with the typed text itself:
 - **A City parcel the text could mean but not exactly** (its street has a direction the
   text left out, like `1200 Market Pl` and the City's 1200 N Market Pl): no match.
 - **The City geocoder unavailable** (network error, non-2xx, error body, malformed body,
-  or no answer in 4 s): no match, never the county place. The voter gets "Use my
-  location" and the county's official lookup.
+  or no answer in 4 s): never the county place. Without `reportUnavailable` it is no
+  match; the app passes it (#18), so the voter is told address search is not working,
+  with Try again, "Use my location" and the county's official lookup.
 - **Cost:** a county voter whose number and street the City also has in another ZIP, who
   types no ZIP, a ZIP that crosses the City line, or picks the suggestion, gets the City
-  referral; typing a county-only ZIP gets the precinct. A City geocoder outage makes every lookup without a county-only ZIP no
-  match, picks of a suggestion included. The owner accepted both: neither sends a voter to a wrong county precinct.
+  referral; typing a county-only ZIP gets the precinct. A City geocoder outage makes every lookup without a county-only ZIP whose
+  answer could get a county precinct fail (shown as address search not working, #18), picks
+  of a suggestion included. The owner accepted both: neither sends a voter to a wrong county precinct.
 - **Not done:** looking up City addresses the county does not have (#57).
 
 `node scripts/check-geocoder.mjs`, 2026-10-21, rerun with the City check (#58): the 10 polling place addresses

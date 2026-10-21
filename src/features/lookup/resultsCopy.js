@@ -212,6 +212,9 @@ export const copy = {
   },
   errors: {
     notFound: 'We could not find that precinct. Search for your address, or use the',
-    failed: 'We could not load this precinct right now. Try again, or use the',
+    failed:
+      "We could not load this precinct right now. The county's precinct data may be slow or down. Try again in a minute, or use the",
+    offline:
+      'You appear to be offline, so we could not load this precinct. Check your internet connection and try again, or use the',
   },
 };

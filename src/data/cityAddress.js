@@ -6,8 +6,8 @@
 // precinct. Called straight from the browser: no proxy, no server of ours, no
 // key. Only the house number and street go, in a POST body (never a URL), with
 // no cookies, no referrer and no browser cache. Every failure becomes a
-// GeocoderUnavailableError; src/data/geocoder.js then answers no match, never
-// the county place.
+// GeocoderUnavailableError; src/data/geocoder.js then answers no match (or,
+// with reportUnavailable, rejects as unavailable, #18), never the county place.
 import { CITY_COUNTY, labelOf, matchesStreet, typedZip, UNIT } from './addressMatch.js';
 import { GeocoderUnavailableError } from './geocoderError.js';
 
@@ -21,7 +21,10 @@ export const attribution = Object.freeze({
   service: 'address search',
 });
 
-/** How long the City check may take; longer is no match. */
+/**
+ * How long the City check may take; longer is no match, or with
+ * reportUnavailable an unavailable search (#18). Never the county place.
+ */
 export const TIMEOUT_MS = 4000;
 
 /**

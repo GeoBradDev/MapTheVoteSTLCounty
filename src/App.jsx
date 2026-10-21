@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Route, Switch, useLocation } from 'wouter';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 import NotFoundPage from './components/NotFoundPage.jsx';
 import SiteFooter from './components/SiteFooter.jsx';
 import LearnPage from './features/learn/LearnPage.jsx';
@@ -57,6 +58,7 @@ function usePageArrival() {
 
 export default function App() {
   usePageArrival();
+  const [location] = useLocation();
   return (
     <div className="flex min-h-screen flex-col bg-surface text-ink">
       <a
@@ -66,14 +68,18 @@ export default function App() {
         Skip to main content
       </a>
       <main id="main" tabIndex={-1} className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
-        <Switch>
-          <Route path="/" component={HomePage} />
-          <Route path="/p/:precinct" component={PrecinctPage} />
-          <Route path="/learn" component={LearnPage} />
-          <Route path="/learn/:topic" component={LearnTopicPage} />
-          <Route path="/privacy" component={PrivacyPage} />
-          <Route component={NotFoundPage} />
-        </Switch>
+        {/* A page that throws shows a way forward, not a blank screen (#18);
+            a new location starts fresh. */}
+        <ErrorBoundary key={location}>
+          <Switch>
+            <Route path="/" component={HomePage} />
+            <Route path="/p/:precinct" component={PrecinctPage} />
+            <Route path="/learn" component={LearnPage} />
+            <Route path="/learn/:topic" component={LearnTopicPage} />
+            <Route path="/privacy" component={PrivacyPage} />
+            <Route component={NotFoundPage} />
+          </Switch>
+        </ErrorBoundary>
       </main>
       <SiteFooter />
     </div>

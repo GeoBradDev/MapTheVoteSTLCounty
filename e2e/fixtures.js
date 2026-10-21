@@ -1,6 +1,6 @@
 // The county's ArcGIS layers answered from recorded fixtures, for the browser
-// runs: the accessibility checks (a11y.e2e.js) and the Lighthouse run
-// (lighthouse.js). Neither calls a live service, so an outage cannot fail a
+// runs: the accessibility checks (a11y.e2e.js), the failure states
+// (failures.e2e.js) and the Lighthouse run (lighthouse.js). Neither calls a live service, so an outage cannot fail a
 // pull request.
 import { readFileSync } from 'node:fs';
 import election from '../src/config/election.js';
