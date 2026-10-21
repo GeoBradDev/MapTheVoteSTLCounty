@@ -53,6 +53,9 @@ const FIXTURES = {
   // St. Louis City, outside the county: no features.
   'precinct-at-point-outside.json': [precincts, pointQuery(-90.2, 38.63)],
   'precinct-by-id.json': [precincts, byId('CC007')],
+  // Two more voting precincts, for the sample ballot card's links.
+  'precinct-by-id-mer013.json': [precincts, byId('MER013')],
+  'precinct-by-id-flo030.json': [precincts, byId('FLO030')],
   'precinct-nonresidential.json': [precincts, byId('AP200')],
   'precinct-geometry.json': [
     precincts,

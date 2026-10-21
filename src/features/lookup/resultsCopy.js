@@ -36,7 +36,7 @@ export const copy = {
     ballot: 'Sample ballot',
     earlyVoting: 'Early voting',
     districts: 'Your districts',
-    // Until each card is built (#14, #16, #15).
+    // Until each card is built (#16, #15).
     pending: 'For now, find this in the',
   },
   polls: {
@@ -74,6 +74,16 @@ export const copy = {
     },
     failed: 'We could not load polling places right now. Find them with the',
     none: 'We could not find polling places near here. Find them with the',
+  },
+  ballot: {
+    // Neutral on purpose: what the document holds, nothing about candidates.
+    intro: 'The sample ballot shows the contests and measures on your ballot.',
+    open: 'Open your sample ballot (PDF)',
+    // Read after the link text and file name by screen readers only. The
+    // county serves the PDF as a download, so most browsers save it rather
+    // than show it in the new tab.
+    newTab: '(opens a PDF in a new tab, or downloads it)',
+    missing: 'We could not find the sample ballot for this precinct. Find it with the',
   },
   map: {
     /** @param {string} code */
