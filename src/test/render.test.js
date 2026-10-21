@@ -9,9 +9,11 @@ import { parse } from 'yaml';
 import viteConfig from '../../vite.config.js';
 import election from '../config/election.js';
 import { DEFAULT_BASE_URL as PHOTON } from '../data/photon.js';
+import { BASEMAP_STYLE_URL } from '../features/lookup/basemap.js';
 import { ASSET_HEADERS, SHELL_HEADERS } from '../../scripts/smoke.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
+const BASEMAP = new URL(BASEMAP_STYLE_URL).origin;
 const SHELL_PATHS = ['/', '/index.html', '/p/CC007', '/learn', '/learn/voter-id'];
 const ASSET_PATH = '/assets/index-abc123.js';
 // Every kind of path the site serves, for the overlap check.
@@ -203,9 +205,9 @@ describe('Content-Security-Policy', () => {
       'default-src': ["'self'"],
       'script-src': ["'self'"],
       'style-src': ["'self'"],
-      'img-src': ["'self'"],
+      'img-src': ["'self'", BASEMAP],
       'font-src': ["'self'"],
-      'connect-src': ["'self'", new URL(election.serviceRoot).origin, PHOTON],
+      'connect-src': ["'self'", new URL(election.serviceRoot).origin, PHOTON, BASEMAP],
       'manifest-src': ["'self'"],
       'object-src': ["'none'"],
       'base-uri': ["'self'"],

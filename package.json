@@ -16,6 +16,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "maplibre-gl": "^6.15.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "wouter": "^3.13.0"

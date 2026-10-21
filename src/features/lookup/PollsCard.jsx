@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import election from '../../config/election.js';
 import { getPolls, getPrecinctGeometry } from '../../data/arcgis.js';
 import { directionsLinks, isAppleMobile, nearestPolls, polygonCenter } from './nearbyPolls.js';
+import PrecinctMap from './PrecinctMap.jsx';
 import { copy } from './resultsCopy.js';
 
 const linkClass = 'text-primary underline';
@@ -116,6 +117,8 @@ export default function PollsCard({ code, origin }) {
   }, [focusFrom]);
 
   const rows = result?.rows;
+  // One array per change, so the map redraws its markers only when the list does.
+  const shownRows = useMemo(() => rows?.slice(0, shown), [rows, shown]);
   const apple = isAppleMobile(globalThis.navigator);
 
   function showMore() {
@@ -148,8 +151,9 @@ export default function PollsCard({ code, origin }) {
       {rows && rows.length > 0 && (
         <>
           {!origin && <p className="text-muted">{copy.polls.fromCenter(code)}</p>}
+          <PrecinctMap code={code} origin={origin} polls={shownRows} />
           <ol aria-label={copy.polls.listLabel} className="mt-3 list-decimal space-y-3 pl-6">
-            {rows.slice(0, shown).map((poll, i) => (
+            {shownRows.map((poll, i) => (
               <PollRow
                 key={`${poll.loc}:${i}`}
                 poll={poll}

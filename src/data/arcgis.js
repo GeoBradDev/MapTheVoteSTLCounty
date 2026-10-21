@@ -190,14 +190,7 @@ export async function getPrecinctById(code) {
   return normalize(feature.attributes);
 }
 
-/**
- * A precinct's outline for the map, simplified to about 10 m.
- * @param {string} code A precinct code like CC007.
- * @returns {Promise<object>} A GeoJSON Feature in lat/lng.
- * @throws {NotFound} When the code is malformed or no precinct has it.
- */
-export async function getPrecinctGeometry(code) {
-  checkCode(code);
+async function fetchPrecinctGeometry(code) {
   const body = await query('precincts', {
     where: `precinct='${code}'`,
     outFields: 'precinct',
@@ -210,6 +203,30 @@ export async function getPrecinctGeometry(code) {
   const feature = body.features[0];
   if (!feature) throw new NotFound(`No precinct ${code}`);
   return feature;
+}
+
+// The latest precinct's outline request, shared by the polling places card
+// and the map so one page asks once.
+let outline;
+
+/**
+ * A precinct's outline for the map, simplified to about 10 m. The latest
+ * precinct's request is shared by every caller; a failed fetch is not kept, so
+ * the next call tries again.
+ * @param {string} code A precinct code like CC007.
+ * @returns {Promise<object>} A GeoJSON Feature in lat/lng.
+ * @throws {NotFound} When the code is malformed or no precinct has it.
+ */
+export async function getPrecinctGeometry(code) {
+  checkCode(code);
+  if (outline?.code !== code) {
+    const entry = { code, promise: fetchPrecinctGeometry(code) };
+    outline = entry;
+    entry.promise.catch(() => {
+      if (outline === entry) outline = undefined;
+    });
+  }
+  return outline.promise;
 }
 
 let polls;

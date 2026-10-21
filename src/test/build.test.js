@@ -68,6 +68,7 @@ describe('production build', () => {
   let outDir;
   let css = '';
   let html = '';
+  let js = {};
 
   beforeAll(async () => {
     outDir = await mkdtemp(path.join(os.tmpdir(), 'mapthevote-build-'));
@@ -81,6 +82,12 @@ describe('production build', () => {
     const files = (await readdir(assets)).filter((f) => f.endsWith('.css'));
     css = (await Promise.all(files.map((f) => readFile(path.join(assets, f), 'utf8')))).join('\n');
     html = await readFile(path.join(outDir, 'index.html'), 'utf8');
+    const scripts = (await readdir(assets)).filter((f) => f.endsWith('.js'));
+    js = Object.fromEntries(
+      await Promise.all(
+        scripts.map(async (f) => [f, await readFile(path.join(assets, f), 'utf8')]),
+      ),
+    );
   }, 60_000);
 
   afterAll(async () => {
@@ -108,6 +115,26 @@ describe('production build', () => {
     expect(html).not.toMatch(/\son[a-z]+=/i);
     const cssUrls = [...css.matchAll(/url\(\s*['"]?([^'")]+)/g)].map((m) => m[1]);
     expect(cssUrls.filter((u) => /^(?:[a-z]+:|\/\/)/i.test(u))).toEqual([]);
+  });
+
+  // The map (#13) is extra help: MapLibre must not slow the first load.
+  it('keeps MapLibre out of the entry chunk and loads it only on demand', () => {
+    const entry = html.match(/src="\/assets\/(index-[\w-]+\.js)"/)[1];
+    // A class name MapLibre's map code sets on its canvas.
+    const isMapLibre = (code) => code.includes('maplibregl-canvas');
+    expect(isMapLibre(js[entry])).toBe(false);
+    const mapChunks = Object.keys(js).filter((f) => f !== entry && isMapLibre(js[f]));
+    expect(mapChunks.some((f) => f.startsWith('precinctMapView-'))).toBe(true);
+    // Imported with import(), not statically: no modulepreload either.
+    expect(js[entry]).toMatch(/import\(["'`][^"'`]*precinctMapView-[\w-]+\.js/);
+    expect(html).not.toMatch(/precinctMapView/);
+  });
+
+  it('ships the map worker as a same-origin file the map chunk points to', () => {
+    const worker = Object.keys(js).find((f) => f.startsWith('maplibre-gl-worker-'));
+    expect(worker).toBeDefined();
+    const view = Object.keys(js).find((f) => f.startsWith('precinctMapView-'));
+    expect(js[view]).toContain(`/assets/${worker}`);
   });
 
   it('ships no red or blue color', () => {

@@ -61,7 +61,6 @@ contributors". Both are shown as text links under the map.
 ## Files that change
 
 - `package.json`, `package-lock.json`: add `maplibre-gl` (v6).
-- `vite.config.js`: `worker.format: 'es'` if the worker build needs it.
 - `src/features/lookup/mapBounds.js` (new, tested): the bounds of the outline, the point and
   the polls; `cssColorToRgb` to turn an `oklch()` token into the `rgb()` MapLibre parses.
 - `src/features/lookup/precinctMapView.js` (new): the only file that imports `maplibre-gl`.
