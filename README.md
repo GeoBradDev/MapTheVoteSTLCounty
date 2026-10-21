@@ -241,8 +241,8 @@ City address, for example) or neither layer answers, it falls back to the public
 [Photon](https://photon.komoot.io) geocoder (OpenStreetMap data). Every answer that could get
 a county precinct is then checked with the City of St. Louis's own geocoder, unless the text
 holds a ZIP entirely outside the City: when the City has the same address in another ZIP, the
-voter gets the City referral, when both list it in one ZIP the answer is no match, and when the City geocoder fails or is slow, the answer is no match, never a
-county precinct (#58). `src/data/geocoder.js` builds that chain, `src/data/countyAddress.js`,
+voter gets the City referral, when both list it in one ZIP the answer is no match, and when the City geocoder fails or is slow, the app says address search is not working,
+never a county precinct (#58, #18). `src/data/geocoder.js` builds that chain, `src/data/countyAddress.js`,
 `src/data/photon.js` and `src/data/cityAddress.js` implement the sources and
 `src/data/addressMatch.js` holds the strict matching rules they share; a test fails if any
 other app file names a provider. docs/data.md (Geocoding, County address points, City check)
@@ -268,6 +268,25 @@ the chain puts any address in the wrong precinct, a City address loses its refer
 shared address is not no match. "No match" is
 allowed: the app then points the voter to "Use my location" and the county's official
 lookup. Results are recorded in `docs/data.md` under Geocoding.
+
+## Errors
+
+When a service is slow or down, the app says so and offers a way forward (#18); it never
+guesses a precinct. "We could not find that address" is shown only when every source
+answered and none has the address; a lookup that could not finish (a geocoder, the City
+check or the county's precinct check failing or slow) says address search is not working.
+`createGeocoder` reports that as a `GeocoderUnavailableError` only when the caller passes
+`reportUnavailable`, which the app does; without it the chain answers no match, as the #49
+and #58 tests and `scripts/check-geocoder.mjs` expect. Every lookup error links the
+county's official lookup next to Use my location, and every one but a no match has a Try
+again button that repeats the same search or location. The precinct page and its cards show
+their own failures, each with Try again; a failed page load moves focus to its message.
+After `SLOW_MS` (`src/features/lookup/slowNotice.js`), the lookup and the precinct page say
+they are still working. When the browser reports no connection, the message says the voter
+appears to be offline (cached polling places wait for the PWA, #25). A page that throws
+while rendering shows a plain error screen (`src/components/ErrorBoundary.jsx`), and
+`src/main.jsx` keeps React from logging caught errors. `e2e/failures.e2e.js` breaks each
+service in turn (network refusal, timeout, 5xx) in a real browser.
 
 ## Privacy
 
