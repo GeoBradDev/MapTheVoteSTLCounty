@@ -20,6 +20,7 @@ export const copy = {
   // The county FAQ's own sentence (issue #1), with "St." for "Saint".
   voteAnywhere: 'Voters in St. Louis County may vote at any polling place.',
   voteAnywhereSource: 'Source: St. Louis County Board of Elections',
+  moreInfo: 'More information',
   howToVote: 'How to vote',
   countySite: 'St. Louis County Board of Elections website',
 };

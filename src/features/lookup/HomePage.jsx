@@ -31,7 +31,7 @@ export default function HomePage() {
         </a>
       </p>
 
-      <nav aria-label="More information" className="mt-6">
+      <nav aria-label={copy.moreInfo} className="mt-6">
         <ul className="flex flex-col gap-1">
           <li>
             <Link href="/learn" className={linkClass}>

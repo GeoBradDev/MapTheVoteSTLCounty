@@ -25,7 +25,9 @@ export default function AddressSearch({ onSubmit, busy = false, inputRef }) {
   const geocoder = useGeocoder();
   const [text, setText] = useState('');
   // The text to suggest for, set only by typing, so a pick that fills in the
-  // box does not ask for suggestions again. Null means none wanted.
+  // box does not ask for suggestions again. Null means none wanted. A new
+  // object on every edit, so an edit that changes only spaces (and so clears
+  // the list) still asks again.
   const [query, setQuery] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [closed, setClosed] = useState(false);
@@ -41,9 +43,10 @@ export default function AddressSearch({ onSubmit, busy = false, inputRef }) {
 
   useEffect(() => {
     if (query === null) return undefined;
+    const { text: queryText } = query;
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      geocoder.suggest(query, { signal: controller.signal }).then(
+      geocoder.suggest(queryText, { signal: controller.signal }).then(
         (list) => {
           if (controller.signal.aborted) return;
           setSuggestions(Array.isArray(list) ? list.slice(0, MAX_SUGGESTIONS) : []);
@@ -75,7 +78,7 @@ export default function AddressSearch({ onSubmit, busy = false, inputRef }) {
     setClosed(false);
     // Suggestions for the old text are stale the moment the text changes.
     reset();
-    if (value.trim().length >= MIN_CHARS) setQuery(value.trim());
+    if (value.trim().length >= MIN_CHARS) setQuery({ text: value.trim() });
   }
 
   function pick(suggestion) {
@@ -90,9 +93,7 @@ export default function AddressSearch({ onSubmit, busy = false, inputRef }) {
   // request) see the voter choose an address.
   function pickWithPointer(suggestion) {
     pointerPickRef.current = suggestion;
-    const form = formRef.current;
-    if (form?.requestSubmit) form.requestSubmit();
-    else pick(suggestion);
+    formRef.current?.requestSubmit();
     pointerPickRef.current = null;
   }
 
