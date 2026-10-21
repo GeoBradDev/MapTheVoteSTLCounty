@@ -174,6 +174,12 @@ describe('parseTopic', () => {
     );
   });
 
+  it('fails text direction control characters in the title or a source label', () => {
+    expect(problems(topicText({ front: { title: '"What \\u202Eto bring"' } }))).toMatch(
+      /title: .*direction control/,
+    );
+  });
+
   it('reads a file that starts with a byte order mark', () => {
     expect(() => parse(`\uFEFF${topicText()}`)).not.toThrow();
   });
@@ -262,6 +268,9 @@ describe('isOfficialUrl', () => {
     'https://sos.mo.gov.example.com/',
     'https://evil-stlouiscovotes.info/',
     'https:www.sos.mo.gov/elections',
+    'https://www.sos.mo.gov/\tpath',
+    'https://evil.com\t.gov/',
+    'https://www.sos.mo.gov/a b',
     'https:\\\\www.sos.mo.gov\\elections',
     'https://other.maps.arcgis.com/',
     'https://user@www.sos.mo.gov/',

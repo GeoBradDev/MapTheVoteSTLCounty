@@ -77,6 +77,12 @@ describe('parseMarkdown', () => {
     ['an ordered list that does not start at 1', '3. Third\n4. Fourth'],
     ['an ordered list that skips a number', '1. One\n3. Three'],
     ['ordered items split by blank lines', '1. Register\n\n2. Request a ballot'],
+    ['a link URL with a parenthesis', 'See [page](https://a.gov/a_(b)) now.'],
+    ['a blockquote inside a list item', '- item\n  > quoted'],
+    ['a heading inside a list item', '- item\n  ## head'],
+    ['a 1) list marker', '1) First step'],
+    ['an empty list item', '-'],
+    ['an empty ordered item', '1.'],
   ])('rejects %s', (_name, md) => {
     expect(parseMarkdown(md).errors.length).toBeGreaterThan(0);
   });
