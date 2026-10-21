@@ -70,7 +70,9 @@ Domain skills:
   schedule was re-read from the county's live Absentee Voting Lookup app config.
 - `src/features/lookup/PrecinctPage.test.jsx`: route the absentee query, count the card as
   built.
-- `docs/data.md`: note the card reads the filter from config (only if wording is wrong).
+- `docs/data.md`: record the 2026-10-21 re-read of the county app's schedule (unchanged),
+  that the county website's absentee page is out of date and not a source, and that the
+  card shows the schedule.
 
 ## Order of work
 
