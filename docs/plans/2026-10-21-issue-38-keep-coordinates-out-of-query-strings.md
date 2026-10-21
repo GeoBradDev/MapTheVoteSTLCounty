@@ -61,6 +61,8 @@ OPTIONS answer is 200 with `content-type` allowed anyway. `connect-src` already 
   `no-referrer`) used by the three point queries; the header comment.
 - `src/data/arcgis.test.js`: point queries asserted as POST bodies with the fetch options;
   by-code and layer queries asserted to stay GET.
+- `src/features/lookup/locate.test.js`: its recorded-response stub reads the point from the
+  POST body instead of the URL (found while implementing; no assertion changes).
 - `src/test/addressPrivacy.test.jsx`: the coordinates are found in the POST body and in no
   request URL.
 - `src/features/privacy/privacyCopy.js` and `PrivacyPage.test.jsx`: the new wording.
