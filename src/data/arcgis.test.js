@@ -52,7 +52,7 @@ describe('getPrecinctAtPoint', () => {
       geometryType: 'esriGeometryPoint',
       inSR: '4326',
       spatialRel: 'esriSpatialRelIntersects',
-      outFields: '*',
+      outFields: client.PRECINCT_FIELDS.join(','),
       returnGeometry: 'false',
       f: 'json',
     });
@@ -215,7 +215,7 @@ describe('getPrecinctById', () => {
     expect(base).toBe(PRECINCTS);
     expect(params).toEqual({
       where: "precinct='CC007'",
-      outFields: '*',
+      outFields: client.PRECINCT_FIELDS.join(','),
       returnGeometry: 'false',
       f: 'json',
     });
@@ -254,6 +254,21 @@ describe('exports', () => {
     expect(error.name).toBe(name);
   });
 
+  // Only the fields the app reads (#27), never `*`.
+  it('asks for the precinct fields the app reads, from the config', () => {
+    expect(client.PRECINCT_FIELDS).toEqual([
+      'precinct',
+      'in_election',
+      'html',
+      election.congressionalField,
+      ...election.districtFields
+        .map((d) => d.field)
+        .filter((f) => f !== election.congressionalField),
+    ]);
+    expect(new Set(client.PRECINCT_FIELDS).size).toBe(client.PRECINCT_FIELDS.length);
+    expect(client.PRECINCT_FIELDS).toContain('municipality');
+  });
+
   it('exports the precinct code pattern', () => {
     expect(client.PRECINCT_CODE.test('CC007')).toBe(true);
     expect(client.PRECINCT_CODE.test('BON001')).toBe(true);
@@ -269,7 +284,13 @@ describe('getPolls', () => {
     await client.getPolls();
     const { base, params } = onlyRequest();
     expect(base).toBe(POLLS);
-    expect(params).toEqual({ where: '1=1', outFields: '*', outSR: '4326', f: 'geojson' });
+    expect(params).toEqual({
+      where: '1=1',
+      outFields: 'loc,name,address,zipcode,abs_type,notes_abs',
+      outSR: '4326',
+      geometryPrecision: '6',
+      f: 'geojson',
+    });
   });
 
   it('resolves to the FeatureCollection with normalized properties', async () => {
@@ -339,8 +360,9 @@ describe('getAbsenteeSites', () => {
     expect(base).toBe(POLLS);
     expect(params).toEqual({
       where: election.absenteeWhere,
-      outFields: '*',
+      outFields: 'loc,name,address,zipcode,abs_type,notes_abs',
       outSR: '4326',
+      geometryPrecision: '6',
       f: 'geojson',
     });
   });

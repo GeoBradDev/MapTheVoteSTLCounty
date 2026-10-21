@@ -4,6 +4,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse } from 'yaml';
+import { POLL_FIELDS, PRECINCT_FIELDS } from '../data/arcgis.js';
 import election from '../config/election.js';
 import {
   BALLOT_SAMPLE_SIZE,
@@ -509,5 +510,15 @@ describe('data health workflow', () => {
     const report = steps.find((s) => s.if === 'failure()');
     expect(report.run).toContain('gh issue create');
     expect(report.run).toContain('gh issue comment');
+  });
+});
+
+// The app asks ArcGIS for named fields (#27), and a query naming a field the
+// layer lacks fails outright, so the health check must check every one.
+describe('the fields the app asks for', () => {
+  it('are all checked by the health check', () => {
+    const want = expectedLayers(election);
+    expect(want.precincts.fields).toEqual(expect.arrayContaining([...PRECINCT_FIELDS]));
+    expect(want.polls.fields).toEqual(expect.arrayContaining([...POLL_FIELDS]));
   });
 });
