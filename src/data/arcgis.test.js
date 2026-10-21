@@ -187,6 +187,21 @@ describe('getPolls', () => {
     expect(c).toBe(a);
   });
 
+  it.each([
+    ['null properties', { type: 'Feature', geometry: null, properties: null }],
+    ['a null feature', null],
+  ])(
+    'rejects a feature with %s with ServiceError and fetches again next call',
+    async (_, feature) => {
+      fetchMock
+        .mockResolvedValueOnce(respond({ ...polls, features: [feature] }))
+        .mockResolvedValueOnce(respond(polls));
+      await expect(client.getPolls()).rejects.toBeInstanceOf(client.ServiceError);
+      expect((await client.getPolls()).features).toHaveLength(polls.features.length);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    },
+  );
+
   it('does not cache a failure: the next call fetches again', async () => {
     fetchMock.mockResolvedValueOnce(respond(errorBody)).mockResolvedValueOnce(respond(polls));
     await expect(client.getPolls()).rejects.toBeInstanceOf(client.ServiceError);
