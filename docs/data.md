@@ -45,15 +45,16 @@ html     = "Sample Ballot: <a href=https://stlouiscovotes.maps.arcgis.com/sharin
   `8d2f3ffe...`, whose `precincts` layer points at `precincts_2026_11_view/1` and
   whose popup is just `{html}` followed by `{districts}`.
 
-Parsing: `parseSampleBallot` in `src/data/sampleBallot.js` pulls the `href` with a
-regex (unquoted, single- or double-quoted), accepts it only when it matches
-`sampleBallotUrlPattern` in `src/config/election.js`, and takes the file name from the
-link text. A field with no link comes back as plain text. A rejected link, or markup
-the parser does not know (it reads only text, comments and a few formatting tags),
-comes back as nothing. Never render `html` as raw HTML; a test fails on `dangerouslySetInnerHTML`
-anywhere under `src/`. `node scripts/check-sample-ballots.mjs` runs the parser over
-every precinct on the live layer and exits 1 unless each `In Election` precinct has
-its own valid link and every other precinct a message. Run it before each election.
+Parsing: `parseSampleBallot` in `src/data/sampleBallot.js` reads the field with a
+small, strict tokenizer. It takes the `href` of the first `<a>` tag that has one,
+accepts it only when it matches `sampleBallotUrlPattern` in `src/config/election.js`,
+and takes the file name from the link text. A field with no link comes back as plain
+text. A rejected link, or markup the parser does not know (it reads only text,
+comments and a few formatting tags), comes back as nothing. Never render `html` as raw
+HTML; a test fails on `dangerouslySetInnerHTML` anywhere under `src/`.
+`node scripts/check-sample-ballots.mjs` runs the parser over every precinct on the live
+layer and exits 1 unless each `In Election` precinct has its own valid link and every
+other precinct a message. Run it before each election.
 
 Do not use `lookup_view_sample_ballot`. Despite its name, it is a stale view of
 `precincts_2024_08_ToPublish` (1199 rows) with older ballot item IDs.

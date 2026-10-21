@@ -97,6 +97,8 @@ function tokenize(html) {
       else {
         const end = html.indexOf('-->', i + 4);
         if (end === -1) return null;
+        // A browser also ends a comment at --!>, which this reader does not follow.
+        if (html.slice(i + 4, end).includes('--!>')) return null;
         i = end + 3;
       }
     } else if (isLetter(next) || (next === '/' && isLetter(html[i + 2]))) {

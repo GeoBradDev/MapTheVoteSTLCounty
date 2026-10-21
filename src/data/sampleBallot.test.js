@@ -195,6 +195,11 @@ describe('parseSampleBallot', () => {
     });
   });
 
+  it('shows nothing for a comment a browser would end early at --!>', () => {
+    const html = `<!-- x --!><span title="--> <a href=${URL_OK}>CC</a>">No ballot</span>`;
+    expect(parseSampleBallot(html)).toEqual({ message: null });
+  });
+
   it('treats <!--> as an empty comment', () => {
     expect(parseSampleBallot(`<!--><a href=${URL_OK}>CC-007.pdf</a>`)).toEqual({
       url: URL_OK,

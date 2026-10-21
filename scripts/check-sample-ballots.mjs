@@ -54,6 +54,8 @@ for (const message of messages) {
   console.log(`Message${note}: ${message}`);
 }
 
+if (urls.size === 0) failures.push('No In Election precinct has a link');
+
 if (failures.length) {
   console.error(`\n${failures.length} failures:`);
   for (const failure of failures) console.error(`  ${failure}`);
