@@ -180,8 +180,8 @@ async function main() {
   const browser = await puppeteer.launch({
     executablePath: chromium.executablePath(),
     headless: true,
-    // No sandbox, as Playwright launches Chromium: Ubuntu 24.04 runners block
-    // the user namespaces Chromium's sandbox needs.
+    // No sandbox, as Playwright launches Chromium by default: CI runners can
+    // block the user namespaces Chromium's sandbox needs.
     args: [
       `--host-resolver-rules=${rules.join(', ')}`,
       '--ignore-certificate-errors',
