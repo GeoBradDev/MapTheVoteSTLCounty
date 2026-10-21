@@ -59,6 +59,31 @@ function VoterIdLink() {
   );
 }
 
+// Placeholders shaped like the first rows of the list (a name, an address, a
+// distance and a row of links each), so the list takes about the same space
+// when it arrives and the page below it does not jump (#27).
+function ListSkeleton() {
+  const line = (width) => (
+    <div className="flex h-6 items-center">
+      <div className={`h-4 ${width} ${bar}`} />
+    </div>
+  );
+  return (
+    <div data-testid="polls-skeleton" aria-hidden="true" className="mt-3 space-y-3 pl-6">
+      {Array.from({ length: election.nearbyPollCount }, (_, i) => (
+        <div key={i} className="border-t border-border pt-3 first:border-t-0 first:pt-0">
+          {line('w-3/4')}
+          {line('w-2/3')}
+          {line('w-1/4')}
+          <div className="flex min-h-11 items-center">
+            <div className={`h-4 w-1/3 ${bar}`} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function PollRow({ poll, apple, headingRef }) {
   const name = poll.name ?? copy.polls.unnamed(poll.loc);
   const links = directionsLinks(poll);
@@ -127,13 +152,13 @@ export default function PollsCard({ code, origin }) {
 
   return (
     <div className="mt-2">
-      {!result && (
-        <div data-testid="polls-skeleton" aria-hidden="true">
-          <div className={`h-4 w-3/4 ${bar}`} />
-          <div className={`mt-2 h-4 w-1/2 ${bar}`} />
-          <div className={`mt-2 h-4 w-2/3 ${bar}`} />
-        </div>
+      {/* Said while loading too, so the line does not push the card down when
+          the list arrives (#27). */}
+      {!origin && !result?.error && !(rows && rows.length === 0) && (
+        <p className="text-muted">{copy.polls.fromCenter(code)}</p>
       )}
+
+      {!result && <ListSkeleton />}
 
       {result?.error && (
         <p>
@@ -149,8 +174,6 @@ export default function PollsCard({ code, origin }) {
 
       {rows && rows.length > 0 && (
         <>
-          {!origin && <p className="text-muted">{copy.polls.fromCenter(code)}</p>}
-          <PrecinctMap code={code} origin={origin} polls={shownRows} />
           <ol aria-label={copy.polls.listLabel} className="mt-3 list-decimal space-y-3 pl-6">
             {shownRows.map((poll, i) => (
               <PollRow
@@ -170,6 +193,9 @@ export default function PollsCard({ code, origin }) {
               {copy.polls.showMore}
             </button>
           )}
+          {/* After the list, which holds everything on it, so on a phone the
+              list comes first and the map loads only when scrolled to (#27). */}
+          <PrecinctMap code={code} origin={origin} polls={shownRows} />
         </>
       )}
 

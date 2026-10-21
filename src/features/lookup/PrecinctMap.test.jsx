@@ -134,6 +134,68 @@ describe('PrecinctMap', () => {
     expect(options().polls).toEqual(more);
   });
 
+  // #27: MapLibre is large and slow to start on a phone, so the map loads
+  // only once it scrolls into view.
+  describe('waiting until it is in view', () => {
+    let observers;
+
+    beforeEach(() => {
+      observers = [];
+      vi.stubGlobal(
+        'IntersectionObserver',
+        class {
+          constructor(callback) {
+            this.callback = callback;
+            this.observe = vi.fn();
+            this.disconnect = vi.fn();
+            observers.push(this);
+          }
+        },
+      );
+    });
+
+    const scrollIntoView = (isIntersecting = true) =>
+      act(() => observers.at(-1).callback([{ isIntersecting }]));
+
+    it('loads nothing and shows the placeholder until it scrolls into view', async () => {
+      render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
+      expect(observers.at(-1).observe).toHaveBeenCalledWith(region());
+      expect(screen.getByTestId('map-placeholder')).toBeInTheDocument();
+      scrollIntoView(false);
+      await Promise.resolve();
+      expect(getPrecinctGeometry).not.toHaveBeenCalled();
+      expect(createPrecinctMap).not.toHaveBeenCalled();
+      scrollIntoView();
+      await waitFor(() => expect(createPrecinctMap).toHaveBeenCalledTimes(1));
+      expect(getPrecinctGeometry).toHaveBeenCalledWith('CC007');
+      expect(observers[0].disconnect).toHaveBeenCalled();
+    });
+
+    it('stops watching when the page goes away first', () => {
+      const { unmount } = render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
+      unmount();
+      expect(observers.at(-1).disconnect).toHaveBeenCalled();
+      expect(getPrecinctGeometry).not.toHaveBeenCalled();
+    });
+
+    it('starts the load time limit only once in view', async () => {
+      vi.useFakeTimers();
+      try {
+        getPrecinctGeometry.mockReturnValue(new Promise(() => {}));
+        render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
+        act(() => vi.advanceTimersByTime(60_000));
+        expect(region()).toBeInTheDocument();
+        scrollIntoView();
+        act(() => vi.advanceTimersByTime(14_999));
+        expect(region()).toBeInTheDocument();
+        act(() => vi.advanceTimersByTime(1));
+        expect(screen.queryByRole('region')).toBeNull();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+  });
+
   describe('load time limit', () => {
     const LIMIT = 15_000;
     let visibility;
