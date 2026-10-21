@@ -12,7 +12,7 @@ export const copy = {
     unavailable:
       'Address search is not working right now, so we could not check that address. Try again in a minute, or try Use my location.',
     failed:
-      "We could not look up your precinct right now. The county's services may be slow or down. Try again in a minute.",
+      "We could not look up your precinct right now: the county's precinct map did not answer. Try again in a minute.",
     offline: 'You appear to be offline. Check your internet connection, then try again.',
   },
   // The credit next to the address box. The service and data names and links

@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useLocation, useParams } from 'wouter';
 import election from '../../config/election.js';
 import {
@@ -55,7 +55,10 @@ function PrecinctResults({ code }) {
   // never with the URL text.
   const titled = validCode && result?.error !== 'notFound';
   const title = titled ? copy.pageTitle(code) : copy.notFoundTitle;
-  useEffect(() => {
+  // Layout effects here and for focus below: they run in the same commit as
+  // the content they belong to, so nothing (a screen reader, or a test) sees
+  // the new content before its title or focus.
+  useLayoutEffect(() => {
     const previous = document.title;
     document.title = title;
     return () => {
@@ -96,19 +99,23 @@ function PrecinctResults({ code }) {
   }, [code, validCode, origin, attempt]);
 
   const precinct = result?.precinct;
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (precinct) headingRef.current?.focus();
   }, [precinct]);
 
   // A load that failed for a reason other than "not found" moves focus to its
   // message and "Try again" (#18), unless focus is already there (on the
-  // retry button), so the voter lands on the way forward.
+  // retry button), so the voter lands on the way forward. A retry that ends
+  // in "not found" takes the focused button away, so the message takes focus.
   const retryable = result?.error && result.error !== 'notFound';
-  useEffect(() => {
-    if (!retryable) return;
+  useLayoutEffect(() => {
+    if (!result?.error) return;
     const block = errorRef.current;
-    if (block && !block.contains(document.activeElement)) block.focus();
-  }, [retryable, result]);
+    const focused = document.activeElement;
+    const lost = !focused || focused === document.body;
+    const move = retryable ? !block?.contains(focused) : attempt > 0 && lost;
+    if (move) block?.focus();
+  }, [retryable, result, attempt]);
 
   function retry() {
     if (loading) return;

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 
 /**
  * A load that the voter can retry (#18). `attempt` goes in the loading
@@ -24,7 +24,8 @@ export function useRetry() {
 
   const done = useCallback(() => setLoading(false), []);
 
-  useEffect(() => {
+  // A layout effect, so focus moves in the same commit that removes the button.
+  useLayoutEffect(() => {
     if (loading || !retriedRef.current) return;
     retriedRef.current = false;
     const focused = document.activeElement;

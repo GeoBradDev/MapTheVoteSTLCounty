@@ -137,7 +137,7 @@ export default function EarlyVotingCard({ code, origin }) {
     Promise.all([getAbsenteeSites(), distanceOrigin(code, origin)])
       .then(
         ([sites, point]) => ({ rows: nearestPolls(sites, point) }),
-        () => ({ error: true }),
+        () => ({ error: true, attempt }),
       )
       .then((next) => {
         if (!current) return;
@@ -171,8 +171,11 @@ export default function EarlyVotingCard({ code, origin }) {
 
       {result?.error && (
         <>
-          <p className="mt-3">
-            {t.failed} <OfficialLookupLink />.
+          <p role="alert" className="mt-3">
+            {/* A new node per attempt, so a repeated failure is announced again. */}
+            <span key={result.attempt}>
+              {t.failed} <OfficialLookupLink />.
+            </span>
           </p>
           <RetryButton onRetry={retry} busy={loading} className="mt-2" />
         </>

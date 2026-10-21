@@ -134,7 +134,7 @@ export default function PollsCard({ code, origin }) {
     Promise.all([getPolls(), distanceOrigin(code, origin)])
       .then(
         ([polls, point]) => ({ rows: nearestPolls(polls, point) }),
-        () => ({ error: true }),
+        () => ({ error: true, attempt }),
       )
       .then((next) => {
         if (!current) return;
@@ -172,8 +172,11 @@ export default function PollsCard({ code, origin }) {
 
       {result?.error && (
         <>
-          <p>
-            {copy.polls.failed} <OfficialLookupLink />.
+          <p role="alert">
+            {/* A new node per attempt, so a repeated failure is announced again. */}
+            <span key={result.attempt}>
+              {copy.polls.failed} <OfficialLookupLink />.
+            </span>
           </p>
           <RetryButton onRetry={retry} busy={loading} className="mt-2" />
         </>

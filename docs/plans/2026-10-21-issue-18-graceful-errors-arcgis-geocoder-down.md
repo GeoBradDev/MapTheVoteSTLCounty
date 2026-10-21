@@ -63,6 +63,12 @@ without a separate approval round.
   `reportUnavailable`, the two "no match because a step failed" exits reject with
   `GeocoderUnavailableError`: the City check failing or giving an unexpected answer, and a
   county no match with the fallback down. Without it, behavior is unchanged.
+  Review round 1 added two more such exits: every county source down with Photon finding
+  nothing, and the county's precinct check for a multi-record address failing or slow.
+- `src/data/countyAddress.js` (review round 1): `find(text, { signal, reportUnavailable })`
+  answers `{ status: 'unavailable' }` instead of `ambiguous` when that precinct check fails
+  or is slow, only with the option. The geocoder treats it like `ambiguous` (no place, no
+  other source) but rejects as unavailable.
 - `src/data/geocoderChain.test.js` or a new `src/data/geocoder.unavailable18.test.js`: new
   tests for the option (new file, so no #49/#58 test is edited).
 - `src/features/lookup/AddressLookup.jsx`, `lookupCopy.js`: error kinds `noMatch`,
@@ -99,7 +105,10 @@ without a separate approval round.
   with the City check failing the answer is never a place, with and without the option.
 - Retry repeating a stale attempt after the voter edits the text: the Try again button is
   dropped on any edit.
-- Focus loss when a retry button unmounts: buttons stay mounted while retrying.
+- Focus loss when a retry button unmounts: buttons stay mounted while retrying; a retry
+  that ends without a button (a no match, a not found, a loaded card) moves focus to the
+  address box, the message or the card. The precinct page's title and focus run as layout
+  effects, so they land in the same commit as the content.
 - Timers leaking after unmount in tests: clear in effect cleanups.
 - Conflicts with #27 (performance) in `App.jsx`, `main.jsx` and the cards: keep both sides.
 - Not doing: cached polling places while offline (needs the PWA, #25); an overall cap on

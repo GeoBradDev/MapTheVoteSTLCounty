@@ -111,7 +111,11 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
       rememberLookupPoint(code, point);
       navigate(`/p/${code}`);
     } else if (next.error) {
-      setOutcome({ ...next, run: runNumber, canRetry: next.error !== 'noMatch' });
+      const canRetry = next.error !== 'noMatch';
+      setOutcome({ ...next, run: runNumber, canRetry });
+      // The focused "Try again" goes away with a no match: the address box,
+      // where the voter fixes the address, takes focus instead.
+      if (retry && !canRetry) inputRef.current?.focus();
     } else setOutcome(next);
   }
 

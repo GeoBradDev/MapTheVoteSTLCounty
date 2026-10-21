@@ -195,10 +195,19 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
       if (!text) return null;
       // What the voter typed, for the City check.
       const typed = picked ? withoutZip(text) : text;
-      const county = await firstAnswer((source) => source.find(text, { signal }), signal);
+      // The option goes to a source only when set, as it changes what find()
+      // may answer.
+      const findOptions = reportUnavailable ? { signal, reportUnavailable } : { signal };
+      const county = await firstAnswer((source) => source.find(text, findOptions), signal);
       if (signal?.aborted) throw abortError();
       // The official data has two addresses that fit: ask for a ZIP.
       if (county?.status === 'ambiguous') return null;
+      // The county has the address but could not check which precinct its
+      // records are in (#18): no place, and no other source.
+      if (county?.status === 'unavailable') {
+        if (!reportUnavailable) return null;
+        throw new GeocoderUnavailableError('The county precinct check did not answer');
+      }
       // A county record in the City already gets the City's referral.
       if (county?.status === 'match') {
         return checkedForCity(typed, county.place, signal, reportUnavailable);
@@ -214,6 +223,11 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
         throw error;
       }
       if (signal?.aborted) throw abortError();
+      // No county source answered and Photon has nothing: the official list
+      // was never asked, so the search could not finish.
+      if (!place && !county && reportUnavailable) {
+        throw new GeocoderUnavailableError('No county source answered');
+      }
       return checkedForCity(typed, place, signal, reportUnavailable);
     },
   });
