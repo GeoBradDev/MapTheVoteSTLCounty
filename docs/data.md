@@ -76,7 +76,9 @@ The data agrees:
 
 **Design consequence:** the "Your polling place" card becomes "Polling places
 near you": the closest N (suggest 3 to 5) by straight-line distance from the
-geocoded point, with a plain note that any polling place in the county works.
+looked-up point (geocoded address or "Use my location"), or from the precinct's center
+when the page was opened without a lookup (a reload or a shared link), with a plain note
+that any polling place in the county works.
 The layer has only 200 points, so load it once (about 85 KB GeoJSON with all
 fields), cache it, and sort on the client. No extra query per lookup.
 
@@ -130,8 +132,8 @@ All 200 are Election Day polling places, so the "Polling places near you" card r
 whole layer with no filter. The county's own Election Day app (web map `5e98818f...`)
 shows this layer, titled "Polling Places (Election Day)", with no definition expression,
 and each of the 21 absentee sites also has an Election Day `loc` (for example Board of
-Elections is `loc` 019, `loc_abs` 601). `abs_type` says only whether a site is also open
-for in-person absentee voting.
+Elections is `loc` 019, `loc_abs` 601). `abs_type` marks whether a site is also open for
+in-person absentee voting, and which kind of absentee site it is.
 
 | Field | Example | Notes |
 |---|---|---|
