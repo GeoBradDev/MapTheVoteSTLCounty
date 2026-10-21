@@ -210,6 +210,30 @@ describe('AddressLookup', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('cancels a running lookup when the voter edits the address, and runs the new one', async () => {
+    const OTHER = { label: '9225 Lackland Rd, Saint Louis, MO 63114', lat: 38.7, lng: -90.4 };
+    const value = createFakeGeocoder([PLACE, OTHER]);
+    let finishFirst;
+    locate
+      .mockReturnValueOnce(new Promise((resolve) => (finishFirst = resolve)))
+      .mockResolvedValueOnce({ kind: 'precinct', precinct: { precinct: 'MID014' } });
+    const { location } = renderLookup({ value });
+    await search();
+    expect(locate).toHaveBeenCalledTimes(1);
+    await userEvent.clear(input());
+    expect(screen.getByRole('button', { name: searchCopy.submit })).toBeInTheDocument();
+    await search(OTHER.label);
+    await act(async () => finishFirst({ kind: 'precinct', precinct: { precinct: 'OAK019' } }));
+    expect(locate).toHaveBeenCalledTimes(2);
+    expect(locate).toHaveBeenLastCalledWith({
+      lat: 38.7,
+      lng: -90.4,
+      state: undefined,
+      county: undefined,
+    });
+    expect(location.history).toEqual(['/', '/p/MID014']);
+  });
+
   it('drops a result that arrives after it unmounts', async () => {
     let finish;
     locate.mockReturnValue(new Promise((resolve) => (finish = resolve)));
