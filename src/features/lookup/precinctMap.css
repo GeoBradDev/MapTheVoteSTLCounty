@@ -1,7 +1,9 @@
 /*
   The few MapLibre layout rules the precinct map needs, in place of
   maplibre-gl.css, which embeds data: URI icons and party blue for controls
-  this map does not use. Adapted from maplibre-gl.css (BSD-3-Clause).
+  this map does not use. Adapted from maplibre-gl.css: Copyright (c) 2023,
+  MapLibre contributors, and Copyright (c) 2020, Mapbox; BSD-3-Clause, see
+  node_modules/maplibre-gl/LICENSE.txt.
   Colors come only from the --color-* tokens.
 */
 .maplibregl-map {

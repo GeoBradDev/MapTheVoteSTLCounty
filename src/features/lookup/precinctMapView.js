@@ -110,12 +110,6 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
     }
   });
 
-  if (origin) {
-    new Marker({ element: markerElement(ORIGIN_MARKER) })
-      .setLngLat([origin.lng, origin.lat])
-      .addTo(map);
-  }
-
   function setPolls(places) {
     markers.forEach((marker) => marker.remove());
     markers = places.map((place, i) =>
@@ -124,7 +118,21 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
         .addTo(map),
     );
   }
-  setPolls(polls);
+
+  try {
+    if (origin) {
+      new Marker({ element: markerElement(ORIGIN_MARKER) })
+        .setLngLat([origin.lng, origin.lat])
+        .addTo(map);
+    }
+    setPolls(polls);
+  } catch (error) {
+    // The caller only learns of the throw, so free the map and its WebGL
+    // context here.
+    state = 'failed';
+    map.remove();
+    throw error;
+  }
 
   return {
     setPolls(places) {

@@ -81,7 +81,7 @@ export const copy = {
     /** @param {string} code */
     legend: (code) =>
       `The shaded area is precinct ${code}. Numbers on the map match the list below.`,
-    origin: 'The dark dot is the place you searched.',
+    origin: 'The dark dot is your address or location.',
     basemap: 'Map:',
     data: 'Precinct and polling place data:',
     county: 'St. Louis County Board of Elections',

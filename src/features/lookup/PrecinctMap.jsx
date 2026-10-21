@@ -71,12 +71,12 @@ export default function PrecinctMap({ code, origin, polls }) {
     function pauseClock() {
       if (startedAt === null) return;
       clearTimeout(timer);
-      remaining -= Date.now() - startedAt;
+      remaining -= performance.now() - startedAt;
       startedAt = null;
     }
     function runClock() {
       if (startedAt !== null) return;
-      startedAt = Date.now();
+      startedAt = performance.now();
       timer = setTimeout(fail, Math.max(0, remaining));
     }
     function stopClock() {
