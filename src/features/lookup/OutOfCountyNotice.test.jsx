@@ -76,6 +76,14 @@ describe('OutOfCountyNotice', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  it('uses the heading level it is given, for a notice inside a titled section', () => {
+    render(<OutOfCountyNotice kind="stl-city" headingLevel={3} />);
+    expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent(
+      'This address is in the City of St. Louis',
+    );
+    expect(screen.queryByRole('heading', { level: 2 })).toBeNull();
+  });
+
   it('has copy for every kind it renders, and names no party or candidate', () => {
     expect(Object.keys(copy).sort()).toEqual(
       ['county-unmatched', 'missouri', 'out-of-state', 'stl-city', 'unknown'].sort(),

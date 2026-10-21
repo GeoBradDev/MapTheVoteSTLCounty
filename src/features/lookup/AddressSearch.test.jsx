@@ -137,6 +137,20 @@ describe('AddressSearch', () => {
     expect(input()).not.toHaveAttribute('aria-activedescendant');
   });
 
+  it('outlines the active suggestion in forced colors, where its fill is removed', async () => {
+    renderSearch();
+    await user.type(input(), '770');
+    await settle();
+    const classes = options()[0].className.split(/\s+/);
+    expect(classes).toEqual(
+      expect.arrayContaining([
+        'forced-colors:aria-selected:outline-2',
+        'forced-colors:aria-selected:-outline-offset-2',
+        'forced-colors:aria-selected:outline-solid',
+      ]),
+    );
+  });
+
   it('drops the old suggestions and active option as soon as the text changes', async () => {
     const { onSubmit } = renderSearch();
     await user.type(input(), '770');
