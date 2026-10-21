@@ -7,12 +7,14 @@
 // Photon), then the app's own chain (src/data/geocoder.js), then the chain
 // with the live county layer blocked. A St. Louis City address must still get
 // the City referral (#8), and so must the City addresses of issue #58, whose
-// house number and street also exist in the county: the chain asks the City's
-// own geocoder (src/data/cityAddress.js) before it trusts a county match. "no match" is safe (the voter is sent to "Use my
+// house number and street the county also has in another ZIP; an address both
+// list in one ZIP must be no match. The chain asks the City's own geocoder
+// (src/data/cityAddress.js) before it trusts a county match. "no match" is safe (the voter is sent to "Use my
 // location" and the county's official lookup); a wrong precinct is not.
 // Usage: node scripts/check-geocoder.mjs [photon base URL]   (default: public Photon)
 // Exits 1 when any address lands in the wrong precinct with the app's chain
-// or the blocked chain, or a City address does not get the City referral.
+// or the blocked chain, a City address does not get the City referral, or an
+// address both list in one ZIP is not no match.
 
 import { readFile } from 'node:fs/promises';
 import { getPrecinctAtPoint } from '../src/data/arcgis.js';
@@ -31,15 +33,22 @@ import { locate } from '../src/features/lookup/locate.js';
 // North, south, west, central and unincorporated sites (docs/data.md, Geocoding).
 const LOCS = ['144', '020', '002', '054', '041', '148', '158', '122', '096', '178'];
 const ROSS = { text: '1318 Ross Ave, Saint Louis, MO 63146', want: 'CC007' };
-// St. Louis City Hall, and the City addresses of issue #58 that the county
-// also has (6135 and 6109 Washington Ave 63134, FER022; 6135 Horton Pl 63133,
-// UNV202).
+// St. Louis City Hall, and the City addresses of issue #58 whose number and
+// street the county also has in another ZIP (6135 and 6109 Washington Ave
+// 63134, FER022): the City referral.
 const CITY = [
   '1200 Market St, St. Louis, MO 63103',
   '6135 Washington Ave, St. Louis, MO',
   '6135 Washington Ave',
   '6109 Washington Ave',
+];
+// Addresses the county and the City both list in one ZIP (6135 Horton Pl
+// 63133, UNV202; 1 Brookings Dr 63130, Washington University, HAD018): no
+// match, never a county precinct (owner decision, #58).
+const SHARED = [
   '6135 Horton Pl, St. Louis, MO 63133',
+  '1 Brookings Dr',
+  '1 Brookings Dr, St. Louis, MO 63130',
 ];
 
 const polls = JSON.parse(
@@ -137,14 +146,24 @@ for (const [name, geocoder] of [
     console.log(`${name}: ${text}: ${kind} (${place?.label ?? ''})`);
     if (kind !== 'stl-city') wrong.push(`${name}: ${text}: ${kind}, want stl-city`);
   }
-  // A City voter who types the start of the address and picks the first
+  for (const text of SHARED) {
+    const place = await withRetry(() => geocoder.geocode(text));
+    const kind = place ? (await locate(place)).kind : 'no match';
+    console.log(`${name}: ${text}: ${kind} (${place?.label ?? ''})`);
+    if (kind !== 'no match') wrong.push(`${name}: ${text}: ${kind}, want no match`);
+  }
+  // A voter who types the start of the address and picks the first
   // suggestion: the county's, labeled with the county record's ZIP (#58).
-  for (const partial of ['6135 Washington', '6109 Washington']) {
+  for (const [partial, want] of [
+    ['6135 Washington', 'stl-city'],
+    ['6109 Washington', 'stl-city'],
+    ['1 Brookings', 'no match'],
+  ]) {
     const [pick] = await withRetry(() => geocoder.suggest(partial));
     const place = pick ? await withRetry(() => geocoder.geocode(pick)) : null;
     const kind = place ? (await locate(place)).kind : 'no match';
     console.log(`${name}: pick "${pick?.label}" for ${partial}: ${kind} (${place?.label ?? ''})`);
-    if (kind !== 'stl-city') wrong.push(`${name}: pick for ${partial}: ${kind}, want stl-city`);
+    if (kind !== want) wrong.push(`${name}: pick for ${partial}: ${kind}, want ${want}`);
   }
 }
 

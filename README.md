@@ -204,8 +204,8 @@ ArcGIS Online when the live one is unavailable. When the county has no match (a 
 City address, for example) or neither layer answers, it falls back to the public
 [Photon](https://photon.komoot.io) geocoder (OpenStreetMap data). Every answer that could get
 a county precinct is then checked with the City of St. Louis's own geocoder, unless the text
-holds a ZIP entirely outside the City: when the City has the same address, the voter gets the
-City referral, and when the City geocoder fails or is slow, the answer is no match, never a
+holds a ZIP entirely outside the City: when the City has the same address in another ZIP, the
+voter gets the City referral, when both list it in one ZIP the answer is no match, and when the City geocoder fails or is slow, the answer is no match, never a
 county precinct (#58). `src/data/geocoder.js` builds that chain, `src/data/countyAddress.js`,
 `src/data/photon.js` and `src/data/cityAddress.js` implement the sources and
 `src/data/addressMatch.js` holds the strict matching rules they share; a test fails if any
@@ -226,8 +226,10 @@ node scripts/check-geocoder.mjs [photon-base-url]
 It geocodes 10 polling place addresses and 1318 Ross Ave with each source alone, with the
 app's chain and with the chain while the live county layer is blocked, and checks that City
 Hall and the City addresses of #58, whose number and street the county also has, get the City
-referral, typed and picked from the suggestions. It exits 1 if the chain puts any address in the wrong precinct or a City address
-loses its referral. "No match" is
+referral, typed and picked from the suggestions, and that addresses the county and the City
+both list in one ZIP (6135 Horton Pl 63133, 1 Brookings Dr 63130) are no match. It exits 1 if
+the chain puts any address in the wrong precinct, a City address loses its referral, or a
+shared address is not no match. "No match" is
 allowed: the app then points the voter to "Use my location" and the county's official
 lookup. Results are recorded in `docs/data.md` under Geocoding.
 

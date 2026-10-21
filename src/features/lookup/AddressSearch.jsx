@@ -1,14 +1,42 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import { typedZip } from '../../data/addressMatch.js';
 import { copy } from './addressSearchCopy.js';
 import { useGeocoder } from './geocoderContext.js';
 
-// Whether `value` is `label` with text inserted at one place and nothing
-// removed or replaced, like a unit typed into it.
-function isInsertionInto(label, value) {
-  if (value.length < label.length) return false;
+// Where a picked label's ZIP is in it, as { zip, start }, or null when the
+// label has none.
+function zipIn(label) {
+  const zip = typedZip(label);
+  if (!zip) return null;
+  return { zip, start: label.lastIndexOf(zip) };
+}
+
+// Where the picked ZIP is after an edit from `before` to `after`, or null when
+// the edit deleted or changed it. The edit is the one stretch the two texts do
+// not share; the ZIP must lie wholly before or after it and still read as the
+// same five digits on their own.
+function zipAfterEdit(before, after, { zip, start }) {
   let prefix = 0;
-  while (prefix < label.length && label[prefix] === value[prefix]) prefix += 1;
-  return value.endsWith(label.slice(prefix));
+  const shortest = Math.min(before.length, after.length);
+  while (prefix < shortest && before[prefix] === after[prefix]) prefix += 1;
+  let suffix = 0;
+  while (
+    suffix < shortest - prefix &&
+    before[before.length - 1 - suffix] === after[after.length - 1 - suffix]
+  ) {
+    suffix += 1;
+  }
+  const editEnd = before.length - suffix;
+  let moved;
+  if (editEnd <= start) moved = start + after.length - before.length;
+  else if (prefix >= start + zip.length) moved = start;
+  else return null;
+  const word = /[A-Za-z0-9]/;
+  const intact =
+    after.slice(moved, moved + zip.length) === zip &&
+    !word.test(after[moved - 1] ?? '') &&
+    !word.test(after[moved + zip.length] ?? '');
+  return intact ? { zip, start: moved } : null;
 }
 
 /** How long typing must pause before suggestions are requested. */
@@ -46,11 +74,11 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
   const [empty, setEmpty] = useState(false);
   const formRef = useRef(null);
   const pointerPickRef = useRef(null);
-  // The last picked suggestion, and whether the box was edited since. The
-  // label's ZIP is the source's, not one the voter typed, and the geocoder's
-  // City check treats the two differently (#58), so a search goes as a pick
-  // while the box holds the label unchanged, or the label with text inserted
-  // (a unit added). Any other edit forgets the pick.
+  // The last picked suggestion, whether the box was edited since, and where
+  // its label's ZIP is in the box. That ZIP is the source's, not one the
+  // voter typed, and the geocoder's City check treats the two differently
+  // (#58), so a search goes as a pick until the voter deletes or changes that
+  // ZIP (owner decision). A paste or other bulk replacement also forgets it.
   const pickedRef = useRef(null);
   const id = useId();
   const listboxId = `${id}-listbox`;
@@ -90,12 +118,12 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
 
   function handleChange(event) {
     const value = event.target.value;
-    if (pickedRef.current) {
-      pickedRef.current.edited = true;
-      // Any edit that removes or replaces part of the label (a deletion, a
-      // paste over it) makes the text the voter's own, ZIP included, even
-      // when the same ZIP comes back later.
-      if (!isInsertionInto(pickedRef.current.suggestion.label, value)) pickedRef.current = null;
+    const picked = pickedRef.current;
+    if (picked) {
+      const inputType = event.nativeEvent?.inputType;
+      const typedByHand = Boolean(inputType) && !inputType.startsWith('insertFrom');
+      const zip = picked.zip && typedByHand ? zipAfterEdit(text, value, picked.zip) : null;
+      pickedRef.current = zip ? { ...picked, edited: true, zip } : null;
     }
     setText(value);
     onEdit?.();
@@ -108,7 +136,7 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
 
   function pick(suggestion) {
     if (busy) return;
-    pickedRef.current = { suggestion, edited: false };
+    pickedRef.current = { suggestion, edited: false, zip: zipIn(suggestion.label) };
     setText(suggestion.label);
     reset();
     onSubmit(suggestion);
@@ -123,12 +151,12 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
     pointerPickRef.current = null;
   }
 
-  // The text as a pick, when it is the picked label unedited, or the label
-  // with text inserted into it (a unit added); otherwise undefined.
+  // The text as a pick while the picked label's ZIP is still in it, as the
+  // suggestion itself when unedited; otherwise undefined.
   function asPick(trimmed) {
     const { suggestion, edited } = pickedRef.current ?? {};
     if (!suggestion) return undefined;
-    if (trimmed === suggestion.label.trim()) return edited ? undefined : suggestion;
+    if (!edited) return suggestion;
     return { id: `${suggestion.id}-edited`, label: trimmed };
   }
 

@@ -18,7 +18,7 @@ import {
   HOSTED_URL,
   LIVE_URL,
 } from './countyAddress.js';
-import { CITY_COUNTY, words } from './addressMatch.js';
+import { CITY_COUNTY, typedZip, words } from './addressMatch.js';
 import {
   attribution as cityAttribution,
   createCityAddressCheck,
@@ -132,14 +132,21 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
   // misses many, so an answer that could get a county precinct is checked
   // with the City's own geocoder, unless the text holds a ZIP entirely
   // outside the City. A City address that fits is the answer (the City
-  // referral, #8); one the text could mean but not exactly, or a City
-  // geocoder that fails or is slow, is no match. Never the county place then.
+  // referral, #8), unless it is in the same ZIP as the place found; that, one
+  // the text could mean but not exactly, or a City geocoder that fails or is
+  // slow, is no match. Never the county place then.
   async function checkedForCity(text, place, signal) {
     if (!place || !couldBeCounty(place) || !needsCityCheck(text)) return place;
     try {
       const city = await cityCheck.find(text, streetOf(place.label), { signal });
       if (signal?.aborted) throw abortError();
-      if (city?.status === 'city') return city.place;
+      if (city?.status === 'city') {
+        // The county (or Photon) and the City both list this number and
+        // street in one ZIP: the lookup cannot tell which the voter means, so
+        // no match (owner decision, #58), never the county precinct.
+        const zip = typedZip(place.label ?? '');
+        return zip && zip === typedZip(city.place?.label ?? '') ? null : city.place;
+      }
       if (city?.status === 'none') return place;
       return null;
     } catch {

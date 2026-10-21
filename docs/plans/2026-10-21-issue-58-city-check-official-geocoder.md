@@ -23,7 +23,8 @@ Domain skills:
    63112 as a PointAddress, so the lookup returns a City place and the City referral (#8).
 2. `6135 Horton Pl, St. Louis, MO 63133` never resolves to UNV202: 63133 crosses the City
    line, so the City check runs although a ZIP was typed; the City has 6135 HORTON PL 63133,
-   so the answer is the City referral.
+   in the same ZIP as the county record, so the answer is no match (owner decision
+   2026-10-21; originally the City referral). The same holds for 1 Brookings Dr 63130.
 3. The City check is the City of St. Louis's geocoder
    (`https://maps6.stlouis-mo.gov/arcgis/rest/services/GEOCODERS/COMPOSITE_GEOCODE/GeocodeServer`),
    not Photon. It runs on every non-City result of the chain (a county match, or a Photon
@@ -41,11 +42,12 @@ Domain skills:
    finding 4: a county voter retyping their address with a county-only ZIP got the City
    referral; frozen `AddressSearch.retype58.test.jsx`). The pick is kept only while every
    edit since it inserts text into the label, so a paste over the box forgets it too
-   (revision after review finding 5; frozen `AddressSearch.paste58.test.jsx`). Open after
-   review finding 6 (review-round limit reached, owner decision): an edit that is not a pure
-   insertion but leaves the label's ZIP in place, or a leading or trailing space (the frozen
-   `AddressSearch.repick58.test.jsx` asserts the label then goes as typed text), still sends
-   the county ZIP as typed.
+   (revision after review finding 5; frozen `AddressSearch.paste58.test.jsx`). Owner
+   decision after review finding 6 (2026-10-21): a search stays a pick until the label's ZIP
+   itself is deleted or changed (frozen `AddressSearch.pickzip58.test.jsx`); a paste, drop
+   or autofill also forgets it. The owner approved rewriting the frozen
+   `AddressSearch.repick58.test.jsx` (a space added keeps the pick) and, with the shared-ZIP
+   decision, `geocoder.city58.test.js` (Horton Pl is no match); both fail at the merge base.
 4. A City match counts when a City `PointAddress` has the typed house number and the typed
    whole street under the strict rules (`matchesStreet` in `addressMatch.js`), and its ZIP
    equals the typed ZIP when one is typed (a candidate with no ZIP counts). Then the answer is

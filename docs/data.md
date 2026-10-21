@@ -512,28 +512,31 @@ answer with the typed text itself:
   picked suggestion's label is the county record's, not the voter's, so for a pick the
   check ignores it: it neither skips the check nor rules out a City parcel in another ZIP
   (a City voter typing `6135 Washington` is offered only the county's 63134 address).
-  Searching again while the box still holds the picked label sends the pick again
-  (`src/features/lookup/AddressSearch.jsx`), not the label as typed text, and so does the
-  label with text inserted into it (a unit added). Any other edit (a deletion, a paste over
-  the box) forgets the pick, so a ZIP typed after it is the voter's own, and a county voter
-  can still type a county-only ZIP to get the precinct. Left open (issue #58 PR, owner
-  decision): an edit of the picked label that leaves its ZIP in place but is not a pure
-  insertion (deleting ", MO", changing "Saint Louis" to "St. Louis"), or a space typed at
-  its start or end, sends the label's county-only ZIP as typed text, so a City voter with a
-  county twin can get the county precinct that way.
+  After a pick, every search goes as a pick (`src/features/lookup/AddressSearch.jsx`)
+  until the voter deletes or changes the label's ZIP (owner decision, 2026-10-21): editing
+  other parts of the label (adding a unit, deleting ", MO", a space) keeps it. A paste,
+  drop or autofill into the box also forgets the pick, since the box cannot tell what it
+  replaced. Once the pick is forgotten, a ZIP typed later is the voter's own, so a county
+  voter can still type a county-only ZIP to get the precinct.
 - **A City match:** a `PointAddress` (a City parcel; interpolated `StreetAddress` ranges do
   not count) with the typed house number and whole street under the strict rules
   (`matchesStreet` in `addressMatch.js`), and the typed ZIP when one is typed (a parcel
   with no ZIP is not ruled out). The answer is that City place, so the voter gets the City
   referral (#8), never the county precinct. A typed town does not rule a City parcel out.
+- **The county and the City list the address in one ZIP** (the City parcel's ZIP is the
+  ZIP of the place found: 6135 Horton Pl 63133, county UNV202; 1 Brookings Dr 63130,
+  Washington University, county HAD018): no match, since the lookup cannot tell which one
+  the voter means (owner decision, 2026-10-21). The voter is pointed to "Use my location"
+  and the county's official lookup. A City twin in another ZIP (6135 Washington Ave 63112)
+  still gets the City referral.
 - **A City parcel the text could mean but not exactly** (its street has a direction the
   text left out, like `1200 Market Pl` and the City's 1200 N Market Pl): no match.
 - **The City geocoder unavailable** (network error, non-2xx, error body, malformed body,
   or no answer in 4 s): no match, never the county place. The voter gets "Use my
   location" and the county's official lookup.
-- **Cost:** a county voter whose number and street the City also has, who types no ZIP,
-  a ZIP that crosses the City line, or picks the suggestion, gets the City referral;
-  typing a county-only ZIP gets the precinct. A City geocoder outage makes every lookup without a county-only ZIP no
+- **Cost:** a county voter whose number and street the City also has in another ZIP, who
+  types no ZIP, a ZIP that crosses the City line, or picks the suggestion, gets the City
+  referral; typing a county-only ZIP gets the precinct. A City geocoder outage makes every lookup without a county-only ZIP no
   match, picks of a suggestion included. The owner accepted both: neither sends a voter to a wrong county precinct.
 - **Not done:** looking up City addresses the county does not have (#57).
 
@@ -558,9 +561,10 @@ the live layer blocked:
 App: 11 right, 0 no match, 0 wrong; the same with the live layer blocked (the
 hosted copy answered). Photon alone: 8 right, 3 no match. The script also checks
 that City Hall (1200 Market St, 63103) and the #58 City addresses (`6135 Washington Ave,
-St. Louis, MO`, `6135 Washington Ave`, `6109 Washington Ave` and `6135 Horton Pl, St.
-Louis, MO 63133`) get the City referral, typed and (for the Washington Ave ones) picked
-from the county's suggestion, with the live layer and with it blocked: all do.
+St. Louis, MO`, `6135 Washington Ave`, `6109 Washington Ave`) get the City referral, typed
+and picked from the county's suggestion, and that addresses both list in one ZIP (`6135
+Horton Pl, St. Louis, MO 63133`, `1 Brookings Dr`, `1 Brookings Dr, St. Louis, MO 63130`,
+and the `1 Brookings` pick) are no match, with the live layer and with it blocked: all do.
 A random sample of 192 current county address points, each typed both as stored
 and as a person would (lower case, full street type, town and ZIP), matched in the
 live layer every time.
