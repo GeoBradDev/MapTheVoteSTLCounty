@@ -25,11 +25,15 @@ const HEADING = /^(#+)(\s+|$)(.*)$/;
 const UNORDERED_ITEM = /^- (.*)$/;
 const ORDERED_ITEM = /^(\d+)\. (.*)$/;
 const SETEXT_UNDERLINE = /^=+\s*$/;
-const OTHER_LIST_MARKER = /^(?:[*+] |\d+\) )/;
+const OTHER_LIST_MARKER = /^(?:[*+]\s|\d+\)\s|-\t|\d+\.\t)/;
 const EMPTY_ITEM = /^(?:-|\d+[.)])$/;
 // Lines that would mean something else in Markdown; never list item text.
 const BLOCK_SYNTAX = /^(?:#|>|```|~~~|\||[-*+] |\d+[.)] |(?:-|\d+[.)])$)/;
-const RULE = /^(?:-{3,}|\*{3,}|_{3,})\s*$/;
+// Lines of only dashes (a rule or a setext underline) and spaced rules.
+const RULE = /^(?:-+|(?:\*\s*){3,}|(?:_\s*){3,}|(?:-\s*){3,})$/;
+/** Characters that are invisible or change text direction, so text reads
+ * differently from how it is stored. */
+export const HIDDEN_CHARACTER = /[\u061C\u200B-\u200F\u202A-\u202E\u2060\u2066-\u2069\uFEFF]/;
 const CITATION = /^\[\^([^\]]*)\]/;
 const LINK = /^\[([^\]]*)\]\(([^)\s]*)\)/;
 
@@ -196,6 +200,10 @@ export function parseMarkdown(body, firstLine = 1) {
       return;
     }
 
+    if (HIDDEN_CHARACTER.test(line)) {
+      errors.push(`${where}: remove the invisible or text direction control character`);
+    }
+
     const indented = /^\s/.test(line);
     const trimmed = line.trim();
 
@@ -223,7 +231,7 @@ export function parseMarkdown(body, firstLine = 1) {
     }
     if (RULE.test(line)) {
       close();
-      errors.push(`${where}: horizontal rules are not supported`);
+      errors.push(`${where}: rules and underlined headings are not supported; use ## or ###`);
       return;
     }
     if (line.startsWith('>')) {
@@ -285,7 +293,11 @@ export function parseMarkdown(body, firstLine = 1) {
           `${where}: number ordered items 1, 2, 3 in order, with no blank lines between them`,
         );
       }
-      open.items.push({ line: lineNo, lines: [(unordered ? unordered[1] : ordered[2]).trim()] });
+      const itemText = (unordered ? unordered[1] : ordered[2]).trim();
+      if (BLOCK_SYNTAX.test(itemText)) {
+        errors.push(`${where}: a list item can hold only text`);
+      }
+      open.items.push({ line: lineNo, lines: [itemText] });
       return;
     }
 

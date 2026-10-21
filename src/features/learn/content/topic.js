@@ -16,7 +16,7 @@
 //       url: https://www.sos.mo.gov/...
 
 import { parse as parseYaml } from 'yaml';
-import { ID_PATTERN, parseMarkdown } from './markdown.js';
+import { HIDDEN_CHARACTER, ID_PATTERN, parseMarkdown } from './markdown.js';
 import { isOfficialUrl } from './officialSources.js';
 
 /** How old a topic's last verification may be on Election Day, in days. */
@@ -27,9 +27,6 @@ const LOCALE = /^[a-z]{2}(?:-[A-Z]{2})?$/;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const TOPIC_KEYS = ['id', 'title', 'election', 'lastVerified', 'sources'];
 const SOURCE_KEYS = ['id', 'label', 'url'];
-// Bidirectional overrides and isolates can make text read differently from
-// how it is stored.
-const DIRECTION_CONTROL = /[\u202A-\u202E\u2066-\u2069]/;
 
 /**
  * @typedef {{ id: string, label: string, url: string }} TopicSource
@@ -96,7 +93,8 @@ export function readTopicFile(text) {
   } catch (error) {
     errors.push(`front matter is not valid YAML: ${error.message.split('\n')[0]}`);
   }
-  if (data !== null && (typeof data !== 'object' || Array.isArray(data))) {
+  // Empty front matter (or only comments) parses to null.
+  if (!errors.length && (data === null || typeof data !== 'object' || Array.isArray(data))) {
     errors.push('front matter must be a set of key: value lines');
     data = null;
   }
@@ -128,8 +126,8 @@ function checkSources(sources, errors) {
     else if (seen.has(id)) errors.push(`${where}.id: "${id}" is used twice`);
     else seen.add(id);
     if (!isNonEmptyString(label)) errors.push(`${where}.label: missing`);
-    else if (DIRECTION_CONTROL.test(label)) {
-      errors.push(`${where}.label: remove the text direction control character`);
+    else if (HIDDEN_CHARACTER.test(label)) {
+      errors.push(`${where}.label: remove the invisible or text direction control character`);
     }
     if (!isNonEmptyString(url)) errors.push(`${where}.url: missing`);
     else if (!isOfficialUrl(url)) {
@@ -198,8 +196,8 @@ export function parseTopic(text, { file, electionDate }) {
       errors.push(`id: "${data.id}" must match the file name "${fileId}"`);
     }
     if (!isNonEmptyString(data.title)) errors.push('title: missing');
-    else if (DIRECTION_CONTROL.test(data.title)) {
-      errors.push('title: remove the text direction control character');
+    else if (HIDDEN_CHARACTER.test(data.title)) {
+      errors.push('title: remove the invisible or text direction control character');
     }
     checkDates(data, electionDate, errors);
     sources = checkSources(data.sources, errors);

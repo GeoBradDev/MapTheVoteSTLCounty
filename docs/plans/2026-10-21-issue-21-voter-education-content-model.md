@@ -140,3 +140,7 @@ applicable because the app is a frontend-only React site.
   and titles or labels with text direction controls are rejected; a test fails if app code
   imports the build-time parsers; the config and geocoder steps in the data health workflow
   also get step limits (25 and 20 minutes), and the job limit is 70.
+- Finder 3: empty front matter (only comments) reports the problem instead of crashing the
+  build; block syntax on a list item's first line, dash-only lines (rules and `--`
+  underlines), spaced rules and tab list markers are errors; invisible and text direction
+  control characters are rejected anywhere in the body, the title and source labels.
