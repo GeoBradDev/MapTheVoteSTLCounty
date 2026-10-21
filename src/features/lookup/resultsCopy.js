@@ -37,6 +37,20 @@ export const copy = {
   /** @param {string} code */
   ready: (code) => `Results for precinct ${code} are ready.`,
   officialLookup: "county's official lookup",
+  /** @param {string} code The browser tab's title on a precinct's page. */
+  pageTitle: (code) => `Precinct ${code} | St. Louis County Voter Guide`,
+  // Under a precinct code that was not found: search instead.
+  searchInstead: 'Search for your address',
+  share: {
+    button: 'Share this page',
+    /** @param {string} code The share sheet's title. */
+    title: (code) => `Precinct ${code} voter information`,
+    /** @param {string} code */
+    note: (code) =>
+      `The link opens the results for precinct ${code}. It does not include your address.`,
+    copied: 'Link copied.',
+    manual: 'Copy this link:',
+  },
   status: {
     label: 'Precinct status',
     nonresidentialFallback:

@@ -102,6 +102,14 @@ It geocodes 10 polling place addresses and exits 1 if any lands in the wrong pre
 match" is allowed: the app then points the voter to "Use my location" and the county's
 official lookup. Results are recorded in `docs/data.md` under Geocoding.
 
+## Share links
+
+A precinct's results live at `/p/<code>`, like `/p/CC007`. The URL, the page title and the
+"Share this page" link hold only the precinct code: never the address, its text or its
+coordinates. A code in the wrong letter case, like `/p/cc007`, is replaced with the upper case
+URL. Shared links always use the production origin from `src/config/site.js`, so a link copied
+from a PR preview or a local build still works after that build is gone.
+
 ## Map
 
 The results screen shows a small map of the precinct and the listed polling places (#13). It

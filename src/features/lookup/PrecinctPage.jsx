@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'wouter';
+import { useEffect, useId, useRef, useState } from 'react';
+import { Link, useLocation, useParams } from 'wouter';
 import election from '../../config/election.js';
 import { getPrecinctById, NotFound, PRECINCT_CODE } from '../../data/arcgis.js';
+import AddressLookup from './AddressLookup.jsx';
 import { lookupPointFor } from './lookupPoint.js';
 import { precinctStatus } from './precinctStatus.js';
 import PrecinctStatusBanner from './PrecinctStatusBanner.jsx';
 import ResultsCards, { ResultsSkeleton, SkeletonLine } from './ResultsCards.jsx';
 import { copy } from './resultsCopy.js';
+import ShareLink from './ShareLink.jsx';
 
 const linkClass = 'text-primary underline';
 
@@ -27,6 +29,20 @@ function PrecinctResults({ code }) {
   // reload or a shared link has none.
   const [origin] = useState(() => lookupPointFor(code));
   const headingRef = useRef(null);
+  const validCode = PRECINCT_CODE.test(code);
+  const searchHeadingId = useId();
+
+  // The tab and bookmark title: the code only, and only a code-shaped one
+  // that is not known to be missing.
+  const titled = validCode && result?.error !== 'notFound';
+  useEffect(() => {
+    if (!titled) return undefined;
+    const previous = document.title;
+    document.title = copy.pageTitle(code);
+    return () => {
+      document.title = previous;
+    };
+  }, [code, titled]);
 
   useEffect(() => {
     let current = true;
@@ -53,7 +69,7 @@ function PrecinctResults({ code }) {
         <h1 ref={headingRef} tabIndex={-1} className="text-3xl font-semibold">
           {/* Only a code-shaped value goes in the heading: a link could
               otherwise put any text there. */}
-          {PRECINCT_CODE.test(code) ? copy.heading(code) : copy.notFoundHeading}
+          {validCode ? copy.heading(code) : copy.notFoundHeading}
         </h1>
         {!result && <SkeletonLine className="mt-2 h-5 w-48" />}
         {municipality && (
@@ -66,6 +82,7 @@ function PrecinctResults({ code }) {
             {copy.searchAnother}
           </Link>
         </p>
+        {precinct && <ShareLink code={code} />}
       </header>
 
       <p aria-live="polite" className="sr-only">
@@ -86,6 +103,17 @@ function PrecinctResults({ code }) {
         )}
       </p>
 
+      {result?.error === 'notFound' && (
+        <section aria-labelledby={searchHeadingId} className="mt-6">
+          <h2 id={searchHeadingId} className="text-xl font-semibold">
+            {copy.searchInstead}
+          </h2>
+          <div className="mt-4">
+            <AddressLookup />
+          </div>
+        </section>
+      )}
+
       {status && (
         <>
           <PrecinctStatusBanner status={status} />
@@ -102,8 +130,31 @@ function PrecinctResults({ code }) {
   );
 }
 
+/**
+ * The code a link meant, when it differs from a valid code only by letter
+ * case or surrounding spaces, like cc007 for CC007. Null otherwise.
+ * @param {string} value
+ */
+function canonicalCode(value) {
+  const trimmed = value.trim();
+  // ASCII only: toUpperCase maps some other letters (the German sharp s becomes SS) onto
+  // ASCII ones, which would open a different precinct.
+  if (!/^[a-z]{2,3}\d{3}$/i.test(trimmed)) return null;
+  const code = trimmed.toUpperCase();
+  return code !== value ? code : null;
+}
+
 export default function PrecinctPage() {
   const { precinct } = useParams();
+  const [, navigate] = useLocation();
+  const canonical = canonicalCode(precinct);
+
+  useEffect(() => {
+    if (canonical) navigate(`/p/${canonical}`, { replace: true });
+  }, [canonical, navigate]);
+
+  // Nothing renders until the URL holds the canonical code.
+  if (canonical) return null;
   // A new code is a new page: no state carries over from the last one.
   return <PrecinctResults key={precinct} code={precinct} />;
 }
