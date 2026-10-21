@@ -6,7 +6,7 @@ import { copy } from './useMyLocationCopy.js';
  * The "Use my location" button. It asks for the device's position only when
  * pressed and hands the coordinates to `onLocate` without keeping them. When
  * the position cannot be had, it says why and moves focus to the address box.
- * Going back to the address box (focusing or typing in it, or submitting its
+ * Going back to the address box (pressing or typing in it, or submitting its
  * form) while the position is pending, or unmounting, drops the pending
  * result, so a late answer never replaces an address the voter chose.
  * @param {{
@@ -43,8 +43,11 @@ export default function UseMyLocation({ onLocate, addressInputRef }) {
       setBusy(false);
     };
     // Each target and event the voter can use to go with an address instead.
+    // Not focus: the browser refocuses the box by itself when the permission
+    // prompt closes if it was still the focused element (Safari does not focus
+    // a tapped button).
     const listeners = [
-      [input, 'focus'],
+      [input, 'pointerdown'],
       [input, 'input'],
       [input?.form, 'submit'],
     ].filter(([target]) => target);

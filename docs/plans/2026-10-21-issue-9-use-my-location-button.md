@@ -54,9 +54,11 @@ including the `unknown` kind for a point outside the county with no state.
    place straight to `locate` (#8) and owns that query's loading and error states (#18).
    The component stores the coordinates nowhere: no URL, no web storage, no state kept
    after the call. A pending result is dropped, with no `onLocate`, error or focus move,
-   when the voter goes back to the address box (focuses or types in it, or submits its
+   when the voter goes back to the address box (presses or types in it, or submits its
    form) or the component unmounts, so a late answer never replaces an address the voter
-   chose. (Added after review findings 1 and 4.)
+   chose. (Added after review findings 1 and 4; it listens for `pointerdown`, not `focus`,
+   because the browser refocuses the box itself when the permission prompt closes,
+   finding 6.)
 6. On failure it shows a clear message for each reason in a `role="alert"` region, and
    moves focus to the address box (`addressInputRef`) so typing an address is the next
    step. The address box is never disabled by this component.
