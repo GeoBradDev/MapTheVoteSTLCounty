@@ -30,14 +30,15 @@ const PROBE_PATHS = [
  * Whether a Render header path matches a request path. Per
  * https://render.com/docs/static-site-headers: a trailing `*` matches the rest
  * of the path (`/*` matches every path, `/blog/*` matches `/blog/` and below),
- * `**` spans directories, and any other `*` stays within one segment
- * (`/*.css` matches `/tokens.css`, not `/assets/theme.css`).
+ * `**/ ` spans one or more directories, and any other ` *
+  ` stays within one segment
+ * (`; /*.css` matches `/tokens.css`, not `/assets/theme.css`).
  */
 function renderPathMatches(pattern, requestPath) {
   const source = pattern
     .split(/(\*\*\/|\*)/)
     .map((part, i, parts) => {
-      if (part === '**/') return '(?:.*/)?';
+      if (part === '**/') return '(?:.*/)';
       if (part === '*') return i === parts.length - 2 && parts.at(-1) === '' ? '.*' : '[^/]*';
       return part.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
     })

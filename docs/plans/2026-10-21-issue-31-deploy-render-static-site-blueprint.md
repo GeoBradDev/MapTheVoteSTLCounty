@@ -72,7 +72,8 @@ Owner decisions (2026-10-21):
 4. No two header rules with the same header name match the same path.
 5. The CSP: `default-src 'self'`; `script-src 'self'`, `style-src 'self'` (no
    `unsafe-inline` or `unsafe-eval`); `connect-src 'self'` plus the origin of
-   `election.serviceRoot` and `https://photon.komoot.io`; `img-src 'self'`;
+   `election.serviceRoot` and `https://photon.komoot.io`; `img-src 'self'`; `font-src 'self'`;
+   `manifest-src 'self'` (explicit, for #25 and #13 to extend);
    `object-src 'none'`; `base-uri 'self'`; `form-action 'self'`;
    `frame-ancestors 'none'`; `upgrade-insecure-requests`. A YAML comment says #13 must add
    its tile, style and font hosts and `worker-src blob:` / `child-src blob:` for MapLibre.
