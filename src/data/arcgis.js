@@ -6,6 +6,31 @@ import election from '../config/election.js';
 /** Precinct codes: a 2 or 3 letter township prefix plus 3 digits, like CC007. */
 export const PRECINCT_CODE = /^[A-Z]{2,3}\d{3}$/;
 
+/**
+ * The precinct fields the app reads (#27): the code, the status, the sample
+ * ballot link and every field the districts card lists. Queries ask for these
+ * only, not `*`. scripts/check-config.mjs checks the live layer has them.
+ */
+export const PRECINCT_FIELDS = Object.freeze([
+  ...new Set([
+    'precinct',
+    'in_election',
+    'html',
+    election.congressionalField,
+    ...election.districtFields.map((d) => d.field),
+  ]),
+]);
+
+/** The polling place fields the app reads (#27). */
+export const POLL_FIELDS = Object.freeze([
+  'loc',
+  'name',
+  'address',
+  'zipcode',
+  'abs_type',
+  'notes_abs',
+]);
+
 /** How long one attempt may take before it is aborted. */
 export const TIMEOUT_MS = 8000;
 
@@ -157,7 +182,10 @@ function pointParams(caller, { lat, lng }, outFields) {
  * @returns {Promise<object | null>} The precinct's attributes.
  */
 export async function getPrecinctAtPoint({ lat, lng }) {
-  const body = await query('precincts', pointParams('getPrecinctAtPoint', { lat, lng }, '*'));
+  const body = await query(
+    'precincts',
+    pointParams('getPrecinctAtPoint', { lat, lng }, PRECINCT_FIELDS.join(',')),
+  );
   const feature = body.features[0];
   return feature ? normalize(feature.attributes) : null;
 }
@@ -216,7 +244,7 @@ export async function getPrecinctById(code) {
   checkCode(code);
   const body = await query('precincts', {
     where: `precinct='${code}'`,
-    outFields: '*',
+    outFields: PRECINCT_FIELDS.join(','),
     returnGeometry: 'false',
     f: 'json',
   });
@@ -265,11 +293,18 @@ export async function getPrecinctGeometry(code) {
 }
 
 // A whole-layer GeoJSON query, fetched once per page load and shared by all
-// callers. A failed fetch is not kept, so the next call tries again.
-function sharedLayer(layer, where) {
+// callers. A failed fetch is not kept, so the next call tries again. Only the
+// fields the app reads, with coordinates to 6 decimals (about 0.1 m).
+function sharedLayer(layer, where, fields) {
   let pending;
   return () => {
-    pending ??= query(layer, { where, outFields: '*', outSR: '4326', f: 'geojson' })
+    pending ??= query(layer, {
+      where,
+      outFields: fields.join(','),
+      outSR: '4326',
+      geometryPrecision: '6',
+      f: 'geojson',
+    })
       .then((body) => ({
         ...body,
         features: body.features.map((f) => ({ ...f, properties: normalize(f.properties) })),
@@ -288,7 +323,7 @@ function sharedLayer(layer, where) {
  * @returns {Promise<object>} A GeoJSON FeatureCollection in lat/lng with
  *   normalized properties.
  */
-export const getPolls = sharedLayer('polls', '1=1');
+export const getPolls = sharedLayer('polls', '1=1', POLL_FIELDS);
 
 /**
  * The in-person absentee (early voting) sites: the polls layer filtered by
@@ -297,4 +332,4 @@ export const getPolls = sharedLayer('polls', '1=1');
  * @returns {Promise<object>} A GeoJSON FeatureCollection in lat/lng with
  *   normalized properties, including `abs_type` and `notes_abs`.
  */
-export const getAbsenteeSites = sharedLayer('polls', election.absenteeWhere);
+export const getAbsenteeSites = sharedLayer('polls', election.absenteeWhere, POLL_FIELDS);

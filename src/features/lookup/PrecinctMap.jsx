@@ -9,8 +9,14 @@ const linkClass = 'text-primary underline';
 // MapLibre GL JS needs WebGL 2. Without it, the map chunk is never downloaded.
 const canDrawMap = () => typeof globalThis.WebGL2RenderingContext === 'function';
 
-// How long the map may take, from mount to its first full render (code,
-// outline, style and tiles), before it is dropped. Time while the page is
+// The map waits until it scrolls into view (#27): MapLibre is a large chunk
+// and hundreds of milliseconds of main-thread work on a mid-range phone, and
+// the list above it holds everything the map shows. Without
+// IntersectionObserver it loads at once.
+const canWaitForView = () => typeof globalThis.IntersectionObserver === 'function';
+
+// How long the map may take, from when it starts loading (once in view) to its
+// first full render (code, outline, style and tiles), before it is dropped. Time while the page is
 // hidden does not count: a background tab draws nothing, so the clock pauses
 // and resumes with the time it had left.
 const LOAD_TIMEOUT_MS = 15_000;
@@ -48,6 +54,9 @@ export default function PrecinctMap({ code, origin, polls }) {
   const [supported] = useState(canDrawMap);
   // 'loading', 'ready' or 'failed'.
   const [state, setState] = useState('loading');
+  // Whether the map's box has come into view, so it may load.
+  const [inView, setInView] = useState(() => !canWaitForView());
+  const regionRef = useRef(null);
   const containerRef = useRef(null);
   const viewRef = useRef(null);
   const pollsRef = useRef(polls);
@@ -60,7 +69,19 @@ export default function PrecinctMap({ code, origin, polls }) {
   }, [polls]);
 
   useEffect(() => {
-    if (!supported) return undefined;
+    if (!supported || inView) return undefined;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        observer.disconnect();
+        setInView(true);
+      }
+    });
+    observer.observe(regionRef.current);
+    return () => observer.disconnect();
+  }, [supported, inView]);
+
+  useEffect(() => {
+    if (!supported || !inView) return undefined;
     // `current` turns false on cleanup; `loading` once the map rendered or failed.
     let current = true;
     let loading = true;
@@ -122,12 +143,12 @@ export default function PrecinctMap({ code, origin, polls }) {
       viewRef.current?.remove();
       viewRef.current = null;
     };
-  }, [supported, code, origin]);
+  }, [supported, inView, code, origin]);
 
   if (!supported || state === 'failed') return null;
 
   return (
-    <div role="region" aria-label={copy.map.label(code)} className="mt-3">
+    <div ref={regionRef} role="region" aria-label={copy.map.label(code)} className="mt-3">
       <div className="relative h-64 overflow-hidden rounded-md border border-border">
         {/* MapLibre adds its own classes to this element, so React must never
             change its className. Not positioned: .maplibregl-map sets

@@ -5,6 +5,7 @@
 import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { gzipSync } from 'node:zlib';
 import { build } from 'vite';
 import {
   colorLiterals,
@@ -72,12 +73,20 @@ describe('production build', () => {
 
   beforeAll(async () => {
     outDir = await mkdtemp(path.join(os.tmpdir(), 'mapthevote-build-'));
-    await build({
-      root: ROOT,
-      configFile: path.join(ROOT, 'vite.config.js'),
-      logLevel: 'silent',
-      build: { outDir, emptyOutDir: true },
-    });
+    // Vitest sets NODE_ENV to test, which would build React's development
+    // bundle. Build what `npm run build` ships.
+    const nodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    try {
+      await build({
+        root: ROOT,
+        configFile: path.join(ROOT, 'vite.config.js'),
+        logLevel: 'silent',
+        build: { outDir, emptyOutDir: true },
+      });
+    } finally {
+      process.env.NODE_ENV = nodeEnv;
+    }
     const assets = path.join(outDir, 'assets');
     const files = (await readdir(assets)).filter((f) => f.endsWith('.css'));
     css = (await Promise.all(files.map((f) => readFile(path.join(assets, f), 'utf8')))).join('\n');
@@ -137,6 +146,21 @@ describe('production build', () => {
     // Imported with import(), not statically: no modulepreload either.
     expect(js[entry]).toMatch(/import\(["'`][^"'`]*precinctMapView-[\w-]+\.js/);
     expect(html).not.toMatch(/precinctMapView/);
+  });
+
+  // Performance budget (#27): every script the first load fetches (the entry
+  // and anything index.html preloads) under about 120 KB gzipped.
+  it('keeps the first-load JavaScript under 120 KB gzipped', () => {
+    const firstLoad = [...html.matchAll(/(?:src|href)="\/assets\/([\w-]+\.js)"/g)].map((m) => m[1]);
+    expect(firstLoad.length).toBeGreaterThan(0);
+    const bytes = firstLoad.reduce((sum, f) => sum + gzipSync(js[f]).length, 0);
+    expect(bytes).toBeLessThan(120 * 1024);
+  });
+
+  // The system font stack (#27): no web font to download before text shows.
+  it('downloads no web font', () => {
+    expect(css).not.toMatch(/@font-face/i);
+    expect(html).not.toMatch(/fonts\.(googleapis|gstatic)\.com|\.woff2?\b/i);
   });
 
   it('ships the map worker as a same-origin file the map chunk points to', () => {

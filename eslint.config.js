@@ -9,7 +9,15 @@ import globals from 'globals';
 
 export default defineConfig([
   // .claude holds Claude worktrees: full copies of the repo on other branches.
-  globalIgnores(['dist', 'coverage', 'docs/raw', '.claude', 'test-results', 'playwright-report']),
+  globalIgnores([
+    'dist',
+    'coverage',
+    'docs/raw',
+    '.claude',
+    'test-results',
+    'playwright-report',
+    'lighthouse-reports',
+  ]),
   {
     files: ['**/*.{js,jsx,mjs}'],
     extends: [js.configs.recommended],

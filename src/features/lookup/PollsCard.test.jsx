@@ -186,6 +186,41 @@ describe('PollsCard', () => {
     expect(screen.queryByRole('list')).toBeNull();
   });
 
+  // #27: the skeleton holds the list's place, so the page does not jump.
+  it('shapes the skeleton like the first rows of the list', () => {
+    getPolls.mockReturnValue(new Promise(() => {}));
+    render(<PollsCard code="CC007" origin={ORIGIN} />);
+    const rows = screen.getByTestId('polls-skeleton').children;
+    expect(rows).toHaveLength(COUNT);
+    for (const row of rows) {
+      // A name, an address and a distance line, then a row of links.
+      expect([...row.children].map((c) => c.className)).toEqual([
+        expect.stringContaining('h-6'),
+        expect.stringContaining('h-6'),
+        expect.stringContaining('h-6'),
+        expect.stringContaining('min-h-11'),
+      ]);
+    }
+  });
+
+  it('says distances are from the center while loading too, without a looked-up point', () => {
+    getPolls.mockReturnValue(new Promise(() => {}));
+    render(<PollsCard code="CC007" origin={null} />);
+    expect(screen.getByText(copy.polls.fromCenter('CC007'))).toBeInTheDocument();
+  });
+
+  it('drops the center line when the places fail to load or none are found', async () => {
+    getPolls.mockRejectedValue(new Error('down'));
+    const { unmount } = render(<PollsCard code="CC007" origin={null} />);
+    await screen.findByText(copy.polls.failed, { exact: false });
+    expect(screen.queryByText(copy.polls.fromCenter('CC007'))).toBeNull();
+    unmount();
+    getPolls.mockResolvedValue({ ...polls, features: [] });
+    render(<PollsCard code="CC007" origin={null} />);
+    await screen.findByText(copy.polls.none, { exact: false });
+    expect(screen.queryByText(copy.polls.fromCenter('CC007'))).toBeNull();
+  });
+
   it('says the polling places failed to load, with the official lookup', async () => {
     getPolls.mockRejectedValue(new Error('down'));
     render(<PollsCard code="CC007" origin={ORIGIN} />);
@@ -238,6 +273,17 @@ describe('PollsCard', () => {
       await userEvent.click(screen.getByRole('button', { name: copy.polls.showMore }));
       const last = view.setPolls.mock.calls.at(-1)[0];
       expect(points(last)).toEqual(points(nearestPolls(polls, ORIGIN).slice(0, COUNT * 2)));
+    });
+
+    // #27: the list comes first; the map follows it and its Show more button.
+    it('comes after the list and its Show more button', async () => {
+      render(<PollsCard code="CC007" origin={ORIGIN} />);
+      const ol = await list();
+      const more = screen.getByRole('button', { name: copy.polls.showMore });
+      const follows = (a, b) =>
+        Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+      expect(follows(ol, more)).toBe(true);
+      expect(follows(more, mapRegion())).toBe(true);
     });
 
     it('is not shown when the polling places fail to load', async () => {

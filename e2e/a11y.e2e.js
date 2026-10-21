@@ -4,24 +4,9 @@
 // 1.4.12 text spacing override, one h1, the page language, and a skip link as
 // the first tab stop that moves focus to main. Then focus after in-app
 // navigation and reduced motion while the results load.
-import { readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import election from '../src/config/election.js';
-
-const fixture = (name) =>
-  readFileSync(new URL(`../docs/raw/fixtures/${name}.json`, import.meta.url), 'utf8');
-
-const FIXTURES = {
-  polls: fixture('polls'),
-  absentee: fixture('absentee-sites'),
-  geometry: fixture('precinct-geometry'),
-  byId: fixture('precinct-by-id'),
-  none: fixture('precinct-at-city'),
-};
-
-// The one precinct the fixtures hold.
-const CODE = 'CC007';
+import { CODE, fixtureBody } from './fixtures.js';
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'];
 
@@ -35,21 +20,11 @@ const TEXT_SPACING = `
 // (geocoders, map tiles) blocked.
 async function answerFromFixtures(page, { delayMs = 0 } = {}) {
   await page.route('**/*', async (route) => {
-    const url = new URL(route.request().url());
-    if (url.hostname === 'localhost') return route.continue();
-    if (!url.href.startsWith(election.serviceRoot)) return route.abort();
+    const href = route.request().url();
+    if (new URL(href).hostname === 'localhost') return route.continue();
+    const body = fixtureBody(href);
+    if (body === null) return route.abort();
     if (delayMs) await new Promise((resolve) => setTimeout(resolve, delayMs));
-    let body;
-    if (url.pathname.includes(election.layers.polls)) {
-      body =
-        url.searchParams.get('where') === election.absenteeWhere
-          ? FIXTURES.absentee
-          : FIXTURES.polls;
-    } else if (url.searchParams.get('where') === `precinct='${CODE}'`) {
-      body = url.searchParams.get('f') === 'geojson' ? FIXTURES.geometry : FIXTURES.byId;
-    } else {
-      body = FIXTURES.none;
-    }
     return route.fulfill({ contentType: 'application/json', body });
   });
 }

@@ -2,6 +2,7 @@ dist
 coverage
 test-results
 playwright-report
+lighthouse-reports
 package-lock.json
 docs/raw
 # Claude worktrees: full copies of the repo on other branches.

@@ -74,10 +74,14 @@ export function SkeletonLine({ className }) {
   return <div aria-hidden="true" className={`${className} ${bar}`} />;
 }
 
-/** Placeholders the size of the cards, hidden from screen readers. */
+/**
+ * Placeholders the size of the cards, hidden from screen readers. At least a
+ * screen tall, so the footer starts below the fold and is not pushed down
+ * when the longer results replace it (#27).
+ */
 export function ResultsSkeleton() {
   return (
-    <div data-testid="results-skeleton" aria-hidden="true">
+    <div data-testid="results-skeleton" aria-hidden="true" className="min-h-screen">
       <div className="mt-6 flex flex-col gap-4">
         {CARDS.map(({ key }) => (
           <div key={key} className="rounded-md border border-border p-4">
