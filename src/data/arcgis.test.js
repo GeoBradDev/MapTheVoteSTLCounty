@@ -1,5 +1,7 @@
 // Fixtures are live responses recorded by scripts/record-fixtures.mjs.
 // @vitest-environment node
+import boundaryAtCity from '../../docs/raw/fixtures/boundary-at-city.json';
+import boundaryInside from '../../docs/raw/fixtures/boundary-inside.json';
 import errorBody from '../../docs/raw/fixtures/error-body.json';
 import outside from '../../docs/raw/fixtures/precinct-at-point-outside.json';
 import atPoint from '../../docs/raw/fixtures/precinct-at-point.json';
@@ -10,6 +12,7 @@ import nonresidential from '../../docs/raw/fixtures/precinct-nonresidential.json
 import election from '../config/election.js';
 
 const PRECINCTS = `${election.serviceRoot}/${election.layers.precincts}/query`;
+const BOUNDARY = `${election.serviceRoot}/${election.layers.countyBoundary}/query`;
 
 let client;
 let fetchMock;
@@ -90,6 +93,53 @@ describe('getPrecinctAtPoint', () => {
   ])('throws TypeError and sends nothing for %s', async (_, point) => {
     await expect(client.getPrecinctAtPoint(point)).rejects.toThrow(TypeError);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('isInCountyBoundary', () => {
+  it('queries the county boundary layer with only the point and fixed parameters', async () => {
+    fetchMock.mockResolvedValue(respond(boundaryInside));
+    await client.isInCountyBoundary({ lat: 38.62, lng: -90.33 });
+    const { base, params } = onlyRequest();
+    expect(base).toBe(BOUNDARY);
+    expect(params).toEqual({
+      geometry: '-90.33,38.62',
+      geometryType: 'esriGeometryPoint',
+      inSR: '4326',
+      spatialRel: 'esriSpatialRelIntersects',
+      outFields: 'OBJECTID',
+      returnGeometry: 'false',
+      f: 'json',
+    });
+  });
+
+  it('resolves to true inside the county', async () => {
+    fetchMock.mockResolvedValue(respond(boundaryInside));
+    expect(await client.isInCountyBoundary({ lat: 38.62, lng: -90.33 })).toBe(true);
+  });
+
+  it('resolves to false outside the county', async () => {
+    fetchMock.mockResolvedValue(respond(boundaryAtCity));
+    expect(await client.isInCountyBoundary({ lat: 38.62741, lng: -90.19843 })).toBe(false);
+  });
+
+  it.each([[{ lat: '38.62', lng: -90.33 }], [{ lat: 38.62, lng: NaN }], [{ lat: 38.62 }]])(
+    'throws TypeError for %o and sends nothing',
+    async (point) => {
+      await expect(client.isInCountyBoundary(point)).rejects.toThrow(TypeError);
+      expect(fetchMock).not.toHaveBeenCalled();
+    },
+  );
+
+  it('retries a 5xx once like the other queries', async () => {
+    vi.useFakeTimers();
+    fetchMock
+      .mockResolvedValueOnce(new Response('', { status: 503 }))
+      .mockResolvedValueOnce(respond(boundaryInside));
+    const result = client.isInCountyBoundary({ lat: 38.62, lng: -90.33 });
+    await vi.advanceTimersByTimeAsync(client.RETRY_DELAY_MS);
+    expect(await result).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });
 
