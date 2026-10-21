@@ -45,10 +45,14 @@ html     = "Sample Ballot: <a href=https://stlouiscovotes.maps.arcgis.com/sharin
   `8d2f3ffe...`, whose `precincts` layer points at `precincts_2026_11_view/1` and
   whose popup is just `{html}` followed by `{districts}`.
 
-Parsing plan: pull the `href` with a regex
-(`/href=["']?([^"' >]+)/`), check that it matches
-`^https://stlouiscovotes\.maps\.arcgis\.com/sharing/rest/content/items/[0-9a-f]{32}/data$`,
-and never render `html` as raw HTML. Pull the file name from the link text.
+Parsing: `parseSampleBallot` in `src/data/sampleBallot.js` pulls the `href` with a
+regex (unquoted, single- or double-quoted), accepts it only when it matches
+`sampleBallotUrlPattern` in `src/config/election.js`, and takes the file name from the
+link text. Anything else comes back as plain text, or as nothing when a link is
+rejected. Never render `html` as raw HTML; a test fails on `dangerouslySetInnerHTML`
+anywhere under `src/`. `node scripts/check-sample-ballots.mjs` runs the parser over
+every precinct on the live layer and exits 1 unless each `In Election` precinct has
+its own valid link and every other precinct a message. Run it before each election.
 
 Do not use `lookup_view_sample_ballot`. Despite its name, it is a stale view of
 `precincts_2024_08_ToPublish` (1199 rows) with older ballot item IDs.
