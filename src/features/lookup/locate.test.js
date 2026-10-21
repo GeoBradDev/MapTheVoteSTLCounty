@@ -179,6 +179,25 @@ describe('classifyPlace', () => {
   });
 
   it.each([
+    ['St-Louis City', 'MO'],
+    ['St. Louis (city)', 'MO'],
+    ['St. Louis City,', 'MO,'],
+    ['St. Louis city', 'Missouri.'],
+    // A Census numeric state code: 29 is Missouri.
+    ['St. Louis city', '29'],
+  ])('ignores punctuation and reads %j, %j as the City', (county, state) => {
+    expect(classifyPlace({ county, state })).toBe('stl-city');
+  });
+
+  it.each([
+    [{ state: 'Missouri,' }, 'missouri'],
+    [{ state: '29' }, 'missouri'],
+    [{ state: '17' }, 'out-of-state'],
+  ])('reads %j as %s', (place, kind) => {
+    expect(classifyPlace(place)).toBe(kind);
+  });
+
+  it.each([
     ['St. Louis County', 'MO', 'st-louis-county'],
     ['Saint Louis County', 'Missouri', 'st-louis-county'],
     ['St. Charles County', 'MO', 'missouri'],
