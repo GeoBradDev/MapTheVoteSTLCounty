@@ -14,12 +14,21 @@ import { ASSET_HEADERS, SHELL_HEADERS } from '../../scripts/smoke.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 const BASEMAP = new URL(BASEMAP_STYLE_URL).origin;
-const SHELL_PATHS = ['/', '/index.html', '/p/CC007', '/learn', '/learn/voter-id'];
+const SHELL_PATHS = [
+  '/',
+  '/index.html',
+  '/p/CC007',
+  '/learn',
+  '/learn/voter-id',
+  '/privacy',
+  '/privacy/',
+];
 const ASSET_PATH = '/assets/index-abc123.js';
 // Every kind of path the site serves, for the overlap check.
 const PROBE_PATHS = [
   ...SHELL_PATHS,
   '/p/CC007/extra',
+  '/privacy/extra',
   ASSET_PATH,
   '/assets/index-abc123.css',
   '/sw.js',

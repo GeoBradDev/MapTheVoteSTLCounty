@@ -89,6 +89,12 @@ services:
       - path: /learn/*
         name: Cache-Control
         value: no-cache
+      - path: /privacy
+        name: Cache-Control
+        value: no-cache
+      - path: /privacy/*
+        name: Cache-Control
+        value: no-cache
       - path: /sw.js
         name: Cache-Control
         value: no-cache

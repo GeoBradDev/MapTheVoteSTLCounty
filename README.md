@@ -102,6 +102,27 @@ It geocodes 10 polling place addresses and exits 1 if any lands in the wrong pre
 match" is allowed: the app then points the voter to "Use my location" and the county's
 official lookup. Results are recorded in `docs/data.md` under Geocoding.
 
+## Privacy
+
+Addresses are sensitive. The app itself never puts a typed address or its coordinates in the
+URL, `localStorage`, `sessionStorage`, IndexedDB, cookies, logs or analytics, and v1 has no
+analytics. The browser's ordinary HTTP cache may still keep the precinct point queries, whose
+URLs hold the coordinates, until #38 changes them; the notice says so. The plain-language
+notice at `/privacy` (`src/features/privacy/privacyCopy.js`) says what each third party gets;
+change it in the same change as any new service or any change to what is sent. `src/test/no-storage.test.js` fails
+when app code under `src` uses browser storage, cookies or the console, and
+`src/test/addressPrivacy.test.jsx` runs a lookup and checks storage, cookies, Cache Storage
+entries, IndexedDB database names, the URL and the console for the address (jsdom has no
+Cache Storage or IndexedDB, so those two run only where they exist). A test also fails when the
+Content-Security-Policy allows an origin the notice does not name.
+
+The tests run in jsdom, so check a real browser by hand before each election: look up an
+address and use Use my location, then in the browser's devtools confirm that Application shows
+no Local Storage, Session Storage, IndexedDB, Cookies or Cache Storage entries for the site and
+that the URL is `/p/<code>` only. In the Network panel, confirm that the requests carrying the
+address or the coordinates go only to the hosts the notice names, and whether the point queries
+come back from the HTTP cache; if #38 has changed that, update the notice.
+
 ## Share links
 
 A precinct's results live at `/p/<code>`, like `/p/CC007`. The URL, the page title and the
