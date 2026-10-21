@@ -114,16 +114,6 @@ applicable because the app is a frontend-only React site.
 - Chose not to: wire topics into routes (#23), translate (#19), write content (#22), or add a
   Markdown dependency.
 
-## Revisions after review
-
-- Finder 1: site paths with a backslash (which browsers read as another host) and
-  `https:` URLs without `//` are rejected; ordered lists must be numbered 1, 2, 3 with no
-  blank lines between items, so a step number cannot silently change; inline problems no
-  longer stop at the first one in a paragraph; topic ids must be lowercase slugs; a BOM is
-  ignored; invalid YAML no longer blames valid citations; the link checker fails a redirect
-  that lands off the official hosts; the link check step has its own time limit so a slow day
-  still opens the data health issue.
-
 ## Proof
 
 - Criteria 1, 2, 4: `topic.test.js`, `markdown.test.js`.
@@ -134,13 +124,25 @@ applicable because the app is a frontend-only React site.
 - Criterion 7: `topics.test.js` (fallback), `TopicArticle.test.jsx` (labels from copy).
 - Live drive: nothing user-visible changes; run `npm run build` and confirm `/learn` still
   renders the placeholder in `npm run preview`.
+
+## Revisions after review
+
+- Finder 1: site paths with a backslash (which browsers read as another host) and
+  `https:` URLs without `//` are rejected; ordered lists must be numbered 1, 2, 3 with no
+  blank lines between items, so a step number cannot silently change; inline problems no
+  longer stop at the first one in a paragraph; topic ids must be lowercase slugs; a BOM is
+  ignored; invalid YAML no longer blames valid citations; the link checker fails a redirect
+  that lands off the official hosts; the link check step has its own time limit so a slow day
+  still opens the data health issue.
 - Finder 2: `getTopics` no longer depends on `this`, so it works as a named import; a link URL
-  with `(` must be percent-encoded instead of being cut at the first `)`; list continuation
-  lines, `1)` markers and empty items are errors; URLs with whitespace or control characters
-  and titles or labels with text direction controls are rejected; a test fails if app code
+  with `(` must be percent-encoded instead of being cut at the first `)`; unindented lines
+  that continue a list, block syntax on indented continuation lines, `1)` markers and empty
+  items are errors; URLs with whitespace or control characters and titles or labels with text direction controls are rejected; a test fails if app code
   imports the build-time parsers; the config and geocoder steps in the data health workflow
   also get step limits (25 and 20 minutes), and the job limit is 70.
 - Finder 3: empty front matter (only comments) reports the problem instead of crashing the
   build; block syntax on a list item's first line, dash-only lines (rules and `--`
   underlines), spaced rules and tab list markers are errors; invisible and text direction
   control characters are rejected anywhere in the body, the title and source labels.
+- Finder 4: list item text that starts with `#` but is not a heading (`#2 pencil`) is
+  allowed again; only `#` to `######` followed by a space is heading syntax.

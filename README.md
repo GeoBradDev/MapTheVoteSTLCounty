@@ -149,10 +149,10 @@ the script.
 
 `.github/workflows/data-health.yml` runs this check, `scripts/check-geocoder.mjs` and
 `scripts/check-content-links.mjs` every day at 12:00 UTC until Election Day is over in the
-config's time zone, and on demand from the Actions tab (**Data health**, **Run workflow**). On a failure it opens an issue labeled
-`data health`, or comments on the one already open; close that issue once it is fixed. The
-workflow never runs on pull requests, so a live outage cannot block a merge. For the next
-election, nothing in the workflow changes: it reads the new `electionDate`. GitHub turns off
+config's time zone, and on demand from the Actions tab (**Data health**, **Run workflow**). On
+a failure it opens an issue labeled `data health`, or comments on the one already open; close
+that issue once it is fixed. The workflow never runs on pull requests, so a live outage cannot
+block a merge. For the next election, nothing in the workflow changes: it reads the new `electionDate`. GitHub turns off
 scheduled workflows in a public repository after 60 days with no activity; if the daily runs stop,
 turn the workflow back on in the Actions tab.
 

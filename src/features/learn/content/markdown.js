@@ -28,7 +28,7 @@ const SETEXT_UNDERLINE = /^=+\s*$/;
 const OTHER_LIST_MARKER = /^(?:[*+]\s|\d+\)\s|-\t|\d+\.\t)/;
 const EMPTY_ITEM = /^(?:-|\d+[.)])$/;
 // Lines that would mean something else in Markdown; never list item text.
-const BLOCK_SYNTAX = /^(?:#|>|```|~~~|\||[-*+] |\d+[.)] |(?:-|\d+[.)])$)/;
+const BLOCK_SYNTAX = /^(?:#{1,6}(?:\s|$)|>|```|~~~|\||[-*+] |\d+[.)] |(?:-|\d+[.)])$)/;
 // Lines of only dashes (a rule or a setext underline) and spaced rules.
 const RULE = /^(?:-+|(?:\*\s*){3,}|(?:_\s*){3,}|(?:-\s*){3,})$/;
 /** Characters that are invisible or change text direction, so text reads
