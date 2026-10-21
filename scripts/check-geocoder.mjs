@@ -14,7 +14,12 @@
 
 import { readFile } from 'node:fs/promises';
 import { getPrecinctAtPoint } from '../src/data/arcgis.js';
-import { createCountyAddressSource, HOSTED_URL, LIVE_URL } from '../src/data/countyAddress.js';
+import {
+  createCountyAddressSource,
+  HOSTED_TIMEOUT_MS,
+  HOSTED_URL,
+  LIVE_URL,
+} from '../src/data/countyAddress.js';
 import { createGeocoder } from '../src/data/geocoder.js';
 import { GeocoderUnavailableError } from '../src/data/geocoderError.js';
 import { createPhotonGeocoder } from '../src/data/photon.js';
@@ -31,7 +36,8 @@ const polls = JSON.parse(
 ).features;
 
 const live = createCountyAddressSource({ url: LIVE_URL });
-const hosted = createCountyAddressSource({ url: HOSTED_URL, timeoutMs: 8000 });
+// The app's own timeouts, so the blocked column shows what a voter would get.
+const hosted = createCountyAddressSource({ url: HOSTED_URL, timeoutMs: HOSTED_TIMEOUT_MS });
 const photon = createPhotonGeocoder({ baseUrl: process.argv[2] });
 // The live layer as a browser sees it when its firewall or network blocks it.
 const blockedLive = createCountyAddressSource({

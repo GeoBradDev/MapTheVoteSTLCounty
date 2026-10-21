@@ -32,6 +32,7 @@ export const HOSTED_URL =
 export const attribution = Object.freeze({
   data: 'address points',
   by: 'St. Louis County',
+  publisher: 'GIS Service Center',
   url: 'https://www.arcgis.com/home/item.html?id=cf0a5470fca14004baee67da7746cdbf',
 });
 
@@ -49,6 +50,8 @@ const SUGGEST_LIMIT = 25;
 const MAX_SUGGESTIONS = 5;
 // About 300 m: the units of one apartment complex, which share a number.
 const SAME_SITE_DEGREES = 0.003;
+// About 50 m: one house the county lists twice (a building and a parcel point).
+const SAME_HOUSE_DEGREES = 0.0005;
 
 const OUT_FIELDS = [
   'OBJECTID',
@@ -62,6 +65,7 @@ const OUT_FIELDS = [
   'ZIPCODE',
   'FULL_ADDRESS',
   'STATUS',
+  'MUNI',
 ].join(',');
 const CURRENT = "STATUS = 'Current'";
 const MAX_HOUSE_NUMBER_DIGITS = 6;
@@ -176,6 +180,12 @@ const COUNTY_SPELLING = {
   tenth: '10th',
 };
 const DIRECTION_SPELLING = { north: 'n', south: 's', east: 'e', west: 'w' };
+// The words of COUNTY_SPELLING that are street types.
+const STREET_TYPE_WORDS = new Set(
+  Object.keys(COUNTY_SPELLING).filter(
+    (word) => STREET_TYPES.has(words(word)[0]) || word === 'street',
+  ),
+);
 
 /**
  * The where clause for suggestions: current records whose FULL_ADDRESS
@@ -196,6 +206,10 @@ export function suggestWhere(text) {
     // in the list is whole ("Avenue").
     if (i === parts.length - 1 && !lastIsWhole && word.length < 5) return word;
     if (i === 1 && parts.length > 2 && DIRECTION_SPELLING[word]) return DIRECTION_SPELLING[word];
+    // A street type in the middle is part of the name ("Olive Street Rd"),
+    // unless a unit follows it ("Main Street Apt 2").
+    const asType = i === parts.length - 1 || UNIT.has(parts[i + 1]);
+    if (!asType && STREET_TYPE_WORDS.has(word)) return word;
     return COUNTY_SPELLING[word] ?? word;
   });
   const prefix = `${spelled.join(' ').toUpperCase()}${/\s$/.test(streetPart) ? ' ' : ''}`;
@@ -235,7 +249,7 @@ function recordOf(feature) {
   };
   const unitNo = text(a.UNITNO).toUpperCase();
   const unit = unitNo ? `${titleCase(a.UNITDESC) || 'Unit'} ${unitNo}` : '';
-  return { props, lat: y, lng: x, unit, unitKey: unitNo.replace(/-/g, '') };
+  return { props, lat: y, lng: x, unit, unitKey: unitNo.replace(/-/g, ''), muni: text(a.MUNI) };
 }
 
 /** @returns {import('./geocoder.js').GeocodedPlace} */
@@ -250,8 +264,14 @@ function placeOf(record, { withUnit = false } = {}) {
 const siteKey = ({ props }) =>
   `${props.housenumber}|${words(props.street).join(' ')}|${props.postcode ?? ''}`;
 
-const near = (a, b) =>
-  Math.abs(a.lat - b.lat) <= SAME_SITE_DEGREES && Math.abs(a.lng - b.lng) <= SAME_SITE_DEGREES;
+const within = (a, b, degrees) =>
+  Math.abs(a.lat - b.lat) <= degrees && Math.abs(a.lng - b.lng) <= degrees;
+
+// Two records of one address are one house only in one municipality and a few
+// metres apart: the county has the same number, street and ZIP as separate
+// houses in two towns (50 Country Club Ln 63033, Black Jack and Florissant,
+// in two precincts) and 100 m apart in one ZIP (2100 Walton Rd 63114).
+const sameHouse = (a, b) => a.muni === b.muni && within(a, b, SAME_HOUSE_DEGREES);
 
 /**
  * @typedef {{ status: 'match', place: import('./geocoder.js').GeocodedPlace, confirmed: boolean }
@@ -347,14 +367,23 @@ export function createCountyAddressSource({
       // guessing.
       const [first] = matches;
       if (!matches.every((m) => siteKey(m) === siteKey(first))) return { status: 'ambiguous' };
-      // One address: the typed unit's point, else the address's own point
-      // (the record with no unit), else its units' point when they are close
-      // together. Units spread over a large parcel, with no point of the
-      // address itself, could be in two precincts.
+      // One number, street and ZIP, but two houses: no answer, even for a unit.
+      const houses = matches.filter((m) => !m.unitKey);
+      if (!houses.every((h) => sameHouse(h, houses[0]))) return { status: 'ambiguous' };
+      // The typed unit's point when exactly one record has it, else the
+      // house's own point, else its units' point when they are close together
+      // in one municipality. Units spread over a large parcel, with no point
+      // of the house itself, could be in two precincts.
       const unit = typedUnit(typed);
-      const ownUnit = unit && matches.find((m) => m.unitKey === unit);
-      const chosen = ownUnit ?? matches.find((m) => !m.unitKey);
-      if (!chosen && !matches.every((m) => near(m, first))) return { status: 'ambiguous' };
+      const units = unit ? matches.filter((m) => m.unitKey === unit) : [];
+      const ownUnit = units.length === 1 ? units[0] : undefined;
+      const chosen = ownUnit ?? houses[0];
+      if (
+        !chosen &&
+        !matches.every((m) => m.muni === first.muni && within(m, first, SAME_SITE_DEGREES))
+      ) {
+        return { status: 'ambiguous' };
+      }
       return {
         status: 'match',
         place: placeOf(chosen ?? first, { withUnit: Boolean(ownUnit) }),
@@ -363,8 +392,9 @@ export function createCountyAddressSource({
     },
 
     /**
-     * Up to five county addresses starting with the text. Each carries its
-     * place, so geocoding a pick sends nothing.
+     * Up to five county addresses starting with the text. They carry no
+     * point: one label can be two houses (see sameHouse), so a pick is found
+     * again by its label, under every rule of find().
      * @param {string} input
      * @param {{ signal?: AbortSignal }} [options]
      * @returns {Promise<import('./geocoder.js').Suggestion[]>}
@@ -393,7 +423,6 @@ export function createCountyAddressSource({
         suggestions.push({
           id: `county-${feature.attributes.OBJECTID ?? ''}-${suggestions.length}`,
           label: place.label,
-          place,
         });
         if (suggestions.length === MAX_SUGGESTIONS) break;
       }

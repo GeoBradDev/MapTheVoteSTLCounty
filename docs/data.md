@@ -412,10 +412,18 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
   St. Louis needs its town or ZIP) then decide in the browser
   (`src/data/addressMatch.js`, shared by both providers). County street types
   (`PLZ`, `XING`, `CV` and others) compare equal to their full words.
-- **Units:** records with the same number, street and ZIP are one address. A typed
-  unit ("Apt 13B", "#2") picks its own record when it exists, else the address's own
-  record (no unit), else a unit's point when all are within about 300 m. Units spread
-  further with no record of the address itself are no match. A complex can have over
+- **One address, two houses:** the county has records with the same number, street
+  and ZIP that are separate houses: 50 Country Club Ln 63033 is in Black Jack and in
+  Florissant, about 470 m apart, in precincts SPL021 and SPL026, and 2100 Walton Rd
+  63114 is in Vinita Park and Overland, about 100 m apart, in UNV031 and MID002. Two
+  records with no unit count as one house only when they have the same municipality
+  (`MUNI`) and lie within about 50 m (a building and a parcel point). Otherwise the
+  answer is no match, even with the ZIP, town or a unit typed; the voter is pointed to
+  "Use my location" and the county's official lookup.
+- **Units:** a typed unit ("Apt 13B", "#2") picks its own record when exactly one record
+  has it, else the house's own record (no unit), else a unit's point when all units are
+  in one municipality within about 300 m. Units spread further with no record of the
+  house itself are no match. A complex can have over
   300 units at one number, so a find asks for up to 1000 records; more counts as the
   layer being unavailable.
 - **Two addresses fit** (two ZIPs or two streets): no match, with no fallback, since
@@ -438,14 +446,19 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
 - **Suggestions:** `STATUS = 'Current' AND FULL_ADDRESS LIKE '<typed>%'` in county
   spelling (AVENUE as AVE, SAINT as ST, a typed ZIP after a comma as
   `ZIPCODE = '<zip>'`), 25 records ordered by address, units collapsed to their
-  address unless a unit is typed, at most 5 shown. Each carries its place, so picking
-  one sends nothing more. Photon suggests only when the county layers are unavailable
-  or have none (a City address, or a spelling the prefix misses).
+  address unless a unit is typed, at most 5 shown. A street type in the middle of a
+  name stays as typed ("Olive Street Rd"). County suggestions carry no point, since
+  one label can be two houses: a pick is found again by its label (which has the ZIP),
+  under every rule above. Photon suggests only when the county layers are unavailable
+  or have none (a City address, or a spelling the prefix misses); its suggestions
+  carry their place as before.
 
 Privacy: the address goes to the county layers only in a POST body, never a URL,
 with `cache: no-store`, no cookies (`credentials: 'omit'`; the live server sets an
-`AGS_ROLES` cookie, which is never stored) and no referrer. Photon still gets it in
-a GET query string, as before (#38). Nothing is stored. The Content-Security-Policy
+`AGS_ROLES` cookie, which is never stored) and no referrer. Photon gets the address
+only when the county has no match or no county layer answers, or for the City check
+of a county match typed with no ZIP or town; it gets it in a GET query string, as
+before (#38). Nothing is stored. The Content-Security-Policy
 allows `https://maps.stlouisco.com` and `https://services2.arcgis.com` in
 `connect-src`.
 

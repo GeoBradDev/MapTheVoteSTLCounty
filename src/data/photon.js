@@ -1,7 +1,8 @@
 // A Geocoder (src/data/geocoder.js) backed by Photon, an open-source geocoder
 // over OpenStreetMap data, called straight from the browser: no proxy, no
-// server of ours, no API key. Address text goes only to Photon, with no
-// cookies, no referrer and no browser cache. Photon's public instance asks for
+// server of ours, no API key. src/data/geocoder.js asks it after the county's
+// address points (issue #49). Requests carry no cookies, no referrer and no
+// browser cache. Photon's public instance asks for
 // fair use and promises no availability, so every failure becomes a
 // GeocoderUnavailableError and the lookup offers "Use my location" and the
 // county's official lookup instead. A match is never stretched into a guess:

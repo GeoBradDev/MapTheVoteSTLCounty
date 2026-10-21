@@ -7,7 +7,9 @@ describe('GeocoderAttribution', () => {
     render(<GeocoderAttribution />);
     const link = screen.getByRole('link', { name: attribution.county.data });
     expect(link).toHaveAttribute('href', attribution.county.url);
-    expect(link.closest('p')).toHaveTextContent('Address search: St. Louis County address points');
+    expect(link.closest('p')).toHaveTextContent(
+      'Address search: St. Louis County address points (GIS Service Center), or, when needed,',
+    );
   });
 
   it('credits OpenStreetMap contributors with a link to the copyright page', () => {

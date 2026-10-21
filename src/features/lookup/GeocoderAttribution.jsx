@@ -16,8 +16,8 @@ export default function GeocoderAttribution() {
       {text.searchBy} {county.by}{' '}
       <a href={county.url} rel="noreferrer" className={linkClass}>
         {county.data}
-      </a>
-      , {text.then}{' '}
+      </a>{' '}
+      ({county.publisher}), {text.then}{' '}
       <a href={fallback.serviceUrl} rel="noreferrer" className={linkClass}>
         {fallback.service}
       </a>{' '}

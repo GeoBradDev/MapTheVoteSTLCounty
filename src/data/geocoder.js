@@ -125,6 +125,7 @@ export function createGeocoder({ sources, fallback }) {
       const text = String(input ?? '').trim();
       if (!text) return [];
       const county = await firstAnswer((source) => source.suggest(text, { signal }), signal);
+      if (signal?.aborted) throw abortError();
       if (county?.length) return county;
       try {
         return await fallback.suggest(text, { signal });
@@ -144,6 +145,7 @@ export function createGeocoder({ sources, fallback }) {
       const text = String((typeof query === 'object' ? query?.label : query) ?? '').trim();
       if (!text) return null;
       const county = await firstAnswer((source) => source.find(text, { signal }), signal);
+      if (signal?.aborted) throw abortError();
       // The official data has two addresses that fit: ask for a ZIP.
       if (county?.status === 'ambiguous') return null;
       if (county?.status === 'match') {

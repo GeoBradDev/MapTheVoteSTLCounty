@@ -217,6 +217,38 @@ describe('geocode', () => {
       expect(fallback.geocode).not.toHaveBeenCalled();
     });
 
+    it('rejects with AbortError when aborted right after the county answers', async () => {
+      const controller = new AbortController();
+      const { geocoder } = chain({
+        live: countySource({
+          find: async () => {
+            controller.abort();
+            return { status: 'match', place: ROSS, confirmed: true };
+          },
+        }),
+      });
+      const error = await geocoder
+        .geocode('1318 Ross Ave 63146', { signal: controller.signal })
+        .catch((e) => e);
+      expect(error.name).toBe('AbortError');
+    });
+
+    it('rejects with AbortError when suggestions are aborted right after the county answers', async () => {
+      const controller = new AbortController();
+      const { geocoder } = chain({
+        live: countySource({
+          suggest: async () => {
+            controller.abort();
+            return [{ id: 'c', label: ROSS.label }];
+          },
+        }),
+      });
+      const error = await geocoder
+        .suggest('1318 Ross', { signal: controller.signal })
+        .catch((e) => e);
+      expect(error.name).toBe('AbortError');
+    });
+
     it('rejects with AbortError during the City cross-check', async () => {
       const { geocoder } = chain({
         live: countySource({ find: match(false) }),

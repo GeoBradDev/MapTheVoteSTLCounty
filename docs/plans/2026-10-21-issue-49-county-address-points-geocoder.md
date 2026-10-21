@@ -146,3 +146,13 @@ Domain skills:
   queries use only `=`, `LIKE`, `AND` and `OR`, and a block is a 403 that falls through to
   the hosted copy.
 - `scripts/check-geocoder.mjs` also checks the City referral for City Hall.
+- Review round 1 (finder): the county has separate houses at one number, street and
+  ZIP (50 Country Club Ln 63033 in Black Jack and Florissant; 2100 Walton Rd 63114 in
+  Vinita Park and Overland), in different precincts. Two records with no unit are now one
+  house only in one municipality (`MUNI`) and within about 50 m, else no match, and a
+  typed unit counts only when exactly one record has it. County suggestions no longer
+  carry a point (criterion 10 changes): a pick is found again by its label under every
+  rule, because one label can be two houses. Also: the credit names the GIS Service
+  Center, a street type inside a street name stays as typed in suggestions, the chain
+  rejects with AbortError when aborted right after a county answer, and the check
+  script uses the app's hosted timeout.

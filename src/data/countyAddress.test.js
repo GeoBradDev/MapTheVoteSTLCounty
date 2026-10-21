@@ -23,6 +23,7 @@ function point(attributes, [x, y] = [-90.4581, 38.6822]) {
       ZIPCODE: '63146',
       FULL_ADDRESS: '1318 ROSS AVE',
       STATUS: 'Current',
+      MUNI: 'UNI',
       ...attributes,
     },
     geometry: { x, y },
@@ -80,8 +81,9 @@ describe('the county layers', () => {
     );
   });
 
-  it('credit St. Louis County with a link to the data', () => {
+  it('credit St. Louis County and its GIS Service Center with a link to the data', () => {
     expect(attribution.by).toBe('St. Louis County');
+    expect(attribution.publisher).toBe('GIS Service Center');
     expect(attribution.url).toMatch(/^https:\/\//);
   });
 });
@@ -172,6 +174,12 @@ describe('suggestWhere', () => {
     );
     expect(suggestWhere('1750 North Geyer')).toBe(
       "STATUS = 'Current' AND FULL_ADDRESS LIKE '1750 N GEYER%'",
+    );
+  });
+
+  it('keeps a street-type word inside the street name as typed', () => {
+    expect(suggestWhere('18771 Olive Street Rd')).toBe(
+      "STATUS = 'Current' AND FULL_ADDRESS LIKE '18771 OLIVE STREET RD%'",
     );
   });
 
@@ -336,6 +344,83 @@ describe('find', () => {
     });
   });
 
+  describe('two records with no unit at one address', () => {
+    // Live data: 50 Country Club Ln 63033 is in Black Jack and in Florissant,
+    // about 470 m apart, in precincts SPL021 and SPL026.
+    const blackJack = point(
+      {
+        OBJECTID: 70176,
+        ADRNO: 50,
+        ADRSTR: 'COUNTRY CLUB',
+        ADRSUF: 'LN',
+        MAILINGCITY: 'FLORISSANT',
+        ZIPCODE: '63033',
+        MUNI: 'BKJ',
+      },
+      [-90.27768, 38.8073],
+    );
+    const florissant = point(
+      {
+        OBJECTID: 334368,
+        ADRNO: 50,
+        ADRSTR: 'COUNTRY CLUB',
+        ADRSUF: 'LN',
+        MAILINGCITY: 'FLORISSANT',
+        ZIPCODE: '63033',
+        MUNI: 'FLO',
+      },
+      [-90.28282, 38.80534],
+    );
+
+    it('are ambiguous in two municipalities, even with the ZIP and town typed', async () => {
+      await expect(
+        source(answering(blackJack, florissant)).find('50 Country Club Ln, Florissant, MO 63033'),
+      ).resolves.toEqual({ status: 'ambiguous' });
+    });
+
+    it('are ambiguous in one municipality when they are not one house (Walton Rd, 100 m)', async () => {
+      const a = point(
+        { OBJECTID: 1, ADRNO: 2100, ADRSTR: 'WALTON', ADRSUF: 'RD', ZIPCODE: '63114' },
+        [-90.34, 38.7],
+      );
+      const b = point(
+        { OBJECTID: 2, ADRNO: 2100, ADRSTR: 'WALTON', ADRSUF: 'RD', ZIPCODE: '63114' },
+        [-90.3412, 38.7],
+      );
+      await expect(source(answering(a, b)).find('2100 Walton Rd, 63114')).resolves.toEqual({
+        status: 'ambiguous',
+      });
+    });
+
+    it('are one house when in one municipality and a few metres apart', async () => {
+      const a = point({ OBJECTID: 1 }, [-90.4581, 38.6822]);
+      const b = point({ OBJECTID: 2 }, [-90.4582, 38.6823]);
+      await expect(source(answering(a, b)).find('1318 Ross Ave 63146')).resolves.toMatchObject({
+        status: 'match',
+      });
+    });
+
+    it('are ambiguous even when a typed unit exists at only one of them', async () => {
+      const unitAtOne = point(
+        {
+          OBJECTID: 3,
+          ADRNO: 50,
+          ADRSTR: 'COUNTRY CLUB',
+          ADRSUF: 'LN',
+          MAILINGCITY: 'FLORISSANT',
+          ZIPCODE: '63033',
+          MUNI: 'FLO',
+          UNITDESC: 'APT',
+          UNITNO: '2',
+        },
+        [-90.28282, 38.80534],
+      );
+      await expect(
+        source(answering(blackJack, florissant, unitAtOne)).find('50 Country Club Ln Apt 2, 63033'),
+      ).resolves.toEqual({ status: 'ambiguous' });
+    });
+  });
+
   describe('units', () => {
     const unit = (no, objectId, xy) =>
       point(
@@ -489,7 +574,7 @@ describe('failures', () => {
 });
 
 describe('suggest', () => {
-  it('lists county addresses with readable labels and their places', async () => {
+  it('lists county addresses with readable labels', async () => {
     const fetch = answering(ROSS, CROSSING);
     const suggestions = await source(fetch).suggest('1318 ross');
     expect(fetch.calls[0].params.get('where')).toBe(suggestWhere('1318 ross'));
@@ -497,14 +582,17 @@ describe('suggest', () => {
       '1318 Ross Ave, Saint Louis, MO 63146',
       '1318 Big Bend Crossing Dr, Valley Park, MO 63088',
     ]);
-    expect(suggestions[0].place).toEqual({
-      lat: 38.6822,
-      lng: -90.4581,
-      state: 'Missouri',
-      county: 'Saint Louis County',
-      label: '1318 Ross Ave, Saint Louis, MO 63146',
-    });
     expect(new Set(suggestions.map((s) => s.id)).size).toBe(2);
+  });
+
+  it('carry no point, so a pick is found again by its label with every rule', async () => {
+    const suggestions = await source(answering(ROSS)).suggest('1318 ross');
+    expect(suggestions[0]).not.toHaveProperty('place');
+    await expect(source(answering(ROSS)).find(suggestions[0].label)).resolves.toMatchObject({
+      status: 'match',
+      confirmed: true,
+      place: { label: '1318 Ross Ave, Saint Louis, MO 63146' },
+    });
   });
 
   it('collapses the units of one building unless a unit is typed', async () => {
