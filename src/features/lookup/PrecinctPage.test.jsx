@@ -53,10 +53,10 @@ function withAttributes(fixture, changes) {
   };
 }
 
-// One role query on this page takes about 200 ms in jsdom, and a wait that
-// times out reports failure without a last check. On a busy machine the default
-// 1000 ms then ran out before the page had rendered (#64). 4000 ms keeps a real
-// hang failing on the query's own message, before Vitest's 5000 ms test timeout.
+// The first role query on this page can take about 200 ms in jsdom, and a wait
+// that times out reports failure without a last check. On a busy machine the
+// default 1000 ms then ran out before the page had rendered (#64). Vitest's
+// 5000 ms test timeout still bounds the whole test, so a test's waits share it.
 let defaultWait;
 beforeAll(() => {
   defaultWait = getConfig().asyncUtilTimeout;
@@ -104,7 +104,7 @@ async function alertSaying(text) {
     screen
       .getAllByRole('alert')
       .filter((alert) => alert.textContent.replace(/\s+/g, ' ').includes(text));
-  await waitFor(() => expect(holding()).toHaveLength(1));
+  await waitFor(() => expect(holding(), `one alert saying "${text}"`).toHaveLength(1));
   return holding()[0];
 }
 
@@ -514,8 +514,7 @@ describe('PrecinctPage', () => {
     fetchMock.mockImplementation(() => respond({}, 500));
     renderAt('CC007');
     expect(screen.getByTestId('results-skeleton')).toBeInTheDocument();
-    const alert = await screen.findByRole('alert', {}, { timeout: 3000 });
-    await within(alert).findByText(copy.errors.failed, { exact: false }, { timeout: 3000 });
+    await alertSaying(copy.errors.failed);
     const byIdCalls = precinctCalls().filter((url) => url.searchParams.get('f') === 'json');
     expect(byIdCalls).toHaveLength(2);
     expect(screen.queryByTestId('results-skeleton')).toBeNull();

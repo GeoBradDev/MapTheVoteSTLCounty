@@ -43,11 +43,12 @@ fixing the wait"); vercel-react-best-practices, not applicable because no React 
    returns it. It picks by text because the address search shown for "not found" brings more,
    empty, alerts (found while proving the helper: a plain `getByRole('alert')` then throws
    "multiple elements"). Use it in the four tests that today do `findByRole('alert')` then
-   `toHaveTextContent`.
+   `toHaveTextContent`, and in the server-error retry test, whose explicit `{ timeout: 3000 }` waits
+   would otherwise have less headroom than the new file default (review finding).
 2. Give the file's waits headroom: `configure({ asyncUtilTimeout: 4000 })` from
-   `@testing-library/react` in `beforeAll`, restored in `afterAll`, with a comment on why. 4000 ms
-   stays under Vitest's 5000 ms test timeout, so a real hang still fails as a timeout with the
-   query's message.
+   `@testing-library/react` in `beforeAll`, restored in `afterAll`, with a comment on why. Vitest's
+   5000 ms test timeout still bounds each whole test, so a test with several waits shares it;
+   the waits get headroom per test, not 4 s each.
 3. Run the gate.
 
 ## Risks
