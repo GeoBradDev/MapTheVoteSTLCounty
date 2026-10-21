@@ -171,6 +171,22 @@ test.describe('address search', () => {
     await expectLookupError(page, lookupCopy.errors.unavailable);
   });
 
+  test('county precinct check for a two-record address down: not working, not no match', async ({
+    page,
+  }) => {
+    const two = JSON.parse(COUNTY_ROSS);
+    two.features.push({
+      attributes: { ...two.features[0].attributes, OBJECTID: 2, UNITDESC: 'APT', UNITNO: '2' },
+      geometry: { x: -90.4579, y: 38.6824 },
+    });
+    await services(page, {
+      live: (route) => route.fulfill(json(JSON.stringify(two))),
+      precincts: 503,
+    });
+    await search(page);
+    await expectLookupError(page, lookupCopy.errors.unavailable);
+  });
+
   test('precinct layer 5xx during a lookup: failed, then Try again finds the precinct', async ({
     page,
   }) => {
