@@ -39,7 +39,9 @@ Domain skills:
    asserts that, and rewriting it needs the owner's approval. Once the label's ZIP leaves the
    box, the pick is forgotten, so a ZIP typed later is the voter's own (revision after review
    finding 4: a county voter retyping their address with a county-only ZIP got the City
-   referral; frozen `AddressSearch.retype58.test.jsx`).
+   referral; frozen `AddressSearch.retype58.test.jsx`). The pick is kept only while every
+   edit since it inserts text into the label, so a paste over the box forgets it too
+   (revision after review finding 5; frozen `AddressSearch.paste58.test.jsx`).
 4. A City match counts when a City `PointAddress` has the typed house number and the typed
    whole street under the strict rules (`matchesStreet` in `addressMatch.js`), and its ZIP
    equals the typed ZIP when one is typed (a candidate with no ZIP counts). Then the answer is
