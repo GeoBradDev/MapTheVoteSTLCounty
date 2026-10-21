@@ -142,12 +142,13 @@ test('going home from a page focuses the home heading at the top', async ({ page
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
 });
 
-test('runs no animation while results load with reduced motion', async ({ browser }) => {
-  const context = await browser.newContext({ reducedMotion: 'reduce' });
-  const page = await context.newPage();
-  await answerFromFixtures(page, { delayMs: 2000 });
-  await page.goto(`/p/${CODE}`);
-  await expect(page.getByTestId('results-skeleton')).toBeVisible();
-  expect(await page.evaluate(() => document.getAnimations().length)).toBe(0);
-  await context.close();
+test.describe('with reduced motion', () => {
+  test.use({ reducedMotion: 'reduce' });
+
+  test('runs no animation while results load', async ({ page }) => {
+    await answerFromFixtures(page, { delayMs: 2000 });
+    await page.goto(`/p/${CODE}`);
+    await expect(page.getByTestId('results-skeleton')).toBeVisible();
+    expect(await page.evaluate(() => document.getAnimations().length)).toBe(0);
+  });
 });

@@ -61,9 +61,12 @@ Not fixed here: focus when the results fail to load (#18). Headings inside a fol
 1. Every page starts with a "Skip to main content" link, visible when focused, that moves
    focus to `<main>`.
 2. After an in-app navigation (not the first load), the window is scrolled to the top and,
-   when focus was left on `<body>`, the page's `h1` takes focus.
+   when focus was left on `<body>` (or on `<main>`, where Safari puts it after a click),
+   the page's `h1` takes focus. Back and Forward keep the scroll position the browser
+   restores (revised after review).
 3. `/privacy` has the tab title "Privacy | St. Louis County Voter Guide" and the not-found
-   page "Page not found | St. Louis County Voter Guide"; each restores the previous title
+   page "Page not found | St. Louis County Voter Guide" (including an unknown `/learn/<id>`,
+   which renders the not-found page; its test is updated); each restores the previous title
    when it unmounts.
 4. The out-of-county notice under "Search for your address" on a not-found precinct page
    uses an `h3`; on the home and not-found pages it stays `h2`.
@@ -95,9 +98,10 @@ Not fixed here: focus when the results fail to load (#18). Headings inside a fol
 - `src/features/lookup/PrecinctPage.jsx`: passes 3 under "Search for your address".
 - `src/features/lookup/AddressSearch.jsx`: forced-colors outline on the active option
   (class only).
-- Tests: `src/App.test.jsx`, `src/components/usePageTitle.test.jsx` or page tests,
-  `OutOfCountyNotice.test.jsx`, `PrecinctPage.test.jsx`, `AddressSearch.test.jsx`, and a
-  new `src/test/a11yPages.test.jsx` with axe on home, not found and privacy in jsdom.
+- Tests: `src/App.test.jsx`, `OutOfCountyNotice.test.jsx`, `AddressLookup.test.jsx`,
+  `PrecinctPage.test.jsx`, `AddressSearch.test.jsx`, `LearnTopicPage.test.jsx` (an unknown
+  topic now has the not-found title), and a new `src/test/a11yPages.test.jsx` with axe on
+  home, not found and privacy in jsdom.
 - `e2e/a11y.e2e.js`, `playwright.config.js` (new), `package.json` (`@playwright/test`,
   `@axe-core/playwright`, `test:e2e` script), `.github/workflows/ci.yml` (install Chromium,
   run e2e after build), `eslint.config.js` (node globals for `e2e/`), `.gitignore` and
@@ -132,8 +136,9 @@ Not fixed here: focus when the results fail to load (#18). Headings inside a fol
   `/` focuses the `h1` and scrolls to top; first load does not move focus). E2E checks the
   first tab stop and focus after navigation in Chromium.
 - Criterion 3: page tests for the titles.
-- Criterion 4: `OutOfCountyNotice.test.jsx` (level 3) and `PrecinctPage.test.jsx` (the
-  notice under the search is an `h3`).
+- Criterion 4: `OutOfCountyNotice.test.jsx` (level 3), `AddressLookup.test.jsx` (h2 by
+  default, h3 when asked) and `PrecinctPage.test.jsx` (the notice under the search is an
+  `h3`).
 - Criterion 5: `AddressSearch.test.jsx` asserts the forced-colors classes; the live drive
   emulates forced colors and checks the computed outline.
 - Criterion 6: `npx playwright test` passes locally and in CI; a deliberate violation

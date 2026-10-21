@@ -207,6 +207,19 @@ describe('App', () => {
     expect(heading()).toHaveFocus();
   });
 
+  it('still scrolls to the top after the skip link fired popstate on the old page', () => {
+    // Following a hash link fires popstate without leaving the page.
+    window.history.replaceState(null, '', '/privacy');
+    const location = renderAt('/privacy');
+    act(() => window.dispatchEvent(new PopStateEvent('popstate')));
+    window.history.replaceState(null, '', '/');
+    window.scrollTo.mockClear();
+
+    act(() => location.navigate('/'));
+
+    expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+  });
+
   it('leaves focus where a page put it after navigating', async () => {
     renderAt('/');
 

@@ -11,21 +11,36 @@ import PrivacyPage from './features/privacy/PrivacyPage.jsx';
 /**
  * After an in-app navigation (not the first load), starts the new page at the
  * top, and when the link that was followed went away with the old page,
- * leaving focus on the body, moves focus to the new page's heading so a
- * screen reader announces it. Pages that focus their own heading do it in
- * their own effects, which run first, so they are left alone.
+ * leaving focus on the body (or on main, where Safari puts it after a click),
+ * moves focus to the new page's heading so a screen reader announces it.
+ * Pages that focus their own heading do it in their own effects, which run
+ * first, so they are left alone. Back and Forward keep the scroll position
+ * the browser restores.
  */
 function usePageArrival() {
   const [location] = useLocation();
   const previous = useRef(location);
+  // The path a Back or Forward went to. A path, not a flag, because following
+  // the skip link (a hash) fires popstate too, without a new page.
+  const popped = useRef(null);
+
+  useEffect(() => {
+    const onPop = () => {
+      popped.current = window.location.pathname;
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
   useEffect(() => {
     if (previous.current === location) return;
+    const fromHistory = popped.current === location;
+    popped.current = null;
     previous.current = location;
-    window.scrollTo(0, 0);
+    if (!fromHistory) window.scrollTo(0, 0);
     const focused = document.activeElement;
-    if (focused && focused !== document.body) return;
-    document.querySelector('main h1[tabindex="-1"]')?.focus();
+    if (focused && focused !== document.body && focused.id !== 'main') return;
+    document.querySelector('main h1[tabindex="-1"]')?.focus({ preventScroll: fromHistory });
   }, [location]);
 }
 
