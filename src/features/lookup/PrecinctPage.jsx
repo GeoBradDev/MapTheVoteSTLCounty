@@ -134,8 +134,12 @@ function PrecinctResults({ code }) {
  * @param {string} value
  */
 function canonicalCode(value) {
-  const code = value.trim().toUpperCase();
-  return code !== value && PRECINCT_CODE.test(code) ? code : null;
+  const trimmed = value.trim();
+  // ASCII only: toUpperCase maps some other letters (the German sharp s becomes SS) onto
+  // ASCII ones, which would open a different precinct.
+  if (!/^[a-z]{2,3}\d{3}$/i.test(trimmed)) return null;
+  const code = trimmed.toUpperCase();
+  return code !== value ? code : null;
 }
 
 export default function PrecinctPage() {
