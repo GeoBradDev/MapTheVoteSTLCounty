@@ -109,7 +109,8 @@ gate, error codes, timeout) in tests and in desktop Chrome with emulated geoloca
 - Some browsers never call back when the prompt is dismissed; the timeout covers that
   (Chrome and Safari both apply the timeout only after permission, so a dismissed prompt can
   leave the button pending; the voter can still type an address since nothing is disabled,
-  and going back to the address box drops the pending request and resets the button).
+  and pressing or typing in the address box, or submitting its form, drops the pending
+  request and resets the button; tabbing into the box alone does not).
 - Focus moving on every failure, not just denial: chosen so the next step is always the
   address box.
 
