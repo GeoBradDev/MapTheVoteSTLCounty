@@ -494,11 +494,18 @@ describe('data health workflow', () => {
     }
   });
 
-  it('runs both live checks and reports a failure as an issue', () => {
+  it('runs every live check and reports a failure as an issue', () => {
     const steps = Object.values(workflow.jobs)[0].steps;
     const runs = steps.map((s) => s.run ?? '').join('\n');
     expect(runs).toContain('node scripts/check-config.mjs');
     expect(runs).toContain('node scripts/check-geocoder.mjs');
+    expect(runs).toContain('node scripts/check-content-links.mjs');
+    // A timed-out step fails and still gets reported; a timed-out job does not.
+    const live = steps.filter((s) => /^node scripts\/check-/.test(s.run ?? ''));
+    expect(live).toHaveLength(3);
+    for (const step of live) expect(step['timeout-minutes']).toBeGreaterThan(0);
+    const total = live.reduce((sum, step) => sum + step['timeout-minutes'], 0);
+    expect(Object.values(workflow.jobs)[0]['timeout-minutes']).toBeGreaterThan(total);
     const report = steps.find((s) => s.if === 'failure()');
     expect(report.run).toContain('gh issue create');
     expect(report.run).toContain('gh issue comment');

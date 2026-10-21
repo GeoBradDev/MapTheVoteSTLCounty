@@ -1,5 +1,6 @@
-# Checks the live election layers and the geocoder every day through Election
-# Day, and opens an issue (or comments on the open one) when a check fails.
+# Checks the live election layers, the geocoder and the learn topics' source
+# links every day through Election Day, and opens an issue (or comments on the
+# open one) when a check fails.
 # It has no pull_request or push trigger, so a live outage can never block a
 # merge: the CI workflow (ci.yml) never calls a live service.
 
@@ -23,8 +24,11 @@ jobs:
   check:
     runs-on: ubuntu-latest
     # Worst case with every request slow: about 22 minutes for the config check
-    # (26 requests, 3 tries of 15 s each) and 16 for the geocoder check.
-    timeout-minutes: 45
+    # (26 requests, 3 tries of 15 s each) and 16 for the geocoder check. A job
+    # that hits its limit is cancelled and reports nothing, so each live check
+    # has its own step limit, which fails that step and still opens the issue.
+    # The job limit is the step limits plus setup.
+    timeout-minutes: 70
     steps:
       # The token may write issues: do not leave it in .git/config, where
       # dependency install scripts could read it.
@@ -63,13 +67,23 @@ jobs:
       - name: Election config check
         id: config
         if: steps.window.outputs.active == 'true'
+        timeout-minutes: 25
         run: node scripts/check-config.mjs
 
-      # Runs even when the config check failed, so one issue reports both.
+      # These run even when an earlier check failed, so one issue reports all.
       - name: Geocoder check
         id: geocoder
         if: ${{ !cancelled() && steps.window.outputs.active == 'true' }}
+        timeout-minutes: 20
         run: node scripts/check-geocoder.mjs
+
+      # Every source and link in content/<locale>/learn/ (#21). Each dead URL
+      # can take about 51 s (3 tries of 15 s plus waits).
+      - name: Content link check
+        id: links
+        if: ${{ !cancelled() && steps.window.outputs.active == 'true' }}
+        timeout-minutes: 12
+        run: node scripts/check-content-links.mjs
 
       - name: Report the failure as an issue
         if: failure()
@@ -77,12 +91,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           CONFIG_OUTCOME: ${{ steps.config.outcome }}
           GEOCODER_OUTCOME: ${{ steps.geocoder.outcome }}
+          LINKS_OUTCOME: ${{ steps.links.outcome }}
         run: |
           run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           body="The data health check failed on $(date -u +%Y-%m-%d).
 
           - Election config check (scripts/check-config.mjs): $CONFIG_OUTCOME
           - Geocoder check (scripts/check-geocoder.mjs): $GEOCODER_OUTCOME
+          - Content link check (scripts/check-content-links.mjs): $LINKS_OUTCOME
 
           Log: $run_url"
           gh label create "data health" --repo "$GITHUB_REPOSITORY" --color fbca04 \

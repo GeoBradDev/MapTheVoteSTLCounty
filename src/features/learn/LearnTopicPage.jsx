@@ -1,7 +1,8 @@
 import { Link } from 'wouter';
 
-// Placeholder until the content model (#21) and "How to vote" section (#23).
-// Unknown topics should show the not-found page once topics exist.
+// Placeholder until the "How to vote" section (#23). The content model (#21)
+// is in place: #23 reads topics with getTopic from topics.js, renders them with
+// TopicArticle, and shows the not-found page for an unknown topic.
 export default function LearnTopicPage() {
   return (
     <>

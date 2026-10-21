@@ -24,7 +24,7 @@ headers and the cache rules. `src/test/render.test.js` checks it.
 
 - **Deploys:** a push to `main` deploys after CI passes (`autoDeployTrigger: checksPass`).
   A change only under `docs/` or to `README.md` does not build. Markdown under `content/`
-  still builds, because the learn pages (#21) will be built from it.
+  still builds, because the learn topics are built from it.
 - **Previews:** every pull request gets its own preview URL. A Blueprint cannot set headers
   per preview, so previews send the production headers and no `X-Robots-Tag: noindex`.
 - **Change config in `render.yaml`, not the Dashboard.** A Blueprint sync overwrites header
@@ -81,6 +81,55 @@ election name, an election-specific URL, a date, a layer or service name, the fi
 filter or the sample ballot pattern from the config there; it does not check hours, so read
 those from the config too. Text under `content/` may repeat them.
 
+## Learn content
+
+Each voter education topic is one Markdown file, `content/<locale>/learn/<id>.md`, with front
+matter:
+
+```yaml
+---
+id: voter-id # must match the file name
+title: What ID to bring
+election: 2026-11-03 # must be electionDate in src/config/election.js
+lastVerified: 2026-10-20 # when every source was last re-read
+sources:
+  - id: sos-id
+    label: Missouri Secretary of State, Voter ID
+    url: https://www.sos.mo.gov/...
+---
+```
+
+Cite a source after the claim it supports with `[^sos-id]`; the page shows it as a numbered
+link to that source, matching the numbered source list. The body allows paragraphs, `##` and
+`###` headings, `- ` and `1. ` lists (one level; number ordered items 1, 2, 3 with no blank
+lines between them), `**bold**` and `[text](url)` links, and nothing else (no HTML, images,
+code, tables or quotes).
+
+A Vite plugin (`src/features/learn/content/vitePlugin.js`) checks every topic file when the
+build, the tests or the dev server start (restart the dev server after adding a topic), and
+turns each topic into plain data. The build fails, naming the
+file and each problem, when a topic: has no sources; has no `lastVerified`, or one more than
+60 days before Election Day or after it; was written for another `election`; contains `TODO`;
+has an `id` that differs from its file name, or a front matter key it does not know; cites a
+source it does not list; uses Markdown outside the list above; or links anywhere but an
+`https` URL on an official host or a path on this site. The official hosts are any `.gov` site
+and the county board's own sites, listed in `src/features/learn/content/officialSources.js`;
+add a host there in a reviewed change, never per topic.
+
+For each new election, re-read every topic's sources, then update its `election` and
+`lastVerified`; the build fails until you do. `src/features/learn/topics.js` loads the topics
+(`getTopics`, `getTopic`) and `src/features/learn/TopicArticle.jsx` renders one; the "How to
+vote" pages (#23) will use them.
+
+Translations (#19): put a topic with the same `id` under another locale, such as
+`content/es/learn/voter-id.md`, and add that locale's labels to
+`src/features/learn/learnCopy.js`. A locale shows the English topic until its own exists.
+
+`node scripts/check-content-links.mjs` requests every source and link in every topic, prints
+PASS or FAIL per URL and exits 1 on any failure, including a redirect that lands off the
+official hosts. The data health workflow runs it daily (see
+below), never on pull requests.
+
 ## Data health check
 
 Before each election, after editing `src/config/election.js`, check the live layers it names:
@@ -99,12 +148,12 @@ layer path fails with the config key, the path and the service's error. `--layer
 path for one layer without editing the config. The thresholds and known points are at the top of
 the script.
 
-`.github/workflows/data-health.yml` runs this check and `scripts/check-geocoder.mjs` every day
-at 12:00 UTC until Election Day is over in the config's time zone, and on demand from the
-Actions tab (**Data health**, **Run workflow**). On a failure it opens an issue labeled
-`data health`, or comments on the one already open; close that issue once it is fixed. The
-workflow never runs on pull requests, so a live outage cannot block a merge. For the next
-election, nothing in the workflow changes: it reads the new `electionDate`. GitHub turns off
+`.github/workflows/data-health.yml` runs this check, `scripts/check-geocoder.mjs` and
+`scripts/check-content-links.mjs` every day at 12:00 UTC until Election Day is over in the
+config's time zone, and on demand from the Actions tab (**Data health**, **Run workflow**). On
+a failure it opens an issue labeled `data health`, or comments on the one already open; close
+that issue once it is fixed. The workflow never runs on pull requests, so a live outage cannot
+block a merge. For the next election, nothing in the workflow changes: it reads the new `electionDate`. GitHub turns off
 scheduled workflows in a public repository after 60 days with no activity; if the daily runs stop,
 turn the workflow back on in the Actions tab.
 
