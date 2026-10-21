@@ -3,6 +3,9 @@
 Inspected 2026-10-20 with `node scripts/inspect-data.mjs`. Raw schema and sample
 dumps are in `docs/raw/`. Re-run the script before each election and update this file.
 
+The precinct and polling place layers are read through `src/data/arcgis.js`. Its tests
+use live responses recorded in `docs/raw/fixtures/` by `node scripts/record-fixtures.mjs`.
+
 Service root: `https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services`
 Portal root: `https://stlouiscovotes.maps.arcgis.com/sharing/rest/content/items`
 
@@ -67,8 +70,8 @@ The data agrees:
 **Design consequence:** the "Your polling place" card becomes "Polling places
 near you": the closest N (suggest 3 to 5) by straight-line distance from the
 geocoded point, with a plain note that any polling place in the county works.
-The layer has only 200 points, so load it once (about 30 KB GeoJSON), cache it,
-and sort on the client. No extra query per lookup.
+The layer has only 200 points, so load it once (about 85 KB GeoJSON with all
+fields), cache it, and sort on the client. No extra query per lookup.
 
 ## Layers
 

@@ -1,0 +1,5211 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "EPSG:4326"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": 1,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3647400280859,
+          38.7731945221896
+        ]
+      },
+      "properties": {
+        "OBJECTID": 1,
+        "loc": "001",
+        "name": "AEROSPACE DIST LODGE 837",
+        "address": "212 UTZ LN",
+        "zipcode": 63042,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.773187%2C-90.364734",
+        "username": "loc001boec",
+        "absentee": "",
+        "inline": "                                                  ",
+        "abs_type": "none",
+        "notes": "LOC001",
+        "notes_abs": "                                                                                                    ",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 2,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.33574923937,
+          38.5565685199296
+        ]
+      },
+      "properties": {
+        "OBJECTID": 2,
+        "loc": "002",
+        "name": "AFFTON PAT",
+        "address": "6915 WEBER RD",
+        "zipcode": 63123,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.556561%2C-90.335743",
+        "username": "loc002boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC002",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 3,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3227258211252,
+          38.5596524372765
+        ]
+      },
+      "properties": {
+        "OBJECTID": 3,
+        "loc": "003",
+        "name": "AFFTON SR HIGH SCHOOL",
+        "address": "8309 MACKENZIE RD",
+        "zipcode": 63123,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.559645%2C-90.322720",
+        "username": "loc003boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC003",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 4,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3248662618279,
+          38.5413830750072
+        ]
+      },
+      "properties": {
+        "OBJECTID": 4,
+        "loc": "004",
+        "name": "AFFTON WHITE-RODGERS COMM CTR",
+        "address": "9801 MACKENZIE RD",
+        "zipcode": 63123,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.541376%2C-90.324860",
+        "username": "loc004boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC004",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 5,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2271900940117,
+          38.81267904008
+        ]
+      },
+      "properties": {
+        "OBJECTID": 5,
+        "loc": "005",
+        "name": "ARROWPOINT ELEMENTARY SCHOOL",
+        "address": "2017 ARROWPOINT DR",
+        "zipcode": 63138,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.812672%2C-90.227184",
+        "username": "loc005boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC005",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 6,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.6415885852955,
+          38.599758869525
+        ]
+      },
+      "properties": {
+        "OBJECTID": 6,
+        "loc": "006",
+        "name": "BABLER ELEMENTARY SCHOOL",
+        "address": "1955 SHEPARD RD",
+        "zipcode": 63038,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.599752%2C-90.641582",
+        "username": "loc006boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC006",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 7,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5389097897334,
+          38.6056202020376
+        ]
+      },
+      "properties": {
+        "OBJECTID": 7,
+        "loc": "007",
+        "name": "BALLWIN REC GOLF CLUB",
+        "address": "333 HOLLOWAY RD",
+        "zipcode": 63011,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.605613%2C-90.538904",
+        "username": "loc007boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC007",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 8,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2771839556033,
+          38.6929937500765
+        ]
+      },
+      "properties": {
+        "OBJECTID": 8,
+        "loc": "008",
+        "name": "BARACK OBAMA SCHOOL",
+        "address": "3883 JENNINGS STATION RD",
+        "zipcode": 63121,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.692987%2C-90.277178",
+        "username": "loc008boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC008",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 9,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.346876672304,
+          38.6803166950283
+        ]
+      },
+      "properties": {
+        "OBJECTID": 9,
+        "loc": "009",
+        "name": "BARB JORDAN ACCEL ELEM SCHOOL",
+        "address": "1500 82ND BLVD",
+        "zipcode": 63132,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.680310%2C-90.346870",
+        "username": "loc009boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC009",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 10,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2954191507395,
+          38.8354486390862
+        ]
+      },
+      "properties": {
+        "OBJECTID": 10,
+        "loc": "010",
+        "name": "BARRINGTON ELEMENTARY SCHOOL",
+        "address": "15600 OLD HALLS FERRY RD",
+        "zipcode": 63034,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.835441%2C-90.295413",
+        "username": "loc010boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC010",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 11,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3263644976564,
+          38.7151689138883
+        ]
+      },
+      "properties": {
+        "OBJECTID": 11,
+        "loc": "011",
+        "name": "BEL-RIDGE CITY HALL",
+        "address": "8920 NATURAL BRIDGE RD",
+        "zipcode": 63121,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.715162%2C-90.326358",
+        "username": "loc011boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC011",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 12,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2270482052939,
+          38.7425824804403
+        ]
+      },
+      "properties": {
+        "OBJECTID": 12,
+        "loc": "012",
+        "name": "BELLEFONTAINE NBRS REC CTR",
+        "address": "9669 BELLEFONTAINE RD",
+        "zipcode": 63137,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.742575%2C-90.227042",
+        "username": "loc012boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC012",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 13,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.475958529048,
+          38.6706519828945
+        ]
+      },
+      "properties": {
+        "OBJECTID": 13,
+        "loc": "013",
+        "name": "BELLERIVE ELEMENTARY SCHOOL",
+        "address": "620 RUE DE FLEUR DR",
+        "zipcode": 63141,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.670645%2C-90.475952",
+        "username": "loc013boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC013",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 14,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3306405240905,
+          38.7504017545042
+        ]
+      },
+      "properties": {
+        "OBJECTID": 14,
+        "loc": "014",
+        "name": "BERKELEY CITY HALL",
+        "address": "8425 AIRPORT RD",
+        "zipcode": 63134,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.750395%2C-90.330634",
+        "username": "loc014boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC014",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 15,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3262568101653,
+          38.4949993486417
+        ]
+      },
+      "properties": {
+        "OBJECTID": 15,
+        "loc": "015",
+        "name": "BERNARD MIDDLE SCHOOL",
+        "address": "1054 FORDER RD",
+        "zipcode": 63129,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.494992%2C-90.326251",
+        "username": "loc015boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC015",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 16,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3101438781746,
+          38.5302403613815
+        ]
+      },
+      "properties": {
+        "OBJECTID": 16,
+        "loc": "016",
+        "name": "BIERBAUM ELEMENTARY SCHOOL",
+        "address": "2050 UNION RD",
+        "zipcode": 63125,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.530233%2C-90.310138",
+        "username": "loc016boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC016",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 17,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2616480564591,
+          38.7948555209621
+        ]
+      },
+      "properties": {
+        "OBJECTID": 17,
+        "loc": "017",
+        "name": "BLACK JACK CITY HALL",
+        "address": "12500 OLD JAMESTOWN RD",
+        "zipcode": 63033,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.794848%2C-90.261642",
+        "username": "loc017boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC017",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 18,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5860938022367,
+          38.5855455816871
+        ]
+      },
+      "properties": {
+        "OBJECTID": 18,
+        "loc": "018",
+        "name": "BLUEBIRD PARK ADMIN BUILDING",
+        "address": "225 KIEFER CREEK RD",
+        "zipcode": 63021,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.585538%2C-90.586088",
+        "username": "loc018boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC018",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 19,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.40024142192,
+          38.7313286743395
+        ]
+      },
+      "properties": {
+        "OBJECTID": 19,
+        "loc": "019",
+        "name": "BOARD OF ELECTIONS",
+        "address": "725 NORTHWEST PLAZA DR",
+        "zipcode": 63074,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.731322%2C-90.400235",
+        "username": "loc019boec",
+        "absentee": "abs601boec",
+        "inline": "",
+        "abs_type": "boe",
+        "notes": "LOC019",
+        "notes_abs": "",
+        "loc_abs": "601"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 20,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4760194771931,
+          38.5125183403392
+        ]
+      },
+      "properties": {
+        "OBJECTID": 20,
+        "loc": "020",
+        "name": "BOWLES ELEMENTARY SCHOOL",
+        "address": "501 BOWLES AVE",
+        "zipcode": 63026,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.512511%2C-90.476013",
+        "username": "loc020boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC020",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 21,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3496826361676,
+          38.6159940078204
+        ]
+      },
+      "properties": {
+        "OBJECTID": 21,
+        "loc": "021",
+        "name": "BRENTWOOD RECREATION CENTER",
+        "address": "2505 S BRENTWOOD BLVD",
+        "zipcode": 63144,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.615987%2C-90.349676",
+        "username": "loc021boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC021",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 22,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4024191813283,
+          38.7475281729038
+        ]
+      },
+      "properties": {
+        "OBJECTID": 22,
+        "loc": "022",
+        "name": "BRIDGETON RECREATION CTR",
+        "address": "4201 FEE FEE RD",
+        "zipcode": 63044,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.747521%2C-90.402413",
+        "username": "loc022boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC022",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 23,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4309701623775,
+          38.749143376876
+        ]
+      },
+      "properties": {
+        "OBJECTID": 23,
+        "loc": "023",
+        "name": "BRIDGETON TRAILS BRANCH LIBRARY",
+        "address": "3455 MCKELVEY RD",
+        "zipcode": 63044,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.749136%2C-90.430964",
+        "username": "loc023boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC023",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 24,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3469353732252,
+          38.6695766914974
+        ]
+      },
+      "properties": {
+        "OBJECTID": 24,
+        "loc": "024",
+        "name": "BRITTANY WOODS SCHOOL",
+        "address": "8125 GROBY RD",
+        "zipcode": 63130,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.669570%2C-90.346929",
+        "username": "loc024boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC024",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 25,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3850500238646,
+          38.7114837545379
+        ]
+      },
+      "properties": {
+        "OBJECTID": 25,
+        "loc": "025",
+        "name": "BUDER ELEMENTARY SCHOOL",
+        "address": "10350 BALTIMORE AVE",
+        "zipcode": 63074,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.711477%2C-90.385044",
+        "username": "loc025boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC025",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 26,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5643082196428,
+          38.6619727741844
+        ]
+      },
+      "properties": {
+        "OBJECTID": 26,
+        "loc": "026",
+        "name": "CHESTERFIELD CITY HALL",
+        "address": "690 W CHESTERFIELD PKWY",
+        "zipcode": 63017,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.661966%2C-90.564302",
+        "username": "loc026boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC026",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 27,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3178457377732,
+          38.819752500176
+        ]
+      },
+      "properties": {
+        "OBJECTID": 27,
+        "loc": "027",
+        "name": "CHRIST FIRST",
+        "address": "2890 PATTERSON RD",
+        "zipcode": 63031,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.819745%2C-90.317840",
+        "username": "loc027boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC027",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 28,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3663077476713,
+          38.576624251209
+        ]
+      },
+      "properties": {
+        "OBJECTID": 28,
+        "loc": "028",
+        "name": "CHRIST THE KING CHURCH",
+        "address": "9018 BIG BEND BLVD",
+        "zipcode": 63119,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.576617%2C-90.366302",
+        "username": "loc028boec",
+        "absentee": "abs602boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC028",
+        "notes_abs": null,
+        "loc_abs": "602"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 29,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.405026513169,
+          38.6301342447277
+        ]
+      },
+      "properties": {
+        "OBJECTID": 29,
+        "loc": "029",
+        "name": "CLARK FAMILY BRANCH LIBRARY",
+        "address": "1640 S LINDBERGH BLVD",
+        "zipcode": 63131,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.630127%2C-90.405020",
+        "username": "loc029boec",
+        "absentee": "abs603boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC029",
+        "notes_abs": null,
+        "loc_abs": "603"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 30,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3038320471161,
+          38.4761310572659
+        ]
+      },
+      "properties": {
+        "OBJECTID": 30,
+        "loc": "030",
+        "name": "CLIFF CAVE BRANCH LIBRARY",
+        "address": "5430 TELEGRAPH RD",
+        "zipcode": 63129,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.476124%2C-90.303826",
+        "username": "loc030boec",
+        "absentee": "abs604boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC030",
+        "notes_abs": null,
+        "loc_abs": "604"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 31,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3253276921097,
+          38.8261880698119
+        ]
+      },
+      "properties": {
+        "OBJECTID": 31,
+        "loc": "031",
+        "name": "COLD WATER ELEMENTARY SCHOOL",
+        "address": "1105 WIETHAUPT RD",
+        "zipcode": 63031,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.826181%2C-90.325321",
+        "username": "loc031boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC031",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 32,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4419196040495,
+          38.6847290226913
+        ]
+      },
+      "properties": {
+        "OBJECTID": 32,
+        "loc": "032",
+        "name": "CRAIG ELEMENTARY SCHOOL",
+        "address": "1492 CRAIG RD",
+        "zipcode": 63146,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.684722%2C-90.441913",
+        "username": "loc032boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC032",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 33,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5927841500251,
+          38.6061344945024
+        ]
+      },
+      "properties": {
+        "OBJECTID": 33,
+        "loc": "033",
+        "name": "CRESTVIEW MIDDLE SCHOOL",
+        "address": "16025 CLAYTON RD",
+        "zipcode": 63011,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.606127%2C-90.592778",
+        "username": "loc033boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC033",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 34,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3860725863696,
+          38.5590887109553
+        ]
+      },
+      "properties": {
+        "OBJECTID": 34,
+        "loc": "034",
+        "name": "CRESTWOOD CITY AUDITORIUM",
+        "address": "1 DETJEN DR",
+        "zipcode": 63126,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.559082%2C-90.386066",
+        "username": "loc034boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC034",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 35,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3667349774431,
+          38.5550104808637
+        ]
+      },
+      "properties": {
+        "OBJECTID": 35,
+        "loc": "035",
+        "name": "CRESTWOOD COMMUNITY CENTER",
+        "address": "9245 WHITECLIFF PARK LN",
+        "zipcode": 63126,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.555003%2C-90.366729",
+        "username": "loc035boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC035",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 36,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4426459286485,
+          38.6615911997459
+        ]
+      },
+      "properties": {
+        "OBJECTID": 36,
+        "loc": "036",
+        "name": "CREVE COEUR CITY HALL",
+        "address": "300 N NEW BALLAS RD",
+        "zipcode": 63141,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.661584%2C-90.442640",
+        "username": "loc036boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC036",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 37,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3041439629329,
+          38.808621512911
+        ]
+      },
+      "properties": {
+        "OBJECTID": 37,
+        "loc": "037",
+        "name": "CROSS KEYS MIDDLE SCHOOL",
+        "address": "14205 COUGAR DR",
+        "zipcode": 63033,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.808614%2C-90.304138",
+        "username": "loc037boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC037",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 38,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3545362474498,
+          38.489643818708
+        ]
+      },
+      "properties": {
+        "OBJECTID": 38,
+        "loc": "038",
+        "name": "CROSSPOINT CHURCH",
+        "address": "5001 LITTLE ROCK RD",
+        "zipcode": 63128,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.489637%2C-90.354530",
+        "username": "loc038boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC038",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 39,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5864902038173,
+          38.6018652436276
+        ]
+      },
+      "properties": {
+        "OBJECTID": 39,
+        "loc": "039",
+        "name": "DANIEL BOONE BRANCH LIBRARY",
+        "address": "300 CLARKSON RD",
+        "zipcode": 63011,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.601858%2C-90.586484",
+        "username": "loc039boec",
+        "absentee": "abs605boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC039",
+        "notes_abs": null,
+        "loc_abs": "605"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 40,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.277894451771,
+          38.756081869953
+        ]
+      },
+      "properties": {
+        "OBJECTID": 40,
+        "loc": "040",
+        "name": "DELLWOOD RECREATION CENTER",
+        "address": "10266 WEST FLORISSANT AVE",
+        "zipcode": 63136,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.756075%2C-90.277888",
+        "username": "loc040boec",
+        "absentee": "abs606boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC040",
+        "notes_abs": null,
+        "loc_abs": "606"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 41,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4427429828593,
+          38.6050148528522
+        ]
+      },
+      "properties": {
+        "OBJECTID": 41,
+        "loc": "041",
+        "name": "DES PERES CITY HALL",
+        "address": "12325 MANCHESTER RD",
+        "zipcode": 63131,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.605008%2C-90.442737",
+        "username": "loc041boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC041",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 42,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2984702471129,
+          38.794272945044
+        ]
+      },
+      "properties": {
+        "OBJECTID": 42,
+        "loc": "042",
+        "name": "EAGAN COMMUNITY CENTER",
+        "address": "1 JAMES J EAGAN DR",
+        "zipcode": 63033,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.794266%2C-90.298464",
+        "username": "loc042boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC042",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 43,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3447573370025,
+          38.593474626484
+        ]
+      },
+      "properties": {
+        "OBJECTID": 43,
+        "loc": "043",
+        "name": "EDEN SEMINARY",
+        "address": "475 E LOCKWOOD AVE",
+        "zipcode": 63119,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.593468%2C-90.344751",
+        "username": "loc043boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC043",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 44,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.348658228704,
+          38.5719866760228
+        ]
+      },
+      "properties": {
+        "OBJECTID": 44,
+        "loc": "044",
+        "name": "EDGAR RD ELEMENTARY SCHOOL",
+        "address": "1131 EDGAR RD",
+        "zipcode": 63119,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.571980%2C-90.348652",
+        "username": "loc044boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC044",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 45,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.666251962527,
+          38.5061270979301
+        ]
+      },
+      "properties": {
+        "OBJECTID": 45,
+        "loc": "045",
+        "name": "EUREKA HILLS BRANCH LIBRARY",
+        "address": "500 WORKMAN RD",
+        "zipcode": 63025,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.506120%2C-90.666246",
+        "username": "loc045boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC045",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 46,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.6286841217683,
+          38.5035559646314
+        ]
+      },
+      "properties": {
+        "OBJECTID": 46,
+        "loc": "046",
+        "name": "EUREKA-PACIFIC ELKS LODGE",
+        "address": "19 W 1ST ST",
+        "zipcode": 63025,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.503549%2C-90.628678",
+        "username": "loc046boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC046",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 47,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2684298539533,
+          38.7131844741677
+        ]
+      },
+      "properties": {
+        "OBJECTID": 47,
+        "loc": "047",
+        "name": "FAIRVIEW ELEMENTARY SCHOOL",
+        "address": "7047 EMMA AVE",
+        "zipcode": 63136,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.713177%2C-90.268424",
+        "username": "loc047boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC047",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 48,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.320291785007,
+          38.7672765280525
+        ]
+      },
+      "properties": {
+        "OBJECTID": 48,
+        "loc": "048",
+        "name": "FIRST ASSEMBLY CHURCH - FERGUSON",
+        "address": "121 WILLIAMS BLVD",
+        "zipcode": 63135,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.767269%2C-90.320286",
+        "username": "loc048boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC048",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 49,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3085297495614,
+          38.7501775848976
+        ]
+      },
+      "properties": {
+        "OBJECTID": 49,
+        "loc": "049",
+        "name": "FIRST BAPTIST CH OF FERGUSON",
+        "address": "333 N FLORISSANT RD",
+        "zipcode": 63135,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.750170%2C-90.308524",
+        "username": "loc049boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC049",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 50,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.6077263409707,
+          38.6571300606298
+        ]
+      },
+      "properties": {
+        "OBJECTID": 50,
+        "loc": "050",
+        "name": "FIRST BAPTIST CHURCH OF CHESTERFIELD",
+        "address": "17103 WILD HORSE CREEK RD",
+        "zipcode": 63005,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.657123%2C-90.607720",
+        "username": "loc050boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC050",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 51,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3203874976044,
+          38.4432471236164
+        ]
+      },
+      "properties": {
+        "OBJECTID": 51,
+        "loc": "051",
+        "name": "FIRST BAPTIST CHURCH OF OAKVILLE",
+        "address": "6741 TELEGRAPH RD",
+        "zipcode": 63129,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.443240%2C-90.320381",
+        "username": "loc051boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC051",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 52,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4212372442531,
+          38.6559774342146
+        ]
+      },
+      "properties": {
+        "OBJECTID": 52,
+        "loc": "052",
+        "name": "FIRST CH CHRIST SCIENTIST",
+        "address": "10939 LADUE RD",
+        "zipcode": 63141,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.655970%2C-90.421231",
+        "username": "loc052boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC052",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 53,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3576675457298,
+          38.5923111658178
+        ]
+      },
+      "properties": {
+        "OBJECTID": 53,
+        "loc": "053",
+        "name": "FIRST CONGREGATIONAL CH WEBSTER GROVES",
+        "address": "10 W LOCKWOOD AVE",
+        "zipcode": 63119,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.592304%2C-90.357661",
+        "username": "loc053boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC053",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 54,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4897223012575,
+          38.5827507087809
+        ]
+      },
+      "properties": {
+        "OBJECTID": 54,
+        "loc": "054",
+        "name": "FIRST EVANGELICAL FREE CHURCH",
+        "address": "1375 CARMAN RD",
+        "zipcode": 63021,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.582744%2C-90.489716",
+        "username": "loc054boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC054",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 55,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3929412835659,
+          38.6817255286445
+        ]
+      },
+      "properties": {
+        "OBJECTID": 55,
+        "loc": "055",
+        "name": "FIVE OAKS ON WARSON",
+        "address": "1200 N WARSON RD",
+        "zipcode": 63132,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.681718%2C-90.392935",
+        "username": "loc055boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC055",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 56,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3173141200298,
+          38.8395172384735
+        ]
+      },
+      "properties": {
+        "OBJECTID": 56,
+        "loc": "056",
+        "name": "FLORISSANT CHURCH OF CHRIST",
+        "address": "16460 NEW HALLS FERRY RD",
+        "zipcode": 63031,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.839510%2C-90.317308",
+        "username": "loc056boec",
+        "absentee": "abs607boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC056",
+        "notes_abs": null,
+        "loc_abs": "607"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 57,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3090471422924,
+          38.7750437750257
+        ]
+      },
+      "properties": {
+        "OBJECTID": 57,
+        "loc": "057",
+        "name": "FLORISSANT MUNICIPAL COURT",
+        "address": "4575 WASHINGTON ST",
+        "zipcode": 63033,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.775037%2C-90.309041",
+        "username": "loc057boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC057",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 58,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3260603275891,
+          38.7859192488025
+        ]
+      },
+      "properties": {
+        "OBJECTID": 58,
+        "loc": "058",
+        "name": "FLORISSANT VALLEY LIBRARY",
+        "address": "195 S NEW FLORISSANT RD",
+        "zipcode": 63031,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.785912%2C-90.326054",
+        "username": "loc058boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC058",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 59,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3228365934,
+          38.653912737373
+        ]
+      },
+      "properties": {
+        "OBJECTID": 59,
+        "loc": "059",
+        "name": "FLYNN PARK ELEMENTARY SCHOOL",
+        "address": "7220 WATERMAN AVE",
+        "zipcode": 63130,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.653906%2C-90.322830",
+        "username": "loc059boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC059",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 60,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2869499276064,
+          38.5245988107021
+        ]
+      },
+      "properties": {
+        "OBJECTID": 60,
+        "loc": "060",
+        "name": "FORDER ELEMENTARY SCHOOL",
+        "address": "623 W RIPA AVE",
+        "zipcode": 63125,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.524592%2C-90.286944",
+        "username": "loc060boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC060",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 61,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4121856251683,
+          38.6336705522531
+        ]
+      },
+      "properties": {
+        "OBJECTID": 61,
+        "loc": "061",
+        "name": "FRONTENAC CITY HALL",
+        "address": "10555 CLAYTON RD",
+        "zipcode": 63131,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.633663%2C-90.412179",
+        "username": "loc061boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC061",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 62,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3979622520585,
+          38.7752593408349
+        ]
+      },
+      "properties": {
+        "OBJECTID": 62,
+        "loc": "062",
+        "name": "GARRETT ELEMENTARY SCHOOL",
+        "address": "1400 VILLE ROSA LN",
+        "zipcode": 63042,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.775252%2C-90.397956",
+        "username": "loc062boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC062",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 63,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2508208970099,
+          38.7354392330541
+        ]
+      },
+      "properties": {
+        "OBJECTID": 63,
+        "loc": "063",
+        "name": "GARY GORE COMMUNITY CENTER",
+        "address": "2545 DORWOOD DR",
+        "zipcode": 63136,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.735432%2C-90.250815",
+        "username": "loc063boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC063",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 64,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3660997815444,
+          38.6046856940469
+        ]
+      },
+      "properties": {
+        "OBJECTID": 64,
+        "loc": "064",
+        "name": "GIVENS ELEMENTARY",
+        "address": "701 N ROCK HILL RD",
+        "zipcode": 63119,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.604679%2C-90.366094",
+        "username": "loc064boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC064",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 65,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2062185689083,
+          38.7585376208298
+        ]
+      },
+      "properties": {
+        "OBJECTID": 65,
+        "loc": "065",
+        "name": "GLASGOW ELEMENTARY SCHOOL",
+        "address": "10560 RENFREW DR",
+        "zipcode": 63137,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.758530%2C-90.206212",
+        "username": "loc065boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC065",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 66,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3862092167182,
+          38.5897186450629
+        ]
+      },
+      "properties": {
+        "OBJECTID": 66,
+        "loc": "066",
+        "name": "GLENDALE CITY AUDITORIUM",
+        "address": "424 N SAPPINGTON RD",
+        "zipcode": 63122,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.589712%2C-90.386203",
+        "username": "loc066boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC066",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 67,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3870466846446,
+          38.6017032691664
+        ]
+      },
+      "properties": {
+        "OBJECTID": 67,
+        "loc": "067",
+        "name": "GLENDALE LUTHERAN CHURCH",
+        "address": "1365 N SAPPINGTON RD",
+        "zipcode": 63122,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.601696%2C-90.387040",
+        "username": "loc067boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC067",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 68,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5100753961034,
+          38.5988945670584
+        ]
+      },
+      "properties": {
+        "OBJECTID": 68,
+        "loc": "068",
+        "name": "GOOD SHEPHERD LUTHERAN CHURCH",
+        "address": "327 WOODS MILL RD",
+        "zipcode": 63011,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.598887%2C-90.510069",
+        "username": "loc068boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC068",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 69,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4456721439372,
+          38.7424401950318
+        ]
+      },
+      "properties": {
+        "OBJECTID": 69,
+        "loc": "069",
+        "name": "GRACE CHURCH STL",
+        "address": "2695 CREVE COEUR MILL RD",
+        "zipcode": 63043,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.742433%2C-90.445666",
+        "username": "loc069boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC069",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 70,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4977166651488,
+          38.571107123438
+        ]
+      },
+      "properties": {
+        "OBJECTID": 70,
+        "loc": "070",
+        "name": "GRAND GLAIZE BRANCH LIBRARY",
+        "address": "1010 MERAMEC STATION RD",
+        "zipcode": 63021,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.571100%2C-90.497710",
+        "username": "loc070boec",
+        "absentee": "abs608boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC070",
+        "notes_abs": null,
+        "loc_abs": "608"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 71,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3513381071368,
+          38.5454137664956
+        ]
+      },
+      "properties": {
+        "OBJECTID": 71,
+        "loc": "071",
+        "name": "GRANTS VIEW BRANCH LIBRARY",
+        "address": "9700 MUSICK RD",
+        "zipcode": 63123,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.545407%2C-90.351332",
+        "username": "loc071boec",
+        "absentee": "abs609boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC071",
+        "notes_abs": null,
+        "loc_abs": "609"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 72,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5275683288155,
+          38.6692138755656
+        ]
+      },
+      "properties": {
+        "OBJECTID": 72,
+        "loc": "072",
+        "name": "GREEN TRAILS ELEMENTARY SCHOOL",
+        "address": "170 PORTICO DR",
+        "zipcode": 63017,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.669207%2C-90.527562",
+        "username": "loc072boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC072",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 73,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4050403788442,
+          38.5776373798899
+        ]
+      },
+      "properties": {
+        "OBJECTID": 73,
+        "loc": "073",
+        "name": "GREENTREE COMMUNITY CHURCH",
+        "address": "100 KIRKWOOD PL",
+        "zipcode": 63122,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.577630%2C-90.405034",
+        "username": "loc073boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC073",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 74,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2885348729172,
+          38.7498944529398
+        ]
+      },
+      "properties": {
+        "OBJECTID": 74,
+        "loc": "074",
+        "name": "GRIFFITH ELEMENTARY SCHOOL",
+        "address": "200 DAY DR",
+        "zipcode": 63135,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.749887%2C-90.288529",
+        "username": "loc074boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC074",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 75,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2948046623784,
+          38.7997776329901
+        ]
+      },
+      "properties": {
+        "OBJECTID": 75,
+        "loc": "075",
+        "name": "HALLS FERRY ELEMENTARY SCHOOL",
+        "address": "13585 NEW HALLS FERRY RD",
+        "zipcode": 63033,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.799770%2C-90.294798",
+        "username": "loc075boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC075",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 76,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2766926420906,
+          38.5330186137698
+        ]
+      },
+      "properties": {
+        "OBJECTID": 76,
+        "loc": "076",
+        "name": "HANCOCK PLACE ADMIN CENTER",
+        "address": "9417 S BROADWAY ST",
+        "zipcode": 63125,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.533011%2C-90.276686",
+        "username": "loc076boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC076",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 77,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3541707870505,
+          38.7860647418671
+        ]
+      },
+      "properties": {
+        "OBJECTID": 77,
+        "loc": "077",
+        "name": "HAZELWOOD CITY HALL",
+        "address": "415 ELM GROVE LN",
+        "zipcode": 63042,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.786058%2C-90.354165",
+        "username": "loc077boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC077",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 78,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3485290634924,
+          38.7779173030548
+        ]
+      },
+      "properties": {
+        "OBJECTID": 78,
+        "loc": "078",
+        "name": "HAZELWOOD CIVIC CENTER EAST",
+        "address": "8969 DUNN RD",
+        "zipcode": 63042,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.777910%2C-90.348523",
+        "username": "loc078boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC078",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 79,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.195622327869,
+          38.7797609951366
+        ]
+      },
+      "properties": {
+        "OBJECTID": 79,
+        "loc": "079",
+        "name": "HAZELWOOD SOUTHEAST MIDDLE SCH",
+        "address": "918 PRIGGE RD",
+        "zipcode": 63138,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.779754%2C-90.195616",
+        "username": "loc079boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC079",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 80,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5500213888013,
+          38.6447159144403
+        ]
+      },
+      "properties": {
+        "OBJECTID": 80,
+        "loc": "080",
+        "name": "HIGHCROFT RIDGE ELEMENTARY SCHOOL",
+        "address": "15380 HIGHCROFT DR",
+        "zipcode": 63017,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.644709%2C-90.550015",
+        "username": "loc080boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC080",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 81,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2299864993553,
+          38.7566284524961
+        ]
+      },
+      "properties": {
+        "OBJECTID": 81,
+        "loc": "081",
+        "name": "HOLY NAME COMMUNITY CENTER",
+        "address": "10257 ASHBROOK DR",
+        "zipcode": 63137,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.756621%2C-90.229980",
+        "username": "loc081boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC081",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 82,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3976555793176,
+          38.6402429851
+        ]
+      },
+      "properties": {
+        "OBJECTID": 82,
+        "loc": "082",
+        "name": "HORTON WATKINS HIGH SCHOOL",
+        "address": "1201 S WARSON RD",
+        "zipcode": 63124,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.640236%2C-90.397649",
+        "username": "loc082boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC082",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 83,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3734341501287,
+          38.6093581196279
+        ]
+      },
+      "properties": {
+        "OBJECTID": 83,
+        "loc": "083",
+        "name": "HUDSON ELEMENTARY SCHOOL",
+        "address": "9825 HUDSON AVE",
+        "zipcode": 63119,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.609351%2C-90.373428",
+        "username": "loc083boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC083",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 84,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.382964350462,
+          38.6934580034695
+        ]
+      },
+      "properties": {
+        "OBJECTID": 84,
+        "loc": "084",
+        "name": "IVELAND ELEMENTARY SCHOOL",
+        "address": "1836 DYER AVE",
+        "zipcode": 63114,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.693451%2C-90.382958",
+        "username": "loc084boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC084",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 85,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3294586965498,
+          38.6637130245928
+        ]
+      },
+      "properties": {
+        "OBJECTID": 85,
+        "loc": "085",
+        "name": "JACKSON PARK ELEMENTARY SCHOOL",
+        "address": "7400 BALSON AVE",
+        "zipcode": 63130,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.663706%2C-90.329452",
+        "username": "loc085boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC085",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 86,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2785998894355,
+          38.8172774209318
+        ]
+      },
+      "properties": {
+        "OBJECTID": 86,
+        "loc": "086",
+        "name": "JAMESTOWN BLUFFS LIBRARY",
+        "address": "4153 N HIGHWAY 67",
+        "zipcode": 63034,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.817270%2C-90.278594",
+        "username": "loc086boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC086",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 87,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2489735760603,
+          38.72826968468
+        ]
+      },
+      "properties": {
+        "OBJECTID": 87,
+        "loc": "087",
+        "name": "JENNINGS COMMUNITY CENTER",
+        "address": "2315 ADA WORTLEY AVE",
+        "zipcode": 63136,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.728263%2C-90.248967",
+        "username": "loc087boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC087",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 88,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2717306137123,
+          38.7286609727599
+        ]
+      },
+      "properties": {
+        "OBJECTID": 88,
+        "loc": "088",
+        "name": "JENNINGS SERVICE CENTER 220",
+        "address": "8501 LUCAS AND HUNT RD 220",
+        "zipcode": 63136,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.728654%2C-90.271724",
+        "username": "loc088boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC088",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 89,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3616495648072,
+          38.8077968962591
+        ]
+      },
+      "properties": {
+        "OBJECTID": 89,
+        "loc": "089",
+        "name": "JFK COMMUNITY CENTER",
+        "address": "315 HOWDERSHELL RD",
+        "zipcode": 63031,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.807790%2C-90.361643",
+        "username": "loc089boec",
+        "absentee": "abs610boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC089",
+        "notes_abs": null,
+        "loc_abs": "610"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 90,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3133017162403,
+          38.7555156558056
+        ]
+      },
+      "properties": {
+        "OBJECTID": 90,
+        "loc": "090",
+        "name": "JOHNSON WABASH ELEM SCHOOL",
+        "address": "685 JANUARY AVE",
+        "zipcode": 63135,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.755508%2C-90.313295",
+        "username": "loc090boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC090",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 91,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3824607917261,
+          38.4666086540585
+        ]
+      },
+      "properties": {
+        "OBJECTID": 91,
+        "loc": "091",
+        "name": "KENNEDY REC COMPLEX",
+        "address": "6050 WELLS RD",
+        "zipcode": 63128,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.466602%2C-90.382455",
+        "username": "loc091boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC091",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 92,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4167845219202,
+          38.5918714156672
+        ]
+      },
+      "properties": {
+        "OBJECTID": 92,
+        "loc": "092",
+        "name": "KEYSOR ELEMENTARY SCHOOL",
+        "address": "725 N GEYER RD",
+        "zipcode": 63122,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.591864%2C-90.416778",
+        "username": "loc092boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC092",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 93,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5085746537976,
+          38.6817870056861
+        ]
+      },
+      "properties": {
+        "OBJECTID": 93,
+        "loc": "093",
+        "name": "KING OF KINGS LUTHERAN CHURCH",
+        "address": "13765 OLIVE BLVD",
+        "zipcode": 63017,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.681780%2C-90.508568",
+        "username": "loc093boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC093",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 94,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3979612538439,
+          38.5827218396603
+        ]
+      },
+      "properties": {
+        "OBJECTID": 94,
+        "loc": "094",
+        "name": "KIRKWOOD BAPTIST CHURCH",
+        "address": "211 N WOODLAWN AVE",
+        "zipcode": 63122,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.582715%2C-90.397955",
+        "username": "loc094boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC094",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 95,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4165264014823,
+          38.580725665103
+        ]
+      },
+      "properties": {
+        "OBJECTID": 95,
+        "loc": "095",
+        "name": "KIRKWOOD COMMUNITY CENTER",
+        "address": "111 S GEYER RD",
+        "zipcode": 63122,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.580719%2C-90.416520",
+        "username": "loc095boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC095",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 96,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2644698861008,
+          38.7419675132804
+        ]
+      },
+      "properties": {
+        "OBJECTID": 96,
+        "loc": "096",
+        "name": "KOCH ELEMENTARY SCHOOL",
+        "address": "1910 EXUMA DR",
+        "zipcode": 63136,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.741960%2C-90.264464",
+        "username": "loc096boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC096",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 97,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3761347210281,
+          38.6412835069629
+        ]
+      },
+      "properties": {
+        "OBJECTID": 97,
+        "loc": "097",
+        "name": "LADUE CITY HALL",
+        "address": "9345 CLAYTON RD",
+        "zipcode": 63124,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.641276%2C-90.376128",
+        "username": "loc097boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC097",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 98,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2406799698419,
+          38.7478835911756
+        ]
+      },
+      "properties": {
+        "OBJECTID": 98,
+        "loc": "098",
+        "name": "LEWIS AND CLARK BRANCH LIBRARY",
+        "address": "9909 LEWIS & CLARK BLVD",
+        "zipcode": 63136,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.747876%2C-90.240674",
+        "username": "loc098boec",
+        "absentee": "abs611boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC098",
+        "notes_abs": null,
+        "loc_abs": "611"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 99,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3747376994902,
+          38.5300483016228
+        ]
+      },
+      "properties": {
+        "OBJECTID": 99,
+        "loc": "099",
+        "name": "LINDBERGH HIGH SCHOOL",
+        "address": "4900 S LINDBERGH BLVD",
+        "zipcode": 63126,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.530041%2C-90.374731",
+        "username": "loc099boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC099",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 100,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3796909491528,
+          38.5372820806689
+        ]
+      },
+      "properties": {
+        "OBJECTID": 100,
+        "loc": "100",
+        "name": "LINDBERGH SCHOOLS CENTRAL OFFICE",
+        "address": "9350 SAPPINGTON RD",
+        "zipcode": 63126,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.537275%2C-90.379685",
+        "username": "loc100boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC100",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 101,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3475130760461,
+          38.8167258723556
+        ]
+      },
+      "properties": {
+        "OBJECTID": 101,
+        "loc": "101",
+        "name": "LUSHER ELEMENTARY SCHOOL",
+        "address": "2015 MULLANPHY LN",
+        "zipcode": 63031,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.816719%2C-90.347507",
+        "username": "loc101boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC101",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 102,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.325599438656,
+          38.6131922463583
+        ]
+      },
+      "properties": {
+        "OBJECTID": 102,
+        "loc": "102",
+        "name": "MAPLEWOOD CITY HALL",
+        "address": "7601 MANCHESTER RD",
+        "zipcode": 63143,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.613185%2C-90.325593",
+        "username": "loc102boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC102",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 103,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.583073005036,
+          38.6232127405471
+        ]
+      },
+      "properties": {
+        "OBJECTID": 103,
+        "loc": "103",
+        "name": "MARQUETTE HIGH SCHOOL",
+        "address": "2351 CLARKSON RD",
+        "zipcode": 63017,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.623206%2C-90.583067",
+        "username": "loc103boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC103",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 104,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4468709939897,
+          38.7222907192589
+        ]
+      },
+      "properties": {
+        "OBJECTID": 104,
+        "loc": "104",
+        "name": "MARYLAND HEIGHTS CC",
+        "address": "2300 MCKELVEY RD",
+        "zipcode": 63043,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.722284%2C-90.446865",
+        "username": "loc104boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC104",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 105,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.435872300641,
+          38.7150181645244
+        ]
+      },
+      "properties": {
+        "OBJECTID": 105,
+        "loc": "105",
+        "name": "MARYLAND HEIGHTS GOV CENTER",
+        "address": "11911 DORSETT RD",
+        "zipcode": 63043,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.715011%2C-90.435866",
+        "username": "loc105boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC105",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 106,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3047702383416,
+          38.7324274441163
+        ]
+      },
+      "properties": {
+        "OBJECTID": 106,
+        "loc": "106",
+        "name": "MCCLUER SOUTH-BERKELEY",
+        "address": "201 BROTHERTON LN",
+        "zipcode": 63135,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.732420%2C-90.304764",
+        "username": "loc106boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC106",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 107,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3428493219649,
+          38.8069288236744
+        ]
+      },
+      "properties": {
+        "OBJECTID": 107,
+        "loc": "107",
+        "name": "MCCURDY ELEMENTARY SCHOOL",
+        "address": "975 LINDSAY LN",
+        "zipcode": 63031,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.806922%2C-90.342843",
+        "username": "loc107boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC107",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 108,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4561938264979,
+          38.7103590619029
+        ]
+      },
+      "properties": {
+        "OBJECTID": 108,
+        "loc": "108",
+        "name": "MCKELVEY INTERMEDIATE SCHOOL",
+        "address": "1751 MCKELVEY RD",
+        "zipcode": 63043,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.710352%2C-90.456188",
+        "username": "loc108boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC108",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 109,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3628905285655,
+          38.6184430829355
+        ]
+      },
+      "properties": {
+        "OBJECTID": 109,
+        "loc": "109",
+        "name": "MCKNIGHT CROSSINGS CHURCH",
+        "address": "2515 S MCKNIGHT RD",
+        "zipcode": 63124,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.618436%2C-90.362884",
+        "username": "loc109boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC109",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 110,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.464953671364,
+          38.5219377438691
+        ]
+      },
+      "properties": {
+        "OBJECTID": 110,
+        "loc": "110",
+        "name": "MERAMEC VALLEY BRANCH LIBRARY",
+        "address": "1501 SAN SIMEON WAY",
+        "zipcode": 63026,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.521931%2C-90.464947",
+        "username": "loc110boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC110",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 111,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3376192901516,
+          38.65198090226
+        ]
+      },
+      "properties": {
+        "OBJECTID": 111,
+        "loc": "111",
+        "name": "MID COUNTY BRANCH LIBRARY",
+        "address": "7821 MARYLAND AVE",
+        "zipcode": 63105,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.651974%2C-90.337613",
+        "username": "loc111boec",
+        "absentee": "abs612boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC111",
+        "notes_abs": null,
+        "loc_abs": "612"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 112,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3148829630146,
+          38.5166221282085
+        ]
+      },
+      "properties": {
+        "OBJECTID": 112,
+        "loc": "112",
+        "name": "MOSAIC ELEMENTARY",
+        "address": "3701 WILL AVE",
+        "zipcode": 63125,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.516615%2C-90.314877",
+        "username": "loc112boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC112",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 113,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3147855649091,
+          38.6228866203826
+        ]
+      },
+      "properties": {
+        "OBJECTID": 113,
+        "loc": "113",
+        "name": "MRH ELEM SCHOOL",
+        "address": "1800 PRINCETON PL",
+        "zipcode": 63117,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.622879%2C-90.314779",
+        "username": "loc113boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC113",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 114,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3018673521045,
+          38.7050574250032
+        ]
+      },
+      "properties": {
+        "OBJECTID": 114,
+        "loc": "114",
+        "name": "NATURAL BRIDGE BRANCH LIBRARY",
+        "address": "7606 NATURAL BRIDGE RD",
+        "zipcode": 63121,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.705050%2C-90.301861",
+        "username": "loc114boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC114",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 115,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2499954644904,
+          38.7855389461356
+        ]
+      },
+      "properties": {
+        "OBJECTID": 115,
+        "loc": "115",
+        "name": "NORTH COUNTY REC COMPLEX",
+        "address": "2577 REDMAN RD",
+        "zipcode": 63136,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.785532%2C-90.249989",
+        "username": "loc115boec",
+        "absentee": "abs613boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC115",
+        "notes_abs": null,
+        "loc_abs": "613"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 116,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2804309374336,
+          38.7055239688452
+        ]
+      },
+      "properties": {
+        "OBJECTID": 116,
+        "loc": "116",
+        "name": "NORTHWOODS CITY HALL",
+        "address": "4600 OAKRIDGE BLVD",
+        "zipcode": 63121,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.705517%2C-90.280425",
+        "username": "loc116boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC116",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 117,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5395667116258,
+          38.5656411483462
+        ]
+      },
+      "properties": {
+        "OBJECTID": 117,
+        "loc": "117",
+        "name": "OAK BROOK ELEMENTARY SCHOOL",
+        "address": "510 BIG BEND RD",
+        "zipcode": 63021,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.565634%2C-90.539560",
+        "username": "loc117boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC117",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 118,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3910049733657,
+          38.5693841576675
+        ]
+      },
+      "properties": {
+        "OBJECTID": 118,
+        "loc": "118",
+        "name": "OAKBEND BRANCH LIBRARY",
+        "address": "842 S HOLMES AVE",
+        "zipcode": 63122,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.569377%2C-90.390999",
+        "username": "loc118boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC118",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 119,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3207753343425,
+          38.4784514171847
+        ]
+      },
+      "properties": {
+        "OBJECTID": 119,
+        "loc": "119",
+        "name": "OAKVILLE ELEMENTARY SCHOOL",
+        "address": "2911 YAEGER RD",
+        "zipcode": 63129,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.478444%2C-90.320769",
+        "username": "loc119boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC119",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 120,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3212939856697,
+          38.4728456843565
+        ]
+      },
+      "properties": {
+        "OBJECTID": 120,
+        "loc": "120",
+        "name": "OAKVILLE SR HIGH SCHOOL",
+        "address": "5557 MILBURN RD",
+        "zipcode": 63129,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.472839%2C-90.321288",
+        "username": "loc120boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC120",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 121,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3756970358638,
+          38.6761184144588
+        ]
+      },
+      "properties": {
+        "OBJECTID": 121,
+        "loc": "121",
+        "name": "OLIVETTE CITY CENTER",
+        "address": "1140 DIELMAN RD",
+        "zipcode": 63132,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.676111%2C-90.375691",
+        "username": "loc121boec",
+        "absentee": "abs614boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC121",
+        "notes_abs": null,
+        "loc_abs": "614"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 122,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3596039646193,
+          38.7006049366399
+        ]
+      },
+      "properties": {
+        "OBJECTID": 122,
+        "loc": "122",
+        "name": "OVERLAND COMMUNITY CENTER",
+        "address": "9225 LACKLAND RD",
+        "zipcode": 63114,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.700598%2C-90.359598",
+        "username": "loc122boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC122",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 123,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3071716868818,
+          38.6816839064671
+        ]
+      },
+      "properties": {
+        "OBJECTID": 123,
+        "loc": "123",
+        "name": "PAGEDALE CITY HALL",
+        "address": "1420 FERGUSON AVE",
+        "zipcode": 63133,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.681677%2C-90.307165",
+        "username": "loc123boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC123",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 124,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3395752685196,
+          38.6953838990806
+        ]
+      },
+      "properties": {
+        "OBJECTID": 124,
+        "loc": "124",
+        "name": "PARKVIEW BRANCH LIBRARY",
+        "address": "8400 DELPORT DR",
+        "zipcode": 63114,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.695377%2C-90.339569",
+        "username": "loc124boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC124",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 125,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5040496602389,
+          38.6651224635732
+        ]
+      },
+      "properties": {
+        "OBJECTID": 125,
+        "loc": "125",
+        "name": "PARKWAY CENTRAL SR HIGH SCHOOL",
+        "address": "369 N WOODS MILL RD",
+        "zipcode": 63017,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.665115%2C-90.504043",
+        "username": "loc125boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC125",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 126,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4682917290902,
+          38.6897558203837
+        ]
+      },
+      "properties": {
+        "OBJECTID": 126,
+        "loc": "126",
+        "name": "PARKWAY NORTH SR HIGH SCHOOL",
+        "address": "12860 FEE FEE RD",
+        "zipcode": 63146,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.689749%2C-90.468285",
+        "username": "loc126boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC126",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 127,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5120264244994,
+          38.5767005127346
+        ]
+      },
+      "properties": {
+        "OBJECTID": 127,
+        "loc": "127",
+        "name": "PARKWAY SOUTH SR HIGH SCHOOL",
+        "address": "801 HANNA RD",
+        "zipcode": 63021,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.576693%2C-90.512020",
+        "username": "loc127boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC127",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 128,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5068678024009,
+          38.610941391807
+        ]
+      },
+      "properties": {
+        "OBJECTID": 128,
+        "loc": "128",
+        "name": "PARKWAY WELCOME CENTER",
+        "address": "760 WOODS MILL RD",
+        "zipcode": 63011,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.610934%2C-90.506862",
+        "username": "loc128boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC128",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 129,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5346982600924,
+          38.6237729820624
+        ]
+      },
+      "properties": {
+        "OBJECTID": 129,
+        "loc": "129",
+        "name": "PARKWAY WEST HIGH SCHOOL",
+        "address": "14653 CLAYTON RD",
+        "zipcode": 63011,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.623766%2C-90.534692",
+        "username": "loc129boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC129",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 130,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5826004659098,
+          38.5916045153353
+        ]
+      },
+      "properties": {
+        "OBJECTID": 130,
+        "loc": "130",
+        "name": "PATHFINDER CHURCH",
+        "address": "15808 MANCHESTER RD",
+        "zipcode": 63011,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.591597%2C-90.582594",
+        "username": "loc130boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC130",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 131,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3078476268113,
+          38.4987846009448
+        ]
+      },
+      "properties": {
+        "OBJECTID": 131,
+        "loc": "131",
+        "name": "PEACE LUTHERAN CHURCH",
+        "address": "737 BARRACKSVIEW RD",
+        "zipcode": 63125,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.498777%2C-90.307841",
+        "username": "loc131boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC131",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 132,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3210874757417,
+          38.4406512148741
+        ]
+      },
+      "properties": {
+        "OBJECTID": 132,
+        "loc": "132",
+        "name": "POINT ELEMENTARY SCHOOL",
+        "address": "6790 TELEGRAPH RD",
+        "zipcode": 63129,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.440644%2C-90.321081",
+        "username": "loc132boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC132",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 133,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3777371892218,
+          38.7828986977927
+        ]
+      },
+      "properties": {
+        "OBJECTID": 133,
+        "loc": "133",
+        "name": "PRAIRIE COMMONS BRANCH LIBRARY",
+        "address": "915 UTZ LN",
+        "zipcode": 63042,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.782892%2C-90.377731",
+        "username": "loc133boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC133",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 134,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4230727783508,
+          38.6820279554289
+        ]
+      },
+      "properties": {
+        "OBJECTID": 134,
+        "loc": "134",
+        "name": "PROMISE COMMUNITY HOMES",
+        "address": "1240 DAUTEL LANE",
+        "zipcode": 63146,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.682021%2C-90.423067",
+        "username": "loc134boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC134",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 135,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3072812185167,
+          38.4438744226348
+        ]
+      },
+      "properties": {
+        "OBJECTID": 135,
+        "loc": "135",
+        "name": "QUEEN OF ALL SAINTS CHURCH",
+        "address": "6603 CHRISTOPHER DR",
+        "zipcode": 63129,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.443867%2C-90.307275",
+        "username": "loc135boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC135",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 136,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4915384720919,
+          38.6087325800596
+        ]
+      },
+      "properties": {
+        "OBJECTID": 136,
+        "loc": "136",
+        "name": "QUEENY PARK BUILDING",
+        "address": "550 WEIDMAN RD",
+        "zipcode": 63011,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.608725%2C-90.491532",
+        "username": "loc136boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC136",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 137,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3639391070405,
+          38.6530700123882
+        ]
+      },
+      "properties": {
+        "OBJECTID": 137,
+        "loc": "137",
+        "name": "REED ELEMENTARY SCHOOL",
+        "address": "9060 LADUE RD",
+        "zipcode": 63124,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.653063%2C-90.363933",
+        "username": "loc137boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC137",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 138,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.6012576547892,
+          38.5720915238289
+        ]
+      },
+      "properties": {
+        "OBJECTID": 138,
+        "loc": "138",
+        "name": "RIDGE MEADOW ELEMENTARY SCHOOL",
+        "address": "777 RIDGE RD",
+        "zipcode": 63021,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.572084%2C-90.601251",
+        "username": "loc138boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC138",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 139,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3580402071436,
+          38.7103962505337
+        ]
+      },
+      "properties": {
+        "OBJECTID": 139,
+        "loc": "139",
+        "name": "RITENOUR HIGH SCHOOL",
+        "address": "9100 ST CHARLES ROCK RD",
+        "zipcode": 63114,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.710389%2C-90.358034",
+        "username": "loc139boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC139",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 140,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4622622856994,
+          38.5348408842794
+        ]
+      },
+      "properties": {
+        "OBJECTID": 140,
+        "loc": "140",
+        "name": "RIVERCHASE YMCA",
+        "address": "990 HORAN DR",
+        "zipcode": 63026,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.534834%2C-90.462256",
+        "username": "loc140boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC140",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 141,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3793499867898,
+          38.727868630766
+        ]
+      },
+      "properties": {
+        "OBJECTID": 141,
+        "loc": "141",
+        "name": "ROCK ROAD BRANCH LIBRARY",
+        "address": "10267 ST CHARLES ROCK RD",
+        "zipcode": 63074,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.727861%2C-90.379344",
+        "username": "loc141boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC141",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 142,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4925577143134,
+          38.5177271529092
+        ]
+      },
+      "properties": {
+        "OBJECTID": 142,
+        "loc": "142",
+        "name": "ROCKWOOD SUMMIT HIGH SCHOOL",
+        "address": "1780 HAWKINS RD",
+        "zipcode": 63026,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.517720%2C-90.492551",
+        "username": "loc142boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC142",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 143,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.6628110948315,
+          38.6124917857185
+        ]
+      },
+      "properties": {
+        "OBJECTID": 143,
+        "loc": "143",
+        "name": "ROCKWOOD VALLEY MIDDLE SCHOOL",
+        "address": "1220 BABLER PARK DR",
+        "zipcode": 63038,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.612485%2C-90.662805",
+        "username": "loc143boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC143",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 144,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3367225819924,
+          38.4198284430684
+        ]
+      },
+      "properties": {
+        "OBJECTID": 144,
+        "loc": "144",
+        "name": "ROGERS ELEMENTARY SCHOOL",
+        "address": "7700 FINE RD",
+        "zipcode": 63129,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.419821%2C-90.336716",
+        "username": "loc144boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC144",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 145,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3164015601529,
+          38.5728670128168
+        ]
+      },
+      "properties": {
+        "OBJECTID": 145,
+        "loc": "145",
+        "name": "ROGERS MIDDLE SCHOOL",
+        "address": "7550 MACKENZIE RD",
+        "zipcode": 63123,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.572860%2C-90.316395",
+        "username": "loc145boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC145",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 146,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3167218187423,
+          38.55500017764
+        ]
+      },
+      "properties": {
+        "OBJECTID": 146,
+        "loc": "146",
+        "name": "ROOFTOP CHURCH",
+        "address": "9217 GRAVOIS RD",
+        "zipcode": 63123,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.554993%2C-90.316716",
+        "username": "loc146boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC146",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 147,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3685850766986,
+          38.7955355014234
+        ]
+      },
+      "properties": {
+        "OBJECTID": 147,
+        "loc": "147",
+        "name": "RUSSELL ELEMENTARY SCHOOL",
+        "address": "7350 HOWDERSHELL RD",
+        "zipcode": 63042,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.795528%2C-90.368579",
+        "username": "loc147boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC147",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 148,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3477306553236,
+          38.6357647970299
+        ]
+      },
+      "properties": {
+        "OBJECTID": 148,
+        "loc": "148",
+        "name": "SAINT LOUIS GALLERIA",
+        "address": "1417 ST LOUIS GALLERIA ST",
+        "zipcode": 63117,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.635758%2C-90.347724",
+        "username": "loc148boec",
+        "absentee": "abs615boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC148",
+        "notes_abs": "Voting entrance is outside; use the pink door next to Cheesecake Factory",
+        "loc_abs": "615"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 149,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5592935153413,
+          38.5875222855569
+        ]
+      },
+      "properties": {
+        "OBJECTID": 149,
+        "loc": "149",
+        "name": "SELVIDGE MIDDLE SCHOOL",
+        "address": "235 NEW BALLWIN RD",
+        "zipcode": 63021,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.587515%2C-90.559287",
+        "username": "loc149boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC149",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 150,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5390086672504,
+          38.6561876758622
+        ]
+      },
+      "properties": {
+        "OBJECTID": 150,
+        "loc": "150",
+        "name": "SHENANDOAH VALLEY ELEMENTARY SCHOOL",
+        "address": "15399 APPALACHIAN TRL",
+        "zipcode": 63017,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.656181%2C-90.539002",
+        "username": "loc150boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC150",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 151,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3281385122865,
+          38.5848711732821
+        ]
+      },
+      "properties": {
+        "OBJECTID": 151,
+        "loc": "151",
+        "name": "SHREWSBURY CITY CENTER",
+        "address": "5200 SHREWSBURY AVE",
+        "zipcode": 63119,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.584864%2C-90.328132",
+        "username": "loc151boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC151",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 152,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5316808820162,
+          38.5747364474268
+        ]
+      },
+      "properties": {
+        "OBJECTID": 152,
+        "loc": "152",
+        "name": "SORRENTO SPRINGS ELEMENTARY SCHOOL",
+        "address": "390 TUMULTY DR",
+        "zipcode": 63021,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.574729%2C-90.531675",
+        "username": "loc152boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC152",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 153,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.383236707465,
+          38.4960030079589
+        ]
+      },
+      "properties": {
+        "OBJECTID": 153,
+        "loc": "153",
+        "name": "SOUTH COUNTY BAPTIST CHURCH",
+        "address": "12995 TESSON FERRY RD",
+        "zipcode": 63128,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.495996%2C-90.383230",
+        "username": "loc153boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC153",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 154,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3686072233041,
+          38.5162752681511
+        ]
+      },
+      "properties": {
+        "OBJECTID": 154,
+        "loc": "154",
+        "name": "SOUTH SIDE CHURCH OF GOD",
+        "address": "12145 TESSON FERRY RD",
+        "zipcode": 63128,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.516268%2C-90.368601",
+        "username": "loc154boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC154",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 155,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3876982188231,
+          38.5537357850618
+        ]
+      },
+      "properties": {
+        "OBJECTID": 155,
+        "loc": "155",
+        "name": "SOUTHGATE CHURCH",
+        "address": "9820 E WATSON RD",
+        "zipcode": 63126,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.553729%2C-90.387692",
+        "username": "loc155boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC155",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 156,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3379325152853,
+          38.5140625282979
+        ]
+      },
+      "properties": {
+        "OBJECTID": 156,
+        "loc": "156",
+        "name": "ST JOHNS UCC MEHLVILLE",
+        "address": "11333 ST JOHNS CHURCH RD",
+        "zipcode": 63123,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.514055%2C-90.337926",
+        "username": "loc156boec",
+        "absentee": "abs616boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC156",
+        "notes_abs": null,
+        "loc_abs": "616"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 157,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5183689953927,
+          38.587647094501
+        ]
+      },
+      "properties": {
+        "OBJECTID": 157,
+        "loc": "157",
+        "name": "ST JOSEPH PARISH",
+        "address": "567 ST JOSEPH LN",
+        "zipcode": 63021,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.587640%2C-90.518363",
+        "username": "loc157boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC157",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 158,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.6125630636161,
+          38.6665587839725
+        ]
+      },
+      "properties": {
+        "OBJECTID": 158,
+        "loc": "158",
+        "name": "ST LOUIS FAMILY CHURCH - YOUTH BUILDING",
+        "address": "17476 CHESTERFIELD AIRPORT RD",
+        "zipcode": 63005,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.666552%2C-90.612557",
+        "username": "loc158boec",
+        "absentee": "abs617boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC158",
+        "notes_abs": null,
+        "loc_abs": "617"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 159,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5506104632891,
+          38.6061583555225
+        ]
+      },
+      "properties": {
+        "OBJECTID": 159,
+        "loc": "159",
+        "name": "ST MARK PRESBYTERIAN CHURCH",
+        "address": "601 CLAYMONT DR",
+        "zipcode": 63011,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.606151%2C-90.550604",
+        "username": "loc159boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC159",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 160,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3039174910095,
+          38.4724648345049
+        ]
+      },
+      "properties": {
+        "OBJECTID": 160,
+        "loc": "160",
+        "name": "ST PAULS UNITED CHURCH OF CHRIST",
+        "address": "5508 TELEGRAPH RD",
+        "zipcode": 63129,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.472458%2C-90.303911",
+        "username": "loc160boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC160",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 161,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.299427724097,
+          38.6692052242511
+        ]
+      },
+      "properties": {
+        "OBJECTID": 161,
+        "loc": "161",
+        "name": "STL BUSINESS INCUBATOR WELLSTON",
+        "address": "6439 PLYMOUTH AVE",
+        "zipcode": 63133,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.669198%2C-90.299421",
+        "username": "loc161boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC161",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 162,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3371523997519,
+          38.4964454524587
+        ]
+      },
+      "properties": {
+        "OBJECTID": 162,
+        "loc": "162",
+        "name": "STL COUNTY GOVT CENTER SOUTH",
+        "address": "4544 LEMAY FERRY RD",
+        "zipcode": 63129,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.496438%2C-90.337146",
+        "username": "loc162boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC162",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 163,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4221687425228,
+          38.5691671425583
+        ]
+      },
+      "properties": {
+        "OBJECTID": 163,
+        "loc": "163",
+        "name": "STLCC MERAMEC - STUDENT CENTER",
+        "address": "11333 BIG BEND RD",
+        "zipcode": 63122,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.569160%2C-90.422162",
+        "username": "loc163boec",
+        "absentee": "abs618boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC163",
+        "notes_abs": null,
+        "loc_abs": "618"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 164,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.6484829698986,
+          38.5743611995087
+        ]
+      },
+      "properties": {
+        "OBJECTID": 164,
+        "loc": "164",
+        "name": "STLCC WILDWOOD CAMPUS",
+        "address": "2645 GENERATIONS DR",
+        "zipcode": 63040,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.574354%2C-90.648477",
+        "username": "loc164boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC164",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 165,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4036038307243,
+          38.5444814083275
+        ]
+      },
+      "properties": {
+        "OBJECTID": 165,
+        "loc": "165",
+        "name": "SUNSET HILLS COMMUNITY CENTER",
+        "address": "3915 S LINDBERGH BLVD",
+        "zipcode": 63127,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.544474%2C-90.403598",
+        "username": "loc165boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC165",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 166,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.544417260283,
+          38.5694280871621
+        ]
+      },
+      "properties": {
+        "OBJECTID": 166,
+        "loc": "166",
+        "name": "TAIWANESE PRESBY CHURCH",
+        "address": "542 RIES RD",
+        "zipcode": 63021,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.569421%2C-90.544411",
+        "username": "loc166boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC166",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 167,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3476107783585,
+          38.6510349530626
+        ]
+      },
+      "properties": {
+        "OBJECTID": 167,
+        "loc": "167",
+        "name": "THE CENTER OF CLAYTON",
+        "address": "50 GAY AVE",
+        "zipcode": 63105,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.651028%2C-90.347605",
+        "username": "loc167boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC167",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 168,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3311186630379,
+          38.6284813840789
+        ]
+      },
+      "properties": {
+        "OBJECTID": 168,
+        "loc": "168",
+        "name": "THE HEIGHTS",
+        "address": "8001 DALE AVE",
+        "zipcode": 63117,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.628474%2C-90.331112",
+        "username": "loc168boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC168",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 169,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2929245656764,
+          38.6894936529813
+        ]
+      },
+      "properties": {
+        "OBJECTID": 169,
+        "loc": "169",
+        "name": "THE LEGACY CENTER",
+        "address": "6850 NORMANDALE DR",
+        "zipcode": 63121,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.689487%2C-90.292918",
+        "username": "loc169boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC169",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 170,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4542421784803,
+          38.5998972134952
+        ]
+      },
+      "properties": {
+        "OBJECTID": 170,
+        "loc": "170",
+        "name": "THE LODGE COMMUNITY CENTER",
+        "address": "1050 DES PERES RD",
+        "zipcode": 63131,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.599890%2C-90.454236",
+        "username": "loc170boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC170",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 171,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5516329457679,
+          38.5842185508384
+        ]
+      },
+      "properties": {
+        "OBJECTID": 171,
+        "loc": "171",
+        "name": "THE POINTE AT BALLWIN COMMONS",
+        "address": "1 BALLWIN COMMONS CIR",
+        "zipcode": 63021,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.584211%2C-90.551627",
+        "username": "loc171boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC171",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 172,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.471187425321,
+          38.691866110376
+        ]
+      },
+      "properties": {
+        "OBJECTID": 172,
+        "loc": "172",
+        "name": "THORNHILL BRANCH LIBRARY",
+        "address": "12863 WILLOWYCK DR",
+        "zipcode": 63146,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.691859%2C-90.471181",
+        "username": "loc172boec",
+        "absentee": "abs619boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC172",
+        "notes_abs": null,
+        "loc_abs": "619"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 173,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4018712210139,
+          38.5953665434935
+        ]
+      },
+      "properties": {
+        "OBJECTID": 173,
+        "loc": "173",
+        "name": "TILLMAN ELEMENTARY SCHOOL",
+        "address": "230 QUAN AVE",
+        "zipcode": 63122,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.595359%2C-90.401865",
+        "username": "loc173boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC173",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 174,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.626373230187,
+          38.4929916625269
+        ]
+      },
+      "properties": {
+        "OBJECTID": 174,
+        "loc": "174",
+        "name": "TIMBERS OF EUREKA",
+        "address": "1 COFFEY PARK LN",
+        "zipcode": 63025,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.492985%2C-90.626367",
+        "username": "loc174boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC174",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 175,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4517612529517,
+          38.6322080689162
+        ]
+      },
+      "properties": {
+        "OBJECTID": 175,
+        "loc": "175",
+        "name": "TOWN AND COUNTRY MUNI CTR",
+        "address": "1011 MUNICIPAL CENTER DR",
+        "zipcode": 63131,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.632201%2C-90.451755",
+        "username": "loc175boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC175",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 176,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4272615970171,
+          38.5945159413995
+        ]
+      },
+      "properties": {
+        "OBJECTID": 176,
+        "loc": "176",
+        "name": "TRINITY LUTHERAN CHURCH",
+        "address": "820 LOCKETT RD",
+        "zipcode": 63122,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.594509%2C-90.427255",
+        "username": "loc176boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC176",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 177,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2331195842076,
+          38.7922957429417
+        ]
+      },
+      "properties": {
+        "OBJECTID": 177,
+        "loc": "177",
+        "name": "TRUE GOSPEL MIRACLE CHURCH STL",
+        "address": "11955 BENHAM RD",
+        "zipcode": 63138,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.792289%2C-90.233113",
+        "username": "loc177boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC177",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 178,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2181949010125,
+          38.7846371117633
+        ]
+      },
+      "properties": {
+        "OBJECTID": 178,
+        "loc": "178",
+        "name": "TWILLMAN ELEMENTARY SCHOOL",
+        "address": "11831 BELLEFONTAINE RD",
+        "zipcode": 63138,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.784630%2C-90.218189",
+        "username": "loc178boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC178",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 179,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4990517986822,
+          38.568294294264
+        ]
+      },
+      "properties": {
+        "OBJECTID": 179,
+        "loc": "179",
+        "name": "TWIN OAKS TOWN HALL",
+        "address": "1381 BIG BEND RD",
+        "zipcode": 63021,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.568287%2C-90.499046",
+        "username": "loc179boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC179",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 180,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3086571484127,
+          38.7115259241112
+        ]
+      },
+      "properties": {
+        "OBJECTID": 180,
+        "loc": "180",
+        "name": "UMSL MILLENNIUM STUDENT CENTER",
+        "address": "17 ARNOLD GROBMAN DR",
+        "zipcode": 63121,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.711519%2C-90.308651",
+        "username": "loc180boec",
+        "absentee": "abs620boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC180",
+        "notes_abs": null,
+        "loc_abs": "620"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 181,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3218178265017,
+          38.6686641653082
+        ]
+      },
+      "properties": {
+        "OBJECTID": 181,
+        "loc": "181",
+        "name": "UNIVERSITY CITY CENTENNIAL COMMONS",
+        "address": "7210 OLIVE BLVD",
+        "zipcode": 63130,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.668657%2C-90.321812",
+        "username": "loc181boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC181",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 182,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3094191313342,
+          38.6568376808944
+        ]
+      },
+      "properties": {
+        "OBJECTID": 182,
+        "loc": "182",
+        "name": "UNIVERSITY CITY PUBLIC LIBRARY",
+        "address": "6701 DELMAR BLVD",
+        "zipcode": 63130,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.656831%2C-90.309413",
+        "username": "loc182boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC182",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 183,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.494688444848,
+          38.5531150688743
+        ]
+      },
+      "properties": {
+        "OBJECTID": 183,
+        "loc": "183",
+        "name": "VALLEY PARK SCHOOL DISTRICT OFFICE",
+        "address": "ONE MAIN ST",
+        "zipcode": 63088,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.553108%2C-90.494682",
+        "username": "loc183boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC183",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 184,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3636706746199,
+          38.4606032685178
+        ]
+      },
+      "properties": {
+        "OBJECTID": 184,
+        "loc": "184",
+        "name": "VFW POST 2184-GEN GEORGE C MARSHALL MEMORIAL",
+        "address": "6327 LEMAY FERRY RD",
+        "zipcode": 63129,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.460596%2C-90.363664",
+        "username": "loc184boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC184",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 185,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.321165586596,
+          38.6238463017187
+        ]
+      },
+      "properties": {
+        "OBJECTID": 185,
+        "loc": "185",
+        "name": "VFW POST 3500-RICHMOND HEIGHTS-CRESTWOOD",
+        "address": "1717 S BIG BEND BLVD",
+        "zipcode": 63117,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.623839%2C-90.321159",
+        "username": "loc185boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC185",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 186,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3289662537665,
+          38.7940218665781
+        ]
+      },
+      "properties": {
+        "OBJECTID": 186,
+        "loc": "186",
+        "name": "VFW POST 4105-FLORISSANT VALLEY MEMORIAL",
+        "address": "410 RUE ST FRANCOIS ST",
+        "zipcode": 63031,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.794015%2C-90.328960",
+        "username": "loc186boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC186",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 187,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3707014239927,
+          38.4925385938477
+        ]
+      },
+      "properties": {
+        "OBJECTID": 187,
+        "loc": "187",
+        "name": "WASHINGTON MIDDLE SCHOOL",
+        "address": "5165 AMBS RD",
+        "zipcode": 63128,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.492531%2C-90.370695",
+        "username": "loc187boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC187",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 188,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3280077114277,
+          38.6846678359823
+        ]
+      },
+      "properties": {
+        "OBJECTID": 188,
+        "loc": "188",
+        "name": "WASHINGTON SCHOOL",
+        "address": "1730 N HANLEY",
+        "zipcode": 63114,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.684661%2C-90.328001",
+        "username": "loc188boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC188",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 189,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3146832131167,
+          38.649244420648
+        ]
+      },
+      "properties": {
+        "OBJECTID": 189,
+        "loc": "189",
+        "name": "WASHINGTON UNIV FIELD HOUSE",
+        "address": "330 BIG BEND BLVD",
+        "zipcode": 63130,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.649237%2C-90.314677",
+        "username": "loc189boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC189",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 190,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2980382707918,
+          38.5509414208216
+        ]
+      },
+      "properties": {
+        "OBJECTID": 190,
+        "loc": "190",
+        "name": "WEBER ROAD BRANCH LIBRARY",
+        "address": "4444 WEBER RD",
+        "zipcode": 63123,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.550934%2C-90.298032",
+        "username": "loc190boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC190",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 191,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3504356070121,
+          38.5925096718853
+        ]
+      },
+      "properties": {
+        "OBJECTID": 191,
+        "loc": "191",
+        "name": "WEBSTER GROVES LIBRARY",
+        "address": "301 E LOCKWOOD AVE",
+        "zipcode": 63119,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.592503%2C-90.350429",
+        "username": "loc191boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC191",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 192,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3559190348806,
+          38.5777029588328
+        ]
+      },
+      "properties": {
+        "OBJECTID": 192,
+        "loc": "192",
+        "name": "WEBSTER GROVES REC COMPLEX",
+        "address": "33 E GLENDALE RD",
+        "zipcode": 63119,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.577696%2C-90.355913",
+        "username": "loc192boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC192",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 193,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4965923648482,
+          38.6402637214239
+        ]
+      },
+      "properties": {
+        "OBJECTID": 193,
+        "loc": "193",
+        "name": "WEST COUNTY ASSEMBLY OF GOD",
+        "address": "13431 NORTH OUTER 40 RD",
+        "zipcode": 63017,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.640257%2C-90.496586",
+        "username": "loc193boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC193",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 194,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2638829618095,
+          38.7730276412936
+        ]
+      },
+      "properties": {
+        "OBJECTID": 194,
+        "loc": "194",
+        "name": "WESTSIDE MISSIONARY BAPT CH",
+        "address": "2677 DUNN RD",
+        "zipcode": 63136,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.773020%2C-90.263877",
+        "username": "loc194boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC194",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 195,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3895042644673,
+          38.7026643526957
+        ]
+      },
+      "properties": {
+        "OBJECTID": 195,
+        "loc": "195",
+        "name": "WILD ACRES PARK",
+        "address": "2500 ASHBY RD",
+        "zipcode": 63114,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.702657%2C-90.389498",
+        "username": "loc195boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC195",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 196,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5858457104441,
+          38.6590444041492
+        ]
+      },
+      "properties": {
+        "OBJECTID": 196,
+        "loc": "196",
+        "name": "WILDHORSE ELEMENTARY SCHOOL",
+        "address": "16695 WILD HORSE CREEK RD",
+        "zipcode": 63005,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.659037%2C-90.585839",
+        "username": "loc196boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC196",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 197,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.6316539642402,
+          38.5807806085335
+        ]
+      },
+      "properties": {
+        "OBJECTID": 197,
+        "loc": "197",
+        "name": "WILDWOOD CITY HALL",
+        "address": "16860 MAIN ST",
+        "zipcode": 63040,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.580773%2C-90.631648",
+        "username": "loc197boec",
+        "absentee": "abs621boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC197",
+        "notes_abs": null,
+        "loc_abs": "621"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 198,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3043290636859,
+          38.4592475907941
+        ]
+      },
+      "properties": {
+        "OBJECTID": 198,
+        "loc": "198",
+        "name": "WOHLWEND ELEMENTARY SCHOOL",
+        "address": "5966 TELEGRAPH RD",
+        "zipcode": 63129,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.459240%2C-90.304323",
+        "username": "loc198boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC198",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 199,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3608994077085,
+          38.7313302521437
+        ]
+      },
+      "properties": {
+        "OBJECTID": 199,
+        "loc": "199",
+        "name": "WOODSON TERRACE COMMUNITY CENTER",
+        "address": "4301 CALVERT AVE",
+        "zipcode": 63134,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.731323%2C-90.360893",
+        "username": "loc199boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC199",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 200,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3118412857045,
+          38.6425150393486
+        ]
+      },
+      "properties": {
+        "OBJECTID": 200,
+        "loc": "200",
+        "name": "WYDOWN MIDDLE SCHOOL",
+        "address": "6500 WYDOWN BLVD",
+        "zipcode": 63105,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.642508%2C-90.311835",
+        "username": "loc200boec",
+        "absentee": "",
+        "inline": "",
+        "abs_type": "none",
+        "notes": "LOC200",
+        "notes_abs": "",
+        "loc_abs": null
+      }
+    }
+  ]
+}
