@@ -180,6 +180,11 @@ describe('parseTopic', () => {
     );
   });
 
+  it('lists the missing fields when the front matter is empty', () => {
+    const message = problems('---\n# draft\n---\n\nBody.\n');
+    expect(message).toMatch(/front matter must be a set of key: value lines/);
+  });
+
   it('reads a file that starts with a byte order mark', () => {
     expect(() => parse(`\uFEFF${topicText()}`)).not.toThrow();
   });

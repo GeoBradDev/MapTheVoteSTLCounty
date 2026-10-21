@@ -83,6 +83,16 @@ describe('parseMarkdown', () => {
     ['a 1) list marker', '1) First step'],
     ['an empty list item', '-'],
     ['an empty ordered item', '1.'],
+    ['a nested list on an item first line', '- - nested'],
+    ['a heading in an item first line', '- ## heading'],
+    ['a quote in an item first line', '1. > quote'],
+    ['a two-dash underlined heading', 'Heading\n--'],
+    ['a spaced horizontal rule', '- - -'],
+    ['a spaced underscore rule', '_ _ _'],
+    ['a tab after a list marker', '-\titem'],
+    ['a tab after an ordered marker', '1.\titem'],
+    ['a text direction override in body text', 'Call \u202E1234'],
+    ['a zero width space in a link label', '[\u200B](https://a.gov/)'],
   ])('rejects %s', (_name, md) => {
     expect(parseMarkdown(md).errors.length).toBeGreaterThan(0);
   });
