@@ -16,7 +16,7 @@ sources:
     url: https://www.sos.mo.gov/CMSImages/ElectionGoVoteMissouri/AcceptableFormsVoterID.pdf
 ---
 
-Missouri asks you to show a photo ID when you vote in person.[^rsmo-115-427] This is true on
+In Missouri, you must show a photo ID when you vote in person.[^rsmo-115-427] This is true on
 Election Day and when you vote absentee in person.[^rsmo-115-427]
 
 ## IDs you can use
@@ -25,14 +25,16 @@ Bring one of these:
 
 - A Missouri driver's license that is not expired.[^rsmo-115-427]
 - A Missouri nondriver's license that is not expired, or that does not expire.[^rsmo-115-427]
+- A Missouri driver's or nondriver's license that expired after the last general
+  election.[^sos-voter-id]
 - A photo ID from the U.S. government or the state of Missouri, such as a U.S. passport.[^rsmo-115-427][^sos-id-flyer]
-  It must show your name and photo and have an expiration date.[^rsmo-115-427] It must not be
+  It must show your name and photo and have an expiration date.[^rsmo-115-427] The name must
+  closely match the name you signed when you registered.[^rsmo-115-427] It must not be
   expired, or it must have expired after the last general election.[^rsmo-115-427]
 - A photo ID from the U.S. Armed Forces, the Missouri National Guard, or the U.S. Department
   of Veterans Affairs. It must not be expired, or it must have no expiration date.[^rsmo-115-427]
 
-The name on your ID should match the name you signed when you registered.[^rsmo-115-427] No
-other kinds of ID are accepted.[^rsmo-115-427]
+No other kinds of ID are accepted.[^rsmo-115-427]
 
 ## If you do not have one of these IDs
 

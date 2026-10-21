@@ -56,6 +56,12 @@ If you voted provisionally because you had no photo ID, your ballot counts if:[^
 Any provisional ballot counts only if the county board finds that you are registered and
 eligible to vote in this election.[^rsmo-115-430]
 
+## Vote at the right polling place
+
+A provisional ballot cast at the wrong polling place is not counted.[^rsmo-115-430] If the
+election judges find you are at the wrong place, they tell you where to go. You can go to your
+correct polling place or a central polling place.[^rsmo-115-430][^sos-other-questions]
+
 ## Find out if your ballot counted
 
 The state has a free way to learn if your ballot counted, and why not if it did

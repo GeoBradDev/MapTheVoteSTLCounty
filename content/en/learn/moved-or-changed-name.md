@@ -30,9 +30,10 @@ Election Day.[^sos-other-questions] Call 314-615-1800 with questions.[^county-re
 
 ## You moved within St. Louis County
 
-You can still vote. On Election Day, you can update your address at the polls and vote
-there.[^sos-other-questions][^rsmo-115-165] You tell the election judges your new address, out
-loud or in writing.[^rsmo-115-165]
+If you are still on the voter list, you can still vote.[^rsmo-115-165] On Election Day, go to
+the polling place for your new address, or to a central polling place. Update your address
+there and vote.[^sos-other-questions][^rsmo-115-165] You tell the election judges your new
+address, out loud or in writing.[^rsmo-115-165]
 
 ## You moved to St. Louis County from another Missouri county
 

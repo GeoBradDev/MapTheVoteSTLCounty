@@ -62,9 +62,9 @@ absentee in person. You do not need a reason.[^rsmo-115-277][^county-absentee-ap
 
 Satellite sites are open:[^county-absentee-app]
 
-- Weekdays, Tuesday, October 20 through Friday, October 30, 8 a.m. to 4:30 p.m.
-- Saturday, October 24 and Saturday, October 31, 9 a.m. to 1 p.m.
-- Monday, November 2, 8 a.m. to 5 p.m.
+- Weekdays, Tuesday, October 20 through Friday, October 30, 8 a.m. to 4:30 p.m.[^county-absentee-app]
+- Saturday, October 24 and Saturday, October 31, 9 a.m. to 1 p.m.[^county-absentee-app]
+- Monday, November 2, 8 a.m. to 5 p.m.[^county-absentee-app]
 
 The Board of Elections office, 725 Northwest Plaza Drive, St. Ann, has the same hours. It
 also opened earlier, on Tuesday, September 22.[^county-absentee-app][^county-contact] Before
@@ -79,14 +79,14 @@ To find the sites closest to you, look up your address on the
 To get a ballot by mail, or to vote absentee in person before October 20, you need one of
 these reasons:[^rsmo-115-277][^sos-how-to-vote]
 
-- You will be away from St. Louis County on Election Day.
+- You will be away from St. Louis County on Election Day.[^rsmo-115-277]
 - You are sick or have a physical disability. This includes caring for someone at your
-  address who is sick or disabled.
-- Your religious beliefs or practices.
+  address who is sick or disabled.[^rsmo-115-277]
+- Your religious beliefs or practices.[^rsmo-115-277]
 - You work for an election office somewhere other than your polling place. Or you are a first
-  responder, health care worker or law enforcement officer.
-- You are in jail but still qualified to vote.
-- You are in the state's address confidentiality program (Safe at Home) for safety reasons.
+  responder, health care worker or law enforcement officer.[^rsmo-115-277]
+- You are in jail but still qualified to vote.[^rsmo-115-277]
+- You are in the state's address confidentiality program for safety reasons.[^rsmo-115-277]
 
 ## Ask for a ballot by mail
 
@@ -119,7 +119,7 @@ your request, unless you sent one when you registered.[^sos-how-to-vote]
 - Or bring it in person, or have a close relative bring it.[^rsmo-115-291]
 - Drop boxes are not allowed in Missouri.[^rsmo-115-291]
 - The county board must **receive** your ballot by 7 p.m. on Election Day, November 3.
-  Ballots that arrive later are not counted.[^rsmo-115-293][^sos-voting-rights]
+  Ballots that arrive later are not counted, except some military and overseas ballots.[^rsmo-115-293][^sos-voting-rights]
 
 ## If your plans change
 

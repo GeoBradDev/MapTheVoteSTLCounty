@@ -95,6 +95,11 @@ code change).
 - Stale county pages (some still show 2020 hours and 2020-only mail-in voting). Mitigation:
   stale pages are never cited for a time-sensitive fact; the discrepancy goes in the #22
   comment.
+- "Vote at any polling place." The county FAQ (#1, shown on the home page) says it; RSMo
+  115.430 and the Secretary of State say a voter must vote at the correct polling place and a
+  provisional ballot cast elsewhere is not counted. Following the owner's rule (law over county
+  site), the topics do not repeat the vote-anywhere line; they tell voters to check their
+  polling place and explain the wrong-place rule. The conflict goes in the #22 comment.
 - Bot-blocked official pages (the Secretary of State's voter lookup portal answers 403 to
   scripts; the county site rate-limits). The daily link checker would report those as FAIL, so
   topics link to the Secretary of State page that links the lookup rather than the portal

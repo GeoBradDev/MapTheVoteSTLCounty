@@ -32,7 +32,7 @@ County.[^county-contact]
 - **Email:** vote@stlouiscountymo.gov[^county-polls-app]
 - **Office:** 725 Northwest Plaza Drive, St. Ann, MO 63074[^county-contact]
 - **Office hours:** Monday to Friday, 8 a.m. to 4:30 p.m.[^county-contact]
-- **Website:** [stlouiscovotes.info](https://stlouiscovotes.info/)[^county-contact]
+- **Website:** [stlouiscountymovotes.gov](https://www.stlouiscountymovotes.gov/)[^county-polls-app]
 
 During absentee voting, the office has longer hours on some days. See
 [Absentee and early in-person voting](/learn/absentee).

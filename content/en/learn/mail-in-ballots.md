@@ -43,8 +43,7 @@ disabled.[^rsmo-115-277] The full list is on the [absentee voting page](/learn/a
 
 - The county board must get your request by 5 p.m. on Wednesday, October
   21.[^rsmo-115-279][^sos-how-to-vote]
-- The county board must receive your voted ballot by 7 p.m. on Election Day. Ballots that
-  arrive later are not counted.[^rsmo-115-293][^sos-how-to-vote]
+- The county board must receive your voted ballot by 7 p.m. on Election Day. Ballots that arrive later are not counted, except some military and overseas ballots.[^rsmo-115-293][^sos-how-to-vote]
 - Drop boxes are not allowed.[^rsmo-115-291]
 
 ## Do not want to give a reason?

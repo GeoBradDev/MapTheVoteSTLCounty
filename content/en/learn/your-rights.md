@@ -42,7 +42,8 @@ sources:
 - **Vote if you are in line at 7 p.m.** Everyone in line when the polls close can
   vote.[^rsmo-115-407][^sos-how-to-vote]
 - **Vote in private.** No one else may be in the booth or watch how you vote, unless you ask
-  for help.[^rsmo-115-445]
+  for help.[^rsmo-115-445] A parent, grandparent or guardian may bring a child under 18 into
+  the booth.[^rsmo-115-445]
 - **Get help.** If you cannot read or write, are blind, or have a disability, you can get help
   from a person you choose or from two election judges.[^rsmo-115-445] See
   [Voting with a disability, and getting help](/learn/help-voting).

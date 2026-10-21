@@ -35,8 +35,11 @@ Missouri has special rules for voters in the military and voters who live overse
 
 ## Who this is for
 
-- Members of the U.S. uniformed services on active duty, the Merchant Marine, and the Missouri
-  National Guard on activated status.[^rsmo-115-902]
+- Members of the U.S. Army, Navy, Air Force, Marine Corps, Space Force or Coast Guard on
+  active duty.[^rsmo-115-902]
+- Members of the Merchant Marine, and of the commissioned corps of the Public Health Service or
+  NOAA.[^rsmo-115-902]
+- National Guard members on activated status.[^rsmo-115-902]
 - Their spouses and dependents.[^rsmo-115-902]
 - U.S. citizens who live outside the United States and were last eligible to vote in
   Missouri.[^rsmo-115-902]
@@ -50,8 +53,8 @@ You can do both at the same time:[^sos-overseas]
 - Or fill out a Federal Post Card Application and mail it to the St. Louis County Board of
   Elections.[^sos-overseas]
 
-Ballots for this election were sent 45 days before Election Day to voters who had already
-asked.[^rsmo-115-914] If your request comes in later, the county board sends your ballot
+By law, the county board sends ballots at least 45 days before the election to voters who have
+asked by then.[^rsmo-115-914] If your request comes in later, the county board sends your ballot
 within two business days.[^rsmo-115-914] You can ask to get your ballot by email or
 fax.[^rsmo-115-914]
 

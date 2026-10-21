@@ -8,9 +8,6 @@ sources:
   - id: rsmo-115-407
     label: Missouri Revised Statutes, Section 115.407 (polling hours)
     url: https://revisor.mo.gov/main/OneSection.aspx?section=115.407
-  - id: county-faq
-    label: St. Louis County Board of Elections, FAQs
-    url: https://stlouiscovotes.info/faq/
   - id: county-polls-app
     label: St. Louis County Board of Elections, Polling Place Lookup (November 3, 2026)
     url: https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=13fb36e785c84dbdbcc5219f999652ba
@@ -23,6 +20,12 @@ sources:
   - id: rsmo-115-439
     label: Missouri Revised Statutes, Section 115.439 (marking a paper ballot and getting a new one)
     url: https://revisor.mo.gov/main/OneSection.aspx?section=115.439
+  - id: sos-election-day
+    label: Missouri Secretary of State, On Election Day questions
+    url: https://www.sos.mo.gov/elections/goVoteMissouri/electionday
+  - id: county-contact
+    label: St. Louis County Board of Elections, Contact Us
+    url: https://stlouiscovotes.info/about-us/
   - id: sos-other-questions
     label: Missouri Secretary of State, Other Voting Questions
     url: https://www.sos.mo.gov/elections/goVoteMissouri/votingquestions
@@ -31,12 +34,14 @@ sources:
 ## When
 
 Polls are open from **6 a.m. to 7 p.m.** on Tuesday, November 3, 2026.[^rsmo-115-407] If you
-are in line at 7 p.m., you can still vote.[^rsmo-115-407][^county-faq] If you get there after
-the polls close, you cannot vote.[^county-faq]
+are in line at 7 p.m., you can still vote.[^rsmo-115-407][^sos-election-day] If you get there after
+the polls close, you cannot vote.[^sos-election-day]
 
 ## Where
 
-The county board says voters in St. Louis County may vote at any polling place.[^county-faq]
+Check where to vote before Election Day. The county board can tell you your polling place;
+checking ahead helps you avoid problems.[^sos-election-day] Call 314-615-1800.[^county-contact]
+
 To find polling places near you, look up your address on the [home page](/) or use the
 county's
 [Polling Place Lookup](https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=13fb36e785c84dbdbcc5219f999652ba).[^county-polls-app]
