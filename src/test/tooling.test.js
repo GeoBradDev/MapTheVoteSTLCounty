@@ -7,6 +7,12 @@ import viteConfig from '../../vite.config.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 
+describe('deploy base path', () => {
+  it('serves from the domain root, so deep links like /p/CC007 still find /assets', () => {
+    expect(viteConfig.base).toBe('/');
+  });
+});
+
 describe('tooling ignores nested worktrees', () => {
   it('excludes .claude from vitest', () => {
     expect(viteConfig.test.exclude).toContain('.claude/**');

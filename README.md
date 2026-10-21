@@ -16,6 +16,20 @@ npm run format        # format with Prettier (npm run format:check to check only
 
 CI runs lint, format check, tests and build on every pull request and on push to `main`.
 
+## Smoke test
+
+After a deploy, check the live site or a PR preview:
+
+```sh
+npm run smoke -- https://<site-or-preview-url>
+```
+
+It checks that `/` and a hard load of `/p/CC007` return the app shell, that a hashed asset is
+served as JavaScript, and that the expected security and cache headers are present. It exits 1
+and lists what failed. Against a host that sets no headers, such as `npm run preview`, add
+`--skip-headers`. The expected headers are a table at the top of `scripts/smoke.mjs`; change it
+when the host's header config changes.
+
 ## Colors
 
 The palette is nonpartisan: no red or blue. Define colors only as oklch `--color-*` tokens in

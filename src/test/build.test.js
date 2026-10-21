@@ -67,6 +67,7 @@ describe('built CSS helpers', () => {
 describe('production build', () => {
   let outDir;
   let css = '';
+  let html = '';
 
   beforeAll(async () => {
     outDir = await mkdtemp(path.join(os.tmpdir(), 'mapthevote-build-'));
@@ -79,6 +80,7 @@ describe('production build', () => {
     const assets = path.join(outDir, 'assets');
     const files = (await readdir(assets)).filter((f) => f.endsWith('.css'));
     css = (await Promise.all(files.map((f) => readFile(path.join(assets, f), 'utf8')))).join('\n');
+    html = await readFile(path.join(outDir, 'index.html'), 'utf8');
   }, 60_000);
 
   afterAll(async () => {
@@ -88,6 +90,11 @@ describe('production build', () => {
   it('ships the utilities the app uses', () => {
     // App.jsx uses bg-surface; if Tailwind stopped scanning src it would be missing.
     expect(css).toContain('.bg-surface{');
+  });
+
+  it('loads hashed assets by root-absolute path, so a hard load of /p/CC007 finds them', () => {
+    expect(html).toMatch(/<script type="module" crossorigin src="\/assets\/index-[\w-]+\.js">/);
+    expect(html).toMatch(/<link rel="stylesheet" crossorigin href="\/assets\/index-[\w-]+\.css">/);
   });
 
   it('ships no red or blue color', () => {
