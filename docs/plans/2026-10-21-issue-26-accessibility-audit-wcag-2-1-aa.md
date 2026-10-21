@@ -67,8 +67,10 @@ Not fixed here: focus when the results fail to load (#18). Headings inside a fol
    still bring it into view on Back; that behavior predates this issue and is left as is.
 3. `/privacy` has the tab title "Privacy | St. Louis County Voter Guide" and the not-found
    page "Page not found | St. Louis County Voter Guide" (including an unknown `/learn/<id>`,
-   which renders the not-found page; its test is updated); each restores the previous title
-   when it unmounts.
+   which renders the not-found page; its test is updated), and `/p/<code>` that is not
+   found or not a code "Precinct not found | St. Louis County Voter Guide" (added after
+   review; it replaces #11's choice to leave the title alone there, and still never echoes
+   the URL text); each restores the previous title when it unmounts.
 4. The out-of-county notice under "Search for your address" on a not-found precinct page
    uses an `h3`; on the home and not-found pages it stays `h2`.
 5. The active suggestion has an outline in forced colors.

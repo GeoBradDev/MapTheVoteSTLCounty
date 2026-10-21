@@ -133,6 +133,8 @@ for (const { path, ready } of ROUTES) {
 test('going home from a page focuses the home heading at the top', async ({ page }) => {
   await answerFromFixtures(page);
   await page.goto('/privacy');
+  // The page focuses its heading on arrival; wait for that before moving on.
+  await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
   const back = page.getByRole('link', { name: 'Back to home' });
   await back.focus();
   // The link sits low on the page, so the page starts scrolled.

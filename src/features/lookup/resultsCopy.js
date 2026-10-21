@@ -39,6 +39,8 @@ export const copy = {
   officialLookup: "county's official lookup",
   /** @param {string} code The browser tab's title on a precinct's page. */
   pageTitle: (code) => `Precinct ${code} | St. Louis County Voter Guide`,
+  // The tab title for a code that is not found, or URL text that is not a code.
+  notFoundTitle: 'Precinct not found | St. Louis County Voter Guide',
   // Under a precinct code that was not found: search instead.
   searchInstead: 'Search for your address',
   share: {

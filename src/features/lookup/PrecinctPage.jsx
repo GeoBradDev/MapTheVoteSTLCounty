@@ -33,16 +33,17 @@ function PrecinctResults({ code }) {
   const searchHeadingId = useId();
 
   // The tab and bookmark title: the code only, and only a code-shaped one
-  // that is not known to be missing.
+  // that is not known to be missing. Anything else is titled as not found,
+  // never with the URL text.
   const titled = validCode && result?.error !== 'notFound';
+  const title = titled ? copy.pageTitle(code) : copy.notFoundTitle;
   useEffect(() => {
-    if (!titled) return undefined;
     const previous = document.title;
-    document.title = copy.pageTitle(code);
+    document.title = title;
     return () => {
       document.title = previous;
     };
-  }, [code, titled]);
+  }, [title]);
 
   useEffect(() => {
     let current = true;
