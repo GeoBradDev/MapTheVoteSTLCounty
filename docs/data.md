@@ -123,14 +123,18 @@ GET .../precincts_2026_11_view/FeatureServer/1/query
   &spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=false&f=json
 ```
 Shareable URL can carry just `precinct` and re-query with `where=precinct='CC007'`.
-The app names the fields it reads in `outFields` instead of `*` (#27, `PRECINCT_FIELDS` and
-`POLL_FIELDS` in `src/data/arcgis.js`), and asks for the whole polls layer with
-`geometryPrecision=6`: about 7 KB gzipped instead of 14 KB, checked live on 2026-10-21.
+The app names the precinct fields it reads in `outFields` instead of `*` (#27,
+`PRECINCT_FIELDS` in `src/data/arcgis.js`); the polls queries below do the same.
 
 ### Polling places: `polls_2026_11_view/FeatureServer/1`
 
 Layer name `polls_2026_11_local`. Point. 200 features. One layer serves both
 Election Day and in-person absentee sites.
+
+The app's two polls queries (all places, and the absentee filter below) name only the fields
+it reads (`POLL_FIELDS` in `src/data/arcgis.js`) and round coordinates with
+`geometryPrecision=6` (#27). Together they shrink the whole layer from about 14 KB to 7 KB
+gzipped, checked live on 2026-10-21.
 
 All 200 are Election Day polling places, so the "Polling places near you" card ranks the
 whole layer with no filter. The county's own Election Day app (web map `5e98818f...`)
