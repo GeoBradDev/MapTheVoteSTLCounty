@@ -90,6 +90,7 @@ matter:
 ---
 id: voter-id # must match the file name
 title: What ID to bring
+group: before-you-vote # where /learn lists it
 election: 2026-11-03 # must be electionDate in src/config/election.js
 lastVerified: 2026-10-20 # when every source was last re-read
 sources:
@@ -99,16 +100,20 @@ sources:
 ---
 ```
 
+`group` is one of `before-you-vote`, `ways-to-vote`, `at-the-polls` or `get-help`
+(`src/features/learn/groups.js`); `/learn` lists the topics under those headings, in that
+order, by title within each.
+
 Cite a source after the claim it supports with `[^sos-id]`; the page shows it as a numbered
 link to that source, matching the numbered source list. The body allows paragraphs, `##` and
-`###` headings, `- ` and `1. ` lists (one level; number ordered items 1, 2, 3 with no blank
+`###` headings (a `###` only after a `##`), `- ` and `1. ` lists (one level; number ordered items 1, 2, 3 with no blank
 lines between them), `**bold**` and `[text](url)` links, and nothing else (no HTML, images,
 code, tables or quotes).
 
 A Vite plugin (`src/features/learn/content/vitePlugin.js`) checks every topic file when the
 build, the tests or the dev server start (restart the dev server after adding a topic), and
 turns each topic into plain data. The build fails, naming the
-file and each problem, when a topic: has no sources; has no `lastVerified`, or one more than
+file and each problem, when a topic: has no sources; has no `group`, or one not in the list; has no `lastVerified`, or one more than
 60 days before Election Day or after it; was written for another `election`; contains `TODO`;
 has an `id` that differs from its file name, or a front matter key it does not know; cites a
 source it does not list; uses Markdown outside the list above; or links anywhere but an
@@ -118,8 +123,16 @@ add a host there in a reviewed change, never per topic.
 
 For each new election, re-read every topic's sources, then update its `election` and
 `lastVerified`; the build fails until you do. `src/features/learn/topics.js` loads the topics
-(`getTopics`, `getTopic`) and `src/features/learn/TopicArticle.jsx` renders one; the "How to
-vote" pages (#23) will use them.
+(`getTopics`, `getTopic`) and `src/features/learn/TopicArticle.jsx` renders one.
+
+The "How to vote" pages (#23) are `/learn`, the index, and `/learn/<id>`, one topic. With no
+topics, `/learn` says the guides are not ready and links to the county board's site and the
+address lookup. A topic page folds each `##` section with at least `LONG_SECTION_CHARS`
+characters of text (in `TopicArticle.jsx`) into a `<details>` with its heading in the summary,
+and opens them all before printing. The polling places card links to the `voter-id` topic and
+the early voting card to the `absentee` topic, each only once that topic exists
+(`src/features/learn/cardTopics.js`); give those topics these ids, or change that file.
+`src/features/learn/learnA11y.test.jsx` runs axe on the pages with fixture topics.
 
 Translations (#19): put a topic with the same `id` under another locale, such as
 `content/es/learn/voter-id.md`, and add that locale's labels to

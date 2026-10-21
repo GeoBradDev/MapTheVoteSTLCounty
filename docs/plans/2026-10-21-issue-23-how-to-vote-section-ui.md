@@ -74,7 +74,10 @@ payments, email: not applicable because the app is a frontend-only React site.
 - `src/index.css`: print rule for topic link URLs.
 - `src/features/learn/learnA11y.test.jsx` (new): axe runs.
 - `package.json`, `package-lock.json`: `axe-core` dev dependency.
-- `README.md`, `render.yaml` (comment only), `docs/progress.md`.
+- `src/test/learnFixtures.js` (new): fixture topics shared by the page, card and axe tests.
+- `src/test/build.test.js`: the built CSS has the print rules.
+- `README.md`, `render.yaml` (comment only). `docs/progress.md` is left to the batch
+  orchestrator, which writes its lines.
 
 ## Order of work
 
