@@ -9,7 +9,12 @@ const tapLinkClass = `inline-flex min-h-11 items-center ${linkClass}`;
 const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
 
 function sourceName(url) {
-  const host = new URL(url).host;
+  let host;
+  try {
+    host = new URL(url).host;
+  } catch {
+    return copy.polls.source;
+  }
   return copy.polls.sourceNames[host] ?? host;
 }
 

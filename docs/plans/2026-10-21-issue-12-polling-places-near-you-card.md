@@ -60,7 +60,7 @@ Domain skills:
 ## Files that change
 
 - `src/features/lookup/nearbyPolls.js` (new): `distanceMiles(a, b)` (haversine, mean
-  Earth radius 3958.8 mi), `nearestPolls(collection, origin)` (sorted rows with `miles`),
+  Earth radius 3958.7613 mi), `nearestPolls(collection, origin)` (sorted rows with `miles`),
   `titleCase(text)`, `polygonCenter(geometry)`, `directionsLinks({ lat, lng })`,
   `isAppleMobile(navigator)`.
 - `src/features/lookup/nearbyPolls.test.js` (new): unit tests, including the 3 distance
@@ -82,7 +82,9 @@ Domain skills:
 - `src/features/lookup/AddressLookup.test.jsx`: the point is remembered for the code and
   never written to the URL or storage.
 - `src/features/lookup/resultsCopy.js`: the card's text and the time formatter.
-- `docs/data.md`: note that the whole polls layer is the Election Day set.
+- `docs/data.md`: note that the whole polls layer is the Election Day set, and that
+  `abs_type` marks sites also open for absentee voting (made in Phase 5 after review
+  finding 1).
 
 ## Order of work
 

@@ -43,7 +43,7 @@ export const copy = {
     listLabel: 'Nearest polling places',
     /** @param {string} code */
     fromCenter: (code) =>
-      `Distances are from the center of precinct ${code}, because this page was opened from a link. Search your address to measure from your home.`,
+      `Distances are from the center of precinct ${code}. Search your address to measure from your home.`,
     /** @param {string | null} loc */
     unnamed: (loc) => (loc ? `Polling place ${loc}` : 'Polling place'),
     /** @param {number} miles */

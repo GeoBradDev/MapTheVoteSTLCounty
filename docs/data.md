@@ -126,6 +126,13 @@ Shareable URL can carry just `precinct` and re-query with `where=precinct='CC007
 Layer name `polls_2026_11_local`. Point. 200 features. One layer serves both
 Election Day and in-person absentee sites.
 
+All 200 are Election Day polling places, so the "Polling places near you" card ranks the
+whole layer with no filter. The county's own Election Day app (web map `5e98818f...`)
+shows this layer, titled "Polling Places (Election Day)", with no definition expression,
+and each of the 21 absentee sites also has an Election Day `loc` (for example Board of
+Elections is `loc` 019, `loc_abs` 601). `abs_type` says only whether a site is also open
+for in-person absentee voting.
+
 | Field | Example | Notes |
 |---|---|---|
 | `loc` | `001` | Location ID, 3 digits |
@@ -133,7 +140,7 @@ Election Day and in-person absentee sites.
 | `address` | `8309 MACKENZIE RD` | Street only, all caps |
 | `zipcode` | `63123` | Integer. City name is not in this layer. |
 | `gmap` | `https://www.google.com/maps/search/?api=1&query=38.559645%2C-90.322720` | Ready-made directions link |
-| `abs_type` | `none` | `none` (179): Election Day only. `abs` (20): satellite absentee site. `boe` (1): Board of Elections office. |
+| `abs_type` | `none` | `none` (179): Election Day only. `abs` (20): also a satellite absentee site. `boe` (1): also the Board of Elections absentee office. |
 | `loc_abs` | `601` | Absentee site number, 601 to 621. Null for `none`. |
 | `absentee` | `abs601boec` | Username for the absentee site. Not for display. |
 | `inline` | `""` | Line count text, filled in on Election Day. Older layers show the format `"2 voters in line at 06:49 PM"`. Trim it: some values are padded with spaces. |
