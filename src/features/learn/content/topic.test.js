@@ -11,6 +11,7 @@ function topicText({ front = {}, body = 'Bring an ID.[^sos-id]', omit = [], extr
   const fields = {
     id: 'voter-id',
     title: 'What ID to bring',
+    group: 'before-you-vote',
     election: ELECTION,
     lastVerified: addDays(ELECTION, -10),
     ...front,
@@ -47,6 +48,7 @@ describe('parseTopic', () => {
       id: 'voter-id',
       locale: 'en',
       title: 'What ID to bring',
+      group: 'before-you-vote',
       election: ELECTION,
       lastVerified: addDays(ELECTION, -10),
       sources: [
@@ -135,6 +137,18 @@ describe('parseTopic', () => {
   it('fails an id that does not match the file name', () => {
     expect(problems(topicText({ front: { id: 'photo-id' } }))).toMatch(
       /id: "photo-id" must match the file name "voter-id"/,
+    );
+  });
+
+  it('fails a topic with no group, listing the groups it may use (#23)', () => {
+    expect(problems(topicText({ omit: ['group'] }))).toMatch(
+      /group: missing; use one of before-you-vote, ways-to-vote, at-the-polls, get-help/,
+    );
+  });
+
+  it('fails a group the "How to vote" page does not have (#23)', () => {
+    expect(problems(topicText({ front: { group: 'voting-day' } }))).toMatch(
+      /group: "voting-day" is not one of before-you-vote, ways-to-vote, at-the-polls, get-help/,
     );
   });
 

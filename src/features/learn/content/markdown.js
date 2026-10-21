@@ -271,6 +271,9 @@ export function parseMarkdown(body, firstLine = 1) {
         );
       } else if (!heading[2] || !content) {
         errors.push(`${where}: a heading needs text after a space`);
+      } else if (level === 3 && !blocks.some((b) => b.type === 'heading' && b.level === 2)) {
+        // The page's title is the h1, so an h3 first would skip a level.
+        errors.push(`${where}: a ### heading must come after a ## heading`);
       } else {
         blocks.push({ type: 'heading', level, children: parseInline(content, where, errors, ctx) });
       }

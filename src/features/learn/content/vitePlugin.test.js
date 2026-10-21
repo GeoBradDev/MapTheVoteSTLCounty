@@ -15,6 +15,7 @@ function topic({ sources = true } = {}) {
     '---',
     'id: voter-id',
     'title: Fixture topic, not voter guidance',
+    'group: get-help',
     `election: ${ELECTION}`,
     `lastVerified: ${addDays(ELECTION, -5)}`,
     ...(sources

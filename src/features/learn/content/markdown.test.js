@@ -21,6 +21,11 @@ describe('parseMarkdown', () => {
     ]);
   });
 
+  it('rejects a ### heading before any ## heading, so the page never skips a level (#23)', () => {
+    const { errors } = parseMarkdown('Intro.\n\n### Too deep\n\n## Section\n\n### Fine');
+    expect(errors).toEqual(['line 3: a ### heading must come after a ## heading']);
+  });
+
   it('parses unordered and ordered lists with continuation lines', () => {
     const md = '- One\n- Two wraps\n  onto a second line\n\n1. First\n2. Second';
     const { blocks, errors } = parseMarkdown(md);
