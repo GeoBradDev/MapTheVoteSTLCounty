@@ -277,6 +277,17 @@ describe('errors', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it('rejects a persistent HTTP 503 with ServiceError and its status, after one retry', async () => {
+    vi.useFakeTimers();
+    fetchMock.mockImplementation(async () => new Response('', { status: 503 }));
+    const result = client.getPrecinctById('CC007').catch((e) => e);
+    await vi.advanceTimersByTimeAsync(client.RETRY_DELAY_MS);
+    const error = await result;
+    expect(error).toBeInstanceOf(client.ServiceError);
+    expect(error.status).toBe(503);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it('rejects a body that is not JSON with ServiceError', async () => {
     fetchMock.mockResolvedValue(new Response('<html>', { status: 200 }));
     await expect(client.getPrecinctById('CC007')).rejects.toBeInstanceOf(client.ServiceError);
