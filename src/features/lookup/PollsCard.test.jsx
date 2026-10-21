@@ -43,6 +43,13 @@ describe('PollsCard', () => {
     expect(screen.queryByText(copy.polls.fromCenter('CC007'))).toBeNull();
   });
 
+  it('keeps list markers, so Safari still reads the places as a list', async () => {
+    // WebKit drops the list role from a list styled with list-style: none,
+    // which Tailwind's preflight sets on every ol.
+    render(<PollsCard code="CC007" origin={ORIGIN} />);
+    expect(await list()).toHaveClass('list-decimal');
+  });
+
   it('shows each place with its address, ZIP, distance and directions', async () => {
     render(<PollsCard code="CC007" origin={ORIGIN} />);
     const ol = await list();
