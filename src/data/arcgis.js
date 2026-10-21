@@ -130,26 +130,45 @@ async function query(layer, params) {
   }
 }
 
+// A point query's parameters. Only the coordinates come from the caller.
+function pointParams(caller, { lat, lng }, outFields) {
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    throw new TypeError(`${caller} needs numeric lat and lng`);
+  }
+  return {
+    geometry: `${lng},${lat}`,
+    geometryType: 'esriGeometryPoint',
+    inSR: '4326',
+    spatialRel: 'esriSpatialRelIntersects',
+    outFields,
+    returnGeometry: 'false',
+    f: 'json',
+  };
+}
+
 /**
  * The precinct containing a point, or null when the point is outside the county.
  * @param {{ lat: number, lng: number }} point WGS 84 coordinates.
  * @returns {Promise<object | null>} The precinct's attributes.
  */
 export async function getPrecinctAtPoint({ lat, lng }) {
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-    throw new TypeError('getPrecinctAtPoint needs numeric lat and lng');
-  }
-  const body = await query('precincts', {
-    geometry: `${lng},${lat}`,
-    geometryType: 'esriGeometryPoint',
-    inSR: '4326',
-    spatialRel: 'esriSpatialRelIntersects',
-    outFields: '*',
-    returnGeometry: 'false',
-    f: 'json',
-  });
+  const body = await query('precincts', pointParams('getPrecinctAtPoint', { lat, lng }, '*'));
   const feature = body.features[0];
   return feature ? normalize(feature.attributes) : null;
+}
+
+/**
+ * Whether a point is inside the county outline. A backup to getPrecinctAtPoint,
+ * whose null answer is the main sign that a point is outside the county.
+ * @param {{ lat: number, lng: number }} point WGS 84 coordinates.
+ * @returns {Promise<boolean>}
+ */
+export async function isInCountyBoundary({ lat, lng }) {
+  const body = await query(
+    'countyBoundary',
+    pointParams('isInCountyBoundary', { lat, lng }, 'OBJECTID'),
+  );
+  return body.features.length > 0;
 }
 
 /**

@@ -212,10 +212,25 @@ as reported by the county. Revisit `Voters_in_Line_View` on Election Day.
 
 ### County boundary: `St_Louis_County_Boundary/FeatureServer/0`
 
-Polygon, 1 feature (523.98 sq mi). Use it for the "is this address in the
-county" check. In practice a precinct point query that returns nothing already
-means "outside the county." Use the boundary for the map outline and as a
-fallback.
+Polygon, 1 feature (523.98 sq mi). A precinct point query that returns nothing
+is the main sign a point is outside the county; `isInCountyBoundary` in
+`src/data/arcgis.js` confirms it with a point query on this layer. Use the
+boundary for the map outline too.
+
+Out of county: `locate` in `src/features/lookup/locate.js` takes a place,
+`{ lat, lng, state?, county? }`, so it works with any geocoder and with
+coordinates alone. Both the Census (`geographies` endpoint, `Counties` layer
+`NAME`) and the Esri (`Subregion`, `RegionAbbr`) geocoders return the county name
+and state, for example `St. Louis city`, `MO`. With no precinct at the point, a
+place in St. Louis City is sent to the City's Board of Election Commissioners,
+one elsewhere in Missouri to the Secretary of State Voter Outreach Center (the
+county apps' own no-results link), and one outside Missouri gets a generic
+message. A point inside the boundary with no precinct goes to the county's
+official lookup, and a place with no state (coordinates alone) gets a message for
+both Missouri and elsewhere. The two referral links are in
+`src/config/referrals.js`. The City board's page
+is on `stlouis-mo.gov`; `stlelections.com` is a parked domain for sale (checked
+2026-10-21), so do not link it.
 
 ### Legacy `lookup_view_*` services: do not use
 

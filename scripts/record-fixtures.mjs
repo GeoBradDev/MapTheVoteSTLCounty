@@ -12,6 +12,7 @@ const OUT_DIR = path.resolve('docs/raw/fixtures');
 
 const precincts = `${election.serviceRoot}/${election.layers.precincts}/query`;
 const polls = `${election.serviceRoot}/${election.layers.polls}/query`;
+const boundary = `${election.serviceRoot}/${election.layers.countyBoundary}/query`;
 
 const pointQuery = (lng, lat) => ({
   geometry: `${lng},${lat}`,
@@ -22,6 +23,22 @@ const pointQuery = (lng, lat) => ({
   returnGeometry: 'false',
   f: 'json',
 });
+
+const boundaryQuery = (lng, lat) => ({
+  geometry: `${lng},${lat}`,
+  geometryType: 'esriGeometryPoint',
+  inSR: '4326',
+  spatialRel: 'esriSpatialRelIntersects',
+  outFields: 'OBJECTID',
+  returnGeometry: 'false',
+  f: 'json',
+});
+
+// Out-of-county test addresses, at the points both the Census and the Esri
+// geocoder returned for them on 2026-10-21 (rounded to 5 decimals).
+const CITY = [-90.19843, 38.62741]; // 1200 Market St, St. Louis, MO 63103
+const ST_CHARLES = [-90.48187, 38.78267]; // 200 N 2nd St, St. Charles, MO 63301
+const OUT_OF_STATE = [-89.98831, 38.51368]; // 301 W Main St, Belleville, IL 62220
 
 const byId = (code) => ({
   where: `precinct='${code}'`,
@@ -48,6 +65,14 @@ const FIXTURES = {
       f: 'geojson',
     },
   ],
+  'precinct-at-city.json': [precincts, pointQuery(...CITY)],
+  'precinct-at-st-charles.json': [precincts, pointQuery(...ST_CHARLES)],
+  'precinct-at-out-of-state.json': [precincts, pointQuery(...OUT_OF_STATE)],
+  // The same inside point as precinct-at-point.json.
+  'boundary-inside.json': [boundary, boundaryQuery(-90.33, 38.62)],
+  'boundary-at-city.json': [boundary, boundaryQuery(...CITY)],
+  'boundary-at-st-charles.json': [boundary, boundaryQuery(...ST_CHARLES)],
+  'boundary-at-out-of-state.json': [boundary, boundaryQuery(...OUT_OF_STATE)],
   'polls.json': [polls, { where: '1=1', outFields: '*', outSR: '4326', f: 'geojson' }],
   // An invalid field: ArcGIS answers HTTP 200 with an error body.
   'error-body.json': [precincts, { where: 'no_such_field=1', f: 'json' }],
