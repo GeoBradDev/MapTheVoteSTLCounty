@@ -1,5 +1,6 @@
-# Checks the live election layers and the geocoder every day through Election
-# Day, and opens an issue (or comments on the open one) when a check fails.
+# Checks the live election layers, the geocoder and the learn topics' source
+# links every day through Election Day, and opens an issue (or comments on the
+# open one) when a check fails.
 # It has no pull_request or push trigger, so a live outage can never block a
 # merge: the CI workflow (ci.yml) never calls a live service.
 
@@ -65,11 +66,17 @@ jobs:
         if: steps.window.outputs.active == 'true'
         run: node scripts/check-config.mjs
 
-      # Runs even when the config check failed, so one issue reports both.
+      # These run even when an earlier check failed, so one issue reports all.
       - name: Geocoder check
         id: geocoder
         if: ${{ !cancelled() && steps.window.outputs.active == 'true' }}
         run: node scripts/check-geocoder.mjs
+
+      # Every source and link in content/<locale>/learn/ (#21).
+      - name: Content link check
+        id: links
+        if: ${{ !cancelled() && steps.window.outputs.active == 'true' }}
+        run: node scripts/check-content-links.mjs
 
       - name: Report the failure as an issue
         if: failure()
@@ -77,12 +84,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           CONFIG_OUTCOME: ${{ steps.config.outcome }}
           GEOCODER_OUTCOME: ${{ steps.geocoder.outcome }}
+          LINKS_OUTCOME: ${{ steps.links.outcome }}
         run: |
           run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           body="The data health check failed on $(date -u +%Y-%m-%d).
 
           - Election config check (scripts/check-config.mjs): $CONFIG_OUTCOME
           - Geocoder check (scripts/check-geocoder.mjs): $GEOCODER_OUTCOME
+          - Content link check (scripts/check-content-links.mjs): $LINKS_OUTCOME
 
           Log: $run_url"
           gh label create "data health" --repo "$GITHUB_REPOSITORY" --color fbca04 \

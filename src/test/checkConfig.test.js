@@ -494,11 +494,12 @@ describe('data health workflow', () => {
     }
   });
 
-  it('runs both live checks and reports a failure as an issue', () => {
+  it('runs every live check and reports a failure as an issue', () => {
     const steps = Object.values(workflow.jobs)[0].steps;
     const runs = steps.map((s) => s.run ?? '').join('\n');
     expect(runs).toContain('node scripts/check-config.mjs');
     expect(runs).toContain('node scripts/check-geocoder.mjs');
+    expect(runs).toContain('node scripts/check-content-links.mjs');
     const report = steps.find((s) => s.if === 'failure()');
     expect(report.run).toContain('gh issue create');
     expect(report.run).toContain('gh issue comment');
