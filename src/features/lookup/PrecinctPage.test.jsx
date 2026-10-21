@@ -406,19 +406,27 @@ describe('PrecinctPage', () => {
     expect(location.history).toEqual(['/p/CC007']);
   });
 
-  it('puts back the title when the code is not found', async () => {
+  it('titles a code that is not found as not found, without the code (#26)', async () => {
     document.title = 'Before';
     fetchMock.mockImplementation(() => respond({ ...byId, features: [] }));
-    renderAt('ZZ999');
+    const { unmount } = render(
+      <Router hook={memoryLocation({ path: '/p/ZZ999' }).hook}>
+        <Route path="/p/:precinct" component={PrecinctPage} />
+      </Router>,
+    );
     await screen.findByRole('region', { name: copy.searchInstead });
+    expect(document.title).toBe(copy.notFoundTitle);
+    expect(document.title).not.toContain('ZZ999');
+    unmount();
     expect(document.title).toBe('Before');
   });
 
-  it('leaves the title alone for URL text that is not a precinct code', async () => {
+  it('titles URL text that is not a precinct code as not found, never echoing it', async () => {
     document.title = 'Before';
     renderAt('Polls%20moved');
     await screen.findByRole('region', { name: copy.searchInstead });
-    expect(document.title).toBe('Before');
+    expect(document.title).toBe(copy.notFoundTitle);
+    expect(document.title).not.toContain('Polls');
   });
 
   it('never puts URL text that is not a precinct code in the heading', async () => {
