@@ -192,6 +192,29 @@ describe('runHealthCheck', () => {
     expect(results['sample ballot links'].status).toBe('skip');
   });
 
+  it('fails when there are too many precincts', async () => {
+    const world = healthyWorld();
+    world.precincts = Array.from({ length: 1601 }, (_, i) => ({
+      precinct: `AB${i}`,
+      in_election: 'Nonresidential Precinct',
+      html: 'No ballot here.',
+    }));
+    world.precincts[0].in_election = 'In Election';
+    expect((await run(world))['precinct count'].detail).toBe('1601 precincts, want 900 to 1600');
+  });
+
+  it('fails on several links, a link with no file name, and an empty field where a message belongs', async () => {
+    const world = healthyWorld();
+    world.precincts[5].html = `<a href=${ballotUrl(6)}>a.pdf</a> <a href=${ballotUrl(9999)}>b.pdf</a>`;
+    world.precincts[6].html = `Sample Ballot: <a href=${ballotUrl(7)}></a>`;
+    world.precincts[996].html = '';
+    const { detail } = (await run(world))['sample ballot links'];
+    expect(detail).toMatch(/^3 precincts fail/);
+    expect(detail).toContain('AB005: several links');
+    expect(detail).toContain('AB006: link has no file name');
+    expect(detail).toContain('AB996 (Nonresidential Precinct): expected a message');
+  });
+
   it('fails when the precinct query is cut off', async () => {
     const world = healthyWorld();
     world.exceeded = true;
@@ -263,6 +286,36 @@ describe('runHealthCheck', () => {
       `${OUTSIDE_POINT.name}: has a precinct`,
       `${OUTSIDE_POINT.name}: inside the county boundary`,
     ]);
+  });
+
+  it('fails when a known point returns a malformed precinct code', async () => {
+    const world = healthyWorld();
+    const healthy = world.pointPrecinct;
+    world.pointPrecinct = (lng, lat) => {
+      const hit = healthy(lng, lat);
+      return hit && lng === KNOWN_POINTS[0].lng ? { ...hit, precinct: 'X' } : hit;
+    };
+    expect((await run(world))['known points'].detail).toBe(
+      `${KNOWN_POINTS[0].name}: bad precinct code "X"`,
+    );
+  });
+
+  it('requires the fields the app reads from each layer', () => {
+    const want = expectedLayers(election);
+    expect(want.polls.fields).toEqual([
+      'loc',
+      'name',
+      'address',
+      'zipcode',
+      'abs_type',
+      'notes_abs',
+      'inline',
+    ]);
+    expect(want.countyBoundary.fields).toEqual(['OBJECTID']);
+    for (const field of ['precinct', 'in_election', 'html', election.congressionalField]) {
+      expect(want.precincts.fields).toContain(field);
+    }
+    for (const { field } of election.districtFields) expect(want.precincts.fields).toContain(field);
   });
 
   it('has one known point per council district', () => {

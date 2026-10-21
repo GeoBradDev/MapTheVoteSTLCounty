@@ -22,7 +22,9 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Worst case with every request slow: about 25 minutes for the config check
+    # (26 requests, 3 tries of 15 s each) and 10 for the geocoder check.
+    timeout-minutes: 45
     steps:
       # The token may write issues: do not leave it in .git/config, where
       # dependency install scripts could read it.

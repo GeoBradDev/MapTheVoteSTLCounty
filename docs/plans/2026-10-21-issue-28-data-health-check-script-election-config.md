@@ -80,6 +80,10 @@ Not touched: `scripts/check-geocoder.mjs`, `src/data/photon.js`, `src/data/geoco
 - `parseSampleBallot` reads the pattern from the real config, so a `--layer` override does not
   change the pattern. Acceptable: overrides are for testing layer paths.
 
+- A slow service could push the job past its timeout, which cancels it without an issue.
+  Requests time out after 15 s with 3 tries, and the job allows 45 minutes, above the worst
+  case of about 35 (changed during review).
+
 Chosen not to do: no check of map tiles, Photon or the county website (the geocoder has its own
 script); no change to `scripts/inspect-data.mjs`, which is a raw dump for docs, not a pass/fail
 check.

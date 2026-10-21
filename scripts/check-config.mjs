@@ -161,7 +161,7 @@ export async function runHealthCheck(
     fetch: fetchImpl = globalThis.fetch,
     sample = randomSample,
     retryDelayMs = 2000,
-    timeoutMs = 20000,
+    timeoutMs = 15000,
     attempts = 3,
   } = {},
 ) {
