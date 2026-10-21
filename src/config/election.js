@@ -106,13 +106,14 @@ const election = deepFreeze({
   countySiteUrl: 'https://stlouiscovotes.info/',
   nearbyPollCount: 3,
 
-  // From the county's Absentee Voting Lookup app introduction. Re-check it
-  // against the county website before launch.
+  // From the county's Absentee Voting Lookup app introduction, re-read from the
+  // app's live config on 2026-10-21 (issue #16). The county website's absentee
+  // page still shows 2020 hours, so it is not a source. Re-check before launch.
   earlyVoting: {
     sources: [
       'https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=9301b4594bef4d9c9271778e4648179d',
     ],
-    lastVerified: '2026-10-20',
+    lastVerified: '2026-10-21',
     schedules: {
       boe: [
         { from: '2026-09-22', to: '2026-10-30', days: 'weekdays', open: '08:00', close: '16:30' },

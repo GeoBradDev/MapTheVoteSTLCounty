@@ -27,7 +27,8 @@ Domain skills:
    center, with the same note PollsCard shows), nearest 3 (`nearbyPollCount`) first, with a
    "Show all" button that reveals every site and moves focus to the first newly shown one.
 3. Each site shows its name, address, distance, directions link(s), its kind (Board of
-   Elections office or satellite site), and `notes_abs` when it is not empty.
+   Elections office or satellite site) with that kind's status line (criterion 5), and
+   `notes_abs` when it is not empty.
 4. Dates and hours come only from `election.earlyVoting.schedules`, shown in two groups,
    Board of Elections (`boe`) and satellite sites (`abs`), each with its full schedule as
    readable lines. A source link and "Last verified <date>" come from
@@ -65,6 +66,8 @@ Domain skills:
 - `src/features/lookup/EarlyVotingCard.jsx` (new) + test.
 - `src/features/lookup/ResultsCards.jsx`: render the card in the `earlyVoting` slot.
 - `src/features/lookup/resultsCopy.js`: card copy.
+- `src/config/election.js`: `earlyVoting.lastVerified` moves to 2026-10-21, after the
+  schedule was re-read from the county's live Absentee Voting Lookup app config.
 - `src/features/lookup/PrecinctPage.test.jsx`: route the absentee query, count the card as
   built.
 - `docs/data.md`: note the card reads the filter from config (only if wording is wrong).
