@@ -67,11 +67,15 @@ unknown place gets its own message.
      Center for Missouri voters (it covers St. Louis City too), and the generic advice
      for elsewhere.
    - `county-unmatched`: links to the county's official lookup (`election.officialLookupUrl`).
-   Every link opens the official site, with `rel="noopener noreferrer"`.
+   Every link opens the official site in the same tab (no surprise new window), with
+   `rel="noreferrer"` so the official site is not sent our page path.
+   The notice is a `section` labelled by an `h2`, for the results screen (#11) to place.
 5. The two referral URLs live in one module, `src/config/referrals.js`, with their source
    and a last-verified date; no other file under `src/` writes them.
-6. All copy for the notice is in one `copy` object at the top of the component so #19 can
-   move it into `en.json` without touching the markup. (i18n itself is #19, still open.)
+6. All copy for the notice is in one `copy` object in
+   `src/features/lookup/outOfCountyCopy.js` (its own module, since the fast-refresh lint
+   rule allows only components in a `.jsx` file) so #19 can move it into `en.json` without
+   touching the markup. (i18n itself is #19, still open.)
 7. Tests cover one City address, one St. Charles County address and one out-of-state
    address end to end through `locate` with recorded precinct and boundary responses for
    those points, plus each kind's rendered notice.
@@ -85,6 +89,7 @@ unknown place gets its own message.
 - `src/data/arcgis.test.js`: boundary query tests.
 - `src/features/lookup/locate.js` (new) and `locate.test.js` (new).
 - `src/features/lookup/OutOfCountyNotice.jsx` (new) and `OutOfCountyNotice.test.jsx` (new).
+- `src/features/lookup/outOfCountyCopy.js` (new): the notice's text.
 - `scripts/record-fixtures.mjs`: record the precinct and boundary responses at the three
   test points and one inside point.
 - `docs/raw/fixtures/*.json`: the new recordings.
