@@ -10,9 +10,10 @@ import { fileURLToPath } from 'node:url';
 const DEEP_LINK = '/p/CC007';
 const TIMEOUT_MS = 10_000;
 
-// The headers the Render Blueprint (#31) sets. Keep this in step with
-// render.yaml: each entry passes when `test` accepts the header's value.
-const SHELL_HEADERS = [
+// The headers the Render Blueprint (render.yaml) sets. Each entry passes when
+// `test` accepts the header's value. src/test/render.test.js checks render.yaml
+// against these tables, so change both together.
+export const SHELL_HEADERS = [
   { name: 'referrer-policy', test: (v) => v === 'no-referrer' },
   { name: 'x-content-type-options', test: (v) => v === 'nosniff' },
   { name: 'permissions-policy', test: (v) => v !== null },
@@ -22,7 +23,9 @@ const SHELL_HEADERS = [
   },
   { name: 'cache-control', test: (v) => v?.includes('no-cache') ?? false },
 ];
-const ASSET_HEADERS = [{ name: 'cache-control', test: (v) => v?.includes('immutable') ?? false }];
+export const ASSET_HEADERS = [
+  { name: 'cache-control', test: (v) => v?.includes('immutable') ?? false },
+];
 
 const SCRIPT_SRC = /<script\b[^>]*\btype="module"[^>]*\bsrc="(\/assets\/[^"]+\.js)"/;
 

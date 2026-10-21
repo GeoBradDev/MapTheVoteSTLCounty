@@ -42,7 +42,7 @@ Owner decisions (2026-10-21):
   `/assets/icon/*`, and other hosts comma-join the values, which would turn
   `no-cache` plus `immutable` into a contradictory `Cache-Control`. So no two rules for
   the same header name may match the same path. `Cache-Control: no-cache` goes on the
-  shell paths explicitly (`/`, `/index.html`, `/p/*`, `/learn/*`, `/sw.js`), and
+  shell paths explicitly (`/`, `/index.html`, `/p/*`, `/learn`, `/learn/*`, `/sw.js`), and
   `immutable` only on `/assets/*`. Unknown paths (the in-app 404) get Render's default
   caching; noted as a post-deploy check.
 - Blueprint headers cannot differ per preview, so `X-Robots-Tag: noindex` for previews
@@ -63,7 +63,7 @@ Owner decisions (2026-10-21):
    `**/*.md`, `domains: [mapthevotestl.com]`. No `startCommand`, `region`, `plan`, or other
    service.
 2. `routes` is one rewrite, `/*` to `/index.html`.
-3. Headers on every shell path (`/`, `/index.html`, `/p/CC007`, `/learn/voter-id`):
+3. Headers on every shell path (`/`, `/index.html`, `/p/CC007`, `/learn`, `/learn/voter-id`):
    `Referrer-Policy: no-referrer`, `X-Content-Type-Options: nosniff`,
    `Permissions-Policy: geolocation=(self), camera=(), microphone=()`, an enforced
    `Content-Security-Policy`, `Strict-Transport-Security`, and `Cache-Control: no-cache`.

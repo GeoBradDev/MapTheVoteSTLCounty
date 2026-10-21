@@ -97,6 +97,19 @@ describe('production build', () => {
     expect(html).toMatch(/<link rel="stylesheet" crossorigin href="\/assets\/index-[\w-]+\.css">/);
   });
 
+  // render.yaml's Content-Security-Policy allows only same-origin scripts,
+  // styles, images and fonts, with no 'unsafe-inline'.
+  it('needs nothing the Content-Security-Policy blocks', () => {
+    const scripts = [...html.matchAll(/<script\b[^>]*>/g)].map((m) => m[0]);
+    expect(scripts.length).toBeGreaterThan(0);
+    expect(scripts.filter((tag) => !/\bsrc="\/assets\//.test(tag))).toEqual([]);
+    expect(html).not.toMatch(/<style\b/i);
+    expect(html).not.toMatch(/\sstyle=/i);
+    expect(html).not.toMatch(/\son[a-z]+=/i);
+    const cssUrls = [...css.matchAll(/url\(\s*['"]?([^'")]+)/g)].map((m) => m[1]);
+    expect(cssUrls.filter((u) => /^(?:[a-z]+:|\/\/)/i.test(u))).toEqual([]);
+  });
+
   it('ships no red or blue color', () => {
     expect(builtColorProblems(css)).toEqual([]);
   });
