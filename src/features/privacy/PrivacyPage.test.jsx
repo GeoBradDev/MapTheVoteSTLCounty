@@ -61,7 +61,10 @@ describe('PrivacyPage', () => {
       .closest('div');
 
     expect(item).toHaveTextContent(
-      "St. Louis County's address service and to Photon by komoot (photon.komoot.io), which this site uses to find addresses and to check them",
+      "goes first to St. Louis County's address points (maps.stlouisco.com), or to the county's copy of them on Esri's ArcGIS Online (services2.arcgis.com) when the first cannot be reached. The county gets it in the body of the request, not in its web address.",
+    );
+    expect(item).toHaveTextContent(
+      'It also goes to Photon by komoot (photon.komoot.io) when the county has no match or cannot be reached',
     );
   });
 
