@@ -66,12 +66,14 @@ function shape(body, params) {
  * request's `outFields` and `geometryPrecision`, so a browser run sees only
  * the fields the app asked for.
  * @param {string} href The request URL.
+ * @param {string | null} [form] A POST request's form body: the point queries
+ *   send their parameters there, not in the URL (#38).
  * @returns {string | null}
  */
-export function fixtureBody(href) {
+export function fixtureBody(href, form = null) {
   if (!href.startsWith(election.serviceRoot)) return null;
   const url = new URL(href);
-  const params = url.searchParams;
+  const params = new URLSearchParams([...url.searchParams, ...new URLSearchParams(form ?? '')]);
   let body;
   if (url.pathname.includes(election.layers.polls)) {
     body = params.get('where') === election.absenteeWhere ? FIXTURES.absentee : FIXTURES.polls;

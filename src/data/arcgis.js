@@ -1,6 +1,9 @@
 // Reads precincts and polling places from ArcGIS REST with plain fetch.
 // Layer paths come from the election config. Only coordinates or a validated
-// precinct code ever go into a query: never address text.
+// precinct code ever go into a query: never address text. A query with a
+// voter's coordinates is a POST with the coordinates in its body, never its
+// URL, kept out of the browser's HTTP cache, with no cookies and no referrer
+// (#38). Queries by precinct code or for a whole layer stay cacheable GETs.
 import election from '../config/election.js';
 
 /** Precinct codes: a 2 or 3 letter township prefix plus 3 digits, like CC007. */
@@ -143,13 +146,23 @@ function isTransient(error) {
   return status === undefined || status === 429 || status >= 500;
 }
 
-// A GET query, or a POST with the parameters in the body when `post` is set
-// (for a geometry too long for a URL).
-async function query(layer, params, { post = false } = {}) {
-  const url = post
+// The fetch options of a query that carries a voter's coordinates (#38): the
+// parameters go in a form body, which ArcGIS's query accepts and which needs
+// no CORS preflight, and the browser keeps neither request nor answer.
+const PRIVATE_INIT = Object.freeze({
+  method: 'POST',
+  cache: 'no-store',
+  credentials: 'omit',
+  referrerPolicy: 'no-referrer',
+});
+
+// A GET query, or with `private` set a POST whose parameters are in the body
+// and out of the URL, the HTTP cache and the referrer.
+async function query(layer, params, { private: isPrivate = false } = {}) {
+  const url = isPrivate
     ? `${election.serviceRoot}/${election.layers[layer]}/query`
     : queryUrl(layer, params);
-  const init = post ? { method: 'POST', body: new URLSearchParams(params) } : {};
+  const init = isPrivate ? { ...PRIVATE_INIT, body: new URLSearchParams(params) } : {};
   const fieldsKey = params.f === 'geojson' ? 'properties' : 'attributes';
   try {
     return await fetchOnce(url, fieldsKey, init);
@@ -185,6 +198,7 @@ export async function getPrecinctAtPoint({ lat, lng }) {
   const body = await query(
     'precincts',
     pointParams('getPrecinctAtPoint', { lat, lng }, PRECINCT_FIELDS.join(',')),
+    { private: true },
   );
   const feature = body.features[0];
   return feature ? normalize(feature.attributes) : null;
@@ -215,7 +229,7 @@ export async function getPrecinctCodesAtPoints(points) {
       returnGeometry: 'false',
       f: 'json',
     },
-    { post: true },
+    { private: true },
   );
   return new Set(body.features.map((f) => normalize(f.attributes).precinct).filter(Boolean));
 }
@@ -230,6 +244,7 @@ export async function isInCountyBoundary({ lat, lng }) {
   const body = await query(
     'countyBoundary',
     pointParams('isInCountyBoundary', { lat, lng }, 'OBJECTID'),
+    { private: true },
   );
   return body.features.length > 0;
 }

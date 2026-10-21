@@ -116,13 +116,19 @@ Layer name `precincts_2026_11_local`. Polygon. 1213 features.
 Empty fields come back as `""` here (and as `null` on the dashboard view). Treat
 both as empty.
 
-Point lookup (verified):
+Point lookup (verified; the app sends these parameters in a POST body, see below):
 ```
 GET .../precincts_2026_11_view/FeatureServer/1/query
   ?geometry=-90.33,38.62&geometryType=esriGeometryPoint&inSR=4326
   &spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=false&f=json
 ```
 Shareable URL can carry just `precinct` and re-query with `where=precinct='CC007'`.
+The app sends a point lookup as a POST to the same `query` URL with these parameters in
+a form-encoded body (#38), never in the URL: the layer answers a POST with the same
+features and `Access-Control-Allow-Origin: *`, and a form POST with no custom headers is
+a CORS simple request, so no preflight is sent (checked 2026-10-21; the layer's OPTIONS
+answer allows `Content-Type` anyway). Queries by precinct code and for whole layers stay
+GETs, which the browser may cache.
 The app names the precinct fields it reads in `outFields` instead of `*` (#27,
 `PRECINCT_FIELDS` in `src/data/arcgis.js`); the polls queries below do the same.
 
@@ -258,8 +264,8 @@ is on `stlouis-mo.gov`; `stlelections.com` is a parked domain for sale (checked
 "Use my location": `getDeviceLocation` in `src/features/lookup/deviceLocation.js`
 returns only `{ lat, lng }` from the browser's position, which is the
 coordinates-only place `locate` takes. Only those coordinates are sent, as the
-`geometry` of the precinct and boundary queries (a GET query string, like every
-ArcGIS query here). The app never puts them in the page URL, history state or
+`geometry` of the precinct and boundary queries, in a POST body with
+`cache: 'no-store'`, no cookies and no referrer (#38), never a URL. The app never puts them in the page URL, history state or
 browser storage; it keeps them only in memory (`src/features/lookup/lookupPoint.js`), so
 the polling places card can measure from them, and a reload drops them. The same goes
 for a geocoded address's coordinates.
@@ -488,7 +494,8 @@ Privacy: the address goes to the county layers only in a POST body, never a URL,
 with `cache: no-store`, no cookies (`credentials: 'omit'`; the live server sets an
 `AGS_ROLES` cookie, which is never stored) and no referrer. Photon gets the address
 only when the county has no match or no county layer answers; it gets it in a GET
-query string, as before (#38). The City check (below) sends the City only the house
+query string, with `cache: 'no-store'`, no cookies and no referrer, because Photon has
+no POST endpoint (`POST /api/` answers 404, checked 2026-10-21, #38). The City check (below) sends the City only the house
 number and street, in a POST body, the same way. Nothing is stored. The
 Content-Security-Policy allows `https://maps.stlouisco.com`,
 `https://services2.arcgis.com` and `https://maps6.stlouis-mo.gov` in `connect-src`.

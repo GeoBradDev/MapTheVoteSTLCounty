@@ -43,11 +43,13 @@ function respond(body, status = 200) {
   return new Response(JSON.stringify(body), { status });
 }
 
-// Answers each request with the recording for its layer and point.
+// Answers each request with the recording for its layer and point. The point
+// is in the POST body (#38), never the URL.
 function recorded(overrides = {}) {
-  return async (input) => {
+  return async (input, init) => {
     const url = new URL(input);
-    const key = `${url.origin}${url.pathname} ${url.searchParams.get('geometry')}`;
+    const geometry = new URLSearchParams(init?.body).get('geometry');
+    const key = `${url.origin}${url.pathname} ${geometry}`;
     if (key in overrides) return overrides[key]();
     if (!(key in RESPONSES)) throw new Error(`No recording for ${key}`);
     return respond(RESPONSES[key]);

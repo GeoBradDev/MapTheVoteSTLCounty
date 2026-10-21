@@ -298,8 +298,12 @@ service in turn (network refusal, a request that never answers, 5xx) in a real b
 
 Addresses are sensitive. The app itself never puts a typed address or its coordinates in the
 URL, `localStorage`, `sessionStorage`, IndexedDB, cookies, logs or analytics, and v1 has no
-analytics. The browser's ordinary HTTP cache may still keep the precinct point queries, whose
-URLs hold the coordinates, until #38 changes them; the notice says so. The plain-language
+analytics. Every request that carries a typed address or coordinates uses `cache: 'no-store'`,
+no cookies and no referrer, and sends them in a POST body, never the URL, where the service
+accepts one (#38): the county's address layers, the City geocoder and the precinct and boundary
+point queries. Photon has no POST endpoint, so it gets the typed text in a GET query string;
+the notice says so. A new request that carries either must do the same, and a service worker
+(#25) must not put those requests in Cache Storage, which `no-store` does not cover. The plain-language
 notice at `/privacy` (`src/features/privacy/privacyCopy.js`) says what each third party gets;
 change it in the same change as any new service or any change to what is sent. `src/test/no-storage.test.js` fails
 when app code under `src` uses browser storage, cookies or the console, and
@@ -312,8 +316,9 @@ The tests run in jsdom, so check a real browser by hand before each election: lo
 address and use Use my location, then in the browser's devtools confirm that Application shows
 no Local Storage, Session Storage, IndexedDB, Cookies or Cache Storage entries for the site and
 that the URL is `/p/<code>` only. In the Network panel, confirm that the requests carrying the
-address or the coordinates go only to the hosts the notice names, and whether the point queries
-come back from the HTTP cache; if #38 has changed that, update the notice.
+address or the coordinates go only to the hosts the notice names, that the point queries are
+POSTs with no coordinates in their URL, and that none of those requests comes back from the
+HTTP cache.
 
 ## Share links
 

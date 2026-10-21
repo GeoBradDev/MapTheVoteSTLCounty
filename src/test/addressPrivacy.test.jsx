@@ -108,6 +108,22 @@ function renderApp() {
   );
 }
 
+// The point went to the precinct query in a POST body, kept out of the HTTP
+// cache (#38), and no request URL holds it.
+function expectPointSentPrivately(geometry) {
+  const calls = fetch.mock.calls;
+  const point = calls.find(
+    ([, init]) => new URLSearchParams(init?.body).get('geometry') === geometry,
+  );
+  expect(point?.[1]).toMatchObject({ method: 'POST', cache: 'no-store' });
+  const [lng, lat] = geometry.split(',');
+  for (const [input] of calls) {
+    const url = decodeURIComponent(String(input));
+    expect(url).not.toContain(lng.slice(0, 6));
+    expect(url).not.toContain(lat.slice(0, 5));
+  }
+}
+
 async function expectNothingKept() {
   const seen = await kept();
   for (const needle of NEEDLES) expect(seen).not.toContain(needle);
@@ -120,8 +136,7 @@ it('sends the found point to the precinct query, so the lookup really ran', asyn
   await userEvent.click(screen.getByRole('button', { name: searchCopy.submit }));
   await screen.findByText(copy.ready('CC007'));
 
-  const urls = fetch.mock.calls.map(([input]) => String(input));
-  expect(urls.some((u) => u.includes('geometry=-90.312345%2C38.512345'))).toBe(true);
+  expectPointSentPrivately('-90.312345,38.512345');
 });
 
 it('keeps no trace of a typed address after a lookup', async () => {
@@ -139,8 +154,7 @@ it('keeps no trace of the device location after Use my location', async () => {
   await userEvent.click(screen.getByRole('button', { name: locationCopy.button }));
   await screen.findByText(copy.ready('CC007'));
   expect(window.location.pathname).toBe('/p/CC007');
-  const urls = fetch.mock.calls.map(([input]) => String(input));
-  expect(urls.some((u) => u.includes('geometry=-90.323456%2C38.523456'))).toBe(true);
+  expectPointSentPrivately('-90.323456,38.523456');
 
   await expectNothingKept();
 });

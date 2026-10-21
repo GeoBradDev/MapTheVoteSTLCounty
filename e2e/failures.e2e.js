@@ -75,8 +75,10 @@ async function services(
       return behave(route, polls, fixtureBody(url.href));
     }
     let href = url.href;
+    // The point queries POST their parameters (#38); the others are GETs.
+    const form = new URLSearchParams(route.request().postData() ?? '');
     if (
-      url.searchParams.get('geometryType') === 'esriGeometryPoint' &&
+      form.get('geometryType') === 'esriGeometryPoint' &&
       url.pathname.includes(election.layers.precincts)
     ) {
       // A point in the precinct: the precinct's own record answers, shaped to
@@ -85,7 +87,7 @@ async function services(
       byId.searchParams.set('where', `precinct='${CODE}'`);
       href = byId.href;
     }
-    return behave(route, precincts, fixtureBody(href));
+    return behave(route, precincts, fixtureBody(href, form.toString()));
   });
 }
 

@@ -72,21 +72,37 @@ describe('PrivacyPage', () => {
     expect(item).not.toHaveTextContent('not also in St. Louis City');
   });
 
-  // Issue #38 is open: point queries still carry coordinates in a GET query
-  // string. The notice must not claim otherwise until that changes.
-  it('says plainly that coordinates go in the request address and may be cached', () => {
+  // Issue #38: the point queries POST the coordinates in the request body,
+  // uncached. The notice must say so, and must not keep the old caveat.
+  it('says the coordinates go in the body of the request and are not cached', () => {
     render(<PrivacyPage />);
     const item = within(section(copy.sent.heading))
       .getByRole('heading', { name: 'Finding your precinct' })
       .closest('div');
 
-    expect(item).toHaveTextContent("The coordinates are part of the request's web address");
     expect(item).toHaveTextContent(
-      'the points of all of them go there first, in the body of the request, to check that they are in one precinct',
+      "goes to St. Louis County's election maps on Esri's ArcGIS Online (services6.arcgis.com), in the body of the request, not in its web address",
     );
-    expect(item).toHaveTextContent('may record them in its logs');
     expect(item).toHaveTextContent(
-      'your browser may keep the request, coordinates included, and its answer in its ordinary cache',
+      'Your browser does not keep these requests or their answers in its cache.',
+    );
+    expect(item).toHaveTextContent(
+      'the points of all of them go there first, the same way, to check that they are in one precinct',
+    );
+    expect(item).toHaveTextContent('Opening a shared link sends only the precinct code.');
+    expect(item).not.toHaveTextContent("part of the request's web address");
+    expect(item).not.toHaveTextContent('ordinary cache');
+  });
+
+  it('keeps saying Photon gets the typed text in its web address, and nothing is cached', () => {
+    render(<PrivacyPage />);
+    const item = within(section(copy.sent.heading))
+      .getByRole('heading', { name: 'Address search' })
+      .closest('div');
+
+    expect(item).toHaveTextContent("Photon gets it as part of the request's web address");
+    expect(item).toHaveTextContent(
+      'Your browser does not keep any of these requests or their answers in its cache.',
     );
   });
 
@@ -95,10 +111,15 @@ describe('PrivacyPage', () => {
     const text = section(copy.never.heading).textContent;
 
     expect(text).toContain('never saves your address or your location');
-    // The HTTP cache (#38) is described, not denied.
     expect(text).not.toMatch(/gone when|close the page/);
-    expect(text).toContain("Your browser's own cache is covered under Finding your precinct");
-    expect(text).toContain('browser storage');
+    expect(text).toContain(
+      "they are not put in the page address (URL), in browser storage, in cookies or in your browser's cache",
+    );
+    // What the browser does keep is said, not denied.
+    expect(text).toContain(
+      'Your browser history and cache do keep the precinct pages you open, like /p/CC007.',
+    );
+    expect(text).not.toContain('covered under Finding your precinct');
     expect(text).toContain('no analytics, ads or tracking');
     expect(text).toContain('sets no cookies');
   });
