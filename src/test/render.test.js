@@ -26,14 +26,12 @@ const PROBE_PATHS = [
   '/no-such-page',
 ];
 
-/**
- * Whether a Render header path matches a request path. Per
- * https://render.com/docs/static-site-headers: a trailing `*` matches the rest
- * of the path (`/*` matches every path, `/blog/*` matches `/blog/` and below),
- * `**/ ` spans one or more directories, and any other ` *
-  ` stays within one segment
- * (`; /*.css` matches `/tokens.css`, not `/assets/theme.css`).
- */
+// Whether a Render header path matches a request path. Per
+// https://render.com/docs/static-site-headers: a trailing `*` matches the rest
+// of the path (`/*` matches every path, `/blog/*` matches `/blog/` and below),
+// a `**/` segment spans one or more directories (`/**/*.css` matches
+// `/assets/theme.css`, not `/tokens.css`), and any other `*` stays within one
+// segment (`/*.css` matches `/tokens.css`, not `/assets/theme.css`).
 function renderPathMatches(pattern, requestPath) {
   const source = pattern
     .split(/(\*\*\/|\*)/)
