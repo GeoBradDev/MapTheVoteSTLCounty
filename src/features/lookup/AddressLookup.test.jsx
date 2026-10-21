@@ -9,6 +9,7 @@ import AddressLookup from './AddressLookup.jsx';
 import { copy as searchCopy } from './addressSearchCopy.js';
 import { GeocoderContext } from './geocoderContext.js';
 import { locate } from './locate.js';
+import { lookupPointFor } from './lookupPoint.js';
 import { copy } from './lookupCopy.js';
 import { copy as noticeCopy } from './outOfCountyCopy.js';
 
@@ -263,6 +264,28 @@ describe('AddressLookup', () => {
       JSON.stringify({ ...sessionStorage }),
     ].join(' ');
     for (const needle of ['7700', 'Fine', '38.5', '-90.3']) expect(seen).not.toContain(needle);
+  });
+
+  it('hands the looked-up point to the precinct page in memory only', async () => {
+    locate.mockResolvedValue({ kind: 'precinct', precinct: { precinct: 'OAK019' } });
+    const { location } = renderLookup();
+    await search();
+    expect(location.history).toEqual(['/', '/p/OAK019']);
+    expect(lookupPointFor('OAK019')).toEqual({ lat: 38.5, lng: -90.3 });
+    // Only for the precinct it found.
+    expect(lookupPointFor('CC007')).toBeNull();
+  });
+
+  it('hands a "Use my location" point over too', async () => {
+    locate.mockResolvedValue({ kind: 'precinct', precinct: { precinct: 'CC007' } });
+    renderLookup();
+    await userEvent.click(screen.getByRole('button', { name: /use my location/i }));
+    await act(async () => {
+      pending
+        .shift()
+        .ok({ coords: { latitude: 38.66, longitude: -90.45, accuracy: 10 }, timestamp: 1 });
+    });
+    expect(lookupPointFor('CC007')).toEqual({ lat: 38.66, lng: -90.45 });
   });
 
   it('credits OpenStreetMap contributors next to the address box', () => {
