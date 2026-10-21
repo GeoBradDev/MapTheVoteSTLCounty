@@ -30,7 +30,8 @@
  * @property {string} officialLookupUrl The county's own lookup app, the
  *   fallback when ours fails.
  * @property {string} countySiteUrl The county election board's website.
- * @property {number} nearbyPollCount How many nearby polling places to show.
+ * @property {number} nearbyPollCount How many nearby polling places to show at
+ *   first, and how many more each "Show more" adds.
  * @property {{ sources: string[], lastVerified: string,
  *   schedules: Record<string, ScheduleEntry[]> }} earlyVoting In-person
  *   absentee hours, keyed by the polls layer's `abs_type`.

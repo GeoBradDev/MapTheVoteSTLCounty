@@ -7,6 +7,7 @@ import AddressSearch from './AddressSearch.jsx';
 import GeocoderAttribution from './GeocoderAttribution.jsx';
 import { useGeocoder } from './geocoderContext.js';
 import { locate } from './locate.js';
+import { rememberLookupPoint } from './lookupPoint.js';
 import { copy } from './lookupCopy.js';
 import OutOfCountyNotice from './OutOfCountyNotice.jsx';
 import UseMyLocation from './UseMyLocation.jsx';
@@ -15,7 +16,8 @@ import UseMyLocation from './UseMyLocation.jsx';
  * The whole lookup: the address box and "Use my location". Either gives a
  * place for locate() (#8). A precinct opens its page (only the precinct code
  * goes in the URL); anywhere else shows where to go instead. The address text
- * and coordinates are never stored: they live only in this lookup's call.
+ * is never stored, and the coordinates are kept only in memory, for the
+ * polling places card (lookupPoint.js).
  */
 export default function AddressLookup() {
   const geocoder = useGeocoder();
@@ -50,6 +52,7 @@ export default function AddressLookup() {
 
     let next;
     let code = null;
+    let point = null;
     try {
       const place = await getPlace(controller.signal);
       if (!place) {
@@ -58,8 +61,10 @@ export default function AddressLookup() {
         const { lat, lng, state, county } = place;
         const result = await locate({ lat, lng, state, county });
         if (result.kind !== 'precinct') next = { kind: result.kind };
-        else if (PRECINCT_CODE.test(result.precinct?.precinct)) code = result.precinct.precinct;
-        else next = { error: 'failed' };
+        else if (PRECINCT_CODE.test(result.precinct?.precinct)) {
+          code = result.precinct.precinct;
+          point = { lat, lng };
+        } else next = { error: 'failed' };
       }
     } catch (error) {
       next = { error: error instanceof GeocoderUnavailableError ? 'unavailable' : 'failed' };
@@ -67,8 +72,10 @@ export default function AddressLookup() {
     if (!current()) return;
     runRef.current = null;
     setBusy(false);
-    if (code) navigate(`/p/${code}`);
-    else setOutcome(next);
+    if (code) {
+      rememberLookupPoint(code, point);
+      navigate(`/p/${code}`);
+    } else setOutcome(next);
   }
 
   function handleAddress(query) {

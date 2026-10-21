@@ -76,7 +76,9 @@ The data agrees:
 
 **Design consequence:** the "Your polling place" card becomes "Polling places
 near you": the closest N (suggest 3 to 5) by straight-line distance from the
-geocoded point, with a plain note that any polling place in the county works.
+looked-up point (geocoded address or "Use my location"), or from the precinct's center
+when the page was opened without a lookup (a reload or a shared link), with a plain note
+that any polling place in the county works.
 The layer has only 200 points, so load it once (about 85 KB GeoJSON with all
 fields), cache it, and sort on the client. No extra query per lookup.
 
@@ -126,6 +128,13 @@ Shareable URL can carry just `precinct` and re-query with `where=precinct='CC007
 Layer name `polls_2026_11_local`. Point. 200 features. One layer serves both
 Election Day and in-person absentee sites.
 
+All 200 are Election Day polling places, so the "Polling places near you" card ranks the
+whole layer with no filter. The county's own Election Day app (web map `5e98818f...`)
+shows this layer, titled "Polling Places (Election Day)", with no definition expression,
+and each of the 21 absentee sites also has an Election Day `loc` (for example Board of
+Elections is `loc` 019, `loc_abs` 601). `abs_type` marks whether a site is also open for
+in-person absentee voting, and which kind of absentee site it is.
+
 | Field | Example | Notes |
 |---|---|---|
 | `loc` | `001` | Location ID, 3 digits |
@@ -133,7 +142,7 @@ Election Day and in-person absentee sites.
 | `address` | `8309 MACKENZIE RD` | Street only, all caps |
 | `zipcode` | `63123` | Integer. City name is not in this layer. |
 | `gmap` | `https://www.google.com/maps/search/?api=1&query=38.559645%2C-90.322720` | Ready-made directions link |
-| `abs_type` | `none` | `none` (179): Election Day only. `abs` (20): satellite absentee site. `boe` (1): Board of Elections office. |
+| `abs_type` | `none` | `none` (179): Election Day only. `abs` (20): also a satellite absentee site. `boe` (1): also the Board of Elections absentee office. |
 | `loc_abs` | `601` | Absentee site number, 601 to 621. Null for `none`. |
 | `absentee` | `abs601boec` | Username for the absentee site. Not for display. |
 | `inline` | `""` | Line count text, filled in on Election Day. Older layers show the format `"2 voters in line at 06:49 PM"`. Trim it: some values are padded with spaces. |
@@ -237,7 +246,10 @@ is on `stlouis-mo.gov`; `stlelections.com` is a parked domain for sale (checked
 returns only `{ lat, lng }` from the browser's position, which is the
 coordinates-only place `locate` takes. Only those coordinates are sent, as the
 `geometry` of the precinct and boundary queries (a GET query string, like every
-ArcGIS query here); the app does not store them or put them in the page URL.
+ArcGIS query here). The app never puts them in the page URL, history state or
+browser storage; it keeps them only in memory (`src/features/lookup/lookupPoint.js`), so
+the polling places card can measure from them, and a reload drops them. The same goes
+for a geocoded address's coordinates.
 
 ### Legacy `lookup_view_*` services: do not use
 
