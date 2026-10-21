@@ -43,7 +43,10 @@ describe('geocode of typed text needs the whole street', () => {
     ['100 First St', '1st Street'],
     ['8025 Maryland Ave Apt 2, Clayton', 'Maryland Avenue'],
   ])('%s matches %s', async (text, street) => {
-    const geocoder = createPhotonGeocoder({ fetch: only({ housenumber: '100', street }) });
+    // A postcode, so a typed ZIP can be confirmed.
+    const geocoder = createPhotonGeocoder({
+      fetch: only({ housenumber: '100', street, postcode: '63122' }),
+    });
     const typed = text.replace(/^\d+/, '100');
     await expect(geocoder.geocode(typed)).resolves.not.toBeNull();
   });

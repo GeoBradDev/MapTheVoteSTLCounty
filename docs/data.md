@@ -324,7 +324,10 @@ not part of the town, a direction is ("East St. Louis" is not St. Louis), and "S
 City" must be a City result); and a result in a named
 town other than St. Louis needs that town or its ZIP typed, because the same address
 can exist in two towns ("St. Louis" is the mailing city for much of the county, so it
-confirms nothing). Typing a suggestion's own label back always matches. So the Galleria (Photon's answer is 1155, the mall, not 1417)
+confirms nothing). A typed ZIP needs a result postcode, unless the result's own
+town (not St. Louis) is typed too, and when results more than about 50 m apart (or in
+different counties) all match, the answer is no match rather than Photon's first pick.
+Typing a suggestion's own label back always matches. So the Galleria (Photon's answer is 1155, the mall, not 1417)
 gives no match instead of a nearby building. Photon also answers "8025 Maryland Ave"
 with 8025 Bonhomme Ave, which the check turns into no match. Neither apartment
 address above is in OpenStreetMap; both give no match. A no match tells the voter

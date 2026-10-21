@@ -190,13 +190,15 @@ function typedTown(after) {
 //   number and then the feature's whole street, word for word, with no
 //   direction or street type after it ("100 S Lindbergh Blvd" is not "100
 //   Lindbergh Blvd", "8025 Maryland Ave Clayton" is not "8025 Clayton Rd");
-// - a typed ZIP is the feature's postcode (a St. Louis City feature with no
-//   postcode cannot confirm one), and a town typed after the street, with or
+// - a typed ZIP is the feature's postcode (a feature with no postcode cannot
+//   confirm one unless its own town, not St. Louis, is typed), and a town
+//   typed after the street, with or
 //   without a comma, is the feature's town unless it is St. Louis;
 // - a feature in a named town other than St. Louis has that town or its ZIP
 //   typed, since the same address can exist in two towns. St. Louis is the
 //   mailing city for much of the county, so it confirms nothing.
 // Typing a suggestion's own label back always matches.
+// geocode() also needs every match to be one place (see samePlace).
 function matchesTyped(text, props) {
   if (words(text).join(' ') === words(labelOf(props)).join(' ')) return true;
   const [streetPart] = text.split(',');
@@ -213,14 +215,27 @@ function matchesTyped(text, props) {
   const postcode = props.postcode ? String(props.postcode).slice(0, 5) : null;
   if (zip && postcode && zip !== postcode) return false;
   const town = words(props.city ?? props.district).join(' ');
-  // A City house with no postcode cannot confirm a typed ZIP.
-  if (zip && !postcode && town === ST_LOUIS) return false;
+  // A house with no postcode cannot confirm a typed ZIP unless its own town,
+  // other than St. Louis, is typed too.
+  if (zip && !postcode && (!town || town === ST_LOUIS)) return false;
   const typedPlace = typedTown(words(text).slice(1 + street.length));
   // "St. Louis City" says the City, so a county result is not it.
   if (typedPlace === `${ST_LOUIS} city` && countyOf(props) !== CITY_COUNTY) return false;
   if (typedPlace && town && typedPlace !== town && !ST_LOUIS_NAMES.has(typedPlace)) return false;
   const confirmed = (zip && zip === postcode) || (typedPlace && typedPlace === town);
   return !town || town === ST_LOUIS || Boolean(confirmed);
+}
+
+// About 50 m: one house that OSM lists twice, as a point and a building.
+const SAME_HOUSE_DEGREES = 0.0005;
+
+// Whether two matches are one house, not two houses Photon ranks in some order.
+function samePlace(a, b) {
+  return (
+    a.county === b.county &&
+    Math.abs(a.lat - b.lat) <= SAME_HOUSE_DEGREES &&
+    Math.abs(a.lng - b.lng) <= SAME_HOUSE_DEGREES
+  );
 }
 
 /**
@@ -310,8 +325,11 @@ export function createPhotonGeocoder({
       const text = String((typeof query === 'object' ? query?.label : query) ?? '').trim();
       if (!text) return null;
       const features = await search(text, signal);
-      const match = features.find((f) => matchesTyped(text, f.properties));
-      return match ? placeOf(match) : null;
+      const matches = features.filter((f) => matchesTyped(text, f.properties)).map(placeOf);
+      if (!matches.length) return null;
+      // Two places fit what was typed, so asking for a ZIP beats guessing.
+      if (!matches.every((place) => samePlace(place, matches[0]))) return null;
+      return matches[0];
     },
   });
 }
