@@ -22,11 +22,35 @@ function respond(body, status = 200) {
   return new Response(JSON.stringify(body), { status });
 }
 
-// The one request fetchMock received, split into its URL and parameters.
+// The one request fetchMock received, a GET, split into its URL and parameters.
 function onlyRequest() {
   expect(fetchMock).toHaveBeenCalledTimes(1);
-  const url = new URL(fetchMock.mock.calls[0][0]);
+  const [input, init = {}] = fetchMock.mock.calls[0];
+  expect(init.method ?? 'GET').toBe('GET');
+  const url = new URL(input);
   return { base: `${url.origin}${url.pathname}`, params: Object.fromEntries(url.searchParams) };
+}
+
+// The fetch options of a request that carries a voter's coordinates (#38):
+// POST with the parameters in a form body, kept out of the HTTP cache, with no
+// cookies and no referrer.
+const PRIVATE_INIT = {
+  method: 'POST',
+  cache: 'no-store',
+  credentials: 'omit',
+  referrerPolicy: 'no-referrer',
+};
+
+// The one request fetchMock received, a private POST: its URL, which must
+// carry no query string, and the parameters from its body.
+function onlyPrivateRequest() {
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  const [input, init] = fetchMock.mock.calls[0];
+  expect(init).toMatchObject(PRIVATE_INIT);
+  expect(init.body).toBeInstanceOf(URLSearchParams);
+  const url = new URL(input);
+  expect(url.search).toBe('');
+  return { base: `${url.origin}${url.pathname}`, params: Object.fromEntries(init.body) };
 }
 
 beforeEach(async () => {
@@ -42,10 +66,10 @@ afterEach(() => {
 });
 
 describe('getPrecinctAtPoint', () => {
-  it('queries the precincts layer with only the point and fixed parameters', async () => {
+  it('POSTs only the point and fixed parameters, out of the URL and the cache', async () => {
     fetchMock.mockResolvedValue(respond(atPoint));
     await client.getPrecinctAtPoint({ lat: 38.62, lng: -90.33 });
-    const { base, params } = onlyRequest();
+    const { base, params } = onlyPrivateRequest();
     expect(base).toBe(PRECINCTS);
     expect(params).toEqual({
       geometry: '-90.33,38.62',
@@ -103,14 +127,12 @@ describe('getPrecinctCodesAtPoints', () => {
     { lat: 38.63, lng: -90.34 },
   ];
 
-  it('POSTs one multipoint query with only the points and fixed parameters', async () => {
+  it('POSTs one multipoint query with only the points and fixed parameters, uncached', async () => {
     fetchMock.mockResolvedValue(respond({ features: [{ attributes: { precinct: 'CC007' } }] }));
     await client.getPrecinctCodesAtPoints(points);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe(PRECINCTS);
-    expect(init.method).toBe('POST');
-    expect(Object.fromEntries(new URLSearchParams(init.body))).toEqual({
+    const { base, params } = onlyPrivateRequest();
+    expect(base).toBe(PRECINCTS);
+    expect(params).toEqual({
       geometry: JSON.stringify({
         points: [
           [-90.33, 38.62],
@@ -161,10 +183,10 @@ describe('getPrecinctCodesAtPoints', () => {
 });
 
 describe('isInCountyBoundary', () => {
-  it('queries the county boundary layer with only the point and fixed parameters', async () => {
+  it('POSTs only the point and fixed parameters to the boundary layer, uncached', async () => {
     fetchMock.mockResolvedValue(respond(boundaryInside));
     await client.isInCountyBoundary({ lat: 38.62, lng: -90.33 });
-    const { base, params } = onlyRequest();
+    const { base, params } = onlyPrivateRequest();
     expect(base).toBe(BOUNDARY);
     expect(params).toEqual({
       geometry: '-90.33,38.62',
@@ -204,6 +226,12 @@ describe('isInCountyBoundary', () => {
     await vi.advanceTimersByTimeAsync(client.RETRY_DELAY_MS);
     expect(await result).toBe(true);
     expect(fetchMock).toHaveBeenCalledTimes(2);
+    // The retry is private too, with the same point in its body.
+    for (const [input, init] of fetchMock.mock.calls) {
+      expect(new URL(input).search).toBe('');
+      expect(init).toMatchObject(PRIVATE_INIT);
+      expect(new URLSearchParams(init.body).get('geometry')).toBe('-90.33,38.62');
+    }
   });
 });
 
