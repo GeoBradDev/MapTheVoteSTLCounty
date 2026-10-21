@@ -45,9 +45,10 @@ export default function UseMyLocation({ onLocate, addressInputRef }) {
     // Each target and event the voter can use to go with an address instead.
     // Not focus: the browser refocuses the box by itself when the permission
     // prompt closes if it was still the focused element (Safari does not focus
-    // a tapped button).
+    // a tapped button). Not pointerdown: a touch scroll that starts on the box
+    // fires it too, while only a real tap or click fires click.
     const listeners = [
-      [input, 'pointerdown'],
+      [input, 'click'],
       [input, 'input'],
       [input?.form, 'submit'],
     ].filter(([target]) => target);

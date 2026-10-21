@@ -56,9 +56,10 @@ including the `unknown` kind for a point outside the county with no state.
    after the call. A pending result is dropped, with no `onLocate`, error or focus move,
    when the voter goes back to the address box (presses or types in it, or submits its
    form) or the component unmounts, so a late answer never replaces an address the voter
-   chose. (Added after review findings 1 and 4; it listens for `pointerdown`, not `focus`,
+   chose. (Added after review findings 1 and 4; it listens for `click`, not `focus`,
    because the browser refocuses the box itself when the permission prompt closes,
-   finding 6.)
+   finding 6, and not `pointerdown`, because a touch scroll that starts on the box fires
+   it, finding 7.)
 6. On failure it shows a clear message for each reason in a `role="alert"` region, and
    moves focus to the address box (`addressInputRef`) so typing an address is the next
    step. The address box is never disabled by this component.
