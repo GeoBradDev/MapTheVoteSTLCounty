@@ -21,7 +21,7 @@ Domain skills:
 
 OpenFreeMap's Positron style (`https://tiles.openfreemap.org/styles/positron`): free, no API
 key, no registration, and its terms (openfreemap.org/tos, updated 2026-10-14) allow embedding
-in a website. Style, TileJSON, vector tiles, raster tiles, sprites and glyphs all come from
+in a website. Style, TileJSON, vector tiles, sprites and glyphs all come from
 the one origin `https://tiles.openfreemap.org`. Positron is a light gray style; its only party colors are the blue of its
 water labels and the slate blue of its interstate shields, so the map draws every label in
 the `muted` token and interstates with the gray road shield (found in review). Attribution required by the tiles: "OpenFreeMap, (c) OpenMapTiles, Data from
@@ -82,7 +82,7 @@ contributors". Both are shown as text links under the map.
   load limit.
 - `src/features/lookup/PollsCard.jsx`: render the map above the list with the shown rows.
 - `src/features/lookup/resultsCopy.js`: map text.
-- `src/data/arcgis.js`: cache `getPrecinctGeometry` per code (like `getPolls`) so the card's
+- `src/data/arcgis.js`: cache the latest precinct's `getPrecinctGeometry` request (like `getPolls`) so the card's
   center fallback and the map share one request; a failed fetch is not kept.
 - `render.yaml`, `src/test/render.test.js`: the policy.
 - `src/test/build.test.js`: the entry chunk has no MapLibre code; a separate chunk and the
@@ -112,7 +112,8 @@ contributors". Both are shown as text links under the map.
   Render already serves as JavaScript (the smoke test checks a hashed asset).
 - Cooperative gestures still capturing the page scroll on a phone. Mitigation: emulate a
   touch device and scroll past the map.
-- Tile requests reveal the precinct's area to OpenFreeMap (and Cloudflare). The precinct code
+- Tile requests reveal the area on screen to OpenFreeMap (and Cloudflare): the precinct plus
+  its nearest polling places, which depend a little on the searched point. The precinct code
   is already in the URL and the county services see the point; `Referrer-Policy:
   no-referrer` keeps the page URL out of tile requests. Noted in the README.
 - Chosen not to do: zoom buttons (MapLibre's control icons are `data:` SVGs in its CSS),

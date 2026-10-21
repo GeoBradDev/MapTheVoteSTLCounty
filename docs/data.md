@@ -384,10 +384,12 @@ check.
 Choice (issue #13): OpenFreeMap's Positron style,
 `https://tiles.openfreemap.org/styles/positron`, drawn with MapLibre GL JS. Free, with no
 API key or account; its terms (openfreemap.org/tos, updated 2026-10-14) allow embedding it in
-a website. Style, TileJSON, vector and raster tiles, sprites and glyphs all come from
+a website. Style, TileJSON, vector tiles, sprites and glyphs all come from
 `https://tiles.openfreemap.org`, served through Cloudflare. Attribution: OpenFreeMap,
-OpenMapTiles, OpenStreetMap contributors. Tile requests reveal the area on screen (about the
-precinct) to OpenFreeMap and Cloudflare; no address or coordinates are sent as such. The map
+OpenMapTiles, OpenStreetMap contributors. Tile requests reveal the area on screen to OpenFreeMap and
+Cloudflare: the precinct plus its nearest polling places, which depend a little on the
+searched point within the precinct (and widen on "Show more"). No address or coordinates are
+sent as such. The map
 is extra help only: precincts and polling places still come from the county layers above.
 
 ## Official website domain
