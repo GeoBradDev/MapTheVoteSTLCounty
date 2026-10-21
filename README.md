@@ -88,8 +88,9 @@ data), called from the browser with no key and no server of ours. `src/data/geoc
 picks the provider and `src/data/photon.js` implements it; a test fails if any other app file
 names a provider.
 To point a build at another Photon instance, set `VITE_GEOCODER_URL` (for example
-`VITE_GEOCODER_URL=https://photon.example.org npm run build`). A Content-Security-Policy must
-allow that origin, or `https://photon.komoot.io`, in `connect-src`.
+`VITE_GEOCODER_URL=https://photon.example.org npm run build`). The Content-Security-Policy in
+`render.yaml` allows only the default, `https://photon.komoot.io`, in `connect-src`; add any
+other origin there too.
 
 Check the geocoder against the live precinct layer before each election:
 

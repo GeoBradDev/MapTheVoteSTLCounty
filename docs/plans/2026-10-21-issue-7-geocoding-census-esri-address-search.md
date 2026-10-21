@@ -88,6 +88,8 @@ Recorded in `docs/data.md` under Geocoding. Summary:
 - `src/data/geocoderError.js` (new): the error class, so `geocoder.js` and `photon.js` do
   not import each other.
 - `src/features/lookup/locate.js`: JSDoc only, county examples no longer name providers.
+- `src/test/render.test.js`: reads the Photon origin from `src/data/photon.js` (the CSP from
+  #31 already allows it, criterion 9).
 - `scripts/check-geocoder.mjs`, `docs/data.md`, `README.md` (Address search section), this
   plan.
 
