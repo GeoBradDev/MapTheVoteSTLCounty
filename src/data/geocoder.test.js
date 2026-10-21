@@ -3,11 +3,12 @@ import path from 'node:path';
 import geocoder, { attribution, GeocoderUnavailableError } from './geocoder.js';
 import { GeocoderUnavailableError as ProviderError } from './geocoderError.js';
 import { createFakeGeocoder } from '../test/fakeGeocoder.js';
+import { LIVE_URL } from './countyAddress.js';
 
 const SRC = path.resolve(import.meta.dirname, '..');
 
 describe('the app geocoder', () => {
-  it('is one frozen Photon geocoder, the same object on every import', async () => {
+  it('is one frozen county-first geocoder, the same object on every import', async () => {
     expect(Object.isFrozen(geocoder)).toBe(true);
     expect(geocoder.suggest).toEqual(expect.any(Function));
     expect(geocoder.geocode).toEqual(expect.any(Function));
@@ -19,16 +20,43 @@ describe('the app geocoder', () => {
     expect(GeocoderUnavailableError).toBe(ProviderError);
   });
 
-  it('credits OpenStreetMap with its copyright page', () => {
-    expect(attribution.dataUrl).toBe('https://www.openstreetmap.org/copyright');
-    expect(attribution.data).toBe('OpenStreetMap contributors');
+  it('credits St. Louis County for the address data', () => {
+    expect(attribution.county.by).toBe('St. Louis County');
+    expect(attribution.county.url).toMatch(/^https:\/\//);
+  });
+
+  it('credits OpenStreetMap with its copyright page for the Photon fallback', () => {
+    expect(attribution.fallback.dataUrl).toBe('https://www.openstreetmap.org/copyright');
+    expect(attribution.fallback.data).toBe('OpenStreetMap contributors');
+  });
+
+  it('asks the live county layer first, with the address in a POST body', async () => {
+    const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ features: [] }),
+    });
+    try {
+      await geocoder.geocode('1318 Ross Ave, Saint Louis, MO 63146');
+      const [url, init] = fetch.mock.calls[0];
+      expect(url).toBe(`${LIVE_URL}/query`);
+      expect(init.method).toBe('POST');
+      expect(String(init.body)).toContain('ROSS');
+    } finally {
+      fetch.mockRestore();
+    }
   });
 });
 
 describe('the app source', () => {
   // Only the module that picks the provider, and the provider itself, may name
   // one, so swapping it stays a change to those files.
-  const PROVIDER_FILES = new Set(['data/geocoder.js', 'data/photon.js']);
+  const PROVIDER_FILES = new Set([
+    'data/geocoder.js',
+    'data/photon.js',
+    'data/countyAddress.js',
+    'data/addressMatch.js',
+  ]);
 
   async function appFiles() {
     const entries = await readdir(SRC, { withFileTypes: true, recursive: true });
@@ -43,7 +71,11 @@ describe('the app source', () => {
       const relative = path.relative(SRC, file).split(path.sep).join('/');
       if (PROVIDER_FILES.has(relative)) continue;
       const text = await readFile(file, 'utf8');
-      if (/geocode\.arcgis\.com|geocoding\.geo\.census\.gov|photon|komoot|nominatim/i.test(text)) {
+      if (
+        /geocode\.arcgis\.com|geocoding\.geo\.census\.gov|photon|komoot|nominatim|stlouisco\.com|Address_Points/i.test(
+          text,
+        )
+      ) {
         offenders.push(relative);
       }
     }

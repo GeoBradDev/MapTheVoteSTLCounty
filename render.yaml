@@ -46,7 +46,9 @@ services:
         name: Strict-Transport-Security
         value: max-age=31536000
       # connect-src: the county ArcGIS services (src/config/election.js
-      # serviceRoot), the Photon geocoder (#7) and the OpenFreeMap basemap
+      # serviceRoot), the county address points for address search (#49,
+      # src/data/countyAddress.js: the live county server and its hosted
+      # copy), the Photon geocoder (#7) and the OpenFreeMap basemap
       # (#13, src/features/lookup/basemap.js), whose style, tiles, sprites and
       # glyphs share one origin. MapLibre fetches all of those, images too
       # (decoded with createImageBitmap, which img-src does not govern), so
@@ -63,7 +65,7 @@ services:
           style-src 'self';
           img-src 'self';
           font-src 'self';
-          connect-src 'self' https://services6.arcgis.com https://photon.komoot.io https://tiles.openfreemap.org;
+          connect-src 'self' https://services6.arcgis.com https://maps.stlouisco.com https://services2.arcgis.com https://photon.komoot.io https://tiles.openfreemap.org;
           manifest-src 'self';
           object-src 'none';
           base-uri 'self';

@@ -7,6 +7,7 @@
 // county's official lookup instead. A match is never stretched into a guess:
 // only results with a house number count, and typed text must name that
 // number and the whole street (direction, name and type).
+import { countyOf, labelOf, matchesTyped } from './addressMatch.js';
 import { GeocoderUnavailableError } from './geocoderError.js';
 
 export const DEFAULT_BASE_URL = 'https://photon.komoot.io';
@@ -34,69 +35,8 @@ export const TIMEOUT_MS = 8000;
 const REQUEST_LIMIT = 10;
 const MAX_SUGGESTIONS = 5;
 
-const STATE_ABBR = { Missouri: 'MO', Illinois: 'IL' };
-
-// Spellings that name the same thing, so typed text and OSM names compare as
-// one form. "saint" and "street" both become "st" on both sides alike.
-const CANONICAL = {
-  street: 'st',
-  saint: 'st',
-  road: 'rd',
-  avenue: 'ave',
-  av: 'ave',
-  drive: 'dr',
-  boulevard: 'blvd',
-  lane: 'ln',
-  court: 'ct',
-  place: 'pl',
-  terrace: 'ter',
-  parkway: 'pkwy',
-  highway: 'hwy',
-  circle: 'cir',
-  trail: 'trl',
-  square: 'sq',
-  north: 'n',
-  south: 's',
-  east: 'e',
-  west: 'w',
-  northeast: 'ne',
-  northwest: 'nw',
-  southeast: 'se',
-  southwest: 'sw',
-  mount: 'mt',
-  fort: 'ft',
-  first: '1',
-  second: '2',
-  third: '3',
-  fourth: '4',
-  fifth: '5',
-  sixth: '6',
-  seventh: '7',
-  eighth: '8',
-  ninth: '9',
-  tenth: '10',
-};
-// The county name locate() reads as St. Louis City.
-const CITY_COUNTY = 'St. Louis city';
-// St. Louis in words() form.
-const ST_LOUIS = 'st louis';
-const DIRECTIONS = new Set(['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw']);
-// Street types, leaving out "st", which may start a city ("St. Louis").
-const STREET_TYPES = new Set('rd ave dr blvd ln ct pl ter pkwy hwy cir trl sq way'.split(' '));
-
 function abortError() {
   return new DOMException('The operation was aborted.', 'AbortError');
-}
-
-// Lower-case words in one spelling: ordinals as bare numbers (63rd -> 63),
-// then the CANONICAL forms.
-function words(text) {
-  return String(text ?? '')
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter(Boolean)
-    .map((word) => word.replace(/^(\d+)(st|nd|rd|th)$/, '$1'))
-    .map((word) => CANONICAL[word] ?? word);
 }
 
 function isAddress(feature) {
@@ -112,118 +52,11 @@ function isAddress(feature) {
   );
 }
 
-function labelOf(props) {
-  const region = [STATE_ABBR[props.state] ?? props.state, props.postcode].filter(Boolean).join(' ');
-  return [
-    `${props.housenumber} ${props.street}`,
-    props.city ?? props.district ?? props.county,
-    region,
-  ]
-    .filter(Boolean)
-    .join(', ');
-}
-
-// Photon gives St. Louis City, an independent city, as a city with no county.
-function countyOf(props) {
-  if (props.county) return props.county;
-  if (props.state === 'Missouri' && words(props.city).join(' ') === ST_LOUIS) {
-    return CITY_COUNTY;
-  }
-  return undefined;
-}
-
 /** @returns {import('./geocoder.js').GeocodedPlace} */
 function placeOf(feature) {
   const { properties: props, geometry } = feature;
   const [lng, lat] = geometry.coordinates;
   return { lat, lng, state: props.state, county: countyOf(props), label: labelOf(props) };
-}
-
-// Whether a typed number names this house number: equal, one of a list
-// ("12;14") or inside a range ("1200-1206").
-function hasNumber(housenumber, typed) {
-  return String(housenumber)
-    .toLowerCase()
-    .split(/[;,]/)
-    .some((part) => {
-      const value = part.trim();
-      if (value === typed) return true;
-      const range = value.match(/^(\d+)\s*-\s*(\d+)$/);
-      const n = Number(typed);
-      return Boolean(range) && /^\d+$/.test(typed) && n >= +range[1] && n <= +range[2];
-    });
-}
-
-// The last ZIP typed after the house number, if any.
-function typedZip(text) {
-  const zips = [...text.replace(/^\s*\S+/, '').matchAll(/\b(\d{5})(?:-\d{4})?\b/g)];
-  return zips.at(-1)?.[1];
-}
-
-const NOT_TOWN = new Set(['mo', 'missouri', 'usa', 'us', 'united', 'states']);
-// Unit words; when a unit number or letter follows one, both are dropped.
-const UNIT = new Set('apt apartment unit ste suite bldg building fl floor rm room lot'.split(' '));
-// Typed towns that name St. Louis, the mailing city for much of the county.
-const ST_LOUIS_NAMES = new Set([ST_LOUIS, `${ST_LOUIS} city`]);
-
-const isUnitNumber = (word) => /^\d/.test(word ?? '') || word?.length === 1;
-
-// The town in the words typed after the street, with or without commas:
-// what is left once units ("Apt 2", "Unit 2-B"), the state, the country and
-// numbers are dropped. "Ste Genevieve" is a town, not a suite, because no unit
-// number follows "Ste"; a direction stays ("East St. Louis" is not St. Louis).
-function typedTown(after) {
-  const kept = [];
-  for (let i = 0; i < after.length; i += 1) {
-    const word = after[i];
-    if (UNIT.has(word) && isUnitNumber(after[i + 1])) {
-      i += 1;
-      // The letter of a unit like "2-B".
-      if (/^\d/.test(after[i]) && after[i + 1]?.length === 1) i += 1;
-    } else if (!/^\d/.test(word) && !NOT_TOWN.has(word)) kept.push(word);
-  }
-  return kept.join(' ');
-}
-
-// Typed text names a feature when:
-// - its street part (before the first comma) starts with the feature's house
-//   number and then the feature's whole street, word for word, with no
-//   direction or street type after it ("100 S Lindbergh Blvd" is not "100
-//   Lindbergh Blvd", "8025 Maryland Ave Clayton" is not "8025 Clayton Rd");
-// - a typed ZIP is the feature's postcode (a feature with no postcode cannot
-//   confirm one unless its own town, not St. Louis, is typed), and a town
-//   typed after the street, with or
-//   without a comma, is the feature's town unless it is St. Louis;
-// - a feature in a named town other than St. Louis has that town or its ZIP
-//   typed, since the same address can exist in two towns. St. Louis is the
-//   mailing city for much of the county, so it confirms nothing.
-// Typing a suggestion's own label back always matches.
-// geocode() also needs every match to be one place (see samePlace).
-function matchesTyped(text, props) {
-  if (words(text).join(' ') === words(labelOf(props)).join(' ')) return true;
-  const [streetPart] = text.split(',');
-  const [number, ...typed] = words(streetPart);
-  if (!number || !/^\d/.test(number) || !hasNumber(props.housenumber, number)) return false;
-  const street = words(props.street);
-  if (!street.length || !street.every((word, i) => typed[i] === word)) return false;
-  const next = typed[street.length];
-  if (next && (DIRECTIONS.has(next) || STREET_TYPES.has(next))) return false;
-  // "Elm St Louis" could be Elm Street in St. Louis or Elm (any type) in St. Louis.
-  if (street.at(-1) === 'st' && next === 'louis') return false;
-
-  const zip = typedZip(text);
-  const postcode = props.postcode ? String(props.postcode).slice(0, 5) : null;
-  if (zip && postcode && zip !== postcode) return false;
-  const town = words(props.city ?? props.district).join(' ');
-  // A house with no postcode cannot confirm a typed ZIP unless its own town,
-  // other than St. Louis, is typed too.
-  if (zip && !postcode && (!town || town === ST_LOUIS)) return false;
-  const typedPlace = typedTown(words(text).slice(1 + street.length));
-  // "St. Louis City" says the City, so a county result is not it.
-  if (typedPlace === `${ST_LOUIS} city` && countyOf(props) !== CITY_COUNTY) return false;
-  if (typedPlace && town && typedPlace !== town && !ST_LOUIS_NAMES.has(typedPlace)) return false;
-  const confirmed = (zip && zip === postcode) || (typedPlace && typedPlace === town);
-  return !town || town === ST_LOUIS || Boolean(confirmed);
 }
 
 // About 50 m: one house that OSM lists twice, as a point and a building.
@@ -298,7 +131,27 @@ export function createPhotonGeocoder({
     }
   }
 
+  async function findMatches(text, signal) {
+    const features = await search(text, signal);
+    return features.filter((f) => matchesTyped(text, f.properties));
+  }
+
   return Object.freeze({
+    /**
+     * Every place that fits the text under the strict rules, in Photon's
+     * order. Not part of the Geocoder interface: the county-first lookup in
+     * src/data/geocoder.js uses it to see whether St. Louis City, which the
+     * county's address points leave out, also has the typed address.
+     * @param {string} text
+     * @param {{ signal?: AbortSignal }} [options]
+     * @returns {Promise<import('./geocoder.js').GeocodedPlace[]>}
+     */
+    async findPlaces(text, { signal } = {}) {
+      const trimmed = String(text ?? '').trim();
+      if (!trimmed) return [];
+      return (await findMatches(trimmed, signal)).map(placeOf);
+    },
+
     async suggest(text, { signal } = {}) {
       const trimmed = String(text ?? '').trim();
       if (!trimmed) return [];
@@ -327,8 +180,7 @@ export function createPhotonGeocoder({
       }
       const text = String((typeof query === 'object' ? query?.label : query) ?? '').trim();
       if (!text) return null;
-      const features = await search(text, signal);
-      const matches = features.filter((f) => matchesTyped(text, f.properties));
+      const matches = await findMatches(text, signal);
       if (!matches.length) return null;
       // Two places fit what was typed, so asking for a ZIP beats guessing.
       if (!matches.every((match) => samePlace(match, matches[0]))) return null;

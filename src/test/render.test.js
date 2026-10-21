@@ -8,6 +8,7 @@ import path from 'node:path';
 import { parse } from 'yaml';
 import viteConfig from '../../vite.config.js';
 import election from '../config/election.js';
+import { HOSTED_URL, LIVE_URL } from '../data/countyAddress.js';
 import { DEFAULT_BASE_URL as PHOTON } from '../data/photon.js';
 import { BASEMAP_STYLE_URL } from '../features/lookup/basemap.js';
 import { ASSET_HEADERS, SHELL_HEADERS } from '../../scripts/smoke.mjs';
@@ -216,7 +217,14 @@ describe('Content-Security-Policy', () => {
       'style-src': ["'self'"],
       'img-src': ["'self'"],
       'font-src': ["'self'"],
-      'connect-src': ["'self'", new URL(election.serviceRoot).origin, PHOTON, BASEMAP],
+      'connect-src': [
+        "'self'",
+        new URL(election.serviceRoot).origin,
+        new URL(LIVE_URL).origin,
+        new URL(HOSTED_URL).origin,
+        PHOTON,
+        BASEMAP,
+      ],
       'manifest-src': ["'self'"],
       'object-src': ["'none'"],
       'base-uri': ["'self'"],

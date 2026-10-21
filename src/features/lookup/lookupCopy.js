@@ -14,9 +14,10 @@ export const copy = {
   // come from the geocoder module (attribution in src/data/geocoder.js).
   attribution: {
     searchBy: 'Address search:',
+    then: 'or, when needed,',
     by: 'by',
-    data: 'Data \u00a9',
+    data: 'data \u00a9',
     privacy:
-      'Your address is sent only to that service, to find your precinct. This site does not save it.',
+      'Your address is sent only to these services, to find your precinct. This site does not save it.',
   },
 };
