@@ -23,7 +23,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version-file: .node-version
           cache: npm
 
       - run: npm ci
@@ -32,7 +32,7 @@ jobs:
       - run: npm test
       - run: npm run build
 
-      # The header and cache rules in render.yaml (#31) will match these paths.
+      # The header and cache rules in render.yaml match these paths.
       # When the PWA (#25) lands, also check dist/sw.js and dist/manifest.webmanifest.
       - name: Check build output
         run: |

@@ -1,0 +1,95 @@
+# Render Blueprint: the whole hosting config for the site, reviewed like code.
+# Spec: https://render.com/docs/blueprint-spec
+#
+# Keep every setting here. A Blueprint sync overwrites header and route rules
+# with the same path and fully replaces buildFilter, so Dashboard edits to them
+# are lost or drift from this file. src/test/render.test.js checks this file,
+# and scripts/smoke.mjs checks a deploy against it.
+services:
+  - type: web
+    runtime: static
+    name: mapthevote-stl-county
+    branch: main
+    # Node comes from .node-version (no NODE_VERSION env var), same as CI.
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    # Deploy main only after its GitHub checks (CI) pass.
+    autoDeployTrigger: checksPass
+    previews:
+      generation: automatic
+    # Skip builds for changes that never ship. Not **/*.md: Markdown under
+    # content/ will be built into the learn pages (#21).
+    buildFilter:
+      ignoredPaths:
+        - docs/**
+        - README.md
+    # Render adds www.mapthevotestl.com and redirects it here.
+    domains:
+      - mapthevotestl.com
+    # Render never rewrites a path where a file exists, so /assets/*, /sw.js
+    # and icons are served as files; everything else gets the app shell.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: Referrer-Policy
+        value: no-referrer
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Permissions-Policy
+        value: geolocation=(self), camera=(), microphone=()
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=31536000
+      # connect-src: the county ArcGIS services (src/config/election.js
+      # serviceRoot) and the Photon geocoder (#7). Links to other official
+      # sites are navigation, which connect-src does not govern.
+      # #13 (MapLibre basemap) must extend this policy when it lands: add its
+      # tile, style, glyph and sprite hosts to connect-src and img-src,
+      # worker-src blob: and child-src blob: for MapLibre's workers, and
+      # img-src data: for the control icons maplibre-gl.css embeds. Update
+      # src/test/render.test.js and the build test's CSS url() check with it.
+      - path: /*
+        name: Content-Security-Policy
+        value: >-
+          default-src 'self';
+          script-src 'self';
+          style-src 'self';
+          img-src 'self';
+          font-src 'self';
+          connect-src 'self' https://services6.arcgis.com https://photon.komoot.io;
+          manifest-src 'self';
+          object-src 'none';
+          base-uri 'self';
+          form-action 'self';
+          frame-ancestors 'none';
+          upgrade-insecure-requests
+      # Cache-Control: no two rules may match the same path. Render does not
+      # document how same-name rules combine, and a joined or wrong value could
+      # keep voters on an old build. The shell always revalidates; hashed
+      # assets never change.
+      - path: /
+        name: Cache-Control
+        value: no-cache
+      - path: /index.html
+        name: Cache-Control
+        value: no-cache
+      - path: /p/*
+        name: Cache-Control
+        value: no-cache
+      - path: /learn
+        name: Cache-Control
+        value: no-cache
+      - path: /learn/*
+        name: Cache-Control
+        value: no-cache
+      - path: /sw.js
+        name: Cache-Control
+        value: no-cache
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
