@@ -170,6 +170,15 @@ describe('runHealthCheck', () => {
     expect(results['layer precincts'].detail).toContain(`missing fields html, ${councilField}`);
   });
 
+  it('reports malformed field lists as missing fields instead of crashing', async () => {
+    const world = healthyWorld();
+    world.layers[election.layers.polls].fields = { loc: 'x' };
+    world.layers[election.layers.countyBoundary].fields = [null];
+    const results = await run(world);
+    expect(results['layer polls'].detail).toContain('missing fields loc, name');
+    expect(results['layer countyBoundary'].detail).toContain('missing fields OBJECTID');
+  });
+
   it('fails when a layer has the wrong geometry', async () => {
     const world = healthyWorld();
     world.layers[election.layers.countyBoundary].geometryType = 'esriGeometryPoint';
