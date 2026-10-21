@@ -61,7 +61,8 @@ export const copy = {
     showMore: 'Show more polling places',
     hoursLabel: 'Election Day hours:',
     /** @param {string} open HH:MM @param {string} close HH:MM */
-    hours: (open, close) => `${formatTime(open)} to ${formatTime(close)}.`,
+    // No closing period: every time already ends in "a.m." or "p.m.".
+    hours: (open, close) => `${formatTime(open)} to ${formatTime(close)}`,
     /** @param {string} close HH:MM */
     inLine: (close) => `If you are in line at ${formatTime(close)}, you can still vote.`,
     voteAnywhere: 'You can vote at any polling place in St. Louis County.',
