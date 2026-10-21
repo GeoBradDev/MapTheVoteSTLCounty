@@ -261,3 +261,11 @@ export function typedUnit(text) {
   ];
   return matches.at(-1)?.[1].replace(/-/g, '').toUpperCase();
 }
+
+/**
+ * The town typed after this address's street, in words() form ("st louis",
+ * "florissant", "st louis city"), or '' when none is typed.
+ */
+export function typedPlaceAfter(text, props) {
+  return typedTown(words(text).slice(1 + words(props.street).length));
+}

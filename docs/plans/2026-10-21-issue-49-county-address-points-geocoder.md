@@ -188,3 +188,14 @@ Domain skills:
   whole four-letter types ("Road", "Lane") and takes a ZIP typed without a comma as a
   ZIP filter. The privacy notice, README and docs say exactly when Photon gets the
   address for the City check.
+- Review round 6 (second extra finder): a street typed without its direction matched
+  only the street without one (101 Elm Ave vs 101 N Elm Ave, two towns and precincts);
+  a named-town house that the text could mean but did not confirm handed over to
+  Photon, which could answer another house (601 Washington Ave: Glencoe and the City);
+  and the precinct and county checks read the strict matches, not every record of the
+  address. Now one candidate set (number and street, plus directional variants when no
+  direction is typed), narrowed only by a typed ZIP or a typed town other than plain St.
+  Louis, feeds every check; candidates with no strict match are no match. This was the
+  second extra finder in a row whose findings needed fixes, so the review loop stopped
+  here per the workflow; the fixes are covered by tests and live checks, not by a
+  further finder.

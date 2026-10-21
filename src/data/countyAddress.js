@@ -14,6 +14,8 @@ import {
   isConfirmed,
   labelOf,
   matchesStreet,
+  ST_LOUIS,
+  typedPlaceAfter,
   matchesTyped,
   STREET_TYPES,
   typedUnit,
@@ -267,6 +269,7 @@ function recordOf(feature) {
   const unit = unitNo ? `${titleCase(a.UNITDESC) || 'Unit'} ${unitNo}` : '';
   return {
     props,
+    direction,
     lat: y,
     lng: x,
     unit,
@@ -287,6 +290,11 @@ function placeOf(record, { withUnit = false } = {}) {
 // The same street address and ZIP: the units of one building.
 const siteKey = ({ props }) =>
   `${props.housenumber}|${words(props.street).join(' ')}|${props.postcode ?? ''}`;
+
+// A record's fields as if its street had no direction ("N Elm Ave" as "Elm Ave").
+function withoutDirection({ props, direction }) {
+  return { ...props, street: props.street.slice(direction.length).trim() };
+}
 
 // The distinct points of some records, to about 10 cm.
 function distinctPoints(records) {
@@ -407,23 +415,39 @@ export function createCountyAddressSource({
       if (json.exceededTransferLimit) {
         throw new GeocoderUnavailableError('County addresses gave too many records');
       }
+      // Every record the number and street could mean: the typed street, and
+      // the same street with a direction when none is typed (101 Elm Ave 63122
+      // in Glendale and 101 N Elm Ave 63119 in Webster Groves, both mailed as
+      // Saint Louis).
       const sameStreet = json.features
         .map(recordOf)
-        .filter((record) => record && matchesStreet(typed, record.props));
+        .filter(
+          (record) =>
+            record &&
+            (matchesStreet(typed, record.props) ||
+              (record.direction && matchesStreet(typed, withoutDirection(record)))),
+        );
       const matches = sameStreet.filter((record) => matchesTyped(typed, record.props));
-      if (!matches.length) return { status: 'none' };
+      // Only a typed ZIP, or a typed town other than St. Louis ("Florissant",
+      // "St. Louis City"), narrows them. Otherwise a house in a named town
+      // counts though the strict rules leave it out for want of its town: 2
+      // Colonial Ct is in Ladue (mailing city Saint Louis) and in Florissant.
+      const zip = typedZip(typed);
+      const place = sameStreet.length ? typedPlaceAfter(typed, sameStreet[0].props) : '';
+      let pool = sameStreet;
+      if (zip) pool = sameStreet.filter((r) => r.props.postcode === zip);
+      else if (place && place !== ST_LOUIS) pool = matches;
+      if (!pool.length) return { status: 'none' };
+      // A house the text could mean, but not by the strict rules (its town or
+      // direction is not typed): no match, rather than another source's guess.
+      if (!matches.length) return { status: 'ambiguous' };
       // Two addresses fit (two ZIPs or two streets): asking for a ZIP beats
-      // guessing. Unless a ZIP or a town other than St. Louis pins the text
-      // down, a house in a named town counts too, though the rules leave it
-      // out of `matches` for want of its town: 2 Colonial Ct is in Ladue
-      // (mailing city Saint Louis) and in Florissant.
-      const [first] = matches;
-      const pinned = Boolean(typedZip(typed)) || matches.some((m) => isConfirmed(typed, m.props));
-      const pool = pinned ? matches : sameStreet;
+      // guessing.
+      const [first] = pool;
       if (!pool.every((m) => siteKey(m) === siteKey(first))) return { status: 'ambiguous' };
       // A typed unit that exactly one record has is that record's point.
       const unit = typedUnit(typed);
-      const units = unit ? matches.filter((m) => m.unitKey === unit) : [];
+      const units = unit ? pool.filter((m) => m.unitKey === unit) : [];
       if (units.length === 1) {
         return {
           status: 'match',
@@ -436,14 +460,14 @@ export function createCountyAddressSource({
       // county has one number, street and ZIP as two houses in two towns (50
       // Country Club Ln 63033), a unit across a town line from its house (1950
       // Walton Rd 63114) and complexes that span two precincts (4005 Ripa Ave
-      // 63125).
-      // Records in St. Louis City (no county precinct) and in the county at
-      // one address (6200 Enright Ave 63130) are told apart by neither.
-      if (!matches.every((m) => m.props.county === first.props.county)) {
+      // 63125). Records in St. Louis City (no county precinct) and in the
+      // county at one address (6200 Enright Ave 63130) are told apart by
+      // neither.
+      if (!pool.every((m) => m.props.county === first.props.county)) {
         return { status: 'ambiguous' };
       }
-      const chosen = matches.find((m) => !m.unitKey) ?? first;
-      const points = distinctPoints(matches);
+      const chosen = pool.find((m) => !m.unitKey) ?? first;
+      const points = distinctPoints(pool);
       if (points.length > 1) {
         const codes = await precinctsWithin(points, signal);
         if (!codes || codes.size > 1) return { status: 'ambiguous' };

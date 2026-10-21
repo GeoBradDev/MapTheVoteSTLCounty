@@ -434,12 +434,19 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
 - **City records:** the layers hold a few St. Louis City addresses (`MUNI = 'STL'`, 44
   in the live layer); they are given the City as their county, so they get the City
   referral, with no City cross-check against Photon.
+- **Every house the text could mean:** the records at the typed number and street,
+  and, when no direction is typed, the same street with a direction ("101 Elm Ave" is
+  101 Elm Ave 63122 in Glendale, JEF008, and also 101 N Elm Ave 63119 in Webster Groves,
+  JEF012; about 160 such pairs in different towns). Only a typed ZIP, or a typed town
+  other than plain St. Louis, narrows them; a house in a named town counts though the
+  strict rules alone would leave it out for want of its town ("2 Colonial Ct" is in
+  Ladue, mailing city Saint Louis, CLA014, and in Florissant, FLO001; about 120 such
+  pairs). If any of those houses is the text's but none passes the strict rules (its
+  town or direction is not typed), the answer is no match, not a hand-over to Photon,
+  which could answer a different house ("601 Washington Ave" is in Glencoe, and in the
+  City).
 - **Two addresses fit** (two ZIPs or two streets): no match, with no fallback, since
-  the official data says the text is ambiguous. A ZIP picks one. Unless a ZIP or a town
-  other than St. Louis is typed, a house in a named town counts here too, though the
-  strict rules alone would leave it out for want of its town: "2 Colonial Ct" is in
-  Ladue (mailing city Saint Louis, CLA014) and in Florissant (FLO001), so it is no match
-  rather than the Ladue house (about 120 such number and street pairs).
+  the official data says the text is ambiguous. A ZIP picks one.
 - **No match in the live layer:** Photon. The hosted copy is not asked, because the
   live layer is its newer superset; the copy could only add a retired address.
 - **A layer unavailable** (network error, non-2xx such as a firewall 403, ArcGIS
@@ -460,8 +467,7 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
   and direction in a ZIP that crosses the City line would still resolve to the
   county one, which we judge too rare to slow every lookup for.
 - **Suggestions:** `STATUS = 'Current' AND FULL_ADDRESS LIKE '<typed>%'` in county
-  spelling (AVENUE as AVE, SAINT as ST, a typed ZIP after a comma as
-  `ZIPCODE = '<zip>'`), 25 records ordered by address, units collapsed to their
+  spelling (AVENUE as AVE, SAINT as ST, a typed ZIP as `ZIPCODE = '<zip>'`), 25 records ordered by address, units collapsed to their
   address unless a unit is typed, at most 5 shown. A street type in the middle of a
   name stays as typed ("Olive Street Rd"). County suggestions carry no point, since
   one label can be two houses: a pick is found again by its label (which has the ZIP),

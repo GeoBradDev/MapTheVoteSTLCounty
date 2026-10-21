@@ -329,9 +329,89 @@ describe('find', () => {
     });
   });
 
-  it('needs the town or ZIP for an address in a named town', async () => {
+  describe('a street with and without a direction', () => {
+    // Live data: 101 Elm Ave 63122 (Glendale, JEF008) and 101 N Elm Ave 63119
+    // (Webster Groves, JEF012), both mailed as Saint Louis.
+    const elm = point(
+      { OBJECTID: 1, ADRNO: 101, ADRSTR: 'ELM', ZIPCODE: '63122' },
+      [-90.38, 38.59],
+    );
+    const northElm = point(
+      { OBJECTID: 2, ADRNO: 101, ADRDIR: 'N', ADRSTR: 'ELM', ZIPCODE: '63119' },
+      [-90.35, 38.59],
+    );
+    const find = (text) => source(answering(elm, northElm)).find(text);
+
+    it('is no match when the direction is left out and nothing else tells them apart', async () => {
+      await expect(find('101 Elm Ave')).resolves.toEqual({ status: 'ambiguous' });
+      await expect(find('101 Elm Ave, St. Louis')).resolves.toEqual({ status: 'ambiguous' });
+    });
+
+    it('is found with the direction typed, or with the ZIP of the street without one', async () => {
+      await expect(find('101 N Elm Ave')).resolves.toMatchObject({
+        status: 'match',
+        place: { lng: -90.35 },
+      });
+      await expect(find('101 Elm Ave 63122')).resolves.toMatchObject({
+        status: 'match',
+        place: { lng: -90.38 },
+      });
+    });
+
+    it('is no match when the ZIP typed is the directional street ZIP', async () => {
+      await expect(find('101 Elm Ave 63119')).resolves.toEqual({ status: 'ambiguous' });
+    });
+  });
+
+  it('is no match, not a hand-over to Photon, when only a named-town house fits', async () => {
+    // Live data: 601 Washington Ave, Glencoe 63038; St. Louis City has a 601
+    // Washington Ave too, which Photon could answer.
+    const glencoe = point({
+      ADRNO: 601,
+      ADRSTR: 'WASHINGTON',
+      ZIPCODE: '63038',
+      MAILINGCITY: 'GLENCOE',
+    });
+    const find = (text) => source(answering(glencoe)).find(text);
+    await expect(find('601 Washington Ave')).resolves.toEqual({ status: 'ambiguous' });
+    await expect(find('601 Washington Ave, St. Louis, MO')).resolves.toEqual({
+      status: 'ambiguous',
+    });
+    // A ZIP that is not the county house's leaves it to Photon.
+    await expect(find('601 Washington Ave, MO 63101')).resolves.toEqual({ status: 'none' });
+    await expect(find('601 Washington Ave, Glencoe')).resolves.toMatchObject({ status: 'match' });
+  });
+
+  it('checks every record of the address, including those the town rule left out', async () => {
+    const house = point({
+      OBJECTID: 1,
+      ADRNO: 18095,
+      ADRSTR: 'EDISON',
+      ZIPCODE: '63005',
+      MAILINGCITY: '',
+    });
+    const unitB = point(
+      {
+        OBJECTID: 2,
+        ADRNO: 18095,
+        ADRSTR: 'EDISON',
+        ZIPCODE: '63005',
+        MAILINGCITY: 'CHESTERFIELD',
+        UNITDESC: 'UNIT',
+        UNITNO: 'B',
+      },
+      [-90.6, 38.66],
+    );
+    const precinctsAt = vi.fn(twoPrecincts);
+    await expect(
+      source(answering(house, unitB), { precinctsAt }).find('18095 Edison Ave'),
+    ).resolves.toEqual({ status: 'ambiguous' });
+    expect(precinctsAt.mock.calls[0][0]).toHaveLength(2);
+  });
+
+  it('needs the town or ZIP for an address in a named town, and is no match without', async () => {
     await expect(source(answering(CROSSING)).find('1318 Big Bend Crossing Dr')).resolves.toEqual({
-      status: 'none',
+      status: 'ambiguous',
     });
   });
 
