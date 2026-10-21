@@ -116,7 +116,7 @@ Layer name `precincts_2026_11_local`. Polygon. 1213 features.
 Empty fields come back as `""` here (and as `null` on the dashboard view). Treat
 both as empty.
 
-Point lookup (verified):
+Point lookup (verified; the app sends these parameters in a POST body, see below):
 ```
 GET .../precincts_2026_11_view/FeatureServer/1/query
   ?geometry=-90.33,38.62&geometryType=esriGeometryPoint&inSR=4326

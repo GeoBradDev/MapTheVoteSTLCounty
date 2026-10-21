@@ -49,7 +49,9 @@ OPTIONS answer is 200 with `content-type` allowed anyway. `connect-src` already 
 5. The privacy notice (`privacyCopy.js`) says the coordinates go in the body of the
    request, not its web address, and that the browser does not keep these requests in its
    cache; it still says Photon gets typed text in its web address. The "never" list no
-   longer points to a cache caveat that is gone.
+   longer points to a cache caveat that is gone; it says instead that the browser's history
+   and cache keep the precinct pages opened (`/p/<code>`), and the Address search item says
+   none of its requests is kept in the browser's cache (all three providers use `no-store`).
 6. README (Privacy) and docs/data.md no longer say #38 is pending; they describe the
    result, including that Photon stays GET because it has no POST endpoint.
 7. In a real browser (Chromium, production build, production CSP), a lookup's point query
