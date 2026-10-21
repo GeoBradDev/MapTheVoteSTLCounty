@@ -60,6 +60,10 @@ including the `unknown` kind for a point outside the county with no state.
 6. On failure it shows a clear message for each reason in a `role="alert"` region, and
    moves focus to the address box (`addressInputRef`) so typing an address is the next
    step. The address box is never disabled by this component.
+   Each press renders its message as a new node, so a repeated failure that comes back
+   instantly (`insecure`, `unsupported`) is announced again. The denied message says
+   access "was not allowed", which is true for a block, a dismissed prompt and iOS
+   Location Services being off. (Added after review finding 5.)
 7. All of the component's text is in one `copy` object in
    `src/features/lookup/useMyLocationCopy.js`, ready for #19, with no party or candidate
    names.

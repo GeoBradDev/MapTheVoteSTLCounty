@@ -17,7 +17,11 @@ import { copy } from './useMyLocationCopy.js';
  */
 export default function UseMyLocation({ onLocate, addressInputRef }) {
   const [busy, setBusy] = useState(false);
+  // The failure reason and which press it came from. A new press gets a new
+  // message node, so a repeated failure is announced again even when it comes
+  // back before the cleared message was ever painted.
   const [error, setError] = useState(null);
+  const pressRef = useRef(0);
   // The current request, or null. A ref, not state, so a second press before
   // the re-render is ignored too, and a dropped request can tell it was dropped.
   const requestRef = useRef(null);
@@ -51,6 +55,8 @@ export default function UseMyLocation({ onLocate, addressInputRef }) {
       },
     };
     requestRef.current = request;
+    pressRef.current += 1;
+    const press = pressRef.current;
     setBusy(true);
     setError(null);
 
@@ -67,7 +73,7 @@ export default function UseMyLocation({ onLocate, addressInputRef }) {
     if (place) {
       onLocate(place);
     } else {
-      setError(reason);
+      setError({ reason, press });
       input?.focus();
     }
   }
@@ -91,7 +97,7 @@ export default function UseMyLocation({ onLocate, addressInputRef }) {
         {busy ? copy.busy : ''}
       </p>
       <p role="alert" className="mt-2">
-        {error && copy.errors[error]}
+        {error && <span key={error.press}>{copy.errors[error.reason]}</span>}
       </p>
     </div>
   );
