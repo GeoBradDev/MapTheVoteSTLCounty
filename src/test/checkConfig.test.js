@@ -300,6 +300,51 @@ describe('runHealthCheck', () => {
     expect(results['known points'].detail).toBe('the response has no features list');
   });
 
+  it('reports a null answer or a null feature as a failure instead of crashing', async () => {
+    const world = healthyWorld();
+    world.fail = (url) => {
+      if (url.href.endsWith(`${election.layers.countyBoundary}?f=json`)) return json(null);
+      if (url.pathname.endsWith(`${election.layers.polls}/query`))
+        return json({ features: [null] });
+      return null;
+    };
+    const results = await run(world);
+    expect(results['layer countyBoundary'].status).toBe('fail');
+    expect(results['layer countyBoundary'].detail).toContain('not a JSON object');
+    expect(results['absentee sites'].status).toBe('fail');
+  });
+
+  it('retries a timeout and a 429, then names the outage without blaming the config', async () => {
+    const world = healthyWorld();
+    world.fail = (url, init) => {
+      if (url.href.endsWith(`${election.layers.polls}?f=json`)) {
+        return new Promise((resolve, reject) =>
+          init.signal.addEventListener('abort', () => reject(new Error('aborted'))),
+        );
+      }
+      if (url.href.endsWith(`${election.layers.countyBoundary}?f=json`)) {
+        return new Response('', { status: 429 });
+      }
+      return null;
+    };
+    const results = await runHealthCheck(election, {
+      fetch: stubFetch(world),
+      sample: (items, count) => items.slice(0, count),
+      retryDelayMs: 0,
+      timeoutMs: 20,
+    });
+    const byName = Object.fromEntries(results.map((r) => [r.name, r]));
+    expect(byName['layer polls'].detail).toBe(
+      `layers.polls (${election.layers.polls}): request failed: no answer in 20 ms`,
+    );
+    expect(byName['layer countyBoundary'].detail).toBe(
+      `layers.countyBoundary (${election.layers.countyBoundary}): HTTP 429`,
+    );
+    const tries = (suffix) => world.calls.filter((c) => c.url.endsWith(suffix)).length;
+    expect(tries(`${election.layers.polls}?f=json`)).toBe(3);
+    expect(tries(`${election.layers.countyBoundary}?f=json`)).toBe(3);
+  });
+
   it('does not retry a client error', async () => {
     const world = healthyWorld();
     world.fail = (url) =>
@@ -375,6 +420,16 @@ describe('data health workflow', () => {
       s.uses?.startsWith('actions/checkout'),
     );
     expect(checkout.with['persist-credentials']).toBe(false);
+  });
+
+  it('decides the election window before anything that can fail', () => {
+    const steps = Object.values(workflow.jobs)[0].steps;
+    const window = steps.findIndex((s) => s.id === 'window');
+    expect(window).toBe(1);
+    expect(steps[0].uses).toMatch(/^actions\/checkout@/);
+    for (const step of steps.slice(window + 1, -1)) {
+      expect(step.if).toContain("steps.window.outputs.active == 'true'");
+    }
   });
 
   it('runs both live checks and reports a failure as an issue', () => {
