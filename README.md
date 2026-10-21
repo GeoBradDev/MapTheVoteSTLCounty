@@ -11,11 +11,13 @@ npm run build         # build the static site into dist/
 npm run preview       # serve dist/ locally
 npm test              # run the tests once (npm run test:watch to watch)
 npm run test:e2e      # accessibility checks in Chromium; run npm run build first
+npm run test:perf     # Lighthouse performance budgets; run npm run build first
 npm run lint          # ESLint, including jsx-a11y rules
 npm run format        # format with Prettier (npm run format:check to check only)
 ```
 
-CI runs lint, format check, tests, build and the accessibility checks on every pull request
+CI runs lint, format check, tests, build, the accessibility checks and the performance
+budgets on every pull request
 and on push to `main`.
 
 ## Deploy
@@ -86,6 +88,33 @@ that section's heading.
 Before each election, check by hand what automation cannot: VoiceOver on iOS, TalkBack on
 Android and NVDA on Windows through search, results, share and a topic page; 200% browser
 zoom on a desktop; and Windows High Contrast (forced colors).
+
+## Performance
+
+The target is a mid-range phone on a weak signal (#27). `npm run test:perf` runs
+`e2e/lighthouse.js`: Lighthouse's mobile emulation at 360 x 640 px on simulated slow 4G with a
+4x CPU slowdown, three runs each of `/`, `/p/CC007` and `/learn` against the production build
+(`vite preview`). It fails when a page's median run scores under 90 for performance, has an
+LCP of 2.5 s or more, or ends without the page's content, and writes the median run's report
+to `lighthouse-reports/` (CI keeps it as the `lighthouse-reports` artifact). No live service
+is called: Chromium resolves the county's ArcGIS host and the basemap host to a local HTTPS
+server that answers from `docs/raw/fixtures/` (shaped to the query's `outFields`, gzipped like
+the county's service), and every other host to nothing. It needs `openssl` for the local
+server's throwaway certificate, and Playwright's Chromium (`npx playwright install chromium`).
+
+`src/test/build.test.js` keeps the JavaScript the first load fetches under 120 KB gzipped and
+fails on any web font: the app uses the system font stack. Rules the scores rely on:
+
+- Load anything large or slow to start only when it is needed, as the map is (see Map).
+- Give a loading placeholder the size of what replaces it, so the page does not jump.
+- Ask ArcGIS only for the fields the app reads: `PRECINCT_FIELDS` and `POLL_FIELDS` in
+  `src/data/arcgis.js`. A query that names a field the layer lacks fails, so
+  `scripts/check-config.mjs` checks every one of them (a test fails if it does not).
+
+Lighthouse in CI cannot stand in for a phone. Before each election, open a results page and a
+topic on an older Android phone and an iPhone at their default zoom, on mobile data, and check
+that the page shows the polling places quickly, nothing jumps while it loads, and nothing
+scrolls sideways.
 
 ## Colors
 
@@ -267,9 +296,10 @@ from a PR preview or a local build still works after that build is gone.
 The results screen shows a small map of the precinct and the listed polling places (#13). It
 is extra help: the list holds everything on it, its markers are hidden from screen readers,
 and it is removed when anything fails before it first renders, when it takes longer than 15
-seconds of visible time, or when the browser lacks WebGL 2. MapLibre GL JS is
-loaded with `import()` only when the map renders (`src/features/lookup/precinctMapView.js` is
-the only file that imports it), and its worker ships as a same-origin file, so the
+seconds of visible time, or when the browser lacks WebGL 2. It comes after the list and loads
+only once it scrolls into view (#27), since MapLibre is a large download and slow to start on
+a phone; the 15 seconds count from then. MapLibre GL JS is loaded with `import()` only then
+(`src/features/lookup/precinctMapView.js` is the only file that imports it), and its worker ships as a same-origin file, so the
 Content-Security-Policy needs no `blob:` source. The app ships its own few MapLibre layout
 rules (`src/features/lookup/precinctMap.css`) instead of `maplibre-gl.css`, which embeds
 `data:` icons and party blue.

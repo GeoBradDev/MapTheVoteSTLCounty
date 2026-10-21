@@ -123,6 +123,9 @@ GET .../precincts_2026_11_view/FeatureServer/1/query
   &spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=false&f=json
 ```
 Shareable URL can carry just `precinct` and re-query with `where=precinct='CC007'`.
+The app names the fields it reads in `outFields` instead of `*` (#27, `PRECINCT_FIELDS` and
+`POLL_FIELDS` in `src/data/arcgis.js`), and asks for the whole polls layer with
+`geometryPrecision=6`: about 7 KB gzipped instead of 14 KB, checked live on 2026-10-21.
 
 ### Polling places: `polls_2026_11_view/FeatureServer/1`
 

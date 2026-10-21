@@ -46,3 +46,17 @@ jobs:
       # county's layers come from recorded fixtures; no live service is called.
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+
+      # Performance (#27): Lighthouse mobile emulation at 360 px on simulated
+      # slow 4G, on /, a results page and /learn, against the build above.
+      # Fails below a score of 90 or with LCP at 2.5 s or more. The county's
+      # layers come from the recorded fixtures through a local server; no live
+      # service is called. The median run's reports are kept as an artifact.
+      - run: npm run test:perf
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: lighthouse-reports
+          path: lighthouse-reports/
+          if-no-files-found: ignore

@@ -60,9 +60,9 @@ county layers from `docs/raw/fixtures/`, every other outside request blocked:
   Lighthouse run (which layer, which fixture, projecting to the requested `outFields`).
 - `e2e/a11y.e2e.js`: use `e2e/fixtures.js` instead of its own copy.
 - `e2e/lighthouse.js` (new): builds nothing; serves `dist/` with `vite preview`, runs
-  Lighthouse through puppeteer-core on Playwright's Chromium with request interception, three
-  runs per route, median score; prints scores and metrics; writes HTML reports to
-  `lighthouse-reports/`; exits 1 below 90 or with LCP at or over 2.5 s.
+  Lighthouse through puppeteer-core on Playwright's Chromium, three runs per route, median
+  score; prints scores and metrics; writes HTML reports to `lighthouse-reports/`; exits 1
+  below 90, with LCP at or over 2.5 s, or when a run ended without the page's content.
 - `.github/workflows/ci.yml`: run `npm run test:perf` after the e2e step; upload the reports as
   an artifact.
 - `.gitignore`, `.prettierignore`, `eslint.config.js`: ignore `lighthouse-reports/`.
@@ -117,3 +117,21 @@ county layers from `docs/raw/fixtures/`, every other outside request blocked:
 - Criterion 7: `PrecinctPage.test.jsx` (requests start before the precinct answers).
 - Live drive: results page in Chromium at 360 px against the fixtures: list first, map after
   it, map loads after scrolling to it.
+
+## Revisions during implementation
+
+- The Lighthouse run first answered the fixtures by request interception inside the browser.
+  Intercepted responses cannot be gzipped (Chromium does not decode them, and a gzipped try
+  left the results page on its error message while still scoring 98), and Lighthouse's model
+  charges them a full connection setup. The run now maps the ArcGIS and basemap hosts to a
+  local HTTPS server (`--host-resolver-rules`, a throwaway `openssl` certificate) that answers
+  from the same fixtures, gzipped like the county's service, and maps every other host to
+  nothing. Each run also checks, in the page, that it showed the route's content, so an error
+  state can never pass.
+- `src/test/build.test.js` now builds with `NODE_ENV=production`: under Vitest it built React's
+  development bundle, which the JS budget would have measured (159 KB instead of 95 KB).
+- A `preconnect` to the ArcGIS host was tried and dropped: no measurable change in the
+  Lighthouse run.
+- `README.md` gets a Performance section, including the by-hand phone checks.
+- Results with the final harness: main scores 100, 82 (LCP 2.4 s, TBT 226 ms, CLS 0.23) and
+  100; this branch 100, 98 (LCP 2.3 s, TBT 0, CLS 0) and 100.
