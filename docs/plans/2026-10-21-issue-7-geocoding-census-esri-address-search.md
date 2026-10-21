@@ -52,9 +52,10 @@ Recorded in `docs/data.md` under Geocoding. Summary:
 3. `geocode` returns `{ lat, lng, state, county, label }` (Photon `state`, `county`; when
    Photon gives no county for a Missouri place whose city is Saint Louis, county is
    `St. Louis city`, the independent city), or `null` when nothing matches. For typed text
-   the match's house number must be the typed one, every telling word of its street (not
-   "Road", "North" and the like) must be in the typed street part (before the first comma),
-   and a typed ZIP must be its postcode; otherwise `null`. A picked suggestion geocodes from the suggestion with no second
+   the typed street part (before the first comma) must start with the match's house number
+   and then its whole street, word for word, with the same direction and street type
+   (spellings like Road/Rd, South/S, Saint/St, Mount/Mt, First/1st compare as one), and a
+   typed ZIP must be its postcode; otherwise `null`. A picked suggestion geocodes from the suggestion with no second
    request.
 4. A timeout (8 s), network error, non-2xx (429 included) or malformed body rejects with
    `GeocoderUnavailableError`; a caller abort rejects with an AbortError. The lookup then
@@ -102,8 +103,10 @@ attribution. 4. Live check script and docs. 5. Live drive in a browser.
 - 6915 Weber Rd has no house-level match in OSM; that address gets the not-found message.
 - Photon fuzzy matching can return a nearby house with another number, or the typed number
   on another street; the house number, street and ZIP checks on typed text return null
-  instead (review finding: a typed city word must not satisfy the street check; frozen test
-  `src/data/photon.strict.test.js`).
+  instead (review findings: a typed city word must not satisfy the street check, and a
+  different direction or street type is another street; frozen tests
+  `src/data/photon.strict.test.js` and `src/data/photon.street.test.js`). A voter who
+  leaves out the street type gets no match and is pointed to the suggestions.
 
 ## Proof
 

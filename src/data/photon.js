@@ -5,8 +5,8 @@
 // fair use and promises no availability, so every failure becomes a
 // GeocoderUnavailableError and the lookup offers "Use my location" and the
 // county's official lookup instead. A match is never stretched into a guess:
-// only results with a house number count, and typed text must match that
-// number and a word of the street.
+// only results with a house number count, and typed text must name that
+// number and the whole street (direction, name and type).
 import { GeocoderUnavailableError } from './geocoderError.js';
 
 export const DEFAULT_BASE_URL = 'https://photon.komoot.io';
@@ -36,26 +36,63 @@ const MAX_SUGGESTIONS = 5;
 
 const STATE_ABBR = { Missouri: 'MO', Illinois: 'IL' };
 
-// Street words that say nothing about which street it is.
-const GENERIC = new Set(
-  (
-    'st street rd road ave av avenue dr drive blvd boulevard ln lane ct court pl place way ' +
-    'ter terrace pkwy parkway hwy highway cir circle trl trail sq square n s e w north south ' +
-    'east west ne nw se sw saint the of'
-  ).split(' '),
-);
+// Spellings that name the same thing, so typed text and OSM names compare as
+// one form. "saint" and "street" both become "st" on both sides alike.
+const CANONICAL = {
+  street: 'st',
+  saint: 'st',
+  road: 'rd',
+  avenue: 'ave',
+  av: 'ave',
+  drive: 'dr',
+  boulevard: 'blvd',
+  lane: 'ln',
+  court: 'ct',
+  place: 'pl',
+  terrace: 'ter',
+  parkway: 'pkwy',
+  highway: 'hwy',
+  circle: 'cir',
+  trail: 'trl',
+  square: 'sq',
+  north: 'n',
+  south: 's',
+  east: 'e',
+  west: 'w',
+  northeast: 'ne',
+  northwest: 'nw',
+  southeast: 'se',
+  southwest: 'sw',
+  mount: 'mt',
+  fort: 'ft',
+  first: '1',
+  second: '2',
+  third: '3',
+  fourth: '4',
+  fifth: '5',
+  sixth: '6',
+  seventh: '7',
+  eighth: '8',
+  ninth: '9',
+  tenth: '10',
+};
+const DIRECTIONS = new Set(['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw']);
+// Street types, leaving out "st", which may start a city ("St. Louis").
+const STREET_TYPES = new Set('rd ave dr blvd ln ct pl ter pkwy hwy cir trl sq way'.split(' '));
 
 function abortError() {
   return new DOMException('The operation was aborted.', 'AbortError');
 }
 
-// Lower-case words, with ordinals as bare numbers (63rd -> 63) and "saint" as "st".
+// Lower-case words in one spelling: ordinals as bare numbers (63rd -> 63),
+// then the CANONICAL forms.
 function words(text) {
   return String(text ?? '')
     .toLowerCase()
     .split(/[^a-z0-9]+/)
     .filter(Boolean)
-    .map((word) => (word === 'saint' ? 'st' : word.replace(/^(\d+)(st|nd|rd|th)$/, '$1')));
+    .map((word) => word.replace(/^(\d+)(st|nd|rd|th)$/, '$1'))
+    .map((word) => CANONICAL[word] ?? word);
 }
 
 function isAddress(feature) {
@@ -113,23 +150,26 @@ function hasNumber(housenumber, typed) {
     });
 }
 
-// Typed text names a feature when it starts with the feature's house number,
-// its street part (before the first comma) has every telling word of the
-// feature's street, and a typed ZIP, if any, is the feature's. Only the street
-// part counts, so a typed city that shares a word with another street (8025
-// Maryland Ave, Clayton vs 8025 Clayton Road) is no match.
+// Typed text names a feature when its street part (before the first comma)
+// starts with the feature's house number followed by the feature's whole
+// street, word for word, and a typed ZIP, if any, is the feature's postcode.
+// A word after the street may not be a direction or street type, so "Main St
+// N" and "Halls Ferry Rd" do not match a street named "Main St" or "Halls
+// Ferry". A different or missing direction, name or type is no match: "100 S
+// Lindbergh Blvd" is not "100 Lindbergh Blvd", and "8025 Maryland Ave Clayton"
+// is not "8025 Clayton Rd".
 function matchesTyped(text, props) {
   const [streetPart] = text.split(',');
-  const [number, ...rest] = words(streetPart);
+  const [number, ...typed] = words(streetPart);
   if (!number || !/^\d/.test(number) || !hasNumber(props.housenumber, number)) return false;
   const zip =
     text.slice(streetPart.length).match(/\b(\d{5})(?:-\d{4})?\b/)?.[1] ??
     streetPart.match(/\s(\d{5})(?:-\d{4})?\s*$/)?.[1];
   if (zip && props.postcode && String(props.postcode).slice(0, 5) !== zip) return false;
-  const typed = new Set(rest);
   const street = words(props.street);
-  const telling = street.filter((w) => !GENERIC.has(w));
-  return telling.length ? telling.every((w) => typed.has(w)) : street.some((w) => typed.has(w));
+  if (!street.length || !street.every((word, i) => typed[i] === word)) return false;
+  const next = typed[street.length];
+  return !next || !(DIRECTIONS.has(next) || STREET_TYPES.has(next));
 }
 
 /**

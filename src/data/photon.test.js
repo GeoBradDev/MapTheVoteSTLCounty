@@ -211,7 +211,9 @@ describe('geocode', () => {
       respond(collection(url.searchParams.get('q').includes('1155') ? galleria : west)),
     );
     const geocoder = createPhotonGeocoder({ fetch });
-    await expect(geocoder.geocode('1155 Saint Louis Galleria')).resolves.not.toBeNull();
+    await expect(geocoder.geocode('1155 Saint Louis Galleria St')).resolves.not.toBeNull();
+    // With no street type it could be another street of that name.
+    await expect(geocoder.geocode('1155 Saint Louis Galleria')).resolves.toBeNull();
     await expect(geocoder.geocode('6915 W 63 St')).resolves.not.toBeNull();
   });
 

@@ -314,9 +314,11 @@ the OpenStreetMap data license needs "© OpenStreetMap contributors".
 
 The "Photon (app)" column is the app's own provider (`src/data/photon.js`), from
 `node scripts/check-geocoder.mjs`: 8 right, 2 no match, 0 wrong. It is stricter
-than the raw result on purpose: typed text must match the result's house number,
-every telling word of its street (in the part before the first comma, so a typed city
-cannot stand in for a street name) and, when typed, its ZIP, so the Galleria (Photon's answer is 1155, the mall, not 1417)
+than the raw result on purpose: typed text (the part before the first comma) must
+start with the result's house number and then its whole street, word for word, with
+the same direction and street type ("100 S Lindbergh Blvd" is not "100 Lindbergh
+Blvd", and "8025 Maryland Ave Clayton" is not "8025 Clayton Rd"), and a typed ZIP must
+be its postcode, so the Galleria (Photon's answer is 1155, the mall, not 1417)
 gives no match instead of a nearby building. Photon also answers "8025 Maryland Ave"
 with 8025 Bonhomme Ave, which the check turns into no match. Neither apartment
 address above is in OpenStreetMap; both give no match. A no match tells the voter
