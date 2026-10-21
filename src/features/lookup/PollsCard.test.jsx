@@ -205,6 +205,11 @@ describe('formatTime', () => {
 });
 
 describe('polls copy', () => {
+  it('ends the hours line with one period, after a p.m. time', () => {
+    expect(copy.polls.hours('06:00', '19:00')).toBe('6 a.m. to 7 p.m.');
+    expect(copy.polls.hours('06:00', '19:30')).toBe('6 a.m. to 7:30 p.m.');
+  });
+
   it('formats distances to one decimal', () => {
     expect(copy.polls.distance(0.01)).toBe('Less than 0.1 miles away');
     expect(copy.polls.distance(1.04)).toBe('1.0 mile away');
