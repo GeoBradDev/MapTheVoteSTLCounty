@@ -11,7 +11,10 @@ export default function HomePage() {
     <>
       <header>
         <p className="font-semibold text-muted">{election.electionName}</p>
-        <h1 className="mt-1 text-3xl font-semibold">{copy.heading}</h1>
+        {/* Focusable from script: the app moves focus here after an in-app link. */}
+        <h1 tabIndex={-1} className="mt-1 text-3xl font-semibold">
+          {copy.heading}
+        </h1>
         <p className="mt-2">
           <time dateTime={election.electionDate}>
             {copy.electionDay(election.electionDate, election.timeZone)}

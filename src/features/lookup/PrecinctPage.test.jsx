@@ -7,10 +7,12 @@ import { Route, Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import absenteeSites from '../../../docs/raw/fixtures/absentee-sites.json';
 import polls from '../../../docs/raw/fixtures/polls.json';
+import precinctAtCity from '../../../docs/raw/fixtures/precinct-at-city.json';
 import precinctGeometry from '../../../docs/raw/fixtures/precinct-geometry.json';
 import byId from '../../../docs/raw/fixtures/precinct-by-id.json';
 import nonresidential from '../../../docs/raw/fixtures/precinct-nonresidential.json';
 import election from '../../config/election.js';
+import { createFakeGeocoder } from '../../test/fakeGeocoder.js';
 import { nearestPolls, polygonCenter } from './nearbyPolls.js';
 import { copy } from './resultsCopy.js';
 
@@ -323,6 +325,31 @@ describe('PrecinctPage', () => {
     },
   );
 
+  it('puts an out-of-county notice one level under the search heading', async () => {
+    // No precinct and outside the county boundary: the City of St. Louis.
+    routeFetch(precinctAtCity);
+    const { GeocoderContext } = await import('./geocoderContext.js');
+    const address = '1200 Market St, St. Louis, MO 63103';
+    const geocoder = createFakeGeocoder([
+      { label: address, lat: 38.6268, lng: -90.1994, state: 'MO', county: 'St. Louis city' },
+    ]);
+    render(
+      <GeocoderContext.Provider value={geocoder}>
+        <Router hook={memoryLocation({ path: '/p/nope' }).hook}>
+          <Route path="/p/:precinct" component={PrecinctPage} />
+        </Router>
+      </GeocoderContext.Provider>,
+    );
+    await userEvent.type(await screen.findByRole('combobox'), address);
+    await userEvent.keyboard('{Escape}{Enter}');
+
+    const notice = await screen.findByRole('heading', {
+      name: 'This address is in the City of St. Louis',
+    });
+    expect(notice.tagName).toBe('H3');
+    expect(cardHeadings()).toEqual([copy.searchInstead]);
+  });
+
   it('says a malformed code is not found, without a request', async () => {
     renderAt('nope');
     const alert = await screen.findByRole('alert');
@@ -379,19 +406,27 @@ describe('PrecinctPage', () => {
     expect(location.history).toEqual(['/p/CC007']);
   });
 
-  it('puts back the title when the code is not found', async () => {
+  it('titles a code that is not found as not found, without the code (#26)', async () => {
     document.title = 'Before';
     fetchMock.mockImplementation(() => respond({ ...byId, features: [] }));
-    renderAt('ZZ999');
+    const { unmount } = render(
+      <Router hook={memoryLocation({ path: '/p/ZZ999' }).hook}>
+        <Route path="/p/:precinct" component={PrecinctPage} />
+      </Router>,
+    );
     await screen.findByRole('region', { name: copy.searchInstead });
+    expect(document.title).toBe(copy.notFoundTitle);
+    expect(document.title).not.toContain('ZZ999');
+    unmount();
     expect(document.title).toBe('Before');
   });
 
-  it('leaves the title alone for URL text that is not a precinct code', async () => {
+  it('titles URL text that is not a precinct code as not found, never echoing it', async () => {
     document.title = 'Before';
     renderAt('Polls%20moved');
     await screen.findByRole('region', { name: copy.searchInstead });
-    expect(document.title).toBe('Before');
+    expect(document.title).toBe(copy.notFoundTitle);
+    expect(document.title).not.toContain('Polls');
   });
 
   it('never puts URL text that is not a precinct code in the heading', async () => {

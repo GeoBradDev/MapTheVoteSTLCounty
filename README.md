@@ -10,11 +10,13 @@ npm run dev           # start the dev server
 npm run build         # build the static site into dist/
 npm run preview       # serve dist/ locally
 npm test              # run the tests once (npm run test:watch to watch)
+npm run test:e2e      # accessibility checks in Chromium; run npm run build first
 npm run lint          # ESLint, including jsx-a11y rules
 npm run format        # format with Prettier (npm run format:check to check only)
 ```
 
-CI runs lint, format check, tests and build on every pull request and on push to `main`.
+CI runs lint, format check, tests, build and the accessibility checks on every pull request
+and on push to `main`.
 
 ## Deploy
 
@@ -62,6 +64,28 @@ and lists what failed. Against a host that sets no headers, such as `npm run pre
 `--skip-headers`. The expected headers are a table at the top of `scripts/smoke.mjs`; change it
 when the host's header config changes. `src/test/render.test.js` checks `render.yaml` against
 that table, so change both together.
+
+## Accessibility
+
+The target is WCAG 2.1 AA (#26). `npm run test:e2e` runs `e2e/a11y.e2e.js` with Playwright
+against the production build (`vite preview`), at 360 px and 1280 px. On each key route it
+runs axe-core (WCAG 2.1 A and AA plus best practice, contrast included) and checks for
+horizontal scroll (also with the WCAG text spacing override), one `h1`, the page language and
+the skip link; it also checks focus after an in-app link and reduced motion. The county's
+layers are answered from `docs/raw/fixtures/` and every other outside request is blocked, so
+it needs no network. The first run needs `npx playwright install chromium`. Add a route there
+when the app gets a new one. In jsdom, without layout, `src/test/a11yPages.test.jsx` runs axe on home, privacy and
+the two not-found pages, and `src/features/learn/learnA11y.test.jsx` on `/learn` with fixture
+topics.
+
+Page rules the checks rely on: every page has one `h1`, set with `tabIndex={-1}` so the app
+can focus it after an in-app link (`App.jsx`), and its own tab title (`usePageTitle` in
+`src/components/`, or the page's own effect). A heading inside a section keeps the level below
+that section's heading.
+
+Before each election, check by hand what automation cannot: VoiceOver on iOS, TalkBack on
+Android and NVDA on Windows through search, results, share and a topic page; 200% browser
+zoom on a desktop; and Windows High Contrast (forced colors).
 
 ## Colors
 

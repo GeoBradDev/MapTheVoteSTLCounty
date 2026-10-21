@@ -53,7 +53,8 @@ describe('LearnTopicPage', () => {
   it('shows the not-found page for an unknown topic', () => {
     renderTopic('no-such-topic');
     expect(screen.getByRole('heading', { level: 1, name: 'Page not found' })).toBeInTheDocument();
-    expect(document.title).toBe('St. Louis County Voter Guide');
+    // The not-found page's own title (#26), never the unknown id.
+    expect(document.title).toBe('Page not found | St. Louis County Voter Guide');
   });
 
   it('opens every folded section before printing', () => {

@@ -183,6 +183,7 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
             // The input keeps focus and handles the keys (aria-activedescendant),
             // so options take only pointer events. mousedown is prevented so
             // the input does not blur and close the list before the click.
+            // Forced colors drops the active option's fill, so it gets an outline there.
             // eslint-disable-next-line jsx-a11y/click-events-have-key-events
             <li
               key={suggestion.id}
@@ -192,7 +193,7 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
               tabIndex={-1}
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => pickWithPointer(suggestion)}
-              className="flex min-h-11 cursor-pointer items-center px-3 py-2 aria-selected:bg-primary aria-selected:text-on-primary"
+              className="flex min-h-11 cursor-pointer items-center px-3 py-2 aria-selected:bg-primary aria-selected:text-on-primary forced-colors:aria-selected:outline-2 forced-colors:aria-selected:-outline-offset-2 forced-colors:aria-selected:outline-solid"
             >
               {suggestion.label}
             </li>

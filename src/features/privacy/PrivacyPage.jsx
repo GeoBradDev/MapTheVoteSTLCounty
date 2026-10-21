@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'wouter';
+import { usePageTitle } from '../../components/usePageTitle.js';
 import { copy } from './privacyCopy.js';
 
 const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
@@ -7,6 +8,7 @@ const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
 // The privacy notice (#20): what each service gets and what the site never keeps.
 export default function PrivacyPage() {
   const headingRef = useRef(null);
+  usePageTitle(copy.heading);
 
   // The footer link stays mounted and sits at the bottom of the page, so move
   // focus (and with it the scroll position) to the notice's heading on arrival.

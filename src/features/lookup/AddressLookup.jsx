@@ -18,8 +18,10 @@ import UseMyLocation from './UseMyLocation.jsx';
  * goes in the URL); anywhere else shows where to go instead. The address text
  * is never stored, and the coordinates are kept only in memory, for the
  * polling places card (lookupPoint.js).
+ * @param {{ noticeHeadingLevel?: 2 | 3 }} props The heading level of the
+ *   out-of-county notice: 3 when the lookup sits under its own `h2`.
  */
-export default function AddressLookup() {
+export default function AddressLookup({ noticeHeadingLevel = 2 }) {
   const geocoder = useGeocoder();
   const [, navigate] = useLocation();
   const [busy, setBusy] = useState(false);
@@ -122,7 +124,7 @@ export default function AddressLookup() {
       </div>
       {outcome?.kind && (
         <div ref={outcomeRef} tabIndex={-1} className="mt-6 rounded-md border border-border p-4">
-          <OutOfCountyNotice kind={outcome.kind} />
+          <OutOfCountyNotice kind={outcome.kind} headingLevel={noticeHeadingLevel} />
         </div>
       )}
     </div>

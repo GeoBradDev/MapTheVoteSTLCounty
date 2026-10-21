@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
@@ -19,6 +19,8 @@ beforeEach(() => {
     'fetch',
     vi.fn(() => new Promise(() => {})),
   );
+  // jsdom does not implement scrolling.
+  vi.stubGlobal('scrollTo', vi.fn());
 });
 
 afterEach(() => {
@@ -131,6 +133,134 @@ describe('App', () => {
     expect(main).toContainElement(heading());
     expect(screen.getByRole('link', { name: /home page/i })).toHaveAttribute('href', '/');
     expect(screen.getByRole('combobox', { name: 'Enter your address' })).toBeInTheDocument();
+  });
+
+  it('starts every page with a skip link to main', async () => {
+    renderAt('/p/CC007');
+
+    await userEvent.tab();
+
+    const skip = screen.getByRole('link', { name: 'Skip to main content' });
+    expect(skip).toHaveFocus();
+    expect(skip).toHaveAttribute('href', '#main');
+    const main = screen.getByRole('main');
+    expect(main).toHaveAttribute('id', 'main');
+    expect(main).toHaveAttribute('tabindex', '-1');
+  });
+
+  it('leaves focus alone on the first load of the home page', () => {
+    renderAt('/');
+
+    expect(document.body).toHaveFocus();
+    expect(window.scrollTo).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['/privacy', 'Back to home'],
+    ['/nope', /home page/i],
+  ])(
+    'moves focus to the heading and scrolls to the top after going home from %s',
+    async (path, name) => {
+      renderAt(path);
+      window.scrollTo.mockClear();
+
+      await userEvent.click(screen.getByRole('link', { name }));
+
+      expect(heading()).toHaveTextContent('St. Louis County Voter Guide');
+      expect(heading()).toHaveFocus();
+      expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+    },
+  );
+
+  it('moves focus to the not-found heading after an in-app link to a missing page', async () => {
+    const location = renderAt('/');
+
+    location.navigate('/missing');
+    await screen.findByText('Page not found');
+
+    expect(heading()).toHaveFocus();
+  });
+
+  it('moves focus to the heading when a click left focus on main, as Safari does', async () => {
+    // WebKit does not focus a clicked link: focus goes to the nearest focusable
+    // ancestor, which is main.
+    const location = renderAt('/privacy');
+    screen.getByRole('main').focus();
+
+    act(() => location.navigate('/'));
+
+    expect(heading()).toHaveTextContent('St. Louis County Voter Guide');
+    expect(heading()).toHaveFocus();
+  });
+
+  it('keeps the browser scroll position on Back and Forward', () => {
+    const location = renderAt('/privacy');
+    window.scrollTo.mockClear();
+
+    act(() => {
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      location.navigate('/');
+    });
+
+    expect(heading()).toHaveTextContent('St. Louis County Voter Guide');
+    expect(window.scrollTo).not.toHaveBeenCalled();
+    expect(heading()).toHaveFocus();
+  });
+
+  it('still scrolls to the top after the skip link fired popstate on the old page', () => {
+    // Following a hash link fires popstate without leaving the page.
+    window.history.replaceState(null, '', '/privacy');
+    const location = renderAt('/privacy');
+    act(() => window.dispatchEvent(new PopStateEvent('popstate')));
+    window.history.replaceState(null, '', '/');
+    window.scrollTo.mockClear();
+
+    act(() => location.navigate('/'));
+
+    expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+  });
+
+  it('keeps the scroll position on Back to a path with an escaped character', () => {
+    const location = renderAt('/');
+    window.history.replaceState(null, '', '/no%20such');
+    window.scrollTo.mockClear();
+
+    act(() => {
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      location.navigate('/no such');
+    });
+    window.history.replaceState(null, '', '/');
+
+    expect(heading()).toHaveTextContent('Page not found');
+    expect(window.scrollTo).not.toHaveBeenCalled();
+  });
+
+  it('leaves focus where a page put it after navigating', async () => {
+    renderAt('/');
+
+    await userEvent.click(
+      within(screen.getByRole('contentinfo')).getByRole('link', { name: 'Privacy' }),
+    );
+
+    // The privacy page focuses its own heading; the app does not move it again.
+    expect(heading()).toHaveTextContent('Privacy');
+    expect(heading()).toHaveFocus();
+  });
+
+  it.each([
+    ['/privacy', 'Privacy | St. Louis County Voter Guide'],
+    ['/nope', 'Page not found | St. Louis County Voter Guide'],
+  ])('titles %s and restores the old title on leaving', (path, title) => {
+    document.title = 'St. Louis County Voter Guide';
+    const { unmount } = render(
+      <Router hook={memoryLocation({ path }).hook}>
+        <App />
+      </Router>,
+    );
+
+    expect(document.title).toBe(title);
+    unmount();
+    expect(document.title).toBe('St. Louis County Voter Guide');
   });
 
   it('navigates home from the not-found page without a full reload', async () => {

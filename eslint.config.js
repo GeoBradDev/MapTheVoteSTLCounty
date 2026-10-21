@@ -9,7 +9,7 @@ import globals from 'globals';
 
 export default defineConfig([
   // .claude holds Claude worktrees: full copies of the repo on other branches.
-  globalIgnores(['dist', 'coverage', 'docs/raw', '.claude']),
+  globalIgnores(['dist', 'coverage', 'docs/raw', '.claude', 'test-results', 'playwright-report']),
   {
     files: ['**/*.{js,jsx,mjs}'],
     extends: [js.configs.recommended],
@@ -49,6 +49,13 @@ export default defineConfig([
     files: ['*.config.js', 'scripts/**/*.{js,mjs}'],
     languageOptions: {
       globals: globals.node,
+    },
+  },
+  {
+    // Playwright specs run in Node; their page.evaluate callbacks run in the page.
+    files: ['e2e/**/*.js'],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.browser },
     },
   },
   prettier,

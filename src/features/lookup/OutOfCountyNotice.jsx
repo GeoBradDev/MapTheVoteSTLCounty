@@ -11,17 +11,20 @@ const HREFS = {
 
 /**
  * Tells a voter whose place is not in a county precinct where to go instead.
- * @param {{ kind: string }} props A kind from locate(), other than `precinct`.
+ * @param {{ kind: string, headingLevel?: 2 | 3 }} props `kind` is a kind from
+ *   locate(), other than `precinct`. `headingLevel` is 3 when the notice sits
+ *   inside a section that has its own `h2`.
  */
-export default function OutOfCountyNotice({ kind }) {
+export default function OutOfCountyNotice({ kind, headingLevel = 2 }) {
   const headingId = useId();
   if (!Object.hasOwn(copy, kind)) return null;
   const { heading, paragraphs } = copy[kind];
+  const Heading = headingLevel === 3 ? 'h3' : 'h2';
   return (
     <section aria-labelledby={headingId}>
-      <h2 id={headingId} className="text-xl font-semibold">
+      <Heading id={headingId} className="text-xl font-semibold">
         {heading}
-      </h2>
+      </Heading>
       {paragraphs.map(({ text, link, after }) => (
         <p key={text} className="mt-3">
           {text}
