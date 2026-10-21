@@ -26,7 +26,7 @@ const GOOD_HEADERS = {
   'content-security-policy': "default-src 'self'",
 };
 
-// A host that behaves like the Render Blueprint in #31, with overrides per test.
+// A host that behaves like the Render Blueprint (render.yaml), with overrides per test.
 function stubHost({ deepLink = 'shell', asset = 'js', headers = true } = {}) {
   return createServer((req, res) => {
     const common = headers ? GOOD_HEADERS : {};

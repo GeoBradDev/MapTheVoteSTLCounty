@@ -23,7 +23,8 @@ publish directory, the custom domain (`mapthevotestl.com`), the SPA rewrite, the
 headers and the cache rules. `src/test/render.test.js` checks it.
 
 - **Deploys:** a push to `main` deploys after CI passes (`autoDeployTrigger: checksPass`).
-  Changes only under `docs/` or to Markdown files do not build.
+  A change only under `docs/` or to `README.md` does not build; Markdown under `content/`
+  ships in the site, so it does.
 - **Previews:** every pull request gets its own preview URL. A Blueprint cannot set headers
   per preview, so previews send the production headers and no `X-Robots-Tag: noindex`.
 - **Change config in `render.yaml`, not the Dashboard.** A Blueprint sync overwrites header
@@ -59,7 +60,8 @@ It checks that `/` and a hard load of `/p/CC007` return the app shell, that a ha
 served as JavaScript, and that the expected security and cache headers are present. It exits 1
 and lists what failed. Against a host that sets no headers, such as `npm run preview`, add
 `--skip-headers`. The expected headers are a table at the top of `scripts/smoke.mjs`; change it
-when the host's header config changes.
+when the host's header config changes. `src/test/render.test.js` checks `render.yaml` against
+that table, so change both together.
 
 ## Colors
 

@@ -60,7 +60,7 @@ Owner decisions (2026-10-21):
    `runtime: static`, `name`, `branch: main`, `buildCommand: npm ci && npm run build`,
    `staticPublishPath: ./dist` (Vite's output dir), `autoDeployTrigger: checksPass`,
    `previews.generation: automatic`, `buildFilter.ignoredPaths` for `docs/**` and
-   `**/*.md`, `domains: [mapthevotestl.com]`. No `startCommand`, `region`, `plan`, or other
+   `README.md` (not `**/*.md`: Markdown under `content/` ships, per #21; review finding), `domains: [mapthevotestl.com]`. No `startCommand`, `region`, `plan`, or other
    service.
 2. `routes` is one rewrite, `/*` to `/index.html`.
 3. Headers on every shell path (`/`, `/index.html`, `/p/CC007`, `/learn`, `/learn/voter-id`):
@@ -107,7 +107,9 @@ caching does not override ours; unknown-path caching.
 - `scripts/smoke.mjs`: export `SHELL_HEADERS` and `ASSET_HEADERS`.
 - `src/test/render.test.js` (new): criteria 1 to 6 and 8.
 - `src/test/build.test.js`: criterion 7.
-- `README.md`: Deploy section; Node line points at `.node-version`.
+- `README.md`: Deploy section; Node line points at `.node-version`; smoke section notes
+  the render.yaml check.
+- `src/test/smoke.test.js`: comment names render.yaml instead of #31.
 
 ## Order of work
 

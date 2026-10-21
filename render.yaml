@@ -17,10 +17,12 @@ services:
     autoDeployTrigger: checksPass
     previews:
       generation: automatic
+    # Skip builds for changes that never ship. Not **/*.md: Markdown under
+    # content/ (#21) is built into the site.
     buildFilter:
       ignoredPaths:
         - docs/**
-        - '**/*.md'
+        - README.md
     # Render adds www.mapthevotestl.com and redirects it here.
     domains:
       - mapthevotestl.com
