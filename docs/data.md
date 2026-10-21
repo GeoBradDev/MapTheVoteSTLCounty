@@ -244,7 +244,10 @@ is on `stlouis-mo.gov`; `stlelections.com` is a parked domain for sale (checked
 returns only `{ lat, lng }` from the browser's position, which is the
 coordinates-only place `locate` takes. Only those coordinates are sent, as the
 `geometry` of the precinct and boundary queries (a GET query string, like every
-ArcGIS query here); the app does not store them or put them in the page URL.
+ArcGIS query here). The app never puts them in the page URL, history state or
+browser storage; it keeps them only in memory (`src/features/lookup/lookupPoint.js`), so
+the polling places card can measure from them, and a reload drops them. The same goes
+for a geocoded address's coordinates.
 
 ### Legacy `lookup_view_*` services: do not use
 

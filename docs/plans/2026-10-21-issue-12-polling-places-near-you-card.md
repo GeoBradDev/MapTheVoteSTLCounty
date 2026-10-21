@@ -83,7 +83,10 @@ Domain skills:
 - `src/features/lookup/AddressLookup.test.jsx`: the point is remembered for the code and
   never written to the URL or storage.
 - `src/features/lookup/resultsCopy.js`: the card's text and the time formatter.
-- `docs/data.md`: note that the whole polls layer is the Election Day set, and that
+- `src/config/election.js`: the `nearbyPollCount` comment says it also sets the Show more
+  step (Phase 8).
+- `docs/data.md`: the "Use my location" privacy note says the coordinates are kept in
+  memory only (Phase 8). Also, note that the whole polls layer is the Election Day set, and that
   `abs_type` marks sites also open for absentee voting (made in Phase 5 after review
   finding 1).
 
