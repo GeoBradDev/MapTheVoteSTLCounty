@@ -1,3 +1,50 @@
+import { Link } from 'wouter';
+import election from '../../config/election.js';
+import AddressLookup from './AddressLookup.jsx';
+import { copy } from './homeCopy.js';
+
+const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
+
+// The first screen. One job: get an address (or the device's location).
 export default function HomePage() {
-  return <h1 className="text-2xl font-semibold">St. Louis County Voter Guide</h1>;
+  return (
+    <>
+      <header>
+        <p className="font-semibold text-muted">{election.electionName}</p>
+        <h1 className="mt-1 text-3xl font-semibold">{copy.heading}</h1>
+        <p className="mt-2">
+          <time dateTime={election.electionDate}>
+            {copy.electionDay(election.electionDate, election.timeZone)}
+          </time>
+        </p>
+        <p className="mt-2">{copy.intro}</p>
+      </header>
+
+      <div className="mt-6">
+        <AddressLookup />
+      </div>
+
+      <p className="mt-8 rounded-md bg-surface-raised p-4">
+        <span>{copy.voteAnywhere}</span>{' '}
+        <a href={election.voteAnywhere.sources[0]} rel="noreferrer" className={linkClass}>
+          {copy.voteAnywhereSource}
+        </a>
+      </p>
+
+      <nav aria-label={copy.moreInfo} className="mt-6">
+        <ul className="flex flex-col gap-1">
+          <li>
+            <Link href="/learn" className={linkClass}>
+              {copy.howToVote}
+            </Link>
+          </li>
+          <li>
+            <a href={election.countySiteUrl} rel="noreferrer" className={linkClass}>
+              {copy.countySite}
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </>
+  );
 }

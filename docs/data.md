@@ -260,6 +260,16 @@ a browser. If those are blockers, fall back to the Esri World Geocoder
 `suggest` + `findAddressCandidates`. TODO: test both before choosing, and check
 Esri's current terms on keys and free use instead of assuming them.
 
+The app calls a geocoder only through the interface in `src/data/geocoder.js`:
+`suggest(text)` for the address box's suggestions and `geocode(textOrSuggestion)`
+for the place, `{ lat, lng, state?, county?, label }`, or null when nothing
+matches. The landing screen passes
+that place to `locate` (see Out of county above); a precinct opens `/p/<code>`, so
+only the precinct code goes in the URL. Until a provider is chosen (#7), the
+default geocoder suggests nothing and its `geocode` fails with
+`GeocoderUnavailableError`, so the screen offers "Use my location" and the
+county's official lookup instead. The address text is sent only to the geocoder.
+
 The county web map also has a `commercial_addresses_view` layer that warns when
 an address is commercial, not residential. Worth a later look as an optional
 check.
@@ -280,7 +290,8 @@ link before using it. The Instant Apps list the county contact as
 
 The election-specific values this inspection found, including the early voting
 hours above, are in `src/config/election.js`, along with the decisions recorded
-in issue #1 (Election Day hours and their sources, and the 3 to 5 range for
-nearby polling places).
+in issue #1 (Election Day hours and their sources, the 3 to 5 range for
+nearby polling places, the county site URL, and the source for the home page's
+line that county voters may vote at any polling place).
 When the next election's inspection changes them, edit that file; this doc
 records what the inspection found and why.

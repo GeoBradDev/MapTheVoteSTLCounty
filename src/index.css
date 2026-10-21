@@ -28,3 +28,15 @@
   --color-accent: oklch(0.72 0.12 80);
   --color-on-accent: oklch(0.22 0.005 90);
 }
+
+/*
+  A visible focus ring on every focusable element, in ink so it has strong
+  contrast on the surface and next to primary buttons. The offset keeps it off
+  the element's own fill.
+*/
+@layer base {
+  :focus-visible {
+    outline: 3px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+}
