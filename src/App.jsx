@@ -18,6 +18,17 @@ function decodedPath() {
   }
 }
 
+// The path the last Back or Forward went to. A path, not a flag, because
+// following the skip link (a hash) fires popstate too, without a new page.
+// The listener is added when this module loads, before wouter adds its own:
+// the browser runs microtasks between popstate listeners, so wouter's update
+// renders the new page and runs the effect below before any listener added
+// after wouter's would run.
+let poppedPath = null;
+window.addEventListener('popstate', () => {
+  poppedPath = decodedPath();
+});
+
 /**
  * After an in-app navigation (not the first load), starts the new page at the
  * top, and when the link that was followed went away with the old page,
@@ -31,22 +42,11 @@ function decodedPath() {
 function usePageArrival() {
   const [location] = useLocation();
   const previous = useRef(location);
-  // The path a Back or Forward went to. A path, not a flag, because following
-  // the skip link (a hash) fires popstate too, without a new page.
-  const popped = useRef(null);
-
-  useEffect(() => {
-    const onPop = () => {
-      popped.current = decodedPath();
-    };
-    window.addEventListener('popstate', onPop);
-    return () => window.removeEventListener('popstate', onPop);
-  }, []);
 
   useEffect(() => {
     if (previous.current === location) return;
-    const fromHistory = popped.current === location;
-    popped.current = null;
+    const fromHistory = poppedPath === location;
+    poppedPath = null;
     previous.current = location;
     if (!fromHistory) window.scrollTo(0, 0);
     const focused = document.activeElement;

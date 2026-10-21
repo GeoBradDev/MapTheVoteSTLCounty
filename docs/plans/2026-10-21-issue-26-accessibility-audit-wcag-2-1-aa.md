@@ -125,6 +125,10 @@ Not fixed here: focus when the results fail to load (#18). Headings inside a fol
   effect, so a page that focused its own heading is left alone.
 - StrictMode runs effects twice in dev; comparing the previous location in a ref keeps the
   first load from counting as a navigation.
+- Back and Forward are told apart by a `popstate` listener added when `App.jsx` loads,
+  before wouter's: Chromium runs microtasks between `popstate` listeners, so a listener
+  added after wouter's runs only after the new page rendered (found in review, proved by
+  the e2e test that counts scrolls to the top).
 - Skip link `href="#main"` changes the hash; wouter's path ignores the hash, so the route
   does not change.
 - Playwright in CI adds a Chromium download (about 1 minute). Outside requests are blocked
