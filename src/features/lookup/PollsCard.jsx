@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'wouter';
 import election from '../../config/election.js';
 import { getPolls } from '../../data/arcgis.js';
+import { CARD_TOPICS } from '../learn/cardTopics.js';
+import { getTopic } from '../learn/topics.js';
 import { distanceOrigin } from './distanceOrigin.js';
 import { directionsLinks, isAppleMobile, nearestPolls } from './nearbyPolls.js';
 import PrecinctMap from './PrecinctMap.jsx';
@@ -39,6 +42,20 @@ function Hours() {
         ))}
       </p>
     </>
+  );
+}
+
+// Shown only once the voter ID topic is published (#22, #23).
+function VoterIdLink() {
+  const topic = getTopic(CARD_TOPICS.voterId);
+  if (!topic) return null;
+  return (
+    <p className="mt-3">
+      {copy.polls.beforeYouGo}{' '}
+      <Link href={`/learn/${topic.id}`} className={linkClass}>
+        {topic.title}
+      </Link>
+    </p>
   );
 }
 
@@ -157,6 +174,8 @@ export default function PollsCard({ code, origin }) {
       )}
 
       <Hours />
+
+      <VoterIdLink />
 
       <p className="mt-3">
         <span>{copy.polls.voteAnywhere}</span>{' '}

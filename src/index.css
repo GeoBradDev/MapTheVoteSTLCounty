@@ -40,3 +40,16 @@
     outline-offset: 2px;
   }
 }
+
+/*
+  Print (#23): a printed topic keeps its links usable, so each external link
+  (in the text and in the Sources list) prints its address after its label,
+  breaking anywhere so a long address stays on the page. Page navigation and
+  the footer use print:hidden.
+*/
+@media print {
+  .print-href::after {
+    content: ' (' attr(href) ')';
+    overflow-wrap: anywhere;
+  }
+}

@@ -1,7 +1,8 @@
 import { render, screen, within } from '@testing-library/react';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
-import TopicArticle from './TopicArticle.jsx';
+import { createRef } from 'react';
+import TopicArticle, { LONG_SECTION_CHARS } from './TopicArticle.jsx';
 
 const text = (value) => ({ type: 'text', value });
 
@@ -10,6 +11,7 @@ const topic = {
   id: 'fixture',
   locale: 'en',
   title: 'Fixture topic',
+  group: 'get-help',
   election: '2000-01-04',
   lastVerified: '2000-01-02',
   sources: [
@@ -34,13 +36,16 @@ const topic = {
   ],
 };
 
-function renderTopic(t = topic) {
+function renderTopic(t = topic, props = {}) {
   return render(
     <Router hook={memoryLocation({ path: '/learn/fixture' }).hook}>
-      <TopicArticle topic={t} />
+      <TopicArticle topic={t} {...props} />
     </Router>,
   );
 }
+
+const paragraph = (value) => ({ type: 'paragraph', children: [text(value)] });
+const heading = (level, value) => ({ type: 'heading', level, children: [text(value)] });
 
 describe('TopicArticle', () => {
   it('renders the title, headings, paragraphs and lists', () => {
@@ -85,5 +90,79 @@ describe('TopicArticle', () => {
     const { container } = renderTopic({ ...topic, locale: 'es' });
     expect(container.querySelector('article')).toHaveAttribute('lang', 'es');
     expect(screen.getByRole('region', { name: 'Sources' })).toBeInTheDocument();
+  });
+
+  it('shows a short section as a plain heading and its text', () => {
+    const { container } = renderTopic();
+    expect(container.querySelector('details')).toBeNull();
+    expect(screen.getByRole('heading', { level: 2, name: 'A section' })).toBeVisible();
+  });
+
+  it('folds a long section into details, with its heading in the summary (#23)', () => {
+    const long = 'x'.repeat(LONG_SECTION_CHARS);
+    const { container } = renderTopic({
+      ...topic,
+      blocks: [
+        paragraph('Intro text.'),
+        heading(2, 'Long section'),
+        paragraph(long.slice(0, 10)),
+        heading(3, 'A part'),
+        paragraph(long),
+        heading(2, 'Short section'),
+        paragraph('Short text.'),
+      ],
+    });
+    const details = container.querySelectorAll('details');
+    expect(details).toHaveLength(1);
+    const [only] = details;
+    expect(only.open).toBe(false);
+    const summary = only.querySelector('summary');
+    expect(within(summary).getByRole('heading', { level: 2 })).toHaveTextContent('Long section');
+    expect(within(only).getByRole('heading', { level: 3, name: 'A part' })).toBeInTheDocument();
+    // The intro and the short section stay outside it.
+    expect(only).not.toHaveTextContent('Intro text.');
+    expect(only).not.toHaveTextContent('Short text.');
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Short section' }).closest('details'),
+    ).toBe(null);
+  });
+
+  it('folds a section at LONG_SECTION_CHARS characters, not one below', () => {
+    const at = (length) =>
+      renderTopic({ ...topic, blocks: [heading(2, 'Edge'), paragraph('y'.repeat(length))] })
+        .container;
+    expect(at(LONG_SECTION_CHARS - 1).querySelector('details')).toBeNull();
+    expect(at(LONG_SECTION_CHARS).querySelector('details')).not.toBeNull();
+  });
+
+  it('can take focus on its title when the page asks for it', () => {
+    const ref = createRef();
+    renderTopic(topic, { headingRef: ref });
+    expect(ref.current).toBe(screen.getByRole('heading', { level: 1 }));
+    expect(ref.current).toHaveAttribute('tabindex', '-1');
+  });
+
+  it('marks the external links in the text so print shows where they go', () => {
+    renderTopic({
+      ...topic,
+      blocks: [
+        {
+          type: 'paragraph',
+          children: [
+            { type: 'link', href: 'https://first.example.gov/c', children: [text('Off')] },
+          ],
+        },
+      ],
+    });
+    expect(screen.getByRole('link', { name: 'Off' })).toHaveClass('print-href');
+  });
+
+  it('marks the source links so print shows where each one goes', () => {
+    renderTopic();
+    expect(screen.getByRole('link', { name: 'a page here' })).not.toHaveClass('print-href');
+    const sources = screen.getByRole('region', { name: 'Sources' });
+    for (const link of within(sources).getAllByRole('link')) {
+      expect(link).toHaveClass('print-href');
+    }
   });
 });

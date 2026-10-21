@@ -3,6 +3,14 @@ import userEvent from '@testing-library/user-event';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import App from './App.jsx';
+import { learnCopy } from './features/learn/learnCopy.js';
+
+// content/en/learn/ ships empty until #22, so the topic routes use fixtures.
+vi.mock('./features/learn/topics.js', async (importOriginal) => {
+  const actual = await importOriginal();
+  const { fixtureTopics } = await import('./test/learnFixtures.js');
+  return { ...actual, ...actual.topicLookups(actual.indexTopics(fixtureTopics)) };
+});
 
 // The precinct page loads its precinct; these tests only check routing, so the
 // request never answers and nothing reaches the network.
@@ -62,8 +70,11 @@ describe('App', () => {
   it('renders a topic page at /learn/:topic', () => {
     renderAt('/learn/voter-id');
 
-    expect(heading()).not.toHaveTextContent('Page not found');
-    expect(screen.getByRole('link', { name: /all topics/i })).toHaveAttribute('href', '/learn');
+    expect(heading()).toHaveTextContent('Fixture ID topic');
+    expect(screen.getByRole('link', { name: learnCopy.en.allTopics })).toHaveAttribute(
+      'href',
+      '/learn',
+    );
   });
 
   it('renders the privacy notice at /privacy', () => {
@@ -105,18 +116,22 @@ describe('App', () => {
     },
   );
 
-  it.each(['/nope', '/p', '/p/CC007/extra', '/learn/a/b', '/privacy/extra'])(
-    'shows the not-found page inside main for %s',
-    (path) => {
-      renderAt(path);
+  it.each([
+    '/nope',
+    '/p',
+    '/p/CC007/extra',
+    '/learn/a/b',
+    '/learn/no-such-topic',
+    '/privacy/extra',
+  ])('shows the not-found page inside main for %s', (path) => {
+    renderAt(path);
 
-      const main = screen.getByRole('main');
-      expect(heading()).toHaveTextContent('Page not found');
-      expect(main).toContainElement(heading());
-      expect(screen.getByRole('link', { name: /home page/i })).toHaveAttribute('href', '/');
-      expect(screen.getByRole('combobox', { name: 'Enter your address' })).toBeInTheDocument();
-    },
-  );
+    const main = screen.getByRole('main');
+    expect(heading()).toHaveTextContent('Page not found');
+    expect(main).toContainElement(heading());
+    expect(screen.getByRole('link', { name: /home page/i })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('combobox', { name: 'Enter your address' })).toBeInTheDocument();
+  });
 
   it('navigates home from the not-found page without a full reload', async () => {
     const location = renderAt('/nope');

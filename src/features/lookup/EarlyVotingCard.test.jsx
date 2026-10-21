@@ -6,6 +6,7 @@ import sites from '../../../docs/raw/fixtures/absentee-sites.json';
 import geometry from '../../../docs/raw/fixtures/precinct-geometry.json';
 import election from '../../config/election.js';
 import { getAbsenteeSites, getPrecinctGeometry } from '../../data/arcgis.js';
+import { fixtureTopics } from '../../test/learnFixtures.js';
 import EarlyVotingCard from './EarlyVotingCard.jsx';
 import { formatLongDate, scheduleLines } from './earlyVoting.js';
 import { nearestPolls, polygonCenter } from './nearbyPolls.js';
@@ -15,6 +16,17 @@ vi.mock('../../data/arcgis.js', () => ({
   getAbsenteeSites: vi.fn(),
   getPrecinctGeometry: vi.fn(),
 }));
+
+// Which topics exist: none by default, as content/en/learn/ ships today.
+const shown = vi.hoisted(() => ({ topics: [] }));
+vi.mock('../learn/topics.js', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    getTopic: (id, locale) =>
+      actual.topicLookups(actual.indexTopics(shown.topics)).getTopic(id, locale),
+  };
+});
 
 const ORIGIN = { lat: 38.66, lng: -90.45 };
 const COUNT = election.nearbyPollCount;
@@ -36,6 +48,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+  shown.topics = [];
 });
 
 const list = () => screen.findByRole('list', { name: t.listLabel });
@@ -160,6 +173,17 @@ describe('EarlyVotingCard', () => {
       'href',
       election.countySiteUrl,
     );
+  });
+
+  it('links to the absentee topic by its title once that topic exists (#23)', async () => {
+    shown.topics = fixtureTopics;
+    render(<EarlyVotingCard code="CC007" origin={ORIGIN} />);
+    await list();
+    expect(screen.getByRole('link', { name: 'Fixture absentee topic' })).toHaveAttribute(
+      'href',
+      '/learn/absentee',
+    );
+    expect(screen.queryByRole('link', { name: t.howToVote })).toBeNull();
   });
 
   describe('status by date, in Chicago time', () => {

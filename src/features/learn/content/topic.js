@@ -8,6 +8,7 @@
 // Front matter:
 //   id: voter-id                  # must match the file name
 //   title: What ID to bring
+//   group: before-you-vote        # where /learn lists it (../groups.js)
 //   election: YYYY-MM-DD          # must be the config's electionDate
 //   lastVerified: YYYY-MM-DD      # at most 60 days before Election Day
 //   sources:                      # at least one; official https URLs only
@@ -18,6 +19,7 @@
 import { parse as parseYaml } from 'yaml';
 import { HIDDEN_CHARACTER, ID_PATTERN, parseMarkdown } from './markdown.js';
 import { isOfficialUrl } from './officialSources.js';
+import { TOPIC_GROUPS } from '../groups.js';
 
 /** How old a topic's last verification may be on Election Day, in days. */
 export const MAX_VERIFIED_AGE_DAYS = 60;
@@ -25,7 +27,7 @@ export const MAX_VERIFIED_AGE_DAYS = 60;
 const TOPIC_PATH = /(?:^|\/)(content\/([^/]+)\/learn\/([^/]+)\.md)$/;
 const LOCALE = /^[a-z]{2}(?:-[A-Z]{2})?$/;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
-const TOPIC_KEYS = ['id', 'title', 'election', 'lastVerified', 'sources'];
+const TOPIC_KEYS = ['id', 'title', 'group', 'election', 'lastVerified', 'sources'];
 const SOURCE_KEYS = ['id', 'label', 'url'];
 
 /**
@@ -34,6 +36,7 @@ const SOURCE_KEYS = ['id', 'label', 'url'];
  * @property {string} id File name without `.md`; the URL slug.
  * @property {string} locale First path segment under content/, such as `en`.
  * @property {string} title
+ * @property {string} group One of TOPIC_GROUPS, the /learn section it is in.
  * @property {string} election The Election Day this text was checked for.
  * @property {string} lastVerified YYYY-MM-DD.
  * @property {TopicSource[]} sources In citation number order (first is [1]).
@@ -199,6 +202,11 @@ export function parseTopic(text, { file, electionDate }) {
     else if (HIDDEN_CHARACTER.test(data.title)) {
       errors.push('title: remove the invisible or text direction control character');
     }
+    const groups = TOPIC_GROUPS.join(', ');
+    if (data.group === undefined) errors.push(`group: missing; use one of ${groups}`);
+    else if (!TOPIC_GROUPS.includes(data.group)) {
+      errors.push(`group: "${data.group}" is not one of ${groups}`);
+    }
     checkDates(data, electionDate, errors);
     sources = checkSources(data.sources, errors);
   }
@@ -226,6 +234,7 @@ export function parseTopic(text, { file, electionDate }) {
     id: data.id,
     locale,
     title: data.title.trim(),
+    group: data.group,
     election: data.election,
     lastVerified: data.lastVerified,
     sources,

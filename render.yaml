@@ -18,7 +18,7 @@ services:
     previews:
       generation: automatic
     # Skip builds for changes that never ship. Not **/*.md: Markdown under
-    # content/ will be built into the learn pages (#21).
+    # content/ is built into the learn pages (#21, #23).
     buildFilter:
       ignoredPaths:
         - docs/**

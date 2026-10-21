@@ -21,6 +21,21 @@ describe('parseMarkdown', () => {
     ]);
   });
 
+  it('rejects a ### heading before any ## heading, so the page never skips a level (#23)', () => {
+    const { errors } = parseMarkdown('Intro.\n\n### Too deep\n\n## Section\n\n### Fine');
+    expect(errors).toEqual(['line 3: a ### heading must come after a ## heading']);
+  });
+
+  it('rejects links and citations in headings, which a folded section puts in its toggle (#23)', () => {
+    const { errors } = parseMarkdown(
+      '## Bring an ID[^sos-id]\n\n## See [the state](https://www.sos.mo.gov/)\n\n## **Bold** is fine',
+    );
+    expect(errors).toEqual([
+      'line 1: a heading can hold only text and bold, not links or citations',
+      'line 3: a heading can hold only text and bold, not links or citations',
+    ]);
+  });
+
   it('parses unordered and ordered lists with continuation lines', () => {
     const md = '- One\n- Two wraps\n  onto a second line\n\n1. First\n2. Second';
     const { blocks, errors } = parseMarkdown(md);

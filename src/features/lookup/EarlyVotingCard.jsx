@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'wouter';
 import election from '../../config/election.js';
 import { getAbsenteeSites } from '../../data/arcgis.js';
+import { CARD_TOPICS } from '../learn/cardTopics.js';
+import { getTopic } from '../learn/topics.js';
 import { distanceOrigin } from './distanceOrigin.js';
 import { earlyVotingStatus, formatLongDate, scheduleLines } from './earlyVoting.js';
 import { directionsLinks, isAppleMobile, nearestPolls } from './nearbyPolls.js';
@@ -118,6 +120,8 @@ function Schedules({ now }) {
  *   distances are from the precinct's center.
  */
 export default function EarlyVotingCard({ code, origin }) {
+  // The absentee topic, once published (#22, #23); until then, the index.
+  const absentee = getTopic(CARD_TOPICS.absentee);
   // { rows } once loaded, { error: true } on failure.
   const [result, setResult] = useState(null);
   const [showAll, setShowAll] = useState(false);
@@ -197,8 +201,8 @@ export default function EarlyVotingCard({ code, origin }) {
 
       <p className="mt-3">
         {t.mail}{' '}
-        <Link href="/learn" className={linkClass}>
-          {t.howToVote}
+        <Link href={absentee ? `/learn/${absentee.id}` : '/learn'} className={linkClass}>
+          {absentee ? absentee.title : t.howToVote}
         </Link>{' '}
         {t.or}{' '}
         <a href={election.countySiteUrl} rel="noreferrer" className={linkClass}>

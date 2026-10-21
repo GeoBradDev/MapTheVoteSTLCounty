@@ -4,9 +4,10 @@
 // page. Anything outside the subset is an error rather than a guess, so a typo
 // cannot quietly render as something else.
 //
-// Blocks: paragraphs, `##` and `###` headings, `- ` and `1. ` lists (one level;
-// indent continuation lines). Inline: `**bold**`, `[text](url)`, and `[^id]`,
-// a citation of the front matter source with that id.
+// Blocks: paragraphs, `##` and `###` headings (a `###` only after a `##`; text
+// and bold only), `- ` and `1. ` lists (one level; indent continuation lines).
+// Inline: `**bold**`, `[text](url)`, and `[^id]`, a citation of the front
+// matter source with that id.
 
 /**
  * @typedef {{ type: 'text', value: string }
@@ -271,8 +272,19 @@ export function parseMarkdown(body, firstLine = 1) {
         );
       } else if (!heading[2] || !content) {
         errors.push(`${where}: a heading needs text after a space`);
+      } else if (level === 3 && !blocks.some((b) => b.type === 'heading' && b.level === 2)) {
+        // The page's title is the h1, so an h3 first would skip a level.
+        errors.push(`${where}: a ### heading must come after a ## heading`);
       } else {
-        blocks.push({ type: 'heading', level, children: parseInline(content, where, errors, ctx) });
+        const children = parseInline(content, where, errors, ctx);
+        // A long section's heading is its <details> toggle (#23), where a link
+        // would be a control inside a control.
+        const hasLink = (nodes) =>
+          nodes.some((n) => n.type === 'link' || n.type === 'cite' || hasLink(n.children ?? []));
+        if (hasLink(children)) {
+          errors.push(`${where}: a heading can hold only text and bold, not links or citations`);
+        }
+        blocks.push({ type: 'heading', level, children });
       }
       return;
     }
