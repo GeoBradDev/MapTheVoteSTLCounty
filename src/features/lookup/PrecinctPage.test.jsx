@@ -231,10 +231,14 @@ describe('PrecinctPage', () => {
     const terms = [...card.querySelectorAll('dt')].map((dt) => dt.textContent);
     const values = [...card.querySelectorAll('dd')].map((dd) => dd.textContent);
     expect(terms[0]).toBe(copy.districts.labels.congressional);
+    // CC007 is in district 2 on the current map and district 1 on the old one.
+    const fields = byId.features[0].attributes;
+    expect(fields[election.congressionalField]).toMatch(/District 2 /);
+    expect(fields.congressional_district_20).toMatch(/District 1 /);
     expect(values[0]).toBe('US Representative District 2');
+    expect(values).not.toContain('US Representative District 1');
     expect(values).toContain(copy.unincorporated);
     expect(card).toHaveTextContent(copy.districts.source);
-    expect(card).not.toHaveTextContent('2022');
   });
 
   it('shows the districts card for a Nonresidential Precinct too', async () => {

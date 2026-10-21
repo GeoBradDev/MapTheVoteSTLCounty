@@ -94,7 +94,9 @@ export const copy = {
       stateHouse: 'State House',
       countyCouncil: 'County Council',
       municipality: 'Municipality',
-      ward: 'Ward',
+      // Some cities number council districts instead of wards, such as
+      // "City of Ellisville District 1".
+      ward: 'City ward or district',
       township: 'Township',
       school: 'School district',
       juniorCollege: 'Community college subdistrict',

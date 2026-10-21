@@ -23,7 +23,8 @@ Domain skills:
 
 1. The "Your districts" card lists the precinct's districts as a semantic `<dl>`: one
    `<dt>` label and one `<dd>` value per shown district, in this order: U.S. House, State
-   Senate, State House, County Council, Municipality, Ward, Township, School district,
+   Senate, State House, County Council, Municipality, City ward or district (some cities
+   number districts instead of wards), Township, School district,
    Community college subdistrict, Fire protection district, Ambulance district, Ambulance
    subdistrict, Library district, Sewer district, then the special districts (light, road,
    community improvement, business, transportation development, neighborhood improvement,
