@@ -290,6 +290,16 @@ describe('runHealthCheck', () => {
     ).toHaveLength(3);
   });
 
+  it('fails, rather than passing, when a query answers with no features list', async () => {
+    const world = healthyWorld();
+    world.fail = (url) => (url.pathname.endsWith('/query') ? json({}) : null);
+    const results = await run(world);
+    expect(results['precinct count'].detail).toBe('the response has no features list');
+    expect(results['absentee sites'].detail).toBe('the response has no features list');
+    expect(results['known points'].status).toBe('fail');
+    expect(results['known points'].detail).toBe('the response has no features list');
+  });
+
   it('does not retry a client error', async () => {
     const world = healthyWorld();
     world.fail = (url) =>
