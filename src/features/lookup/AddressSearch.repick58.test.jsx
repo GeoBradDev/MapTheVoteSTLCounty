@@ -45,13 +45,15 @@ describe('searching again after a pick (#58)', () => {
     expect(onSubmit.mock.calls[1][0]).toMatchObject({ label: PLACES[0].label });
   });
 
-  it('sends typed text once the voter edits the label', async () => {
+  // Rewritten with the owner's approval (issue #58, 2026-10-21): a space
+  // added to the label leaves its ZIP alone, so the search is still a pick.
+  it('still sends a pick when the voter adds a space to the label', async () => {
     const { onSubmit } = renderSearch();
     await user.type(input(), '6135 Wash');
     await settle();
     await user.click(screen.getAllByRole('option')[0]);
     await user.type(input(), ' ');
     await user.click(screen.getByRole('button', { name: copy.submit }));
-    expect(onSubmit.mock.calls.at(-1)[0]).toBe(PLACES[0].label);
+    expect(onSubmit.mock.calls.at(-1)[0]).toMatchObject({ label: PLACES[0].label });
   });
 });

@@ -57,10 +57,11 @@ describe('issue #58: a City twin of a county address', () => {
     },
   );
 
-  it('6135 Horton Pl, St. Louis, MO 63133 gives the City place though the ZIP confirms the county match', async () => {
+  // Rewritten with the owner's approval (issue #58, 2026-10-21): the county
+  // and the City both have 6135 Horton Pl in 63133, so neither is chosen; no
+  // match, never the county precinct.
+  it('6135 Horton Pl, St. Louis, MO 63133 is no match, never the county place, though the ZIP confirms the county match', async () => {
     const geocoder = chainWith(HORTON_COUNTY, true, HORTON_CITY);
-    await expect(geocoder.geocode('6135 Horton Pl, St. Louis, MO 63133')).resolves.toEqual(
-      HORTON_CITY,
-    );
+    await expect(geocoder.geocode('6135 Horton Pl, St. Louis, MO 63133')).resolves.toBeNull();
   });
 });

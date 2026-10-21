@@ -101,6 +101,8 @@ const FIXTURES = {
   'city-geocode-horton-pl.json': [cityFind, cityQuery('6135 Horton Pl')],
   'city-geocode-market-st.json': [cityFind, cityQuery('1200 Market St')],
   'city-geocode-ross-ave.json': [cityFind, cityQuery('1318 Ross Ave')],
+  // Washington University: the county and the City both list it in 63130.
+  'city-geocode-brookings-dr.json': [cityFind, cityQuery('1 Brookings Dr')],
   // An invalid field: ArcGIS answers HTTP 200 with an error body.
   'error-body.json': [precincts, { where: 'no_such_field=1', f: 'json' }],
 };
