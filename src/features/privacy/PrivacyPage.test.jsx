@@ -77,6 +77,9 @@ describe('PrivacyPage', () => {
       .closest('div');
 
     expect(item).toHaveTextContent("The coordinates are part of the request's web address");
+    expect(item).toHaveTextContent(
+      'the points of all of them go there first, in the body of the request, to check that they are in one precinct',
+    );
     expect(item).toHaveTextContent('may record them in its logs');
     expect(item).toHaveTextContent(
       'your browser may keep the request, coordinates included, and its answer in its ordinary cache',

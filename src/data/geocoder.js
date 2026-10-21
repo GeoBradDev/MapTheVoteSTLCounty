@@ -150,7 +150,9 @@ export function createGeocoder({ sources, fallback }) {
       // The official data has two addresses that fit: ask for a ZIP.
       if (county?.status === 'ambiguous') return null;
       if (county?.status === 'match') {
-        const inCity = !county.confirmed && (await alsoInCity(text, signal));
+        // A county record in the City already gets the City's referral.
+        const check = !county.confirmed && county.place.county !== CITY_COUNTY;
+        const inCity = check && (await alsoInCity(text, signal));
         if (signal?.aborted) throw abortError();
         if (inCity) return null;
         return county.place;

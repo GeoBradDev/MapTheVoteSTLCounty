@@ -161,6 +161,16 @@ describe('geocode', () => {
       expect(fallback.findPlaces).toHaveBeenCalledWith('1318 Ross Ave', expect.any(Object));
     });
 
+    it('is not cross-checked when the county record is itself in St. Louis City', async () => {
+      const cityRecord = { ...CITY, label: '100 Washington Ave, St. Louis city, MO 63102' };
+      const { geocoder, fallback } = chain({
+        live: countySource({ find: match(false, cityRecord) }),
+        fallback: photon({ findPlaces: async () => [CITY] }),
+      });
+      await expect(geocoder.geocode('100 Washington Ave')).resolves.toEqual(cityRecord);
+      expect(fallback.findPlaces).not.toHaveBeenCalled();
+    });
+
     it('stands when only county places fit in Photon too', async () => {
       const { geocoder } = chain({
         live: countySource({ find: match(false) }),

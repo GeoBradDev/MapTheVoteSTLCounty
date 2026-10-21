@@ -421,8 +421,10 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
   Otherwise the address's own record (no unit), else its first unit, answers only when
   every record of the address is in one precinct: one POST multipoint query to the
   precinct layer (`getPrecinctCodesAtPoints` in `src/data/arcgis.js`), sent only when
-  the address has more than one point. Two precincts, or a failed check, is no match,
-  with no fallback; the voter is pointed to "Use my location" and the county's official
+  the address has more than one point, and capped at 4 s. Records that are partly in
+  St. Louis City and partly in the county (6200 Enright Ave 63130: 27 City units, 31 in
+  University City), two precincts, or a failed or slow check is no match, with no
+  fallback; the voter is pointed to "Use my location" and the county's official
   lookup, or can type the unit. A scan of the hosted copy found about 20 such
   single-town complexes and about 110 addresses with a unit in another town.
 - **Not homes:** records for utility poles, cell towers, billboards, ATMs and
@@ -431,7 +433,7 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
   the unit.
 - **City records:** the layers hold a few St. Louis City addresses (`MUNI = 'STL'`, 44
   in the live layer); they are given the City as their county, so they get the City
-  referral.
+  referral, with no City cross-check against Photon.
 - **Two addresses fit** (two ZIPs or two streets): no match, with no fallback, since
   the official data says the text is ambiguous. A ZIP picks one.
 - **No match in the live layer:** Photon. The hosted copy is not asked, because the

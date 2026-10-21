@@ -50,7 +50,7 @@ export const copy = {
       },
       {
         heading: 'Finding your precinct',
-        text: `The point where your address was found, or your device's location if you choose Use my location, goes to St. Louis County's election maps on Esri's ArcGIS Online (${hosts.electionMaps}). The coordinates are part of the request's web address, so the service may record them in its logs, and your browser may keep the request, coordinates included, and its answer in its ordinary cache until you clear your browsing data. Opening a shared link sends only the precinct code.`,
+        text: `The point where your address was found, or your device's location if you choose Use my location, goes to St. Louis County's election maps on Esri's ArcGIS Online (${hosts.electionMaps}). The coordinates are part of the request's web address, so the service may record them in its logs, and your browser may keep the request, coordinates included, and its answer in its ordinary cache until you clear your browsing data. Opening a shared link sends only the precinct code. When the address you type has several entries in the county's address points, like the units of an apartment building, the points of all of them go there first, in the body of the request, to check that they are in one precinct.`,
       },
       {
         heading: 'Use my location',

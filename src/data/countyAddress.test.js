@@ -4,6 +4,7 @@ import {
   findWhere,
   HOSTED_URL,
   LIVE_URL,
+  PRECINCT_CHECK_MS,
   suggestWhere,
 } from './countyAddress.js';
 import { GeocoderUnavailableError } from './geocoderError.js';
@@ -446,6 +447,67 @@ describe('find', () => {
         precinctsAt: twoPrecincts,
       }).find('8025 Maryland Ave 63105');
       expect(result).toEqual({ status: 'ambiguous' });
+    });
+
+    it('is no match when some records are in St. Louis City and some in the county', async () => {
+      // Live data: 6200 Enright Ave 63130, 31 units in University City
+      // (UNV004) and 27 in the City, which has no county precinct.
+      const uct = point(
+        {
+          OBJECTID: 1,
+          ADRNO: 6200,
+          ADRSTR: 'ENRIGHT',
+          ZIPCODE: '63130',
+          MUNI: 'UCT',
+          UNITDESC: 'APT',
+          UNITNO: '300',
+        },
+        [-90.30171, 38.65641],
+      );
+      const stl = point(
+        {
+          OBJECTID: 2,
+          ADRNO: 6200,
+          ADRSTR: 'ENRIGHT',
+          ZIPCODE: '63130',
+          MUNI: 'STL',
+          UNITDESC: 'APT',
+          UNITNO: '111',
+        },
+        [-90.3015, 38.6566],
+      );
+      const precinctsAt = vi.fn(async () => new Set(['UNV004']));
+      await expect(
+        source(answering(uct, stl), { precinctsAt }).find('6200 Enright Ave, St. Louis, MO 63130'),
+      ).resolves.toEqual({ status: 'ambiguous' });
+      await expect(
+        source(answering(uct, stl), { precinctsAt }).find('6200 Enright Ave Apt 111, 63130'),
+      ).resolves.toMatchObject({ status: 'match', place: { county: 'St. Louis city' } });
+    });
+
+    it('is no match when the precinct check takes too long, and stops waiting', async () => {
+      vi.useFakeTimers();
+      try {
+        const pending = source(answering(a5, b13, building), {
+          precinctsAt: () => new Promise(() => {}),
+        }).find('8025 Maryland Ave 63105');
+        await vi.advanceTimersByTimeAsync(PRECINCT_CHECK_MS);
+        await expect(pending).resolves.toEqual({ status: 'ambiguous' });
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('rejects with AbortError when aborted during the precinct check', async () => {
+      const controller = new AbortController();
+      const pending = source(answering(a5, b13, building), {
+        precinctsAt: () => new Promise(() => {}),
+      })
+        .find('8025 Maryland Ave 63105', { signal: controller.signal })
+        .catch((e) => e);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      controller.abort();
+      expect((await pending).name).toBe('AbortError');
     });
 
     it('is no match when the precinct check fails', async () => {

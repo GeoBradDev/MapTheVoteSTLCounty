@@ -40,6 +40,11 @@ export const attribution = Object.freeze({
 
 /** How long one request may take before the lookup moves to the next source. */
 export const TIMEOUT_MS = 2500;
+/**
+ * How long the precinct check for an address with several records may take;
+ * longer is no match, since the lookup cannot tell those records apart.
+ */
+export const PRECINCT_CHECK_MS = 4000;
 /** The hosted copy is the last county source, so it gets a little longer. */
 export const HOSTED_TIMEOUT_MS = 3000;
 /**
@@ -310,6 +315,25 @@ export function createCountyAddressSource({
 }) {
   const queryUrl = `${url.replace(/\/+$/, '')}/query`;
 
+  // The precinct codes at the points, or null when the check fails or takes
+  // longer than PRECINCT_CHECK_MS. An abort rejects.
+  async function precinctsWithin(points, signal) {
+    if (signal?.aborted) throw abortError();
+    let timer;
+    let onAbort;
+    const stop = new Promise((resolve, reject) => {
+      timer = setTimeout(() => resolve(null), PRECINCT_CHECK_MS);
+      onAbort = () => reject(abortError());
+      signal?.addEventListener('abort', onAbort, { once: true });
+    });
+    try {
+      return await Promise.race([precinctsAt(points).catch(() => null), stop]);
+    } finally {
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', onAbort);
+    }
+  }
+
   async function query(params, signal) {
     if (signal?.aborted) throw abortError();
     const body = new URLSearchParams({
@@ -403,18 +427,16 @@ export function createCountyAddressSource({
       // Country Club Ln 63033), a unit across a town line from its house (1950
       // Walton Rd 63114) and complexes that span two precincts (4005 Ripa Ave
       // 63125).
+      // Records in St. Louis City (no county precinct) and in the county at
+      // one address (6200 Enright Ave 63130) are told apart by neither.
+      if (!matches.every((m) => m.props.county === first.props.county)) {
+        return { status: 'ambiguous' };
+      }
       const chosen = matches.find((m) => !m.unitKey) ?? first;
       const points = distinctPoints(matches);
       if (points.length > 1) {
-        let codes;
-        try {
-          codes = await precinctsAt(points);
-        } catch {
-          if (signal?.aborted) throw abortError();
-          return { status: 'ambiguous' };
-        }
-        if (signal?.aborted) throw abortError();
-        if (codes.size > 1) return { status: 'ambiguous' };
+        const codes = await precinctsWithin(points, signal);
+        if (!codes || codes.size > 1) return { status: 'ambiguous' };
       }
       return {
         status: 'match',

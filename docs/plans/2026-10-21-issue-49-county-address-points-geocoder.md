@@ -172,3 +172,9 @@ Domain skills:
   records (44 City addresses in the layer) get the City as their county, so criterion
   4 holds for them. Accepted and documented: the 2023 hosted copy can miss a second
   house added since, which matters only while the live layer is down.
+- Review round 4 (finder): a point with no precinct (a City record) adds nothing to the
+  precinct check, so 6200 Enright Ave 63130 (City and University City units) answered
+  with a county point. Records that disagree on county are now no match. A county
+  record in the City skips the City cross-check (it already gets the City referral).
+  The precinct check is capped at 4 s and stops on abort. The privacy notice now says
+  the points of an address's several records go to the election maps for the check.
