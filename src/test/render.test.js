@@ -18,7 +18,6 @@ const ASSET_PATH = '/assets/index-abc123.js';
 const PROBE_PATHS = [
   ...SHELL_PATHS,
   '/p/CC007/extra',
-  '/learn',
   ASSET_PATH,
   '/assets/index-abc123.css',
   '/sw.js',
@@ -82,6 +81,9 @@ describe('Render path matching helper', () => {
     expect(renderPathMatches('/*.css', '/tokens.css')).toBe(true);
     expect(renderPathMatches('/*.css', '/assets/theme.css')).toBe(false);
     expect(renderPathMatches('/**/*.css', '/assets/theme.css')).toBe(true);
+    expect(renderPathMatches('/**/*.css', '/tokens.css')).toBe(false);
+    expect(renderPathMatches('/**/*', '/blog/post')).toBe(true);
+    expect(renderPathMatches('/**/*', '/blog')).toBe(false);
     expect(renderPathMatches('/', '/')).toBe(true);
     expect(renderPathMatches('/', '/index.html')).toBe(false);
   });
