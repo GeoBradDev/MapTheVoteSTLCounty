@@ -23,7 +23,9 @@ payments, email: not applicable because the app is a frontend-only React site.
    nothing else (no query, hash, address text or coordinates).
 2. A code that is valid apart from letter case or surrounding spaces (`/p/cc007`,
    `/p/Cc007`) replaces the URL with `/p/CC007` (history replace, not push) and shows that
-   precinct. Fixes the #11 follow-up where lowercase codes showed "not found".
+   precinct. Fixes the #11 follow-up where lowercase codes showed "not found". Only ASCII
+   letters count: a non-ASCII letter that upper-cases to ASCII (`ß` to `SS`) is not found, never
+   another precinct (review finding).
 3. A malformed or unknown code shows the friendly not-found message, keeps the official lookup
    link, and shows the address search box (`AddressLookup`) and Use my location on the page.
 4. Once the precinct loads, a "Share this page" button appears. With `navigator.share`, it calls
@@ -31,11 +33,12 @@ payments, email: not applicable because the app is a frontend-only React site.
    (AbortError) shows nothing. Without `navigator.share`, or when it fails for another reason,
    it copies the URL with `navigator.clipboard.writeText` and shows a visible "Link copied"
    confirmation in a polite status region. If the clipboard is missing or fails, it shows the
-   link in a read-only, selectable text field with a "Copy this link:" label.
+   link in a read-only, selectable text field with a "Copy this link:" label. A second press
+   while the share sheet is open does nothing (review note).
 5. Next to the button, on screen: the link opens this precinct's results and does not include
    the address.
 6. `document.title` is `Precinct <CODE> | St. Louis County Voter Guide` for a valid code and
-   goes back to the previous title when the page unmounts. It never holds address text.
+   goes back to the previous title when the page unmounts or the code turns out not to exist. It never holds address text.
 7. After a full search (App, real routing, fake geocoder), the test address and its coordinates
    appear in none of: `window.location.href`, `document.title`, `history.state`, the share
    data passed to `navigator.share`, the copied text.

@@ -372,6 +372,21 @@ describe('PrecinctPage', () => {
     expect(document.title).toBe('Before');
   });
 
+  it('replaces a code with spaces around it with the bare code', async () => {
+    routeFetch(byId);
+    const location = renderAt('%20cc007%20');
+    await ready('CC007');
+    expect(location.history).toEqual(['/p/CC007']);
+  });
+
+  it('puts back the title when the code is not found', async () => {
+    document.title = 'Before';
+    fetchMock.mockImplementation(() => respond({ ...byId, features: [] }));
+    renderAt('ZZ999');
+    await screen.findByRole('region', { name: copy.searchInstead });
+    expect(document.title).toBe('Before');
+  });
+
   it('leaves the title alone for URL text that is not a precinct code', async () => {
     document.title = 'Before';
     renderAt('Polls%20moved');

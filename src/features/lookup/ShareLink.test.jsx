@@ -58,6 +58,21 @@ describe('ShareLink', () => {
     expect(screen.queryByRole('textbox')).toBeNull();
   });
 
+  it('opens one share sheet for a second press while it is open', async () => {
+    let close;
+    const share = vi.fn(() => new Promise((resolve) => (close = resolve)));
+    const writeText = vi.fn();
+    stubNavigator({ share, clipboard: { writeText } });
+    render(<ShareLink code="CC007" />);
+    await userEvent.click(button());
+    await userEvent.click(button());
+    expect(share).toHaveBeenCalledTimes(1);
+    close();
+    await userEvent.click(button());
+    expect(share).toHaveBeenCalledTimes(2);
+    expect(writeText).not.toHaveBeenCalled();
+  });
+
   it('copies the link and says so when the browser cannot share', async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     stubNavigator({ clipboard: { writeText } });

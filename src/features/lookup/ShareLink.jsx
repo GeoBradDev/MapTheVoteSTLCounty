@@ -20,9 +20,14 @@ export default function ShareLink({ code }) {
     if (outcome === 'manual') fieldRef.current?.focus();
   }, [outcome]);
 
+  // A share sheet already open, so a second press does not open another.
+  const sharingRef = useRef(false);
+
   async function handleClick() {
+    if (sharingRef.current) return;
     setOutcome(null);
     if (typeof navigator.share === 'function') {
+      sharingRef.current = true;
       try {
         await navigator.share({ title: copy.share.title(code), url });
         return;
@@ -30,6 +35,8 @@ export default function ShareLink({ code }) {
         // The voter closed the share sheet.
         if (error?.name === 'AbortError') return;
         // Anything else (no permission, nothing to share to): copy instead.
+      } finally {
+        sharingRef.current = false;
       }
     }
     try {
@@ -50,7 +57,7 @@ export default function ShareLink({ code }) {
         {copy.share.button}
       </button>
       <p className="mt-1 text-muted">{copy.share.note(code)}</p>
-      <p role="status" className="mt-1 font-semibold empty:hidden">
+      <p role="status" className="mt-1 font-semibold">
         {outcome === 'copied' ? copy.share.copied : ''}
       </p>
       {outcome === 'manual' && (

@@ -32,15 +32,17 @@ function PrecinctResults({ code }) {
   const validCode = PRECINCT_CODE.test(code);
   const searchHeadingId = useId();
 
-  // The tab and bookmark title: the code only, and only a code-shaped one.
+  // The tab and bookmark title: the code only, and only a code-shaped one
+  // that is not known to be missing.
+  const titled = validCode && result?.error !== 'notFound';
   useEffect(() => {
-    if (!validCode) return undefined;
+    if (!titled) return undefined;
     const previous = document.title;
     document.title = copy.pageTitle(code);
     return () => {
       document.title = previous;
     };
-  }, [code, validCode]);
+  }, [code, titled]);
 
   useEffect(() => {
     let current = true;
