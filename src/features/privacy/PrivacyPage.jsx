@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Link } from 'wouter';
 import { copy } from './privacyCopy.js';
 
@@ -5,9 +6,19 @@ const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
 
 // The privacy notice (#20): what each service gets and what the site never keeps.
 export default function PrivacyPage() {
+  const headingRef = useRef(null);
+
+  // The footer link stays mounted and sits at the bottom of the page, so move
+  // focus (and with it the scroll position) to the notice's heading on arrival.
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
+
   return (
     <>
-      <h1 className="text-2xl font-semibold">{copy.heading}</h1>
+      <h1 ref={headingRef} tabIndex={-1} className="text-2xl font-semibold">
+        {copy.heading}
+      </h1>
       <p className="mt-4">{copy.intro}</p>
 
       <section aria-labelledby="privacy-never" className="mt-8">

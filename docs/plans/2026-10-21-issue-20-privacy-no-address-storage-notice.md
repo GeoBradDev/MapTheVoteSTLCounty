@@ -63,7 +63,8 @@ email: not applicable because the app is a frontend-only React site.
   `election.serviceRoot` and `basemap.js`. The backup geocoder's name, operator and link come
   from `geocoder.js`'s `attribution` (import only), because `geocoder.test.js` lets only the
   geocoder modules name a provider; it reads both main's shape and #49's
-  (`attribution.fallback`). The county address service hosts are written in the copy.
+  (`attribution.fallback`). The county address service hosts are not written in the copy (see
+  Revisions).
   (Revised during implementation: the first draft imported `photon.js` and named Photon in the
   copy, which the provider-naming test rejects.)
 - `src/features/privacy/PrivacyPage.test.jsx` (new): renders the notice, checks the named
@@ -88,9 +89,9 @@ email: not applicable because the app is a frontend-only React site.
 
 ## Risks
 
-- A copy claim that is false today or after #49: mitigated by wording ("St. Louis County's
-  address service and, as a backup, Photon") and by naming the county hosts that #49 adds.
-  Until #49 merges the notice names two hosts the app does not yet call; that overstates
+- A copy claim that is false today or after #49: mitigated by wording that holds for both
+  (the county address service and Photon, which "finds and checks" addresses). Until #49
+  merges, the notice names a county service the app does not yet call; that overstates
   recipients, never understates them.
 - Rebase conflict with #49 in `render.yaml` and `README.md`: keep both sides.
 - The footer changes every page's layout: keep it outside `<main>` so the `main` landmark
@@ -116,3 +117,7 @@ email: not applicable because the app is a frontend-only React site.
   says the location is gone when the page closes, since the HTTP cache may keep point queries
   (#38); it points to that paragraph instead. The Cache Storage check reads cached request
   URLs, not only cache names, with a self-check that stubs `caches`.
+- Review round 2: the privacy page focuses its heading on arrival (the footer link stays
+  mounted at the bottom of the page); the CSP coverage test matches whole host names in
+  parentheses, not substrings; the cache sentence says the request, coordinates included, may
+  be kept; README no longer says "only in memory" and adds the HTTP cache to the hand check.

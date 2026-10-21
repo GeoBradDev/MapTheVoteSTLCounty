@@ -93,6 +93,7 @@ describe('App', () => {
 
     expect(location.history).toEqual(['/', '/privacy']);
     expect(heading()).toHaveTextContent('Privacy');
+    expect(heading()).toHaveFocus();
   });
 
   it.each(['/p/CC007/', '/learn/', '/learn/voter-id/', '/privacy/'])(

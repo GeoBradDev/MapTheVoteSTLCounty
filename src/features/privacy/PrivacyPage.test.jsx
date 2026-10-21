@@ -41,10 +41,13 @@ describe('PrivacyPage', () => {
   it('names every third-party origin the Content-Security-Policy allows', async () => {
     render(<PrivacyPage />);
     const text = section(copy.sent.heading).textContent;
+    // Whole host names in parentheses, so a new origin like arcgis.com is not
+    // passed by a longer name such as services6.arcgis.com that contains it.
+    const named = new Set([...text.matchAll(/\(([a-z0-9.-]+\.[a-z]+)\)/g)].map((m) => m[1]));
     const origins = await connectOrigins();
 
     expect(origins.length).toBeGreaterThan(0);
-    for (const origin of origins) expect(text).toContain(new URL(origin).host);
+    for (const origin of origins) expect(named).toContain(new URL(origin).host);
   });
 
   it('names the election maps host from the election config', () => {
@@ -72,7 +75,9 @@ describe('PrivacyPage', () => {
 
     expect(item).toHaveTextContent("The coordinates are part of the request's web address");
     expect(item).toHaveTextContent('may record them in its logs');
-    expect(item).toHaveTextContent('your browser may keep the answer in its ordinary cache');
+    expect(item).toHaveTextContent(
+      'your browser may keep the request, coordinates included, and its answer in its ordinary cache',
+    );
   });
 
   it('promises no storage, no cookies and no tracking', () => {
