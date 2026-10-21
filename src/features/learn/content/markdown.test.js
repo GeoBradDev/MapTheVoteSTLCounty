@@ -102,6 +102,12 @@ describe('parseMarkdown', () => {
     expect(errors).toEqual([expect.stringMatching(/^line 3: /)]);
   });
 
+  it('allows list item text that starts with # but is not a heading', () => {
+    const { errors, blocks } = parseMarkdown('- #2 pencil only\n  #3 also fine');
+    expect(errors).toEqual([]);
+    expect(blocks[0].items).toEqual([[text('#2 pencil only #3 also fine')]]);
+  });
+
   it('reports every problem in a paragraph, not just the first', () => {
     const { errors } = parseMarkdown('<b>x</b> then `code` and ![img](https://a.gov/i.png)');
     expect(errors.join('\n')).toMatch(/raw HTML/);
