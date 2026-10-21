@@ -112,7 +112,8 @@ fails on any web font: the app uses the system font stack. Rules the scores rely
 - Load anything large or slow to start only when it is needed, as the map is (see Map).
 - Give a loading placeholder at least the size of what replaces it, so the page does not jump.
 - Start the requests a page needs together, not one after another: the results page asks for
-  the polling places and the outline while the precinct loads.
+  the polling places, the early voting sites and (without a looked-up point) the outline while
+  the precinct loads.
 - Ask ArcGIS only for the fields the app reads: `PRECINCT_FIELDS` and `POLL_FIELDS` in
   `src/data/arcgis.js`. A query that names a field the layer lacks fails, so
   `scripts/check-config.mjs` checks every one of them (a test fails if it does not).
@@ -306,9 +307,9 @@ seconds of visible time, or when the browser lacks WebGL 2. It comes after the l
 only once it scrolls into view (#27), since MapLibre is a large download and slow to start on
 a phone; the 15 seconds count from then. MapLibre GL JS is loaded with `import()` only then
 (`src/features/lookup/precinctMapView.js` is the only file that imports it), and its worker
-ships as a same-origin file, so the Content-Security-Policy needs no `blob:` source. The app ships its own few MapLibre layout
-rules (`src/features/lookup/precinctMap.css`) instead of `maplibre-gl.css`, which embeds
-`data:` icons and party blue.
+ships as a same-origin file, so the Content-Security-Policy needs no `blob:` source. The app
+ships its own few MapLibre layout rules (`src/features/lookup/precinctMap.css`) instead of
+`maplibre-gl.css`, which embeds `data:` icons and party blue.
 
 The basemap is [OpenFreeMap](https://openfreemap.org)'s Positron style: free, with no API key
 or account, and its terms allow embedding it. Its attribution (OpenFreeMap, OpenMapTiles,
