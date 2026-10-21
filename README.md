@@ -93,7 +93,8 @@ It checks that each configured layer answers with the geometry and every field t
 that the precinct count is in a sane range, that every `In Election` precinct's sample ballot
 link parses (and that 5 random links serve a PDF), that the absentee filter finds sites with
 hours in the config, and that one known point per County Council district lands in a precinct
-in that district. It prints PASS, FAIL or SKIP per check and exits 1 on any failure; a wrong
+in that district and inside the county boundary layer, while a point in St. Louis City lands in
+neither. It prints PASS, FAIL or SKIP per check and exits 1 on any failure; a wrong
 layer path fails with the config key, the path and the service's error. `--layer` tries another
 path for one layer without editing the config. The thresholds and known points are at the top of
 the script.
@@ -103,7 +104,9 @@ at 12:00 UTC until Election Day is over in the config's time zone, and on demand
 Actions tab (**Data health**, **Run workflow**). On a failure it opens an issue labeled
 `data health`, or comments on the one already open; close that issue once it is fixed. The
 workflow never runs on pull requests, so a live outage cannot block a merge. For the next
-election, nothing in the workflow changes: it reads the new `electionDate`.
+election, nothing in the workflow changes: it reads the new `electionDate`. GitHub turns off
+scheduled workflows in a public repository after 60 days with no activity; if the daily runs stop,
+turn the workflow back on in the Actions tab.
 
 ## Address search
 

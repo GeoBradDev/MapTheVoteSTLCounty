@@ -126,7 +126,10 @@ async function requestOnce(fetchImpl, url, { method = 'GET', timeoutMs }) {
       if (error instanceof SyntaxError) throw new CheckError('the response is not JSON');
       throw new CheckError(`request failed: ${error.message}`, { transient: true });
     }
-    if (body?.error) {
+    if (body === null || typeof body !== 'object') {
+      throw new CheckError('the response is not a JSON object');
+    }
+    if (body.error) {
       const { code, message, details } = body.error;
       const text =
         [...new Set([message, ...(details ?? [])].filter(Boolean))].join('; ') || 'no message';
@@ -219,9 +222,9 @@ export async function runHealthCheck(
         info = await request(`${layerUrl(key)}?f=json`);
       } catch (error) {
         if (!(error instanceof CheckError)) throw error;
-        throw new CheckError(
-          `${where}: ${error.message}. Check this path in src/config/election.js.`,
-        );
+        // An outage is not the config's fault; anything else may be.
+        const hint = error.transient ? '' : '. Check this path in src/config/election.js.';
+        throw new CheckError(`${where}: ${error.message}${hint}`);
       }
       if (info.geometryType !== want.geometryType) {
         throw new CheckError(
@@ -253,7 +256,7 @@ export async function runHealthCheck(
       if (body.exceededTransferLimit) {
         throw new CheckError('too many precincts for one request: page the query');
       }
-      precincts = (body.features ?? []).map((f) => f.attributes ?? {});
+      precincts = (body.features ?? []).map((f) => f?.attributes ?? {});
       const inElection = precincts.filter((p) => p.in_election === 'In Election').length;
       const { min, max } = PRECINCT_RANGE;
       if (precincts.length < min || precincts.length > max) {
@@ -340,7 +343,7 @@ export async function runHealthCheck(
         outFields: 'loc,name,abs_type',
         returnGeometry: 'false',
       });
-      const sites = (body.features ?? []).map((f) => f.attributes ?? {});
+      const sites = (body.features ?? []).map((f) => f?.attributes ?? {});
       if (sites.length === 0) {
         throw new CheckError(`absenteeWhere (${config.absenteeWhere}) returns no sites`);
       }

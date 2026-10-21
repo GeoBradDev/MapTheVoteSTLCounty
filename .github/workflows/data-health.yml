@@ -30,15 +30,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .node-version
-          cache: npm
-
-      - run: npm ci
-
       # Scheduled runs stop once Election Day is over in the config's time zone.
-      # A manual run always checks.
+      # A manual run always checks. This runs first, on the runner's own Node,
+      # so a failing install after the election cannot open an issue; the
+      # script and the config import nothing from node_modules.
       - name: Election window
         id: window
         run: |
@@ -53,6 +48,15 @@ jobs:
           else
             echo "active=true" >> "$GITHUB_OUTPUT"
           fi
+
+      - uses: actions/setup-node@v4
+        if: steps.window.outputs.active == 'true'
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - run: npm ci
+        if: steps.window.outputs.active == 'true'
 
       - name: Election config check
         id: config
