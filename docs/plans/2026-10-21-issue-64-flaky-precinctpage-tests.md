@@ -24,7 +24,7 @@ fixing the wait"); vercel-react-best-practices, not applicable because no React 
   always in the page and empty until a load fails, and `toHaveTextContent` then saw `""`.
 - A scratch test that delays the precinct response by 2 s shows the same thing on an idle machine:
   `await screen.findByRole('alert')` returns the empty alert. The tests at lines 384, 465, 472 and
-  479 use this pattern.
+  479 (on main) use this pattern.
 - One `getByRole` query on this page costs about 200 ms in jsdom on an idle machine (role and
   visibility checks over the whole tree). The default `findBy` timeout is 1000 ms, and Testing
   Library reports a timeout without a final check, so a few slow checks under load are enough to
