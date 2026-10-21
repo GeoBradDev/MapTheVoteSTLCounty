@@ -102,6 +102,33 @@ describe('PrecinctPage', () => {
     }
   });
 
+  // #27: the cards' requests do not wait for the precinct to answer.
+  it('requests the polls, absentee sites and outline while the precinct loads', () => {
+    fetchMock.mockImplementation(() => new Promise(() => {}));
+    renderAt('CC007');
+    const urls = fetchMock.mock.calls.map(([input]) => new URL(input));
+    const polls = urls.filter((url) => url.pathname.includes(election.layers.polls));
+    expect(polls.map((url) => url.searchParams.get('where')).sort()).toEqual(
+      ['1=1', election.absenteeWhere].sort(),
+    );
+    const outline = precinctCalls().filter((url) => url.searchParams.get('f') === 'geojson');
+    expect(outline).toHaveLength(1);
+    expect(outline[0].searchParams.get('where')).toBe("precinct='CC007'");
+  });
+
+  it('asks for no outline up front when a looked-up point measures the distances', () => {
+    fetchMock.mockImplementation(() => new Promise(() => {}));
+    rememberLookupPoint('CC007', { lat: 38.66, lng: -90.45 });
+    renderAt('CC007');
+    expect(precinctCalls().filter((url) => url.searchParams.get('f') === 'geojson')).toEqual([]);
+  });
+
+  it('starts no other request for URL text that is not a precinct code', async () => {
+    renderAt('Polls%20moved');
+    await screen.findByRole('region', { name: copy.searchInstead });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('shows the heading and skeletons, and an empty live region, while loading', () => {
     fetchMock.mockImplementation(() => new Promise(() => {}));
     renderAt('CC007');
@@ -462,7 +489,8 @@ describe('PrecinctPage', () => {
     expect(screen.getByTestId('results-skeleton')).toBeInTheDocument();
     const alert = await screen.findByRole('alert', {}, { timeout: 3000 });
     await within(alert).findByText(copy.errors.failed, { exact: false }, { timeout: 3000 });
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const byIdCalls = precinctCalls().filter((url) => url.searchParams.get('f') === 'json');
+    expect(byIdCalls).toHaveLength(2);
     expect(screen.queryByTestId('results-skeleton')).toBeNull();
   });
 

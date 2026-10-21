@@ -1,7 +1,14 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Link, useLocation, useParams } from 'wouter';
 import election from '../../config/election.js';
-import { getPrecinctById, NotFound, PRECINCT_CODE } from '../../data/arcgis.js';
+import {
+  getAbsenteeSites,
+  getPolls,
+  getPrecinctById,
+  getPrecinctGeometry,
+  NotFound,
+  PRECINCT_CODE,
+} from '../../data/arcgis.js';
 import AddressLookup from './AddressLookup.jsx';
 import { lookupPointFor } from './lookupPoint.js';
 import { precinctStatus } from './precinctStatus.js';
@@ -11,6 +18,8 @@ import { copy } from './resultsCopy.js';
 import ShareLink from './ShareLink.jsx';
 
 const linkClass = 'text-primary underline';
+
+const ignore = () => {};
 
 function municipalityName(value) {
   if (typeof value !== 'string' || !value.trim()) return null;
@@ -47,6 +56,17 @@ function PrecinctResults({ code }) {
 
   useEffect(() => {
     let current = true;
+    // Start the cards' requests now, alongside the precinct's, instead of after
+    // it answers (#27): on a slow connection that saves a round trip before the
+    // polling places show. The cards get the same shared requests; a failure
+    // here is not kept, so a card asks again. Only for a code-shaped value, and
+    // the outline only without a looked-up point, since distances are then
+    // measured from its center.
+    if (validCode) {
+      getPolls().catch(ignore);
+      getAbsenteeSites().catch(ignore);
+      if (!origin) getPrecinctGeometry(code).catch(ignore);
+    }
     getPrecinctById(code).then(
       (precinct) => current && setResult({ precinct }),
       (error) => current && setResult({ error: error instanceof NotFound ? 'notFound' : 'failed' }),
@@ -54,7 +74,7 @@ function PrecinctResults({ code }) {
     return () => {
       current = false;
     };
-  }, [code]);
+  }, [code, validCode, origin]);
 
   const precinct = result?.precinct;
   useEffect(() => {
