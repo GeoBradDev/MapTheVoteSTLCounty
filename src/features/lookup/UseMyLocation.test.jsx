@@ -138,6 +138,36 @@ describe('UseMyLocation', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(copy.errors.denied);
   });
 
+  it('drops a late result once the voter starts typing an address', async () => {
+    const onLocate = vi.fn();
+    render(<Harness onLocate={onLocate} />);
+    await userEvent.click(button());
+    await userEvent.type(address(), '1 Main St');
+    expect(button()).toHaveTextContent(copy.button);
+    expect(button()).not.toHaveAttribute('aria-disabled');
+    await answer(({ ok }) => ok(POSITION));
+    expect(onLocate).not.toHaveBeenCalled();
+  });
+
+  it('does not pull focus back or show an error for a late failure after typing', async () => {
+    render(<Harness />);
+    await userEvent.click(button());
+    await userEvent.type(address(), '1 Main St');
+    await userEvent.tab();
+    await answer(({ fail }) => fail({ code: 3 }));
+    expect(address()).not.toHaveFocus();
+    expect(screen.getByRole('alert')).toBeEmptyDOMElement();
+  });
+
+  it('drops a result that arrives after it unmounts', async () => {
+    const onLocate = vi.fn();
+    const { unmount } = render(<Harness onLocate={onLocate} />);
+    await userEvent.click(button());
+    unmount();
+    await answer(({ ok }) => ok(POSITION));
+    expect(onLocate).not.toHaveBeenCalled();
+  });
+
   it('keeps the coordinates out of the URL and browser storage', async () => {
     render(<Harness />);
     const before = window.location.href;
