@@ -1,22 +1,29 @@
-# Plan: Geocoding: evaluate Census and Esri, then build address search with autocomplete (issue #7)
+# Plan: Geocoding with Photon and address search with autocomplete (issue #7)
 
-Status: spike done; build waits on an owner decision (see Open decision).
+Status: owner decided 2026-10-21; build on this branch.
 
 Risk tier: High. Address text is the most sensitive data the app handles, and this code
-decides where it goes (privacy label, forced High as a security control). The combobox is
-stateful, async UI with request cancellation, which unit tests cannot fully exercise.
+decides where it goes (privacy, forced High as a security control). The provider talks to a
+third-party service whose failures must never turn into a guessed precinct.
 
 Domain skills:
 - superpowers:test-driven-development: invoke.
-- vercel-react-best-practices: invoke for the combobox component.
-- frontend-design: not applicable because the visual layout of the landing screen is #10;
-  this issue builds the input and its listbox with existing tokens.
-- context7 (docs lookup): invoke if a library is added; the plan uses none.
+- vercel-react-best-practices: invoke for the attribution component and the stable provider.
+- frontend-design: not applicable because the landing screen layout is #10; this adds one
+  line of attribution with existing tokens.
+- context7 (docs lookup): not applicable because no library is added; Photon is plain HTTP.
 - expo, django, django-ninja, fastapi, claude-api, dataviz: not applicable because none of
   those stacks are involved.
 
 Mode: commit. The owner authorized commits, pushing this issue branch, the PR and its squash
 merge for this run.
+
+## Decision
+
+The owner chose the public Photon API (https://photon.komoot.io), called directly from the
+browser. Frontend only: no proxy, no server, no self-hosting, no Esri, no API keys. Esri was
+dropped (its terms need an account and token); Census has no CORS and no suggest; public
+Nominatim forbids client-side autocomplete in its usage policy.
 
 ## Spike results
 
@@ -31,44 +38,75 @@ Recorded in `docs/data.md` under Geocoding. Summary:
 - The county's private utility proxy (`utility.arcgis.com/usrsvcs/servers/d5419f11...`) was
   not used.
 
-## Open decision
+## Acceptance criteria
 
-Which way to get a permitted geocoder:
-- A (recommended): Esri with an ArcGIS Location Platform API key created by the owner,
-  restricted by HTTP referrer to the production and preview origins, scoped to geocoding
-  only, read at build time from `VITE_ARCGIS_API_KEY`. Suggests are free and 20K
-  not-stored geocodes a month are free, then $0.50 per 1,000.
-- B: Esri without a token. Works today, costs nothing, but goes against Esri's stated terms
-  and could be cut off with no notice, on Election Day included.
-- C: Census through a proxy. Rejected by the spike: no suggestions, and the proxy is a
-  server of ours seeing addresses.
-
-## Acceptance criteria (for the build, once decided)
-
-1. `src/data/geocoder.js` exports `suggest(text, { signal })` and `resolve(suggestionOrText,
-   { signal })`; nothing else in the app knows the provider.
-2. `suggest` returns at most 5 suggestions limited to the county extent and `countryCode=USA`;
-   `resolve` returns `{ lat, lng, label }` or `null`.
-3. Suggestions are requested about 250 ms after typing stops, only at 3 or more characters,
-   and an in-flight request is aborted when the user keeps typing.
-4. The input follows the WAI-ARIA combobox pattern: `role="combobox"`, `aria-expanded`,
-   `aria-controls`, `aria-activedescendant`, arrow keys, Enter, Escape; tested with Testing
-   Library by keyboard only.
-5. Address text is sent only to the geocoder: never to our servers, logs, analytics,
-   `localStorage`, `sessionStorage`, or the URL. A test fails if `src/` writes it there.
-6. The 10 test addresses in `docs/data.md` resolve to the listed precincts (live check
-   script, like `scripts/check-sample-ballots.mjs`).
-7. The geocoder provider is named for the privacy notice (#20).
+1. `src/data/photon.js` exports `createPhotonGeocoder({ baseUrl, fetch, timeoutMs })`, which
+   returns a frozen object implementing the #10 interface in `src/data/geocoder.js`:
+   `suggest(text, { signal })` and `geocode(suggestionOrText, { signal })`. `geocoder.js`
+   default-exports one instance created at module load (stable across renders), with the
+   base URL from `VITE_GEOCODER_URL`, default `https://photon.komoot.io`.
+2. Requests carry `q`, `limit`, `lang=en`, a `bbox` of the county extent
+   (`-90.74,38.39,-90.11,38.89`, which also covers St. Louis City) and a `lat`/`lon` bias.
+   Only results with a house number in the US are returned, so a street or area centroid is
+   never used as an address.
+3. `geocode` returns `{ lat, lng, state, county, label }` (Photon `state`, `county`; when
+   Photon gives no county for a Missouri place whose city is Saint Louis, county is
+   `St. Louis city`, the independent city), or `null` when nothing matches. For typed text
+   the match's house number must be the typed one and a street word must appear in the
+   text; otherwise `null`. A picked suggestion geocodes from the suggestion with no second
+   request.
+4. A timeout (8 s), network error, non-2xx (429 included) or malformed body rejects with
+   `GeocoderUnavailableError`; a caller abort rejects with an AbortError. The lookup then
+   shows a message pointing to "Use my location" and the county's official lookup. No
+   precinct is guessed.
+5. Debounce (250 ms, 3 characters) and cancelling stale requests stay as built in #10; the
+   provider passes the caller's signal to `fetch`.
+6. Address text goes only to Photon: requests use `cache: 'no-store'`, `credentials: 'omit'`
+   and `referrerPolicy: 'no-referrer'`; nothing is written to storage or the URL (existing
+   AddressLookup tests keep covering that).
+7. The lookup shows "Address search by Photon (komoot). Map data (c) OpenStreetMap
+   contributors" with the OSM link to https://www.openstreetmap.org/copyright. Photon's
+   site asks for fair use, not a credit; the komoot credit is kept anyway so voters can see
+   where the address goes.
+8. `scripts/check-geocoder.mjs` geocodes the 10 test addresses with the app's own provider
+   against live Photon and checks the precinct at each point; `docs/data.md` records the
+   result next to the Esri and Census table, plus the Nominatim evaluation.
+9. If a CSP exists on main when this ships, `connect-src` allows `https://photon.komoot.io`.
 
 ## Files that change
 
-Spike (this commit): `docs/data.md`, this plan.
-Build: `src/data/geocoder.js`, `src/data/geocoder.test.js`, `src/features/lookup/AddressSearch.jsx`
-and its test, `src/config/election.js` (county extent), `scripts/check-geocoder.mjs`.
+- `src/data/photon.js`, `src/data/photon.test.js` (new).
+- `src/data/geocoder.js`, `src/data/geocoder.test.js`: default export is the Photon
+  instance; the "names no provider" test becomes "only the provider module names a provider
+  host, and no API key anywhere".
+- `src/features/lookup/GeocoderAttribution.jsx` and test, `AddressLookup.jsx`,
+  `lookupCopy.js` (noMatch and unavailable messages mention "Use my location").
+- `scripts/check-geocoder.mjs`, `docs/data.md`, this plan.
+
+## Order of work
+
+1. Photon provider with tests (fake fetch). 2. Wire as default geocoder. 3. Copy and
+attribution. 4. Live check script and docs. 5. Live drive in a browser.
+
+## Risks
+
+- Public Photon is best effort and throttles heavy use; Election Day load could hit it. The
+  fallback messages and "Use my location" cover that; self-hosting was ruled out by the owner.
+- 6915 Weber Rd has no house-level match in OSM; that address gets the not-found message.
+- Photon fuzzy matching can return a nearby house with another number; the house number and
+  street word checks on typed text return null instead.
 
 ## Proof
 
-Spike script, run 2026-10-21 with Node 24 from the repo root:
+Build: `src/data/photon.test.js` covers criteria 1 to 6 with a fake fetch;
+`src/data/geocoder.test.js` covers the provider-name and key guard;
+`GeocoderAttribution.test.jsx` and `AddressLookup.test.jsx` cover 4 and 7. Criterion 8 is
+`node scripts/check-geocoder.mjs` against live Photon and the live precinct layer. The live
+drive types an address in the dev server, picks a suggestion and lands on its precinct page,
+and checks the request goes only to photon.komoot.io with CORS allowed.
+
+Spike (Census and Esri, before the decision), script run 2026-10-21 with Node 24 from the
+repo root:
 
 ```js
 import election from '../../src/config/election.js';
