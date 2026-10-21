@@ -41,7 +41,9 @@ contributors". Both are shown as text links under the map.
    same-origin worker file. The build test checks both.
 4. The map wrapper is `role="region"` with an `aria-label`. Markers are hidden from
    assistive technology and not focusable; the list is the accessible version. A short
-   text legend says what the shading, numbers and dot mean.
+   text legend says what the shading, numbers and dot mean. MapLibre's canvas keeps its
+   keyboard focus (arrows pan); `precinctMap.css` draws the focus ring inside it, since the
+   map clips anything outside.
 5. Gestures: cooperative gestures, so one finger scrolls the page on a phone (two fingers
    move the map) and the mouse wheel zooms only with Ctrl or Cmd; rotation and pitch are
    off.

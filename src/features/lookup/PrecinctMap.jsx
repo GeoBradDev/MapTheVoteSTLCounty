@@ -11,8 +11,8 @@ const canDrawMap = () => typeof globalThis.WebGL2RenderingContext === 'function'
 
 // How long the map may take, from mount to its first full render (code,
 // outline, style and tiles), before it is dropped. Time while the page is
-// hidden does not count: a background tab draws nothing, so the clock starts
-// over when the page is shown again.
+// hidden does not count: a background tab draws nothing, so the clock pauses
+// and resumes with the time it had left.
 const LOAD_TIMEOUT_MS = 15_000;
 
 function Attribution() {
@@ -65,18 +65,27 @@ export default function PrecinctMap({ code, origin, polls }) {
     let current = true;
     let loading = true;
     let timer;
+    let remaining = LOAD_TIMEOUT_MS;
+    let startedAt = null;
 
-    function stopClock() {
+    function pauseClock() {
+      if (startedAt === null) return;
       clearTimeout(timer);
+      remaining -= Date.now() - startedAt;
+      startedAt = null;
+    }
+    function runClock() {
+      if (startedAt !== null) return;
+      startedAt = Date.now();
+      timer = setTimeout(fail, Math.max(0, remaining));
+    }
+    function stopClock() {
+      pauseClock();
       document.removeEventListener('visibilitychange', onVisibility);
     }
-    function startClock() {
-      clearTimeout(timer);
-      timer = setTimeout(fail, LOAD_TIMEOUT_MS);
-    }
     function onVisibility() {
-      if (document.visibilityState === 'hidden') clearTimeout(timer);
-      else startClock();
+      if (document.visibilityState === 'hidden') pauseClock();
+      else runClock();
     }
     function ready() {
       if (!current || !loading) return;
@@ -93,7 +102,7 @@ export default function PrecinctMap({ code, origin, polls }) {
       setState('failed');
     }
 
-    if (document.visibilityState !== 'hidden') startClock();
+    if (document.visibilityState !== 'hidden') runClock();
     document.addEventListener('visibilitychange', onVisibility);
     Promise.all([import('./precinctMapView.js'), getPrecinctGeometry(code)])
       .then(([{ createPrecinctMap }, feature]) => {

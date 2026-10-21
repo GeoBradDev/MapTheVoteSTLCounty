@@ -17,6 +17,16 @@
   left: 0;
 }
 
+/*
+  The canvas takes keyboard focus (arrows pan, + and - zoom). The global ring
+  sits outside the element, where the map's overflow clips it, so draw it
+  inside.
+*/
+.maplibregl-canvas:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: -3px;
+}
+
 .maplibregl-canvas-container.maplibregl-interactive {
   cursor: grab;
   user-select: none;

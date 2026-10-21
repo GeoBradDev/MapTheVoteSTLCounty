@@ -106,7 +106,8 @@ official lookup. Results are recorded in `docs/data.md` under Geocoding.
 
 The results screen shows a small map of the precinct and the listed polling places (#13). It
 is extra help: the list holds everything on it, its markers are hidden from screen readers,
-and it is removed whenever anything fails or the browser lacks WebGL 2. MapLibre GL JS is
+and it is removed when anything fails before it first renders, when it takes longer than 15
+seconds of visible time, or when the browser lacks WebGL 2. MapLibre GL JS is
 loaded with `import()` only when the map renders (`src/features/lookup/precinctMapView.js` is
 the only file that imports it), and its worker ships as a same-origin file, so the
 Content-Security-Policy needs no `blob:` source. The app ships its own few MapLibre layout

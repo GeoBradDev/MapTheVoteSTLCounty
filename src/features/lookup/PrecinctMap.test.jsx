@@ -154,12 +154,10 @@ describe('PrecinctMap', () => {
     };
 
     it('drops a map that has not rendered in time', async () => {
-      render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
-      await waitFor(() => expect(createPrecinctMap).toHaveBeenCalled());
       vi.useFakeTimers();
-      // The clock started at mount, before fake timers; restart it under them.
-      setVisibility('hidden');
-      setVisibility('visible');
+      render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
+      await act(() => vi.advanceTimersByTimeAsync(0));
+      expect(createPrecinctMap).toHaveBeenCalled();
       act(() => vi.advanceTimersByTime(LIMIT - 1));
       expect(region()).toBeInTheDocument();
       act(() => vi.advanceTimersByTime(1));
@@ -184,9 +182,21 @@ describe('PrecinctMap', () => {
       act(() => vi.advanceTimersByTime(LIMIT * 4));
       expect(region()).toBeInTheDocument();
       setVisibility('visible');
-      act(() => vi.advanceTimersByTime(LIMIT - 1));
+      act(() => vi.advanceTimersByTime(999));
       expect(region()).toBeInTheDocument();
       act(() => vi.advanceTimersByTime(1));
+      expect(screen.queryByRole('region')).toBeNull();
+    });
+
+    it('does not restart the clock when the page is shown again', () => {
+      vi.useFakeTimers();
+      getPrecinctGeometry.mockReturnValue(new Promise(() => {}));
+      render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
+      for (let i = 0; i < 3; i += 1) {
+        act(() => vi.advanceTimersByTime(5000));
+        setVisibility('hidden');
+        setVisibility('visible');
+      }
       expect(screen.queryByRole('region')).toBeNull();
     });
 
@@ -203,12 +213,10 @@ describe('PrecinctMap', () => {
     });
 
     it('keeps a map that rendered in time', async () => {
-      render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
-      await waitFor(() => expect(createPrecinctMap).toHaveBeenCalled());
-      act(() => options().onReady());
       vi.useFakeTimers();
-      setVisibility('hidden');
-      setVisibility('visible');
+      render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
+      await act(() => vi.advanceTimersByTimeAsync(0));
+      act(() => options().onReady());
       act(() => vi.advanceTimersByTime(LIMIT * 2));
       expect(region()).toBeInTheDocument();
       expect(view.remove).not.toHaveBeenCalled();
