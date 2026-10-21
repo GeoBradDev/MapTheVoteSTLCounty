@@ -32,9 +32,9 @@ action is the workflow opening a GitHub issue, which is covered by the plan's ow
    names the config key, the layer path and the service's error. Shown by a unit test with a
    stubbed service and live with `--layer precincts=<wrong path>`.
 4. A transient failure (network, timeout, 429, 5xx) is retried before a check fails.
-5. A GitHub Actions workflow runs the check daily and on demand, skips (passing) once the
-   Chicago date is after `electionDate`, also runs `scripts/check-geocoder.mjs`, and on any
-   failure opens an issue labeled `data health`, or comments on the open one, with a link to
+5. A GitHub Actions workflow runs the check daily and on demand; scheduled runs skip (passing)
+   once the Chicago date is after `electionDate`, while a manual run always checks. It also
+   runs `scripts/check-geocoder.mjs`, and on any failure opens an issue labeled `data health`, or comments on the open one, with a link to
    the run. It never runs on pull requests, so a live outage can never block a merge.
 6. Unit tests cover the checks with a stubbed `fetch`, run in `npm test` with no network.
 7. Docs: README gets a "Data health check" section; `docs/data.md` points to the new script
@@ -82,7 +82,7 @@ Not touched: `scripts/check-geocoder.mjs`, `src/data/photon.js`, `src/data/geoco
 
 - A slow service could push the job past its timeout, which cancels it without an issue.
   Requests time out after 15 s with 3 tries, and the job allows 45 minutes, above the worst
-  case of about 35 (changed during review).
+  case of about 40 (changed during review).
 
 Chosen not to do: no check of map tiles, Photon or the county website (the geocoder has its own
 script); no change to `scripts/inspect-data.mjs`, which is a raw dump for docs, not a pass/fail

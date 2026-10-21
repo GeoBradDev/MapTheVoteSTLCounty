@@ -232,7 +232,8 @@ export async function runHealthCheck(
             'Is this the right layer?',
         );
       }
-      const have = new Set((info.fields ?? []).map((f) => f.name));
+      const fields = Array.isArray(info.fields) ? info.fields : [];
+      const have = new Set(fields.map((f) => f?.name));
       const missing = want.fields.filter((f) => !have.has(f));
       if (missing.length) {
         throw new CheckError(`${where}: missing fields ${missing.join(', ')}`);
