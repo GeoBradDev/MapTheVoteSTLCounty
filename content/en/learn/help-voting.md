@@ -33,9 +33,9 @@ sources:
 
 ## Bring someone to help you
 
-If you cannot read or write, are blind, or have another physical disability, you can bring a
-person to help you vote.[^sos-election-day][^rsmo-115-445] Your helper does not have to be 18
-or a registered voter.[^sos-election-day]
+If you cannot read or write, are blind, or have another physical disability, and cannot vote
+your ballot on your own, you can bring a person to help you vote.[^sos-election-day][^rsmo-115-445]
+Your helper does not have to be 18 or a registered voter.[^sos-election-day]
 
 - You tell the election judges, under oath, why you need help.[^rsmo-115-445]
 - Your helper goes into the booth with you and marks your ballot the way you say.[^rsmo-115-445]

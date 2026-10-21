@@ -53,5 +53,5 @@ physical disability.[^rsmo-115-277] The full list is on the [absentee voting pag
 
 ## Do not want to give a reason?
 
-From October 20 through November 2, any voter can vote absentee in person with no reason
+From October 20 through November 2, any registered voter can vote absentee in person with no reason
 needed.[^rsmo-115-277][^county-absentee-app] See [Absentee and early in-person voting](/learn/absentee).

@@ -43,7 +43,7 @@ the screen bigger.[^sos-how-to-vote]
 
 If you have a physical disability and your polling place is not accessible, you can ask the
 county board for a different one.[^sos-how-to-vote][^rsmo-115-436] You can also vote at a
-central polling place.[^sos-how-to-vote] Each county must have at least one central polling
+central polling place.[^sos-how-to-vote] Each local election office must have at least one central polling
 place that is easy to get into for voters with disabilities and older voters.[^rsmo-115-115]
 Call the county board at 314-615-1800 to ask.[^county-contact]
 

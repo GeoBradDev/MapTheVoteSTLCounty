@@ -86,7 +86,7 @@ you can register in person at the county board. Do it by 5 p.m. on Friday, Octob
 
 ## Deadline
 
-Send your ballot by 12:01 a.m. on Election Day, November 3, where you are.[^rsmo-115-916]
+Send your ballot by 12:01 a.m. on Election Day, November 3, where you are. That is just after midnight, at the very start of Election Day.[^rsmo-115-916]
 The county board must receive it by noon on Friday, November 6, 2026.[^rsmo-115-920][^sos-overseas]
 A ballot that arrives at the county board by 7 p.m. on Election Day also counts.[^rsmo-115-916]
 
