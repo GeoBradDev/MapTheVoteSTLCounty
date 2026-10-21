@@ -4,8 +4,9 @@ import nonresidential from '../../docs/raw/fixtures/precinct-nonresidential.json
 import byId from '../../docs/raw/fixtures/precinct-by-id.json';
 import { parseSampleBallot } from './sampleBallot.js';
 
-const ITEM = 'f1daf903ee6945b4a8fcb4391dc3ba4c';
-const URL_OK = `https://stlouiscovotes.maps.arcgis.com/sharing/rest/content/items/${ITEM}/data`;
+// The recorded CC007 link, so no election-specific URL is written here.
+const URL_OK = byId.features[0].attributes.html.match(/href=(\S+?)>/)[1];
+const ITEM = URL_OK.match(/[0-9a-f]{32}/)[0];
 
 const link = (href, text = 'CC-007.pdf') => `Sample Ballot: <a href=${href}>${text}</a>`;
 
@@ -94,6 +95,53 @@ describe('parseSampleBallot', () => {
       url: URL_OK,
       fileName: 'CC-007.pdf',
     });
+  });
+
+  it('reads an href after a slash, which browsers treat as an attribute separator', () => {
+    expect(parseSampleBallot(`<a/href=${URL_OK}>CC-007.pdf</a>`)).toEqual({
+      url: URL_OK,
+      fileName: 'CC-007.pdf',
+    });
+    expect(parseSampleBallot('<a/href=javascript:alert(1)>Click me</a>')).toEqual({
+      message: null,
+    });
+  });
+
+  it('ignores href= written in the text, outside any tag', () => {
+    expect(parseSampleBallot('Polls closed; see href=below for info')).toEqual({
+      message: 'Polls closed; see href=below for info',
+    });
+  });
+
+  it('ignores an href in a comment or in a tag other than a link', () => {
+    const html = `<!-- old <a href=x>y</a> --><img href="x"><a href="${URL_OK}">CC-007.pdf</a>`;
+    expect(parseSampleBallot(html)).toEqual({ url: URL_OK, fileName: 'CC-007.pdf' });
+  });
+
+  it('ignores an href inside another attribute value', () => {
+    const html = `<a title="see href=x" href="${URL_OK}">CC-007.pdf</a>`;
+    expect(parseSampleBallot(html)).toEqual({ url: URL_OK, fileName: 'CC-007.pdf' });
+  });
+
+  it('takes the file name after the whole opening tag, even with > in a quoted value', () => {
+    const html = `<a href="${URL_OK}" title="a>b">CC-007.pdf</a>`;
+    expect(parseSampleBallot(html)).toEqual({ url: URL_OK, fileName: 'CC-007.pdf' });
+  });
+
+  it('shows nothing for an unfinished link tag rather than its markup', () => {
+    expect(parseSampleBallot('Sample Ballot: <a href=javascript:alert(1)')).toEqual({
+      message: null,
+    });
+  });
+
+  it('keeps < and > that are not part of a tag', () => {
+    expect(parseSampleBallot('Ages < 18 and > 0')).toEqual({ message: 'Ages < 18 and > 0' });
+  });
+
+  it('returns a new object each time', () => {
+    const result = parseSampleBallot('');
+    result.extra = true;
+    expect(parseSampleBallot('')).toEqual({ message: null });
   });
 
   it('does not mistake an attribute ending in href for the href', () => {

@@ -35,21 +35,25 @@ Scope decisions:
 
 1. `src/data/sampleBallot.js` exports `parseSampleBallot(html)`, which returns either
    `{ url, fileName }` or `{ message }`, never both shapes and never throws for any input.
-2. The href is pulled with a regex that accepts unquoted, single-quoted and double-quoted
-   values (case-insensitive `href`, optional whitespace around `=`). The URL is returned
-   only when it matches `election.sampleBallotUrlPattern` in full; no URL pattern is
-   written in `src/data/`.
+2. The href is read from the first `<a>` tag that has one, with its attributes parsed
+   as a browser would: unquoted, single-quoted or double-quoted values, a case-insensitive
+   `href`, optional whitespace around `=`, whitespace or `/` between attributes. An `href`
+   in text outside a tag, inside another attribute's value, in an HTML comment, or on a
+   tag other than `<a>` is ignored. The URL is returned only when it matches
+   `election.sampleBallotUrlPattern` in full; no URL pattern or election URL is written in
+   `src/data/`, tests included (they take the URL from the recorded fixture).
 3. `fileName` is the link text with tags removed and whitespace trimmed, or `null` when
    empty. It is for display only.
 4. A link whose URL is rejected (a non-portal URL, a `javascript:` URL, an `http:` URL, a
-   URL with extra path or query) returns `{ message: null }`.
-5. Text with no link returns `{ message }` holding the plain text: tags removed, whitespace
-   collapsed and trimmed. The nonresidential message comes back verbatim.
+   URL with extra path or query), or an unfinished `<a` tag, returns `{ message: null }`.
+5. Text with no link returns `{ message }` holding the plain text: tags and comments removed (a lone
+   `<` or `>` in the text is kept), whitespace collapsed and trimmed. The nonresidential message comes back verbatim.
 6. `null`, `undefined`, a non-string, an empty or whitespace-only string returns
    `{ message: null }`.
 7. No file under `src/` uses `dangerouslySetInnerHTML`; a test fails if one does.
 8. All 974 `In Election` precincts on the live layer parse to a URL that matches the
-   pattern, and every `Nonresidential Precinct` row parses to a message. The
+   pattern, with a file name and a link no other precinct shares, and every other row
+   (`Nonresidential Precinct` today) parses to a message. The
    `scripts/check-sample-ballots.mjs` output is noted in the PR.
 
 ## Files that change
