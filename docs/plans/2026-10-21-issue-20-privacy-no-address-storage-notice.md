@@ -31,9 +31,8 @@ email: not applicable because the app is a frontend-only React site.
 ## Acceptance criteria
 
 1. A privacy notice page at `/privacy`, in plain language, says what is sent where: the address
-   search services get the typed text (St. Louis County's address service and, as a backup,
-   Photon); the county's election maps on Esri's ArcGIS Online get coordinates or a precinct
-   code; the basemap host gets tile requests for the area on screen; the web host sees the
+   search services get the typed text (St. Louis County's address service and Photon); the
+   county's election maps on Esri's ArcGIS Online get coordinates or a precinct code; the basemap host gets tile requests for the area on screen; the web host sees the
    pages opened. It names each third party the browser calls by its host name, except the county
    address service's hosts, which #49 adds (see Revisions).
 2. The notice says what the site never does: no address or location in the URL, browser
@@ -121,3 +120,6 @@ email: not applicable because the app is a frontend-only React site.
   mounted at the bottom of the page); the CSP coverage test matches whole host names in
   parentheses, not substrings; the cache sentence says the request, coordinates included, may
   be kept; README no longer says "only in memory" and adds the HTTP cache to the hand check.
+- After round 3 (no findings; notes applied): the Use my location item says the browser may
+  not ask again once allowed, and lists every local use (precinct, map marker, nearest places to
+  vote); criterion 1 no longer says "as a backup".

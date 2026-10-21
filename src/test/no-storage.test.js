@@ -1,4 +1,4 @@
-// Addresses are sensitive (#20): the app keeps them only in memory. Fails when
+// Addresses are sensitive (#20): the app never stores or logs them. Fails when
 // any app file under src/ (tests excluded) touches browser storage, cookies or
 // the console, so a later change cannot quietly persist or log an address.
 // @vitest-environment node

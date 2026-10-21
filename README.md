@@ -107,9 +107,9 @@ official lookup. Results are recorded in `docs/data.md` under Geocoding.
 Addresses are sensitive. The app itself never puts a typed address or its coordinates in the
 URL, `localStorage`, `sessionStorage`, IndexedDB, cookies, logs or analytics, and v1 has no
 analytics. The browser's ordinary HTTP cache may still keep the precinct point queries, whose
-URLs hold the coordinates, until #38 changes them; the notice says so. The plain-language notice at `/privacy`
-(`src/features/privacy/privacyCopy.js`) says what each third party gets; change it in the same
-change as any new service or any change to what is sent. `src/test/no-storage.test.js` fails
+URLs hold the coordinates, until #38 changes them; the notice says so. The plain-language
+notice at `/privacy` (`src/features/privacy/privacyCopy.js`) says what each third party gets;
+change it in the same change as any new service or any change to what is sent. `src/test/no-storage.test.js` fails
 when app code under `src` uses browser storage, cookies or the console, and
 `src/test/addressPrivacy.test.jsx` runs a lookup and checks storage, cookies, Cache Storage
 entries, IndexedDB database names, the URL and the console for the address (jsdom has no

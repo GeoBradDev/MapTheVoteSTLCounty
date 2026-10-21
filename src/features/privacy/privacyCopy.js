@@ -52,7 +52,7 @@ export const copy = {
       },
       {
         heading: 'Use my location',
-        text: 'Your browser asks before it shares your location. The site uses it only to find your precinct and the polling places nearest you.',
+        text: 'Your browser asks for your permission before it shares your location with this site, unless you allowed it before. The site uses it only to find your precinct, mark it on the map and list the nearest places to vote.',
       },
       {
         heading: 'The map',
