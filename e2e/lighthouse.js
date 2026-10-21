@@ -39,7 +39,7 @@ const MAX_LCP_MS = 2500;
  * and not the not-found page, an error or a loading state. On the results page
  * it also checks content built from the precinct and poll fields the app asks
  * ArcGIS for: the municipality, the districts, the sample ballot link and each
- * polling place's name and address.
+ * polling place's name and ZIP.
  */
 const ROUTES = [
   {
@@ -62,7 +62,7 @@ const ROUTES = [
         rows.every(
           (li) =>
             !/^Polling place\b/.test(li.querySelector('h3')?.textContent ?? '') &&
-            /\d{5}/.test(li.querySelector('p')?.textContent ?? ''),
+            /MO \d{5}/.test(li.querySelector('p')?.textContent ?? ''),
         )
       );
     },
