@@ -22,8 +22,7 @@ sources:
     url: https://www.sos.mo.gov/elections/calendar
 ---
 
-You must be registered to vote.[^sos-voting-rights] It is a good idea to check your
-registration before you go.
+You must be registered to vote.[^sos-voting-rights] Here is how to check your registration.
 
 ## How to check
 

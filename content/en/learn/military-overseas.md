@@ -67,7 +67,7 @@ Active members of the armed forces and their dependents can still vote for feder
 Use the portal or the Federal Write-In Absentee Ballot.[^sos-overseas]
 
 State law goes further. A military or overseas voter who is eligible but not registered can
-vote for federal, statewide and state legislative offices and statewide ballot questions. Send
+vote for federal, statewide and state legislative offices and statewide ballot initiatives. Send
 a Federal Post Card Application to ask for an absentee ballot, or turn one in at the county
 board on Election Day.[^rsmo-115-277]
 

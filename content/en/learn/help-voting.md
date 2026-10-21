@@ -55,8 +55,9 @@ so you can vote in private.[^rsmo-115-445]
 - You may be able to vote curbside, outside the polling place. Every polling place must have
   accessible voting equipment.[^sos-election-day] See
   [Accessible voting and curbside voting](/learn/accessible-voting).
-- You can vote absentee if you are sick or have a physical disability, or if you care for
-  someone at your address who is.[^rsmo-115-277] See [Absentee and early in-person voting](/learn/absentee).
+- You can vote absentee if you are sick or have a physical disability. You can also vote
+  absentee if you are the main person who gives physical care to someone at your address who
+  is.[^rsmo-115-277] See [Absentee and early in-person voting](/learn/absentee).
 
 ## Permanent disability list
 
@@ -73,8 +74,9 @@ absentee list.[^rsmo-115-284][^sos-election-day]
 
 ## Help with an absentee ballot
 
-If you are blind, cannot read or write English, or cannot mark your ballot because of a
-disability, a person you choose can help you with your absentee ballot.[^rsmo-115-291]
+If you are blind, cannot read or write English, or have a physical disability that keeps you
+from marking your ballot, a person you choose can help you with your absentee
+ballot.[^rsmo-115-291]
 
 ## If you become sick or go into a care facility
 

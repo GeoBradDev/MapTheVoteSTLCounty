@@ -80,8 +80,8 @@ To get a ballot by mail, or to vote absentee in person before October 20, you ne
 these reasons:[^rsmo-115-277][^sos-how-to-vote]
 
 - You will be away from St. Louis County on Election Day.[^rsmo-115-277]
-- You are sick or have a physical disability. This includes caring for someone at your
-  address who is sick or disabled.[^rsmo-115-277]
+- You are sick or have a physical disability. This includes being the main person who gives
+  physical care to someone at your address who is sick or disabled.[^rsmo-115-277]
 - Your religious beliefs or practices.[^rsmo-115-277]
 - You work for an election office somewhere other than your polling place. Or you are a first
   responder, health care worker or law enforcement officer.[^rsmo-115-277]
@@ -100,7 +100,7 @@ these reasons:[^rsmo-115-277][^sos-how-to-vote]
 If you missed that deadline, you can still vote absentee in person until 5 p.m. on Monday,
 November 2.[^rsmo-115-279][^sos-how-to-vote]
 
-A close relative can also ask for you in person at the county board, by the same October 21
+A close relative could also ask for you in person at the county board, by the same October 21
 deadline.[^rsmo-115-279] A close relative means a spouse, parent, child, brother,
 sister, grandparent or grandchild, or one of these by marriage.[^sos-how-to-vote][^sos-voting-rights]
 
@@ -114,7 +114,7 @@ caregivers.[^sos-how-to-vote]
 - Mark your ballot in secret, seal it in the ballot envelope and fill out the statement on
   the envelope.[^rsmo-115-291]
 - Most voters who mail their ballot must have the envelope notarized.[^rsmo-115-277]
-- You do not need a notary if your reason is sickness or disability, or if you are in
+- You do not need a notary if your reason is sickness or a physical disability, or if you are in
   jail.[^rsmo-115-277] Voters on the permanent disability list and military and overseas
   voters also do not need one.[^rsmo-115-283]
 - A notary may not charge you a fee for this.[^rsmo-115-283]
