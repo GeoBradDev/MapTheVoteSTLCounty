@@ -59,7 +59,7 @@ county layers from `docs/raw/fixtures/`, every other outside request blocked:
 - `e2e/fixtures.js` (new): the fixture answering rules shared by the axe run and the
   Lighthouse run (which layer, which fixture, projecting to the requested `outFields`).
 - `e2e/a11y.e2e.js`: use `e2e/fixtures.js` instead of its own copy.
-- `e2e/lighthouse.mjs` (new): builds nothing; serves `dist/` with `vite preview`, runs
+- `e2e/lighthouse.js` (new): builds nothing; serves `dist/` with `vite preview`, runs
   Lighthouse through puppeteer-core on Playwright's Chromium with request interception, three
   runs per route, median score; prints scores and metrics; writes HTML reports to
   `lighthouse-reports/`; exits 1 below 90 or with LCP at or over 2.5 s.
