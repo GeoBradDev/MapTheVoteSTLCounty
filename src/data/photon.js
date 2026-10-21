@@ -158,20 +158,24 @@ function typedZip(text) {
   return zips.at(-1)?.[1];
 }
 
-const NOT_TOWN = new Set(['mo', 'missouri', 'usa', 'us']);
-// Unit words; the word after one is the unit, not a town.
+const NOT_TOWN = new Set(['mo', 'missouri', 'usa', 'us', 'united', 'states']);
+// Unit words; when a unit number or letter follows one, both are dropped.
 const UNIT = new Set('apt apartment unit ste suite bldg building fl floor rm room lot'.split(' '));
 // Typed towns that name St. Louis, the mailing city for much of the county.
 const ST_LOUIS_NAMES = new Set([ST_LOUIS, `${ST_LOUIS} city`]);
 
+const isUnitNumber = (word) => /^\d/.test(word ?? '') || word?.length === 1;
+
 // The town in the words typed after the street, with or without commas:
-// what is left once units, the state, the country and numbers are dropped.
+// what is left once units ("Apt 2", "Unit 2-B"), the state, the country,
+// numbers and single letters are dropped. "Ste Genevieve" is a town, not a
+// suite, because no unit number follows "Ste".
 function typedTown(after) {
   const kept = [];
   for (let i = 0; i < after.length; i += 1) {
     const word = after[i];
-    if (UNIT.has(word)) i += 1;
-    else if (!/^\d/.test(word) && !NOT_TOWN.has(word)) kept.push(word);
+    if (UNIT.has(word) && isUnitNumber(after[i + 1])) i += 1;
+    else if (!isUnitNumber(word) && !NOT_TOWN.has(word)) kept.push(word);
   }
   return kept.join(' ');
 }
@@ -207,6 +211,8 @@ function matchesTyped(text, props) {
   // A City house with no postcode cannot confirm a typed ZIP.
   if (zip && !postcode && town === ST_LOUIS) return false;
   const typedPlace = typedTown(words(text).slice(1 + street.length));
+  // "St. Louis City" says the City, so a county result is not it.
+  if (typedPlace === `${ST_LOUIS} city` && town !== ST_LOUIS) return false;
   if (typedPlace && town && typedPlace !== town && !ST_LOUIS_NAMES.has(typedPlace)) return false;
   const confirmed = (zip && zip === postcode) || (typedPlace && typedPlace === town);
   return !town || town === ST_LOUIS || Boolean(confirmed);

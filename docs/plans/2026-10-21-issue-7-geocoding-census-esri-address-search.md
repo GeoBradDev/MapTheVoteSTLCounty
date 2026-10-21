@@ -57,7 +57,8 @@ Recorded in `docs/data.md` under Geocoding. Summary:
    (spellings like Road/Rd, South/S, Saint/St, Mount/Mt, First/1st compare as one), and a
    typed ZIP must be its postcode (a St. Louis City match with no postcode cannot confirm
    one) and a town typed after the street, with or without a comma, its town unless it is
-   St. Louis; a match in
+   St. Louis (units with a unit number, the state, the country and numbers are not part of
+   the town; "St. Louis City" must be a City result); a match in
    a named town other than St. Louis needs that town or its ZIP typed; typing a suggestion's
    own label back always matches; otherwise `null`. A picked suggestion geocodes from the suggestion with no second
    request.
@@ -114,7 +115,7 @@ attribution. 4. Live check script and docs. 5. Live drive in a browser.
   different direction or street type is another street; frozen tests
   `src/data/photon.strict.test.js`, `src/data/photon.street.test.js` and, for the same
   address in another town, `src/data/photon.town.test.js` and
-  `src/data/photon.typedtown.test.js`). A result Photon gives with no town (unincorporated
+  `src/data/photon.typedtown.test.js`, `src/data/photon.unit.test.js`). A result Photon gives with no town (unincorporated
   county) is accepted on house number, street and any typed ZIP alone. A voter who leaves out the
   street type, or the town and ZIP of an address in a named town, gets no match and is
   told to add the ZIP or pick a suggestion.
