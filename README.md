@@ -23,8 +23,8 @@ publish directory, the custom domain (`mapthevotestl.com`), the SPA rewrite, the
 headers and the cache rules. `src/test/render.test.js` checks it.
 
 - **Deploys:** a push to `main` deploys after CI passes (`autoDeployTrigger: checksPass`).
-  A change only under `docs/` or to `README.md` does not build; Markdown under `content/`
-  ships in the site, so it does.
+  A change only under `docs/` or to `README.md` does not build. Markdown under `content/`
+  still builds, because the learn pages (#21) will be built from it.
 - **Previews:** every pull request gets its own preview URL. A Blueprint cannot set headers
   per preview, so previews send the production headers and no `X-Robots-Tag: noindex`.
 - **Change config in `render.yaml`, not the Dashboard.** A Blueprint sync overwrites header
