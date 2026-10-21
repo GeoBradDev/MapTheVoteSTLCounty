@@ -36,7 +36,7 @@ export const copy = {
     ballot: 'Sample ballot',
     earlyVoting: 'Early voting',
     districts: 'Your districts',
-    // Until each card is built (#16, #15).
+    // Until each card is built (#16).
     pending: 'For now, find this in the',
   },
   polls: {
@@ -84,6 +84,37 @@ export const copy = {
     // than show it in the new tab.
     newTab: '(opens a PDF in a new tab, or downloads it)',
     missing: 'We could not find the sample ballot for this precinct. Find it with the',
+  },
+  districts: {
+    // Row labels, keyed like `districtFields` in the election config. Values
+    // come from the county's precinct data.
+    labels: {
+      congressional: 'U.S. House',
+      stateSenate: 'State Senate',
+      stateHouse: 'State House',
+      countyCouncil: 'County Council',
+      municipality: 'Municipality',
+      // Some cities number council districts instead of wards, such as
+      // "City of Ellisville District 1".
+      ward: 'City ward or district',
+      township: 'Township',
+      school: 'School district',
+      juniorCollege: 'Community college subdistrict',
+      fire: 'Fire protection district',
+      ambulance: 'Ambulance district',
+      ambulanceSubdistrict: 'Ambulance subdistrict',
+      library: 'Library district',
+      sewer: 'Sewer district',
+      light: 'Light district',
+      road: 'Road district',
+      communityImprovement: 'Community improvement district',
+      business: 'Business district',
+      transportation: 'Transportation development district',
+      neighborhoodImprovement: 'Neighborhood improvement district',
+      annexation: 'Annexation area',
+    },
+    source: 'From the St. Louis County Board of Elections precinct data.',
+    missing: 'We could not find the districts for this precinct. Find them with the',
   },
   map: {
     /** @param {string} code */

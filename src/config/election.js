@@ -27,6 +27,9 @@
  *   precinct `html` field must match this before it is shown.
  * @property {string} congressionalField Precinct field with the current
  *   congressional district.
+ * @property {{ key: string, field: string }[]} districtFields The precinct
+ *   fields the districts card lists, in order. `key` names the row's label in
+ *   the results copy; `field` is the precinct layer field it reads.
  * @property {string} officialLookupUrl The county's own lookup app, the
  *   fallback when ours fails.
  * @property {string} countySiteUrl The county election board's website.
@@ -40,6 +43,9 @@
  * @property {{ sources: string[], lastVerified: string }} voteAnywhere Where
  *   the rule that a county voter may vote at any polling place is stated.
  */
+
+// The 2025 map. congressional_district_20 is the old map; do not show it.
+const congressionalField = 'congressional_district_25';
 
 function deepFreeze(value) {
   // A frozen RegExp has a read-only lastIndex, which breaks global matching.
@@ -65,8 +71,33 @@ const election = deepFreeze({
   absenteeWhere: "abs_type IN ('abs','boe')",
   sampleBallotUrlPattern:
     /^https:\/\/stlouiscovotes\.maps\.arcgis\.com\/sharing\/rest\/content\/items\/[0-9a-f]{32}\/data$/,
-  // The 2025 map. congressional_district_20 is the old map; do not show it.
-  congressionalField: 'congressional_district_25',
+  congressionalField,
+  // Never the pre-joined `districts` field: it includes the old congressional
+  // map. docs/data.md describes each field.
+  districtFields: [
+    { key: 'congressional', field: congressionalField },
+    { key: 'stateSenate', field: 'state_senate_20' },
+    { key: 'stateHouse', field: 'legislative_district_20' },
+    { key: 'countyCouncil', field: 'county_council_20' },
+    { key: 'municipality', field: 'municipality' },
+    { key: 'ward', field: 'ward' },
+    { key: 'township', field: 'township' },
+    { key: 'school', field: 'school' },
+    { key: 'juniorCollege', field: 'junior_college_district' },
+    { key: 'fire', field: 'fire' },
+    { key: 'ambulance', field: 'ambulance' },
+    { key: 'ambulanceSubdistrict', field: 'ambulance_subdistrict' },
+    { key: 'library', field: 'library_district' },
+    { key: 'sewer', field: 'sewer' },
+    // Special districts, usually empty.
+    { key: 'light', field: 'light_district' },
+    { key: 'road', field: 'road' },
+    { key: 'communityImprovement', field: 'community_improvement' },
+    { key: 'business', field: 'business_district' },
+    { key: 'transportation', field: 'transportation' },
+    { key: 'neighborhoodImprovement', field: 'neighborhood_improvement_dist' },
+    { key: 'annexation', field: 'annexation' },
+  ],
   officialLookupUrl:
     'https://stlouiscovotes.maps.arcgis.com/apps/instant/lookup/index.html?appid=4c3116b104af40bea77ebea20aaae275',
   // Decided in issue #1: link the .info site directly, since

@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import election from '../../config/election.js';
+import DistrictsCard from './DistrictsCard.jsx';
 import PollsCard from './PollsCard.jsx';
 import SampleBallotCard from './SampleBallotCard.jsx';
 import { copy } from './resultsCopy.js';
@@ -41,15 +42,17 @@ function PendingCard() {
 /**
  * The result cards, in order.
  * @param {{ code: string, origin: { lat: number, lng: number } | null,
- *   showBallot: boolean, ballotHtml: unknown }} props `origin` is the
- *   looked-up point, in memory only. `showBallot` false hides the sample ballot
- *   card, for a precinct with nothing on the ballot. `ballotHtml` is the
- *   precinct's `html` field, which only the sample ballot parser reads.
+ *   showBallot: boolean, ballotHtml: unknown, precinct: object }} props
+ *   `origin` is the looked-up point, in memory only. `showBallot` false hides
+ *   the sample ballot card, for a precinct with nothing on the ballot.
+ *   `ballotHtml` is the precinct's `html` field, which only the sample ballot
+ *   parser reads. `precinct` is the precinct's attributes, for its districts.
  */
-export default function ResultsCards({ code, origin, showBallot, ballotHtml }) {
+export default function ResultsCards({ code, origin, showBallot, ballotHtml, precinct }) {
   const body = {
     polls: () => <PollsCard code={code} origin={origin} />,
     ballot: () => <SampleBallotCard html={ballotHtml} />,
+    districts: () => <DistrictsCard precinct={precinct} />,
   };
   return (
     <div className="mt-6 flex flex-col gap-4">

@@ -4,6 +4,7 @@
 // @vitest-environment node
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import byId from '../../docs/raw/fixtures/precinct-by-id.json';
 import election from './election.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
@@ -19,6 +20,7 @@ const REQUIRED_KEYS = [
   'absenteeWhere',
   'sampleBallotUrlPattern',
   'congressionalField',
+  'districtFields',
   'officialLookupUrl',
   'countySiteUrl',
   'nearbyPollCount',
@@ -112,6 +114,36 @@ describe('election config', () => {
     expect(Number.isInteger(election.nearbyPollCount)).toBe(true);
     expect(election.nearbyPollCount).toBeGreaterThanOrEqual(3);
     expect(election.nearbyPollCount).toBeLessThanOrEqual(5);
+  });
+});
+
+describe('district fields', () => {
+  const fields = election.districtFields;
+
+  it('is a list of unique keys and fields', () => {
+    expect(fields.length).toBeGreaterThan(0);
+    for (const entry of fields) {
+      expect(Object.keys(entry).sort()).toEqual(['field', 'key']);
+      expect(entry.key).toMatch(/^[a-zA-Z]+$/);
+      expect(entry.field).toMatch(/^\w+$/);
+    }
+    expect(new Set(fields.map((f) => f.key)).size).toBe(fields.length);
+    expect(new Set(fields.map((f) => f.field)).size).toBe(fields.length);
+  });
+
+  it('shows the current congressional map first, and no other congressional field', () => {
+    expect(fields[0]).toEqual({ key: 'congressional', field: election.congressionalField });
+    const congressional = fields.filter((f) => f.field.startsWith('congressional'));
+    expect(congressional).toEqual([fields[0]]);
+  });
+
+  it('never reads the pre-joined districts field, which includes the old congressional map', () => {
+    expect(fields.map((f) => f.field)).not.toContain('districts');
+  });
+
+  it('names only fields the recorded precinct layer has', () => {
+    const columns = Object.keys(byId.features[0].attributes);
+    expect(fields.map((f) => f.field).filter((f) => !columns.includes(f))).toEqual([]);
   });
 });
 
