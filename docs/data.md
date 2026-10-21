@@ -516,8 +516,11 @@ answer with the typed text itself:
   (`src/features/lookup/AddressSearch.jsx`), not the label as typed text, and so does the
   label with text inserted into it (a unit added). Any other edit (a deletion, a paste over
   the box) forgets the pick, so a ZIP typed after it is the voter's own, and a county voter
-  can still type a county-only ZIP to get the precinct. Left open: inserting into the label
-  and deleting the insertion again sends the label as typed text.
+  can still type a county-only ZIP to get the precinct. Left open (issue #58 PR, owner
+  decision): an edit of the picked label that leaves its ZIP in place but is not a pure
+  insertion (deleting ", MO", changing "Saint Louis" to "St. Louis"), or a space typed at
+  its start or end, sends the label's county-only ZIP as typed text, so a City voter with a
+  county twin can get the county precinct that way.
 - **A City match:** a `PointAddress` (a City parcel; interpolated `StreetAddress` ranges do
   not count) with the typed house number and whole street under the strict rules
   (`matchesStreet` in `addressMatch.js`), and the typed ZIP when one is typed (a parcel
@@ -531,7 +534,7 @@ answer with the typed text itself:
 - **Cost:** a county voter whose number and street the City also has, who types no ZIP,
   a ZIP that crosses the City line, or picks the suggestion, gets the City referral;
   typing a county-only ZIP gets the precinct. A City geocoder outage makes every lookup without a county-only ZIP no
-  match. The owner accepted both: neither sends a voter to a wrong county precinct.
+  match, picks of a suggestion included. The owner accepted both: neither sends a voter to a wrong county precinct.
 - **Not done:** looking up City addresses the county does not have (#57).
 
 `node scripts/check-geocoder.mjs`, 2026-10-21, rerun with the City check (#58): the 10 polling place addresses
