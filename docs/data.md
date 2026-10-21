@@ -232,6 +232,12 @@ both Missouri and elsewhere. The two referral links are in
 is on `stlouis-mo.gov`; `stlelections.com` is a parked domain for sale (checked
 2026-10-21), so do not link it.
 
+"Use my location": `getDeviceLocation` in `src/features/lookup/deviceLocation.js`
+returns only `{ lat, lng }` from the browser's position, which is the
+coordinates-only place `locate` takes. Only those coordinates are sent, as the
+`geometry` of the precinct and boundary queries (a GET query string, like every
+ArcGIS query here); the app does not store them or put them in the page URL.
+
 ### Legacy `lookup_view_*` services: do not use
 
 | Service | Actually points at |
