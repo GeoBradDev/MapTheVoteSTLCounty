@@ -5,6 +5,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
+import absenteeSites from '../../../docs/raw/fixtures/absentee-sites.json';
 import polls from '../../../docs/raw/fixtures/polls.json';
 import precinctGeometry from '../../../docs/raw/fixtures/precinct-geometry.json';
 import byId from '../../../docs/raw/fixtures/precinct-by-id.json';
@@ -21,12 +22,16 @@ function respond(body, status = 200) {
   return Promise.resolve(new Response(JSON.stringify(body), { status }));
 }
 
-// Answers the polls and precinct outline queries from their fixtures, and the
-// precinct query with `precinct` (a body, or a function of the URL).
+// Answers the polls, absentee sites and precinct outline queries from their
+// fixtures, and the precinct query with `precinct` (a body, or a function of
+// the URL).
 function routeFetch(precinct) {
   fetchMock.mockImplementation((input) => {
     const url = new URL(input);
-    if (url.pathname.includes(election.layers.polls)) return respond(polls);
+    if (url.pathname.includes(election.layers.polls)) {
+      const absentee = url.searchParams.get('where') === election.absenteeWhere;
+      return respond(absentee ? absenteeSites : polls);
+    }
     if (url.searchParams.get('f') === 'geojson') return respond(precinctGeometry);
     return typeof precinct === 'function' ? precinct(url) : respond(precinct);
   });
@@ -261,7 +266,12 @@ describe('PrecinctPage', () => {
     routeFetch(byId);
     renderAt('CC007');
     await ready('CC007');
-    const built = [copy.cards.polls, copy.cards.ballot, copy.cards.districts];
+    const built = [
+      copy.cards.polls,
+      copy.cards.ballot,
+      copy.cards.earlyVoting,
+      copy.cards.districts,
+    ];
     for (const name of cardHeadings().filter((heading) => !built.includes(heading))) {
       const card = screen.getByRole('region', { name });
       expect(within(card).getByRole('link', { name: copy.officialLookup })).toHaveAttribute(
@@ -269,6 +279,26 @@ describe('PrecinctPage', () => {
         election.officialLookupUrl,
       );
     }
+  });
+
+  it('lists the nearest early voting sites, from the absentee query only', async () => {
+    routeFetch(byId);
+    rememberLookupPoint('CC007', { lat: 38.62, lng: -90.33 });
+    renderAt('CC007');
+    await ready('CC007');
+    const card = screen.getByRole('region', { name: copy.cards.earlyVoting });
+    const list = await within(card).findByRole('list', { name: copy.earlyVoting.listLabel });
+    const names = within(list)
+      .getAllByRole('heading', { level: 3 })
+      .map((h) => h.textContent);
+    const expected = nearestPolls(absenteeSites, { lat: 38.62, lng: -90.33 })
+      .slice(0, election.nearbyPollCount)
+      .map((row) => row.name);
+    expect(names).toEqual(expected);
+    const absenteeCalls = fetchMock.mock.calls.filter(
+      ([input]) => new URL(input).searchParams.get('where') === election.absenteeWhere,
+    );
+    expect(absenteeCalls).toHaveLength(1);
   });
 
   it('says a malformed code is not found, without a request', async () => {

@@ -13,6 +13,20 @@ export function formatTime(time) {
   return minutes ? `${hour}:${String(minutes).padStart(2, '0')} ${suffix}` : `${hour} ${suffix}`;
 }
 
+/**
+ * Link text for an official source: its publisher's name by host, else the host.
+ * @param {string} url
+ */
+export function sourceName(url) {
+  let host;
+  try {
+    host = new URL(url).host;
+  } catch {
+    return copy.polls.source;
+  }
+  return copy.polls.sourceNames[host] ?? host;
+}
+
 export const copy = {
   /** @param {string} code */
   heading: (code) => `Precinct ${code}`,
@@ -36,7 +50,7 @@ export const copy = {
     ballot: 'Sample ballot',
     earlyVoting: 'Early voting',
     districts: 'Your districts',
-    // Until each card is built (#16).
+    // For a card that is not built yet.
     pending: 'For now, find this in the',
   },
   polls: {
@@ -71,6 +85,8 @@ export const copy = {
     sourceNames: {
       'revisor.mo.gov': 'Missouri law',
       'stlouiscovotes.info': 'St. Louis County Board of Elections',
+      // The county's own ArcGIS apps, such as its Absentee Voting Lookup.
+      'stlouiscovotes.maps.arcgis.com': 'St. Louis County Board of Elections',
     },
     failed: 'We could not load polling places right now. Find them with the',
     none: 'We could not find polling places near here. Find them with the',
@@ -84,6 +100,55 @@ export const copy = {
     // than show it in the new tab.
     newTab: '(opens a PDF in a new tab, or downloads it)',
     missing: 'We could not find the sample ballot for this precinct. Find it with the',
+  },
+  earlyVoting: {
+    // Only the county's dates, hours and sites; no eligibility rules here.
+    intro: "Places to vote in person before Election Day, with the county's dates and hours.",
+    groupsLabel: 'Dates and hours',
+    // Keyed by the polls layer's `abs_type`, like the schedules in the config.
+    groups: {
+      boe: 'Board of Elections office',
+      abs: 'Satellite sites',
+    },
+    siteKinds: {
+      boe: 'Board of Elections office',
+      abs: 'Satellite site',
+    },
+    // No closing period after a time: every time already ends in "a.m." or "p.m.".
+    /** @param {import('./earlyVoting.js').EarlyVotingStatus} status @param {(date: string) => string} longDate */
+    status: (status, longDate) => {
+      switch (status.kind) {
+        case 'openNow':
+          return `Open today until ${formatTime(status.close)}`;
+        case 'opensToday':
+          return `Opens today at ${formatTime(status.open)}`;
+        case 'opensOn':
+          return `Opens ${longDate(status.date)} at ${formatTime(status.open)}`;
+        default:
+          return 'Early voting has ended.';
+      }
+    },
+    /** @param {{ weekdaysOnly: boolean, from: string, to: string | null }} line */
+    days: ({ weekdaysOnly, from, to }) => {
+      if (!to) return from;
+      return weekdaysOnly ? `Weekdays, ${from} to ${to}` : `${from} to ${to}`;
+    },
+    /** @param {string} open HH:MM @param {string} close HH:MM */
+    hours: (open, close) => `${formatTime(open)} to ${formatTime(close)}`,
+    /** @param {string} date Already formatted. */
+    lastVerified: (date) => `Last verified ${date}.`,
+    listLabel: 'Nearest early voting sites',
+    /** @param {number} count */
+    showAll: (count) => `Show all ${count} early voting sites`,
+    note: 'Note:',
+    // "How to vote" (#23) has no topic pages yet, so the county's site is the
+    // official place to read about mail-in and absentee ballots meanwhile.
+    mail: 'To vote by mail or with an absentee ballot, see',
+    howToVote: 'How to vote',
+    or: 'or the',
+    countySite: 'St. Louis County Board of Elections website',
+    failed: 'We could not load early voting sites right now. Find them with the',
+    none: 'We could not find early voting sites. Find them with the',
   },
   districts: {
     // Row labels, keyed like `districtFields` in the election config. Values

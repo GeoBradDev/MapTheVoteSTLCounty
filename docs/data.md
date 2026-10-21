@@ -171,7 +171,12 @@ Dates and hours are not in the data. The county's Absentee app config
   9 a.m. to 1 p.m.; Monday, November 2, 8 a.m. to 5 p.m.
 
 This is in `src/config/election.js` with a source link and "last verified"
-date. It should be re-checked against the county website before launch.
+date, and the early voting card (#16) shows it. Re-read on 2026-10-21 from the app's
+live config (`introductionContent` in
+`https://www.arcgis.com/sharing/rest/content/items/9301b4594bef4d9c9271778e4648179d/data?f=json`):
+unchanged. The county website's absentee page
+(`https://stlouiscovotes.info/voting/absentee-voting/`) still shows 2020 hours and an older
+five-site list, so it is not a source for these dates. Re-check the app before launch.
 
 ### `sat_name_export_2026_11/FeatureServer/0`
 

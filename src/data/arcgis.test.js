@@ -1,5 +1,6 @@
 // Fixtures are live responses recorded by scripts/record-fixtures.mjs.
 // @vitest-environment node
+import absenteeSites from '../../docs/raw/fixtures/absentee-sites.json';
 import boundaryAtCity from '../../docs/raw/fixtures/boundary-at-city.json';
 import boundaryInside from '../../docs/raw/fixtures/boundary-inside.json';
 import errorBody from '../../docs/raw/fixtures/error-body.json';
@@ -261,6 +262,56 @@ describe('getPolls', () => {
     fetchMock.mockResolvedValueOnce(respond(errorBody)).mockResolvedValueOnce(respond(polls));
     await expect(client.getPolls()).rejects.toBeInstanceOf(client.ServiceError);
     expect((await client.getPolls()).features).toHaveLength(polls.features.length);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('getAbsenteeSites', () => {
+  const POLLS = `${election.serviceRoot}/${election.layers.polls}/query`;
+
+  it('requests the polls layer with the absentee filter from the config', async () => {
+    fetchMock.mockResolvedValue(respond(absenteeSites));
+    await client.getAbsenteeSites();
+    const { base, params } = onlyRequest();
+    expect(base).toBe(POLLS);
+    expect(params).toEqual({
+      where: election.absenteeWhere,
+      outFields: '*',
+      outSR: '4326',
+      f: 'geojson',
+    });
+  });
+
+  it('resolves to the sites with normalized properties', async () => {
+    fetchMock.mockResolvedValue(respond(absenteeSites));
+    const result = await client.getAbsenteeSites();
+    expect(result.features).toHaveLength(absenteeSites.features.length);
+    const types = new Set(result.features.map((f) => f.properties.abs_type));
+    expect([...types].sort()).toEqual(Object.keys(election.earlyVoting.schedules).sort());
+    // An empty note is null, a real one is trimmed.
+    expect(result.features.some((f) => f.properties.notes_abs === null)).toBe(true);
+    const withNote = result.features.find((f) => f.properties.notes_abs);
+    expect(withNote.properties.notes_abs).toBe(withNote.properties.notes_abs.trim());
+  });
+
+  it('shares one request, separate from the polls list', async () => {
+    fetchMock.mockImplementation(async (input) =>
+      respond(new URL(input).searchParams.get('where') === '1=1' ? polls : absenteeSites),
+    );
+    const [a, b] = await Promise.all([client.getAbsenteeSites(), client.getAbsenteeSites()]);
+    expect(b).toBe(a);
+    const all = await client.getPolls();
+    expect(all.features).toHaveLength(polls.features.length);
+    expect(a.features).toHaveLength(absenteeSites.features.length);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not cache a failure: the next call fetches again', async () => {
+    fetchMock
+      .mockResolvedValueOnce(respond(errorBody))
+      .mockResolvedValueOnce(respond(absenteeSites));
+    await expect(client.getAbsenteeSites()).rejects.toBeInstanceOf(client.ServiceError);
+    expect((await client.getAbsenteeSites()).features).toHaveLength(absenteeSites.features.length);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

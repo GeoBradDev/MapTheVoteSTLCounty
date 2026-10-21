@@ -229,7 +229,23 @@ export async function getPrecinctGeometry(code) {
   return outline.promise;
 }
 
-let polls;
+// A whole-layer GeoJSON query, fetched once per page load and shared by all
+// callers. A failed fetch is not kept, so the next call tries again.
+function sharedLayer(layer, where) {
+  let pending;
+  return () => {
+    pending ??= query(layer, { where, outFields: '*', outSR: '4326', f: 'geojson' })
+      .then((body) => ({
+        ...body,
+        features: body.features.map((f) => ({ ...f, properties: normalize(f.properties) })),
+      }))
+      .catch((error) => {
+        pending = undefined;
+        throw error;
+      });
+    return pending;
+  };
+}
 
 /**
  * Every polling place, fetched once per page load and shared by all callers.
@@ -237,15 +253,13 @@ let polls;
  * @returns {Promise<object>} A GeoJSON FeatureCollection in lat/lng with
  *   normalized properties.
  */
-export function getPolls() {
-  polls ??= query('polls', { where: '1=1', outFields: '*', outSR: '4326', f: 'geojson' })
-    .then((body) => ({
-      ...body,
-      features: body.features.map((f) => ({ ...f, properties: normalize(f.properties) })),
-    }))
-    .catch((error) => {
-      polls = undefined;
-      throw error;
-    });
-  return polls;
-}
+export const getPolls = sharedLayer('polls', '1=1');
+
+/**
+ * The in-person absentee (early voting) sites: the polls layer filtered by
+ * `absenteeWhere` from the election config. Fetched once per page load and
+ * shared like getPolls.
+ * @returns {Promise<object>} A GeoJSON FeatureCollection in lat/lng with
+ *   normalized properties, including `abs_type` and `notes_abs`.
+ */
+export const getAbsenteeSites = sharedLayer('polls', election.absenteeWhere);

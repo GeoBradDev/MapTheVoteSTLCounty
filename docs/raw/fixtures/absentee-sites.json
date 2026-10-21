@@ -1,0 +1,557 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "EPSG:4326"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": 19,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.40024142192,
+          38.7313286743395
+        ]
+      },
+      "properties": {
+        "OBJECTID": 19,
+        "loc": "019",
+        "name": "BOARD OF ELECTIONS",
+        "address": "725 NORTHWEST PLAZA DR",
+        "zipcode": 63074,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.731322%2C-90.400235",
+        "username": "loc019boec",
+        "absentee": "abs601boec",
+        "inline": "",
+        "abs_type": "boe",
+        "notes": "LOC019",
+        "notes_abs": "",
+        "loc_abs": "601"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 28,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3663077476713,
+          38.576624251209
+        ]
+      },
+      "properties": {
+        "OBJECTID": 28,
+        "loc": "028",
+        "name": "CHRIST THE KING CHURCH",
+        "address": "9018 BIG BEND BLVD",
+        "zipcode": 63119,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.576617%2C-90.366302",
+        "username": "loc028boec",
+        "absentee": "abs602boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC028",
+        "notes_abs": null,
+        "loc_abs": "602"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 29,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.405026513169,
+          38.6301342447277
+        ]
+      },
+      "properties": {
+        "OBJECTID": 29,
+        "loc": "029",
+        "name": "CLARK FAMILY BRANCH LIBRARY",
+        "address": "1640 S LINDBERGH BLVD",
+        "zipcode": 63131,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.630127%2C-90.405020",
+        "username": "loc029boec",
+        "absentee": "abs603boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC029",
+        "notes_abs": null,
+        "loc_abs": "603"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 30,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3038320471161,
+          38.4761310572659
+        ]
+      },
+      "properties": {
+        "OBJECTID": 30,
+        "loc": "030",
+        "name": "CLIFF CAVE BRANCH LIBRARY",
+        "address": "5430 TELEGRAPH RD",
+        "zipcode": 63129,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.476124%2C-90.303826",
+        "username": "loc030boec",
+        "absentee": "abs604boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC030",
+        "notes_abs": null,
+        "loc_abs": "604"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 39,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5864902038173,
+          38.6018652436276
+        ]
+      },
+      "properties": {
+        "OBJECTID": 39,
+        "loc": "039",
+        "name": "DANIEL BOONE BRANCH LIBRARY",
+        "address": "300 CLARKSON RD",
+        "zipcode": 63011,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.601858%2C-90.586484",
+        "username": "loc039boec",
+        "absentee": "abs605boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC039",
+        "notes_abs": null,
+        "loc_abs": "605"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 40,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.277894451771,
+          38.756081869953
+        ]
+      },
+      "properties": {
+        "OBJECTID": 40,
+        "loc": "040",
+        "name": "DELLWOOD RECREATION CENTER",
+        "address": "10266 WEST FLORISSANT AVE",
+        "zipcode": 63136,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.756075%2C-90.277888",
+        "username": "loc040boec",
+        "absentee": "abs606boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC040",
+        "notes_abs": null,
+        "loc_abs": "606"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 56,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3173141200298,
+          38.8395172384735
+        ]
+      },
+      "properties": {
+        "OBJECTID": 56,
+        "loc": "056",
+        "name": "FLORISSANT CHURCH OF CHRIST",
+        "address": "16460 NEW HALLS FERRY RD",
+        "zipcode": 63031,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.839510%2C-90.317308",
+        "username": "loc056boec",
+        "absentee": "abs607boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC056",
+        "notes_abs": null,
+        "loc_abs": "607"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 70,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4977166651488,
+          38.571107123438
+        ]
+      },
+      "properties": {
+        "OBJECTID": 70,
+        "loc": "070",
+        "name": "GRAND GLAIZE BRANCH LIBRARY",
+        "address": "1010 MERAMEC STATION RD",
+        "zipcode": 63021,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.571100%2C-90.497710",
+        "username": "loc070boec",
+        "absentee": "abs608boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC070",
+        "notes_abs": null,
+        "loc_abs": "608"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 71,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3513381071368,
+          38.5454137664956
+        ]
+      },
+      "properties": {
+        "OBJECTID": 71,
+        "loc": "071",
+        "name": "GRANTS VIEW BRANCH LIBRARY",
+        "address": "9700 MUSICK RD",
+        "zipcode": 63123,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.545407%2C-90.351332",
+        "username": "loc071boec",
+        "absentee": "abs609boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC071",
+        "notes_abs": null,
+        "loc_abs": "609"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 89,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3616495648072,
+          38.8077968962591
+        ]
+      },
+      "properties": {
+        "OBJECTID": 89,
+        "loc": "089",
+        "name": "JFK COMMUNITY CENTER",
+        "address": "315 HOWDERSHELL RD",
+        "zipcode": 63031,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.807790%2C-90.361643",
+        "username": "loc089boec",
+        "absentee": "abs610boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC089",
+        "notes_abs": null,
+        "loc_abs": "610"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 98,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2406799698419,
+          38.7478835911756
+        ]
+      },
+      "properties": {
+        "OBJECTID": 98,
+        "loc": "098",
+        "name": "LEWIS AND CLARK BRANCH LIBRARY",
+        "address": "9909 LEWIS & CLARK BLVD",
+        "zipcode": 63136,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.747876%2C-90.240674",
+        "username": "loc098boec",
+        "absentee": "abs611boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC098",
+        "notes_abs": null,
+        "loc_abs": "611"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 111,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3376192901516,
+          38.65198090226
+        ]
+      },
+      "properties": {
+        "OBJECTID": 111,
+        "loc": "111",
+        "name": "MID COUNTY BRANCH LIBRARY",
+        "address": "7821 MARYLAND AVE",
+        "zipcode": 63105,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.651974%2C-90.337613",
+        "username": "loc111boec",
+        "absentee": "abs612boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC111",
+        "notes_abs": null,
+        "loc_abs": "612"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 115,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2499954644904,
+          38.7855389461356
+        ]
+      },
+      "properties": {
+        "OBJECTID": 115,
+        "loc": "115",
+        "name": "NORTH COUNTY REC COMPLEX",
+        "address": "2577 REDMAN RD",
+        "zipcode": 63136,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.785532%2C-90.249989",
+        "username": "loc115boec",
+        "absentee": "abs613boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC115",
+        "notes_abs": null,
+        "loc_abs": "613"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 121,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3756970358638,
+          38.6761184144588
+        ]
+      },
+      "properties": {
+        "OBJECTID": 121,
+        "loc": "121",
+        "name": "OLIVETTE CITY CENTER",
+        "address": "1140 DIELMAN RD",
+        "zipcode": 63132,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.676111%2C-90.375691",
+        "username": "loc121boec",
+        "absentee": "abs614boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC121",
+        "notes_abs": null,
+        "loc_abs": "614"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 148,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3477306553236,
+          38.6357647970299
+        ]
+      },
+      "properties": {
+        "OBJECTID": 148,
+        "loc": "148",
+        "name": "SAINT LOUIS GALLERIA",
+        "address": "1417 ST LOUIS GALLERIA ST",
+        "zipcode": 63117,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.635758%2C-90.347724",
+        "username": "loc148boec",
+        "absentee": "abs615boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC148",
+        "notes_abs": "Voting entrance is outside; use the pink door next to Cheesecake Factory",
+        "loc_abs": "615"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 156,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3379325152853,
+          38.5140625282979
+        ]
+      },
+      "properties": {
+        "OBJECTID": 156,
+        "loc": "156",
+        "name": "ST JOHNS UCC MEHLVILLE",
+        "address": "11333 ST JOHNS CHURCH RD",
+        "zipcode": 63123,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.514055%2C-90.337926",
+        "username": "loc156boec",
+        "absentee": "abs616boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC156",
+        "notes_abs": null,
+        "loc_abs": "616"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 158,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.6125630636161,
+          38.6665587839725
+        ]
+      },
+      "properties": {
+        "OBJECTID": 158,
+        "loc": "158",
+        "name": "ST LOUIS FAMILY CHURCH - YOUTH BUILDING",
+        "address": "17476 CHESTERFIELD AIRPORT RD",
+        "zipcode": 63005,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.666552%2C-90.612557",
+        "username": "loc158boec",
+        "absentee": "abs617boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC158",
+        "notes_abs": null,
+        "loc_abs": "617"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 163,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.4221687425228,
+          38.5691671425583
+        ]
+      },
+      "properties": {
+        "OBJECTID": 163,
+        "loc": "163",
+        "name": "STLCC MERAMEC - STUDENT CENTER",
+        "address": "11333 BIG BEND RD",
+        "zipcode": 63122,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.569160%2C-90.422162",
+        "username": "loc163boec",
+        "absentee": "abs618boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC163",
+        "notes_abs": null,
+        "loc_abs": "618"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 172,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.471187425321,
+          38.691866110376
+        ]
+      },
+      "properties": {
+        "OBJECTID": 172,
+        "loc": "172",
+        "name": "THORNHILL BRANCH LIBRARY",
+        "address": "12863 WILLOWYCK DR",
+        "zipcode": 63146,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.691859%2C-90.471181",
+        "username": "loc172boec",
+        "absentee": "abs619boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC172",
+        "notes_abs": null,
+        "loc_abs": "619"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 180,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.3086571484127,
+          38.7115259241112
+        ]
+      },
+      "properties": {
+        "OBJECTID": 180,
+        "loc": "180",
+        "name": "UMSL MILLENNIUM STUDENT CENTER",
+        "address": "17 ARNOLD GROBMAN DR",
+        "zipcode": 63121,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.711519%2C-90.308651",
+        "username": "loc180boec",
+        "absentee": "abs620boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC180",
+        "notes_abs": null,
+        "loc_abs": "620"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 197,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.6316539642402,
+          38.5807806085335
+        ]
+      },
+      "properties": {
+        "OBJECTID": 197,
+        "loc": "197",
+        "name": "WILDWOOD CITY HALL",
+        "address": "16860 MAIN ST",
+        "zipcode": 63040,
+        "gmap": "https://www.google.com/maps/search/?api=1&query=38.580773%2C-90.631648",
+        "username": "loc197boec",
+        "absentee": "abs621boec",
+        "inline": "",
+        "abs_type": "abs",
+        "notes": "LOC197",
+        "notes_abs": null,
+        "loc_abs": "621"
+      }
+    }
+  ]
+}
