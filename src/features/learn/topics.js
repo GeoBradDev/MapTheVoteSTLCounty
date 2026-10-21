@@ -33,6 +33,14 @@ const byTitle = (a, b) => a.title.localeCompare(b.title, a.locale);
  */
 export function topicLookups(index) {
   const forLocale = (locale) => index.get(locale) ?? new Map();
+  /**
+   * One topic, in `locale` if translated, else English, else null.
+   * @param {string} id
+   * @param {string} [locale]
+   * @returns {Topic | null}
+   */
+  const getTopic = (id, locale = DEFAULT_LOCALE) =>
+    forLocale(locale).get(id) ?? forLocale(DEFAULT_LOCALE).get(id) ?? null;
   return {
     /**
      * Every topic in `locale`, falling back to English per topic, by title.
@@ -41,17 +49,9 @@ export function topicLookups(index) {
      */
     getTopics(locale = DEFAULT_LOCALE) {
       const ids = new Set([...forLocale(DEFAULT_LOCALE).keys(), ...forLocale(locale).keys()]);
-      return [...ids].map((id) => this.getTopic(id, locale)).sort(byTitle);
+      return [...ids].map((id) => getTopic(id, locale)).sort(byTitle);
     },
-    /**
-     * One topic, in `locale` if translated, else English, else null.
-     * @param {string} id
-     * @param {string} [locale]
-     * @returns {Topic | null}
-     */
-    getTopic(id, locale = DEFAULT_LOCALE) {
-      return forLocale(locale).get(id) ?? forLocale(DEFAULT_LOCALE).get(id) ?? null;
-    },
+    getTopic,
   };
 }
 

@@ -25,7 +25,10 @@ const HEADING = /^(#+)(\s+|$)(.*)$/;
 const UNORDERED_ITEM = /^- (.*)$/;
 const ORDERED_ITEM = /^(\d+)\. (.*)$/;
 const SETEXT_UNDERLINE = /^=+\s*$/;
-const OTHER_LIST_MARKER = /^[*+] /;
+const OTHER_LIST_MARKER = /^(?:[*+] |\d+\) )/;
+const EMPTY_ITEM = /^(?:-|\d+[.)])$/;
+// Lines that would mean something else in Markdown; never list item text.
+const BLOCK_SYNTAX = /^(?:#|>|```|~~~|\||[-*+] |\d+[.)] |(?:-|\d+[.)])$)/;
 const RULE = /^(?:-{3,}|\*{3,}|_{3,})\s*$/;
 const CITATION = /^\[\^([^\]]*)\]/;
 const LINK = /^\[([^\]]*)\]\(([^)\s]*)\)/;
@@ -125,6 +128,11 @@ function parseInline(source, where, errors, ctx, { inLink = false, inStrong = fa
           i += whole.length;
           continue;
         }
+        if (href.includes('(')) {
+          fail(`write ( and ) in a link URL as %28 and %29: ${href}`);
+          i += whole.length;
+          continue;
+        }
         flush();
         const children = parseInline(label, where, errors, ctx, { inLink: true, inStrong });
         nodes.push({ type: 'link', href, children });
@@ -200,6 +208,10 @@ export function parseMarkdown(body, firstLine = 1) {
         errors.push(`${where}: nested lists are not supported`);
         return;
       }
+      if (BLOCK_SYNTAX.test(trimmed) || SETEXT_UNDERLINE.test(trimmed)) {
+        errors.push(`${where}: a list item can hold only text`);
+        return;
+      }
       open.items.at(-1).lines.push(trimmed);
       return;
     }
@@ -227,6 +239,11 @@ export function parseMarkdown(body, firstLine = 1) {
     if (line.startsWith('|')) {
       close();
       errors.push(`${where}: tables are not supported`);
+      return;
+    }
+    if (EMPTY_ITEM.test(line)) {
+      close();
+      errors.push(`${where}: a list item needs text`);
       return;
     }
     if (OTHER_LIST_MARKER.test(line)) {

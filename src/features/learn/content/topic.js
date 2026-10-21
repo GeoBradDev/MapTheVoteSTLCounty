@@ -27,6 +27,9 @@ const LOCALE = /^[a-z]{2}(?:-[A-Z]{2})?$/;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const TOPIC_KEYS = ['id', 'title', 'election', 'lastVerified', 'sources'];
 const SOURCE_KEYS = ['id', 'label', 'url'];
+// Bidirectional overrides and isolates can make text read differently from
+// how it is stored.
+const DIRECTION_CONTROL = /[\u202A-\u202E\u2066-\u2069]/;
 
 /**
  * @typedef {{ id: string, label: string, url: string }} TopicSource
@@ -125,6 +128,9 @@ function checkSources(sources, errors) {
     else if (seen.has(id)) errors.push(`${where}.id: "${id}" is used twice`);
     else seen.add(id);
     if (!isNonEmptyString(label)) errors.push(`${where}.label: missing`);
+    else if (DIRECTION_CONTROL.test(label)) {
+      errors.push(`${where}.label: remove the text direction control character`);
+    }
     if (!isNonEmptyString(url)) errors.push(`${where}.url: missing`);
     else if (!isOfficialUrl(url)) {
       errors.push(`${where}.url: ${url} is not an official https source (see officialSources.js)`);
@@ -192,6 +198,9 @@ export function parseTopic(text, { file, electionDate }) {
       errors.push(`id: "${data.id}" must match the file name "${fileId}"`);
     }
     if (!isNonEmptyString(data.title)) errors.push('title: missing');
+    else if (DIRECTION_CONTROL.test(data.title)) {
+      errors.push('title: remove the text direction control character');
+    }
     checkDates(data, electionDate, errors);
     sources = checkSources(data.sources, errors);
   }

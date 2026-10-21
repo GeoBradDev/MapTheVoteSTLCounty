@@ -134,3 +134,9 @@ applicable because the app is a frontend-only React site.
 - Criterion 7: `topics.test.js` (fallback), `TopicArticle.test.jsx` (labels from copy).
 - Live drive: nothing user-visible changes; run `npm run build` and confirm `/learn` still
   renders the placeholder in `npm run preview`.
+- Finder 2: `getTopics` no longer depends on `this`, so it works as a named import; a link URL
+  with `(` must be percent-encoded instead of being cut at the first `)`; list continuation
+  lines, `1)` markers and empty items are errors; URLs with whitespace or control characters
+  and titles or labels with text direction controls are rejected; a test fails if app code
+  imports the build-time parsers; the config and geocoder steps in the data health workflow
+  also get step limits (25 and 20 minutes), and the job limit is 70.

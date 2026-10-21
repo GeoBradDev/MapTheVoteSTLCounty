@@ -24,11 +24,11 @@ jobs:
   check:
     runs-on: ubuntu-latest
     # Worst case with every request slow: about 22 minutes for the config check
-    # (26 requests, 3 tries of 15 s each), 16 for the geocoder check and the
-    # content link check's own step limit. A job that hits its limit is
-    # cancelled and reports nothing, so each slow step has a step limit, which
-    # fails the step and still opens the issue.
-    timeout-minutes: 55
+    # (26 requests, 3 tries of 15 s each) and 16 for the geocoder check. A job
+    # that hits its limit is cancelled and reports nothing, so each live check
+    # has its own step limit, which fails that step and still opens the issue.
+    # The job limit is the step limits plus setup.
+    timeout-minutes: 70
     steps:
       # The token may write issues: do not leave it in .git/config, where
       # dependency install scripts could read it.
@@ -67,12 +67,14 @@ jobs:
       - name: Election config check
         id: config
         if: steps.window.outputs.active == 'true'
+        timeout-minutes: 25
         run: node scripts/check-config.mjs
 
       # These run even when an earlier check failed, so one issue reports all.
       - name: Geocoder check
         id: geocoder
         if: ${{ !cancelled() && steps.window.outputs.active == 'true' }}
+        timeout-minutes: 20
         run: node scripts/check-geocoder.mjs
 
       # Every source and link in content/<locale>/learn/ (#21). Each dead URL
