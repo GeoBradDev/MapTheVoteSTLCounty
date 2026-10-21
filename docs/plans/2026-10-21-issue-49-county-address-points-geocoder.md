@@ -124,3 +124,25 @@ Domain skills:
 - Criteria 1, 3, 4 live: Chrome on the built site with the production CSP: 1318 Ross Ave
   opens `/p/CC007`; with `maps.stlouisco.com` blocked it still resolves; a City address
   shows the City referral; no CSP violations in the console.
+
+## Revisions during implementation
+
+- A random sample of county address points, typed as stored and as a person would, found
+  misses that the plan's rules did not cover. Fixed, each with a test first:
+  - a street named for a direction ("East Ln") or a street type ("Plaza Dr",
+    "Center Ave") had no street word for the server filter;
+  - letter-first unit numbers ("Apt N230") were read as a town (shared matcher:
+    `isUnitNumber` now accepts any word with a digit);
+  - county street types (`PLZ`, `XING`, `CV`, `CTR` and others) are now canonical
+    spellings in the shared matcher, and the clear ones are street types for the
+    "no street type after the street" rule;
+  - complexes have up to about 330 unit records at one number, so a find asks for up
+    to 1000 records (not 100), and an answer cut off at that limit counts as the layer
+    being unavailable (not "no match");
+  - units spread over a large parcel (18771 Olive Street Rd, about 400 m) made a real
+    address ambiguous; the address's own record (no unit) now answers when it exists,
+    and the 300 m rule applies only when there is none.
+- The county's Cloudflare firewall blocks queries with `IS NULL` or `<>`; the app's
+  queries use only `=`, `LIKE`, `AND` and `OR`, and a block is a 403 that falls through to
+  the hosted copy.
+- `scripts/check-geocoder.mjs` also checks the City referral for City Hall.
