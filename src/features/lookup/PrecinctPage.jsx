@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'wouter';
+import { Link, useLocation, useParams } from 'wouter';
 import election from '../../config/election.js';
 import { getPrecinctById, NotFound, PRECINCT_CODE } from '../../data/arcgis.js';
 import { lookupPointFor } from './lookupPoint.js';
@@ -102,8 +102,27 @@ function PrecinctResults({ code }) {
   );
 }
 
+/**
+ * The code a link meant, when it differs from a valid code only by letter
+ * case or surrounding spaces, like cc007 for CC007. Null otherwise.
+ * @param {string} value
+ */
+function canonicalCode(value) {
+  const code = value.trim().toUpperCase();
+  return code !== value && PRECINCT_CODE.test(code) ? code : null;
+}
+
 export default function PrecinctPage() {
   const { precinct } = useParams();
+  const [, navigate] = useLocation();
+  const canonical = canonicalCode(precinct);
+
+  useEffect(() => {
+    if (canonical) navigate(`/p/${canonical}`, { replace: true });
+  }, [canonical, navigate]);
+
+  // Nothing renders until the URL holds the canonical code.
+  if (canonical) return null;
   // A new code is a new page: no state carries over from the last one.
   return <PrecinctResults key={precinct} code={precinct} />;
 }
