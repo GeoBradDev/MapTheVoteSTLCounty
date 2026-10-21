@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { copy } from './addressSearchCopy.js';
 import { useGeocoder } from './geocoderContext.js';
 
@@ -31,6 +31,8 @@ export default function AddressSearch({ onSubmit, busy = false, inputRef }) {
   const [closed, setClosed] = useState(false);
   const [active, setActive] = useState(-1);
   const [empty, setEmpty] = useState(false);
+  const formRef = useRef(null);
+  const pointerPickRef = useRef(null);
   const id = useId();
   const listboxId = `${id}-listbox`;
   const hintId = `${id}-hint`;
@@ -71,11 +73,9 @@ export default function AddressSearch({ onSubmit, busy = false, inputRef }) {
     setText(value);
     setEmpty(false);
     setClosed(false);
-    if (value.trim().length >= MIN_CHARS) {
-      setQuery(value.trim());
-    } else {
-      reset();
-    }
+    // Suggestions for the old text are stale the moment the text changes.
+    reset();
+    if (value.trim().length >= MIN_CHARS) setQuery(value.trim());
   }
 
   function pick(suggestion) {
@@ -85,9 +85,24 @@ export default function AddressSearch({ onSubmit, busy = false, inputRef }) {
     onSubmit(suggestion);
   }
 
+  // A pointer pick goes through a real form submit, like Enter does, so
+  // listeners on the form (such as "Use my location" dropping a pending
+  // request) see the voter choose an address.
+  function pickWithPointer(suggestion) {
+    pointerPickRef.current = suggestion;
+    const form = formRef.current;
+    if (form?.requestSubmit) form.requestSubmit();
+    else pick(suggestion);
+    pointerPickRef.current = null;
+  }
+
   function handleSubmit(event) {
     event.preventDefault();
     if (busy) return;
+    if (pointerPickRef.current) {
+      pick(pointerPickRef.current);
+      return;
+    }
     if (open && active >= 0) {
       pick(suggestions[active]);
       return;
@@ -124,7 +139,7 @@ export default function AddressSearch({ onSubmit, busy = false, inputRef }) {
   const describedBy = [hintId, empty ? errorId : null].filter(Boolean).join(' ');
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
+    <form ref={formRef} onSubmit={handleSubmit} noValidate>
       <label htmlFor={`${id}-input`} className="block text-lg font-semibold">
         {copy.label}
       </label>
@@ -172,7 +187,7 @@ export default function AddressSearch({ onSubmit, busy = false, inputRef }) {
               aria-selected={i === active}
               tabIndex={-1}
               onMouseDown={(event) => event.preventDefault()}
-              onClick={() => pick(suggestion)}
+              onClick={() => pickWithPointer(suggestion)}
               className="flex min-h-11 cursor-pointer items-center px-3 py-2 aria-selected:bg-primary aria-selected:text-on-primary"
             >
               {suggestion.label}

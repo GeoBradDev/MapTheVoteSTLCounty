@@ -37,9 +37,10 @@ No geocoder is hardcoded and no API key is added.
 ```
 
 Until #7 lands, the app's geocoder is "unconfigured": `suggest` returns no suggestions and
-`geocode` rejects with `GeocoderUnavailableError`. The landing screen then says address
-search is not available yet and points to "Use my location" and the county's official
-lookup. #7's plan named the second method `resolve`; this interface calls it `geocode`, and
+`geocode` rejects with `GeocoderUnavailableError`. When the voter submits an address, the
+landing screen then says address search is not available right now and points to "Use my
+location" and the county's official lookup. (It says nothing before a submit: once #7 lands
+the message would never apply, and a standing notice would only confuse.) #7's plan named the second method `resolve`; this interface calls it `geocode`, and
 #7 adopts that name.
 
 ## Acceptance criteria
@@ -55,15 +56,17 @@ lookup. #7's plan named the second method `resolve`; this interface calls it `ge
    combobox pattern: `role="combobox"`, `aria-autocomplete="list"`, `aria-expanded`,
    `aria-controls`, `aria-activedescendant`; a `role="listbox"` of `role="option"` items.
    ArrowDown/ArrowUp move through suggestions, Enter picks the active one (or submits the
-   typed text when none is active), Escape closes the list, a click or tap picks one.
+   typed text when none is active), Escape closes the list, a click or tap picks one. A click or tap pick goes through a real
+   form submit, like Enter, so "Use my location" drops a pending request (review round 1).
+   Any edit to the text drops the old suggestions and the active option at once.
 4. Suggestions are requested about 250 ms after typing stops, only at 3 or more characters
    (trimmed), and an in-flight request is aborted when the text changes again or the
    component unmounts. A late or failed suggestion request never shows stale suggestions.
 5. Submitting (a picked suggestion, or the typed text with the "Find my precinct" button or
-   Enter) calls `geocode` once, then `locate(place)` with `{ lat, lng, state, county }`.
+   Enter) calls `geocode` once (even for two submits before a re-render), then `locate(place)` with `{ lat, lng, state, county }`.
    A precinct navigates to `/p/<code>`. Any other kind shows `OutOfCountyNotice` for it on
-   the same screen. No match, an unavailable geocoder, or a failed lookup shows a short
-   message in a `role="alert"` region with the official county lookup link.
+   the same screen. No match, an unavailable geocoder (`GeocoderUnavailableError`), or a
+   failed lookup (any other geocoder or `locate` error) shows a short message in a `role="alert"` region with the official county lookup link.
 6. "Use my location" (#9) sits under the address box with `addressInputRef` wired to it; its
    place goes to the same `locate` flow. A device point in St. Louis City comes back
    `unknown` (no state or county); the existing `unknown` notice already names the City of

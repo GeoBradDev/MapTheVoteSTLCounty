@@ -71,14 +71,10 @@ export default function AddressLookup() {
   }
 
   function handleAddress(query) {
-    if (busy) return;
-    run(async (signal) => {
-      try {
-        return await geocoder.geocode(query, { signal });
-      } catch (error) {
-        throw error instanceof GeocoderUnavailableError ? error : new GeocoderUnavailableError();
-      }
-    });
+    // A ref, not the busy state, so two submits before a re-render still
+    // geocode once.
+    if (runRef.current) return;
+    run((signal) => geocoder.geocode(query, { signal }));
   }
 
   function handleLocation(place) {
