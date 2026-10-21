@@ -51,6 +51,31 @@ describe('typed text that more than one place matches', () => {
     });
   });
 
+  it('still matches one large site that Photon lists at points far apart', async () => {
+    // Live answer for 501 Bowles Ave, MO 63026: a point and a building 150 m apart.
+    const point = feature(
+      {
+        housenumber: '501',
+        street: 'Bowles Avenue',
+        county: 'Saint Louis County',
+        postcode: '63026',
+      },
+      [-90.4749291, 38.5115544],
+    );
+    const building = feature({ ...point.properties, city: 'Fenton' }, [-90.4765482, 38.5122107]);
+    const geocoder = createPhotonGeocoder({ fetch: answer(point, building) });
+    await expect(geocoder.geocode('501 Bowles Ave, MO 63026')).resolves.toMatchObject({
+      lat: 38.5115544,
+    });
+  });
+
+  it('returns null for two houses in different ZIPs when no ZIP is typed', async () => {
+    const ballwin = feature({ ...UNINCORPORATED.properties, postcode: '63011' }, [-90.55, 38.59]);
+    const fenton = feature({ ...UNINCORPORATED.properties, postcode: '63026' }, [-90.47, 38.51]);
+    const geocoder = createPhotonGeocoder({ fetch: answer(ballwin, fenton) });
+    await expect(geocoder.geocode('100 Main St')).resolves.toBeNull();
+  });
+
   it('matches the one place the typed ZIP confirms', async () => {
     const city = feature({ ...IN_CITY.properties, postcode: '63102' }, [-90.2, 38.63]);
     const county = feature({ ...IN_COUNTY.properties, postcode: '63122' }, [-90.45, 38.55]);
