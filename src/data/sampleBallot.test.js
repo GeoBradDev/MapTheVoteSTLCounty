@@ -1,0 +1,103 @@
+// Fixtures are live responses recorded by scripts/record-fixtures.mjs.
+// @vitest-environment node
+import nonresidential from '../../docs/raw/fixtures/precinct-nonresidential.json';
+import byId from '../../docs/raw/fixtures/precinct-by-id.json';
+import { parseSampleBallot } from './sampleBallot.js';
+
+const ITEM = 'f1daf903ee6945b4a8fcb4391dc3ba4c';
+const URL_OK = `https://stlouiscovotes.maps.arcgis.com/sharing/rest/content/items/${ITEM}/data`;
+
+const link = (href, text = 'CC-007.pdf') => `Sample Ballot: <a href=${href}>${text}</a>`;
+
+describe('parseSampleBallot', () => {
+  it('reads the link from the recorded CC007 precinct', () => {
+    expect(parseSampleBallot(byId.features[0].attributes.html)).toEqual({
+      url: URL_OK,
+      fileName: 'CC-007.pdf',
+    });
+  });
+
+  it.each([
+    ['unquoted', URL_OK],
+    ['single-quoted', `'${URL_OK}'`],
+    ['double-quoted', `"${URL_OK}"`],
+  ])('accepts a %s href', (_, href) => {
+    expect(parseSampleBallot(link(href))).toEqual({ url: URL_OK, fileName: 'CC-007.pdf' });
+  });
+
+  it('accepts HREF in any case and spaces around the equals sign', () => {
+    const html = `<A HREF = "${URL_OK}" target="_blank">CC-007.pdf</A>`;
+    expect(parseSampleBallot(html)).toEqual({ url: URL_OK, fileName: 'CC-007.pdf' });
+  });
+
+  it('takes the file name from the link text, without tags or padding', () => {
+    expect(parseSampleBallot(link(URL_OK, '  <b>CC-007.pdf</b> '))).toEqual({
+      url: URL_OK,
+      fileName: 'CC-007.pdf',
+    });
+  });
+
+  it('gives a null file name when the link text is empty', () => {
+    expect(parseSampleBallot(link(URL_OK, ''))).toEqual({ url: URL_OK, fileName: null });
+  });
+
+  it('returns the nonresidential message from the recorded AP200 precinct verbatim', () => {
+    const html = nonresidential.features[0].attributes.html;
+    expect(html).toMatch(/no recognized residential addresses/);
+    expect(parseSampleBallot(html)).toEqual({ message: html });
+  });
+
+  it('returns plain text without tags, with whitespace collapsed', () => {
+    expect(parseSampleBallot('  No ballot<br>for this   precinct.\n')).toEqual({
+      message: 'No ballot for this precinct.',
+    });
+  });
+
+  it.each([
+    ['empty', ''],
+    ['whitespace', '   \n '],
+    ['null', null],
+    ['undefined', undefined],
+    ['a number', 42],
+    ['an object', { href: URL_OK }],
+    ['only tags', '<br><br>'],
+  ])('returns a null message for %s', (_, html) => {
+    expect(parseSampleBallot(html)).toEqual({ message: null });
+  });
+
+  it.each([
+    ['a non-portal URL', 'https://example.com/ballot.pdf'],
+    ['a javascript: URL', 'javascript:alert(1)'],
+    ['a quoted javascript: URL', `"javascript:alert('${URL_OK}')"`],
+    ['a data: URL', 'data:text/html,hi'],
+    ['an http: URL', URL_OK.replace('https:', 'http:')],
+    ['a lookalike host', URL_OK.replace('arcgis.com', 'arcgis.com.example.com')],
+    ['a URL with a query', `${URL_OK}?x=1`],
+    ['a URL with a fragment', `${URL_OK}#x`],
+    ['a URL with an extra path', `${URL_OK}/more`],
+    ['a short item ID', URL_OK.replace(ITEM, ITEM.slice(1))],
+    ['an uppercase item ID', URL_OK.replace(ITEM, ITEM.toUpperCase())],
+    ['a protocol-relative URL', URL_OK.replace('https:', '')],
+    ['an encoded URL', URL_OK.replace('/data', '/%64ata')],
+    ['an empty href', '""'],
+  ])('rejects %s and shows nothing', (_, href) => {
+    expect(parseSampleBallot(link(href))).toEqual({ message: null });
+  });
+
+  it('never returns the markup of a rejected link as a message', () => {
+    const result = parseSampleBallot(`<a href="javascript:alert(1)">Click</a>`);
+    expect(result).toEqual({ message: null });
+  });
+
+  it('reads a link even when the href comes after other attributes', () => {
+    expect(parseSampleBallot(`<a class="x" href='${URL_OK}'>CC-007.pdf</a>`)).toEqual({
+      url: URL_OK,
+      fileName: 'CC-007.pdf',
+    });
+  });
+
+  it('does not mistake an attribute ending in href for the href', () => {
+    const html = `<a data-href="${URL_OK}" href="https://example.com/x">CC-007.pdf</a>`;
+    expect(parseSampleBallot(html)).toEqual({ message: null });
+  });
+});
