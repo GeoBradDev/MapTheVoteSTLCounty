@@ -78,8 +78,11 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
   // its label's ZIP is in the box. That ZIP is the source's, not one the
   // voter typed, and the geocoder's City check treats the two differently
   // (#58), so a search goes as a pick until the voter deletes or changes that
-  // ZIP (owner decision). A paste or other bulk replacement also forgets it.
+  // ZIP (owner decision), pasting over it included. An autofill forgets it.
   const pickedRef = useRef(null);
+  // The selection a paste replaces, read when it starts: the texts before and
+  // after cannot show whether a pasted ZIP replaced the picked one.
+  const replacedRef = useRef(null);
   const id = useId();
   const listboxId = `${id}-listbox`;
   const hintId = `${id}-hint`;
@@ -120,11 +123,21 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
     const value = event.target.value;
     const picked = pickedRef.current;
     if (picked) {
+      // An edit with no input type (autofill, a script) cannot be told
+      // apart from a new address, so it forgets the pick. A paste over a
+      // selection that holds the ZIP replaces it.
       const inputType = event.nativeEvent?.inputType;
-      const typedByHand = Boolean(inputType) && !inputType.startsWith('insertFrom');
-      const zip = picked.zip && typedByHand ? zipAfterEdit(text, value, picked.zip) : null;
+      const replaced = inputType?.startsWith('insertFrom') ? replacedRef.current : null;
+      const overZip =
+        replaced &&
+        picked.zip &&
+        replaced.start < picked.zip.start + picked.zip.zip.length &&
+        replaced.end > picked.zip.start;
+      const zip =
+        picked.zip && inputType && !overZip ? zipAfterEdit(text, value, picked.zip) : null;
       pickedRef.current = zip ? { ...picked, edited: true, zip } : null;
     }
+    replacedRef.current = null;
     setText(value);
     onEdit?.();
     setEmpty(false);
@@ -180,6 +193,11 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
     onSubmit(asPick(trimmed) ?? trimmed);
   }
 
+  function rememberSelection(event) {
+    const { selectionStart: start, selectionEnd: end } = event.currentTarget;
+    replacedRef.current = Number.isInteger(start) ? { start, end } : null;
+  }
+
   function handleKeyDown(event) {
     const count = suggestions.length;
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
@@ -229,6 +247,7 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
           value={text}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
+          onPaste={rememberSelection}
           onBlur={() => setClosed(true)}
           className="min-h-11 w-full rounded-md border border-ink bg-surface px-3 py-2 text-base text-ink"
         />

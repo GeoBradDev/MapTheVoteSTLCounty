@@ -44,8 +44,10 @@ Domain skills:
    edit since it inserts text into the label, so a paste over the box forgets it too
    (revision after review finding 5; frozen `AddressSearch.paste58.test.jsx`). Owner
    decision after review finding 6 (2026-10-21): a search stays a pick until the label's ZIP
-   itself is deleted or changed (frozen `AddressSearch.pickzip58.test.jsx`); a paste, drop
-   or autofill also forgets it. The owner approved rewriting the frozen
+   itself is deleted or changed (frozen `AddressSearch.pickzip58.test.jsx`); pasting over a
+   selection that holds the ZIP changes it, and an autofill forgets the pick, but a unit
+   pasted elsewhere keeps it (revision after the verifier finding: a pasted unit gave
+   FER022; frozen `AddressSearch.pasteunit58.test.jsx`). The owner approved rewriting the frozen
    `AddressSearch.repick58.test.jsx` (a space added keeps the pick) and, with the shared-ZIP
    decision, `geocoder.city58.test.js` (Horton Pl is no match); both fail at the merge base.
 4. A City match counts when a City `PointAddress` has the typed house number and the typed
