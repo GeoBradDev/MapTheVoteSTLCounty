@@ -5,7 +5,8 @@ export const copy = {
   officialLookup: "county's official lookup",
   errorAfterLink: 'You can also use the',
   // A lookup that could not finish (#18) never says the address was not
-  // found: only noMatch does, and only when every source answered.
+  // found: only noMatch does, when the sources that answered had no single
+  // answer (README, Errors).
   errors: {
     noMatch:
       'We could not find that address. Check it, add your ZIP code, pick a suggestion as you type, or try Use my location.',

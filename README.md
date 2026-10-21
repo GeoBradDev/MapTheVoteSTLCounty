@@ -286,8 +286,8 @@ again button that repeats the same search or location. The precinct page and its
 and early voting cards show their own failures, each with Try again (the map still removes
 itself, #13); a failed page load moves focus to its message.
 After `SLOW_MS` (`src/features/lookup/slowNotice.js`), the lookup and the precinct page say
-they are still working. When the browser reports no connection, the message says the voter
-appears to be offline (cached polling places wait for the PWA, #25). A page that throws
+they are still working. When the browser reports no connection, the lookup's and the precinct
+page's messages say the voter appears to be offline (cached polling places wait for the PWA, #25). A page that throws
 while rendering shows a plain error screen (`src/components/ErrorBoundary.jsx`), and
 `src/main.jsx` keeps React from logging caught errors. `e2e/failures.e2e.js` breaks each
 service in turn (network refusal, a request that never answers, 5xx) in a real browser.
