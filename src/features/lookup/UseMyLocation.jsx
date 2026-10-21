@@ -11,11 +11,13 @@ import { copy } from './useMyLocationCopy.js';
  * result, so a late answer never replaces an address the voter chose.
  * @param {{
  *   onLocate: (place: { lat: number, lng: number }) => void,
+ *   onStart?: () => void,
  *   addressInputRef?: { current: HTMLElement | null },
  * }} props `onLocate` gets a coordinates-only place for locate() (#8) and
- *   handles its own errors and loading state.
+ *   handles its own errors and loading state. `onStart` is called on each
+ *   press that starts a request, before the device answers.
  */
-export default function UseMyLocation({ onLocate, addressInputRef }) {
+export default function UseMyLocation({ onLocate, onStart, addressInputRef }) {
   const [busy, setBusy] = useState(false);
   // The failure reason and which press it came from. A new press gets a new
   // message node, so a repeated failure is announced again even when it comes
@@ -37,6 +39,7 @@ export default function UseMyLocation({ onLocate, addressInputRef }) {
 
   async function handleClick() {
     if (requestRef.current) return;
+    onStart?.();
     const input = addressInputRef?.current;
     const onAddress = () => {
       cancel();
