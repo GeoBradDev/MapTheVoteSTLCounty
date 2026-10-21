@@ -9,8 +9,8 @@ import { getPrecinctAtPoint, isInCountyBoundary } from '../../data/arcgis.js';
  * @property {number} lng WGS 84 longitude.
  * @property {string} [state] The geocoder's state, as `MO`, `Missouri` or the
  *   FIPS code `29`.
- * @property {string} [county] The geocoder's county name, like `St. Louis city`
- *   (Census `Counties` NAME, Esri `Subregion`).
+ * @property {string} [county] The geocoder's county name, like
+ *   `Saint Louis County` or `St. Louis city`.
  */
 
 /**

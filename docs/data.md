@@ -219,9 +219,10 @@ boundary for the map outline too.
 
 Out of county: `locate` in `src/features/lookup/locate.js` takes a place,
 `{ lat, lng, state?, county? }`, so it works with any geocoder and with
-coordinates alone. Both the Census (`geographies` endpoint, `Counties` layer
-`NAME`) and the Esri (`Subregion`, `RegionAbbr`) geocoders return the county name
-and state, for example `St. Louis city`, `MO`. With no precinct at the point, a
+coordinates alone. Photon returns `state` and `county` (for example `Missouri`,
+`Saint Louis County`); see Geocoding for St. Louis City. The Census (`geographies`
+endpoint, `Counties` layer `NAME`) and Esri (`Subregion`, `RegionAbbr`) geocoders
+return them too, for example `St. Louis city`, `MO`. With no precinct at the point, a
 place in St. Louis City is sent to the City's Board of Election Commissioners,
 one elsewhere in Missouri to the Secretary of State Voter Outreach Center (the
 county apps' own no-results link), and one outside Missouri gets a generic
@@ -284,18 +285,18 @@ Accuracy, 10 polling place addresses across the county (north, south, west,
 central, unincorporated), each geocoded from its street and ZIP and compared with
 the precinct at the county's own point for that site:
 
-| Address | County point | Esri | Census |
-|---|---|---|---|
-| 7700 Fine Rd 63129 (Oakville, unincorporated south) | OAK019 | OAK019 | OAK019 |
-| 501 Bowles Ave 63026 (Fenton) | MER025 | MER025 | MER025 |
-| 6915 Weber Rd 63123 (Affton, unincorporated) | GRA045 | GRA045 | GRA045 |
-| 1375 Carman Rd 63021 (Ballwin) | MR018 | MR018 | MR018 |
-| 12325 Manchester Rd 63131 (Des Peres) | MR006 | MR006 | MR006 |
-| 1417 St Louis Galleria St 63117 (Richmond Heights) | CLA019 | CLA019 | **CLA020** |
-| 17476 Chesterfield Airport Rd 63005 (Chesterfield, west) | CHE002 | CHE002 | CHE002 |
-| 9225 Lackland Rd 63114 (Overland) | MID014 | MID014 | MID014 |
-| 1910 Exuma Dr 63136 (north) | NRW020 | NRW020 | NRW020 |
-| 11831 Bellefontaine Rd 63138 (Spanish Lake, north) | SF014 | SF014 | SF014 |
+| Address | County point | Esri | Census | Photon | Photon (app) | Nominatim |
+|---|---|---|---|---|---|---|
+| 7700 Fine Rd 63129 (Oakville, unincorporated south) | OAK019 | OAK019 | OAK019 | OAK019 | OAK019 | OAK019 |
+| 501 Bowles Ave 63026 (Fenton) | MER025 | MER025 | MER025 | MER025 | MER025 | MER025 |
+| 6915 Weber Rd 63123 (Affton, unincorporated) | GRA045 | GRA045 | GRA045 | none | none | GRA045 |
+| 1375 Carman Rd 63021 (Ballwin) | MR018 | MR018 | MR018 | MR018 | MR018 | MR018 |
+| 12325 Manchester Rd 63131 (Des Peres) | MR006 | MR006 | MR006 | MR006 | MR006 | MR006 |
+| 1417 St Louis Galleria St 63117 (Richmond Heights) | CLA019 | CLA019 | **CLA020** | CLA019 | none | **CLA020** |
+| 17476 Chesterfield Airport Rd 63005 (Chesterfield, west) | CHE002 | CHE002 | CHE002 | CHE002 | CHE002 | CHE002 |
+| 9225 Lackland Rd 63114 (Overland) | MID014 | MID014 | MID014 | MID014 | MID014 | MID014 |
+| 1910 Exuma Dr 63136 (north) | NRW020 | NRW020 | NRW020 | NRW020 | NRW020 | NRW020 |
+| 11831 Bellefontaine Rd 63138 (Spanish Lake, north) | SF014 | SF014 | SF014 | SF014 | SF014 | SF014 |
 
 Esri: 10 of 10, all `PointAddress` matches. Census: 9 of 10; it interpolates along
 street ranges, which put the Galleria in the next precinct. Two apartment addresses
@@ -303,18 +304,50 @@ with units (8025 Maryland Ave Unit 5A, 7536 Forsyth Blvd Apt 2, both 63105) gave
 same precinct from both providers. The first 12 to 14 characters typed brought up
 the right address as the first Esri suggestion in all 10 cases.
 
-Choice: Esri World Geocoder, pending the owner's decision on an ArcGIS account and
-access token (issue #7).
+**Photon** (`photon.komoot.io`, open source, OpenStreetMap data), evaluated
+2026-10-21 with `q="<street>, MO <zip>"` and a `lat=38.6`, `lon=-90.4` bias: 9 of
+10 in the right precinct, all `type: house`; 6915 Weber Rd returned nothing. CORS
+is allowed for any origin (`Access-Control-Allow-Origin: *` on GET and on the
+preflight). No key. Its site asks for fair use ("extensive usage will be
+throttled") and promises no availability; it asks for no credit of its own, but
+the OpenStreetMap data license needs "© OpenStreetMap contributors".
+
+The "Photon (app)" column is the app's own provider (`src/data/photon.js`), from
+`node scripts/check-geocoder.mjs`: 8 right, 2 no match, 0 wrong. It is stricter
+than the raw result on purpose: typed text must match the result's house number and
+a word of its street, so the Galleria (Photon's answer is 1155, the mall, not 1417)
+gives no match instead of a nearby building. Photon also answers "8025 Maryland Ave"
+with 8025 Bonhomme Ave, which the check turns into no match. Neither apartment
+address above is in OpenStreetMap; both give no match. A no match tells the voter
+to pick a suggestion, try "Use my location" or use the county's official lookup.
+Photon gives St. Louis City, an independent city, as `city: Saint Louis` with no
+`county`; the provider fills `county: St. Louis city` for that case so the City
+referral (#8) works.
+
+**Nominatim** (public `nominatim.openstreetmap.org`): 9 of 10; the Galleria came back
+as a road-level match in CLA020. Ruled out anyway: its usage policy forbids
+client-side autocomplete and caps use at 1 request per second.
+
+Choice (owner, 2026-10-21, issue #7): public Photon, called from the browser. No
+proxy, no server, no self-hosting, no key. Esri was dropped because its terms need
+an account and token; Census has no CORS and no suggest.
 
 The app calls a geocoder only through the interface in `src/data/geocoder.js`:
 `suggest(text)` for the address box's suggestions and `geocode(textOrSuggestion)`
 for the place, `{ lat, lng, state?, county?, label }`, or null when nothing
 matches. The landing screen passes
 that place to `locate` (see Out of county above); a precinct opens `/p/<code>`, so
-only the precinct code goes in the URL. Until a provider is chosen (#7), the
-default geocoder suggests nothing and its `geocode` fails with
-`GeocoderUnavailableError`, so the screen offers "Use my location" and the
-county's official lookup instead. The address text is sent only to the geocoder.
+only the precinct code goes in the URL. `geocoder.js` creates one Photon geocoder
+at load, at `VITE_GEOCODER_URL` when that is set at build time, else
+`https://photon.komoot.io`. Requests carry the county extent as `bbox`
+(`-90.74,38.39,-90.11,38.89`, which also covers St. Louis City), the bias point,
+`cache: no-store`, no cookies and no referrer, and time out after 8 seconds. Only
+results with a house number count, so a street or area center is never used as an
+address. A timeout, network error, non-2xx answer (a 429 included) or malformed
+body is a `GeocoderUnavailableError`, and the screen offers "Use my location" and
+the county's official lookup instead. The address text is sent only to Photon.
+Any Content-Security-Policy must allow `https://photon.komoot.io` (or the
+`VITE_GEOCODER_URL` origin) in `connect-src`.
 
 The county web map also has a `commercial_addresses_view` layer that warns when
 an address is commercial, not residential. Worth a later look as an optional

@@ -81,7 +81,11 @@ Recorded in `docs/data.md` under Geocoding. Summary:
   host, and no API key anywhere".
 - `src/features/lookup/GeocoderAttribution.jsx` and test, `AddressLookup.jsx`,
   `lookupCopy.js` (noMatch and unavailable messages mention "Use my location").
-- `scripts/check-geocoder.mjs`, `docs/data.md`, this plan.
+- `src/data/geocoderError.js` (new): the error class, so `geocoder.js` and `photon.js` do
+  not import each other.
+- `src/features/lookup/locate.js`: JSDoc only, county examples no longer name providers.
+- `scripts/check-geocoder.mjs`, `docs/data.md`, `README.md` (Address search section), this
+  plan.
 
 ## Order of work
 
