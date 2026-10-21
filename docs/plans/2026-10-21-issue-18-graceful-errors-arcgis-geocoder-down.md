@@ -73,9 +73,11 @@ without a separate approval round.
 - `src/features/lookup/PrecinctPage.jsx`, `resultsCopy.js`: slow notice, retry, offline,
   focus on failure.
 - `src/features/lookup/PollsCard.jsx`, `EarlyVotingCard.jsx`: Try again.
-- `src/features/lookup/RetryButton.jsx` (new) and `src/features/lookup/useSlowNotice.js`
-  (new): the shared button and the 3 second timer.
-- `src/components/ErrorBoundary.jsx` (new), `src/App.jsx`, `src/main.jsx`.
+- `src/features/lookup/RetryButton.jsx`, `errorCopy.js`, `slowNotice.js` and `useRetry.js`
+  (new): the shared button, the shared words and offline check, the 3 second timer, and the
+  retry state with its focus hand-off for the cards.
+- `src/components/ErrorBoundary.jsx` and `errorBoundaryCopy.js` (new), `src/App.jsx`,
+  `src/main.jsx`.
 - Tests next to each component; `e2e/failures.e2e.js` (new).
 - Docs: `README.md` (Address search, a short Errors note), `docs/data.md` (City check
   failure wording), `docs/progress.md`.
