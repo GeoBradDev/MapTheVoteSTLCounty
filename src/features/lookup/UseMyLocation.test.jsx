@@ -182,6 +182,17 @@ describe('UseMyLocation', () => {
     expect(onLocate).not.toHaveBeenCalled();
   });
 
+  it('keeps the request when the page gets focus back after the permission prompt', async () => {
+    // Safari does not focus a tapped button, so the address box can still be
+    // the focused element; the browser fires focus on it when the prompt closes.
+    const onLocate = vi.fn();
+    render(<Harness onLocate={onLocate} />);
+    await userEvent.click(button());
+    address().dispatchEvent(new FocusEvent('focus'));
+    await answer(({ ok }) => ok(POSITION));
+    expect(onLocate).toHaveBeenCalledWith({ lat: 38.62, lng: -90.33 });
+  });
+
   it('drops a late result once the address form is submitted', async () => {
     const onLocate = vi.fn();
     render(
