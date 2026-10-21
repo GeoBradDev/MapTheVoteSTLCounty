@@ -26,6 +26,9 @@ sources:
   - id: rsmo-115-135
     label: Missouri Revised Statutes, Section 115.135 (registration deadline)
     url: https://revisor.mo.gov/main/OneSection.aspx?section=115.135
+  - id: rsmo-115-277
+    label: Missouri Revised Statutes, Section 115.277 (who may vote absentee)
+    url: https://revisor.mo.gov/main/OneSection.aspx?section=115.277
   - id: rsmo-115-926
     label: Missouri Revised Statutes, Section 115.926 (email and standing requests)
     url: https://revisor.mo.gov/main/OneSection.aspx?section=115.926
@@ -63,9 +66,14 @@ fax.[^rsmo-115-914]
 Active members of the armed forces and their dependents can still vote for federal offices.
 Use the portal or the Federal Write-In Absentee Ballot.[^sos-overseas]
 
+State law goes further. A military or overseas voter who is eligible but not registered can
+vote for federal, statewide and state legislative offices and statewide ballot questions. Send
+a Federal Post Card Application to ask for an absentee ballot, or turn one in at the county
+board on Election Day.[^rsmo-115-277]
+
 If you were discharged, came home from deployment, or left a job overseas after the deadline,
 you can register in person at the county board. Do it by 5 p.m. on Friday, October 30,
-2026.[^rsmo-115-135]
+2026.[^rsmo-115-135] Bring papers that show you qualify.[^rsmo-115-135]
 
 ## Send your ballot back
 

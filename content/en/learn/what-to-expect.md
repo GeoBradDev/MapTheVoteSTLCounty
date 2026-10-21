@@ -67,6 +67,6 @@ county's
 - A parent, grandparent or guardian can bring a child under 18 into the voting booth.[^rsmo-115-445]
 - If you need help in the booth, ask. Two election judges from different parties will give
   you instructions.[^rsmo-115-445] See
-  [Voting with a disability, and getting help](/learn/help-voting).
+  [Voting with a disability, and getting help at the polls](/learn/help-voting).
 - If there is a problem with your registration, you may be able to vote a provisional
   ballot.[^sos-other-questions] See [Provisional ballots](/learn/provisional-ballots).

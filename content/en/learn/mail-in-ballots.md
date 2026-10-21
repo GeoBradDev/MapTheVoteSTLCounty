@@ -23,6 +23,9 @@ sources:
   - id: rsmo-115-291
     label: Missouri Revised Statutes, Section 115.291 (returning absentee ballots)
     url: https://revisor.mo.gov/main/OneSection.aspx?section=115.291
+  - id: sos-voting-rights
+    label: Missouri Secretary of State, Voting Rights questions
+    url: https://www.sos.mo.gov/elections/goVoteMissouri/votingrights
   - id: county-absentee-app
     label: St. Louis County Board of Elections, Absentee Voting Lookup (November 3, 2026)
     url: https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=9301b4594bef4d9c9271778e4648179d
@@ -36,14 +39,16 @@ you use an **absentee ballot**.[^rsmo-115-302]
 ## Who can get a ballot by mail
 
 You can get an absentee ballot by mail if you have a reason the law allows.[^rsmo-115-277]
-For example, you will be away from the county on Election Day, or you are sick or
-disabled.[^rsmo-115-277] The full list is on the [absentee voting page](/learn/absentee).
+For example, you will be away from the county on Election Day, or you are sick or have a
+physical disability.[^rsmo-115-277] The full list is on the [absentee voting page](/learn/absentee).
 
 ## Key dates for November 3, 2026
 
-- The county board must get your request by 5 p.m. on Wednesday, October
+- The deadline to ask for a ballot by mail was 5 p.m. on Wednesday, October
   21.[^rsmo-115-279][^sos-how-to-vote]
-- The county board must receive your voted ballot by 7 p.m. on Election Day. Ballots that arrive later are not counted, except some military and overseas ballots.[^rsmo-115-293][^sos-how-to-vote]
+- If you asked in time, the county board must receive your voted ballot by 7 p.m. on Election
+  Day.[^rsmo-115-293][^sos-voting-rights] Ballots that arrive later are not counted, except
+  some military and overseas ballots.[^rsmo-115-293]
 - Drop boxes are not allowed.[^rsmo-115-291]
 
 ## Do not want to give a reason?

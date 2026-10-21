@@ -52,4 +52,4 @@ Call the county board at 314-615-1800 to ask.[^county-contact]
 If you have a permanent physical disability, you can ask to be put on a special list. Then
 the county board mails you an absentee ballot application before each
 election.[^sos-how-to-vote] See
-[Voting with a disability, and getting help](/learn/help-voting).
+[Voting with a disability, and getting help at the polls](/learn/help-voting).

@@ -24,7 +24,7 @@ sources:
 The last day to register to vote in the November 3, 2026 general election was
 **Wednesday, October 7, 2026**.[^sos-calendar]
 
-In Missouri, the deadline is always the fourth Wednesday before an election.[^rsmo-115-135] A
+For most voters in Missouri, the deadline is the fourth Wednesday before an election.[^rsmo-115-135] A
 mailed form must be postmarked by that day.[^sos-register]
 
 ## If you missed it

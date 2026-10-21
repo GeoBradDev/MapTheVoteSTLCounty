@@ -11,6 +11,9 @@ sources:
   - id: county-polls-app
     label: St. Louis County Board of Elections, Polling Place Lookup (November 3, 2026)
     url: https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=13fb36e785c84dbdbcc5219f999652ba
+  - id: county-absentee-app
+    label: St. Louis County Board of Elections, Absentee Voting Lookup (November 3, 2026)
+    url: https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=9301b4594bef4d9c9271778e4648179d
   - id: sos-elections
     label: Missouri Secretary of State, Elections and Voting
     url: https://www.sos.mo.gov/elections
@@ -34,7 +37,8 @@ County.[^county-contact]
 - **Office hours:** Monday to Friday, 8 a.m. to 4:30 p.m.[^county-contact]
 - **Website:** [stlouiscountymovotes.gov](https://www.stlouiscountymovotes.gov/)[^county-polls-app]
 
-During absentee voting, the office has longer hours on some days. See
+During absentee voting, the office is also open on Saturday, October 24 and Saturday,
+October 31, 9 a.m. to 1 p.m., and until 5 p.m. on Monday, November 2.[^county-absentee-app] See
 [Absentee and early in-person voting](/learn/absentee).
 
 ## Missouri Secretary of State, Elections

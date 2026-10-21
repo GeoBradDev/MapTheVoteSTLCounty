@@ -44,9 +44,9 @@ sources:
 - **Vote in private.** No one else may be in the booth or watch how you vote, unless you ask
   for help.[^rsmo-115-445] A parent, grandparent or guardian may bring a child under 18 into
   the booth.[^rsmo-115-445]
-- **Get help.** If you cannot read or write, are blind, or have a disability, you can get help
+- **Get help.** If you cannot read or write, are blind, or have a physical disability, you can get help
   from a person you choose or from two election judges.[^rsmo-115-445] See
-  [Voting with a disability, and getting help](/learn/help-voting).
+  [Voting with a disability, and getting help at the polls](/learn/help-voting).
 - **Get instructions.** Two election judges from different parties will explain how to
   vote.[^rsmo-115-445]
 - **Get a new ballot.** If you make a mistake, give the ballot back and get a new
@@ -70,7 +70,7 @@ You can take up to three hours off work to vote on Election Day.[^rsmo-115-639]
 
 On Election Day and during absentee voting, people may not campaign or hand out campaign
 papers inside the building, or within 25 feet of the door closest to the polling
-place.[^rsmo-115-637] The county board can make that distance 50 feet.[^rsmo-115-637]
+place.[^rsmo-115-637] The county board can make that distance larger, up to 50 feet, if it posts notice six weeks ahead.[^rsmo-115-637]
 
 It is a crime to interfere with a voter inside a polling place.[^rsmo-115-637]
 

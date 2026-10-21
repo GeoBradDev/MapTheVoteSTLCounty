@@ -65,7 +65,8 @@ correct polling place or a central polling place.[^rsmo-115-430][^sos-other-ques
 ## Find out if your ballot counted
 
 The state has a free way to learn if your ballot counted, and why not if it did
-not.[^rsmo-115-430] Call 866-868-3245 toll free and give the PIN on your
+not.[^rsmo-115-430] Your stub tells you how to check.[^sos-voter-id] For a provisional ballot
+cast without a photo ID, call 866-868-3245 toll free and give the PIN on your
 stub.[^sos-id-flyer] Wait 14 days after the election before you call.[^sos-id-flyer]
 
 If you were not registered, your envelope can be used to register you for future

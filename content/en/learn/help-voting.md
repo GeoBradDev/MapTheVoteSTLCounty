@@ -56,7 +56,7 @@ so you can vote in private.[^rsmo-115-445]
   accessible voting equipment.[^sos-election-day] See
   [Accessible voting and curbside voting](/learn/accessible-voting).
 - You can vote absentee if you are sick or have a physical disability, or if you care for
-  someone at your address who is.[^rsmo-115-277] See [Absentee voting](/learn/absentee).
+  someone at your address who is.[^rsmo-115-277] See [Absentee and early in-person voting](/learn/absentee).
 
 ## Permanent disability list
 
@@ -66,7 +66,8 @@ absentee list.[^rsmo-115-284][^sos-election-day]
 - The county board then sends you an absentee ballot application before each election you can
   vote in.[^rsmo-115-284]
 - Return the application by 5 p.m. on the second Wednesday before the election to get your
-  ballot.[^rsmo-115-284] For November 3, 2026, that is Wednesday, October 21.[^rsmo-115-284]
+  ballot.[^rsmo-115-284] For November 3, 2026, that deadline was Wednesday, October
+  21.[^rsmo-115-284]
 - You do not need a notary for your ballot envelope.[^rsmo-115-283]
 - The list is kept private.[^rsmo-115-284]
 
@@ -75,9 +76,13 @@ absentee list.[^rsmo-115-284][^sos-election-day]
 If you are blind, cannot read or write English, or cannot mark your ballot because of a
 disability, a person you choose can help you with your absentee ballot.[^rsmo-115-291]
 
-## If you go into the hospital or a care home
+## If you become sick or go into a care facility
 
-Did you go into the hospital, or a nursing or care facility in the county, after the request
-deadline? The county board sends a team of two people to help you apply and
-vote.[^rsmo-115-287]
-Call 314-615-1800.[^county-contact]
+This applies if, after the request deadline, you:[^rsmo-115-287]
+
+- went into a hospital in St. Louis County,[^rsmo-115-287]
+- became confined because of illness or injury, or[^rsmo-115-287]
+- will be in a nursing or care facility in St. Louis County on Election Day.[^rsmo-115-287]
+
+The county board sends a team to help you apply and vote. The team is two registered voters,
+one from each major party.[^rsmo-115-287] Call 314-615-1800.[^county-contact]

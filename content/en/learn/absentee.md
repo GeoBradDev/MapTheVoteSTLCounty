@@ -93,15 +93,21 @@ these reasons:[^rsmo-115-277][^sos-how-to-vote]
 1. Fill out the [absentee ballot request form](https://www.sos.mo.gov/CMSImages/ElectionGoVoteMissouri/AbsenteeBallotRequestForm.pdf).[^sos-absentee-form]
 2. Send it to the St. Louis County Board of Elections, not to the Secretary of State.[^sos-how-to-vote]
    You can send it by mail, fax or email, or bring it in person.[^sos-how-to-vote][^rsmo-115-279]
-3. The county board must get a mailed, faxed or emailed request by **5 p.m. on Wednesday,
-   October 21, 2026**.[^rsmo-115-279][^sos-how-to-vote]
+3. The county board must get a mailed, faxed or emailed request by 5 p.m. on the second
+   Wednesday before the election.[^rsmo-115-279][^sos-how-to-vote] For November 3, 2026, that
+   deadline was **5 p.m. on Wednesday, October 21**.[^rsmo-115-279]
 
-A close relative can also ask for you in person at the county board, by the same 5 p.m.
-October 21 deadline.[^rsmo-115-279] A close relative means a spouse, parent, child, brother,
+If you missed that deadline, you can still vote absentee in person until 5 p.m. on Monday,
+November 2.[^rsmo-115-279][^sos-how-to-vote]
+
+A close relative can also ask for you in person at the county board, by the same October 21
+deadline.[^rsmo-115-279] A close relative means a spouse, parent, child, brother,
 sister, grandparent or grandchild, or one of these by marriage.[^sos-how-to-vote][^sos-voting-rights]
 
 If you registered by mail and have not voted in person before, send a copy of a photo ID with
-your request, unless you sent one when you registered.[^sos-how-to-vote]
+your request, unless you sent one when you registered.[^sos-how-to-vote] This does not apply to
+military and overseas voters, or to voters with a permanent disability and their
+caregivers.[^sos-how-to-vote]
 
 ## Fill out your ballot
 
