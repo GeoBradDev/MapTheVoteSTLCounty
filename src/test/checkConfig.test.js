@@ -369,8 +369,12 @@ describe('data health workflow', () => {
     expect(workflow.on.schedule).toHaveLength(1);
   });
 
-  it('may write issues and nothing else', () => {
+  it('may write issues and nothing else, and does not keep the token on disk', () => {
     expect(workflow.permissions).toEqual({ contents: 'read', issues: 'write' });
+    const checkout = Object.values(workflow.jobs)[0].steps.find((s) =>
+      s.uses?.startsWith('actions/checkout'),
+    );
+    expect(checkout.with['persist-credentials']).toBe(false);
   });
 
   it('runs both live checks and reports a failure as an issue', () => {

@@ -177,8 +177,15 @@ export async function runHealthCheck(
   }
 
   const layerUrl = (key) => `${config.serviceRoot}/${config.layers[key]}`;
-  const query = (key, params) =>
-    request(`${layerUrl(key)}/query?${new URLSearchParams({ f: 'json', ...params })}`);
+  // A query answer must list its features, even when the list is empty: an
+  // answer without one is broken, not an empty result.
+  async function query(key, params) {
+    const body = await request(
+      `${layerUrl(key)}/query?${new URLSearchParams({ f: 'json', ...params })}`,
+    );
+    if (!Array.isArray(body?.features)) throw new CheckError('the response has no features list');
+    return body;
+  }
   const pointQuery = (key, { lat, lng }, outFields) =>
     query(key, {
       geometry: `${lng},${lat}`,
@@ -403,8 +410,17 @@ export function randomSample(items, count) {
  * @param {Date} [now]
  */
 export function isPastElection(config, now = new Date()) {
-  // en-CA formats a date as YYYY-MM-DD.
-  const today = new Intl.DateTimeFormat('en-CA', { timeZone: config.timeZone }).format(now);
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: config.timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+      .formatToParts(now)
+      .map(({ type, value }) => [type, value]),
+  );
+  const today = `${parts.year}-${parts.month}-${parts.day}`;
   return today > config.electionDate;
 }
 

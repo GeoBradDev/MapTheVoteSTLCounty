@@ -25,7 +25,9 @@ action is the workflow opening a GitHub issue, which is covered by the plan's ow
    6. one known point per County Council district (7) returns a precinct with a valid code
       and that council district, and lies inside the county boundary layer; one point in
       St. Louis City returns no precinct and lies outside the boundary.
-2. It prints one PASS or FAIL line per check and exits 1 when any check fails.
+2. It prints one PASS, FAIL or SKIP line per check (SKIP when a check it depends on failed)
+   and exits 1 unless every check passes. A query answer with no features list fails the
+   check rather than counting as empty.
 3. Pointing the config at a wrong layer name makes the check fail with a clear message that
    names the config key, the layer path and the service's error. Shown by a unit test with a
    stubbed service and live with `--layer precincts=<wrong path>`.
@@ -57,7 +59,9 @@ Not touched: `scripts/check-geocoder.mjs`, `src/data/photon.js`, `src/data/geoco
    implementation.
 2. Tests and implementation for the precinct count and sample ballot checks, then the HEAD
    spot-check, the absentee check and the known points.
-3. Retry, `parseArgs` (`--layer key=path`, `--scheduled`), `isPastElection`, and the CLI.
+3. Retry, `parseArgs` (`--layer key=path`), `isPastElection`, and the CLI. The workflow's
+   "Election window" step calls `isPastElection` itself, so the script needs no `--scheduled`
+   flag (changed during review: one gate in one place).
 4. Delete `check-sample-ballots.mjs`; the workflow; docs.
 5. Gate, then a live run, and a live run with a wrong layer name.
 
@@ -70,8 +74,9 @@ Not touched: `scripts/check-geocoder.mjs`, `src/data/photon.js`, `src/data/geoco
 - Flaky public services (Photon especially) can open an issue on a transient outage. Retries
   reduce this, and the workflow comments on one open issue instead of opening a new one each
   day. Because the workflow has no `pull_request` trigger, it can never block a merge.
-- The workflow needs `issues: write`. It runs only on `schedule` and `workflow_dispatch` from
-  the default branch, so no fork code runs with that token.
+- The workflow needs `issues: write`. It runs only on `schedule` (default branch) and
+  `workflow_dispatch`, which needs write access to the repo, so no fork code runs with that
+  token. Checkout does not persist the token, so `npm ci` install scripts cannot read it.
 - `parseSampleBallot` reads the pattern from the real config, so a `--layer` override does not
   change the pattern. Acceptable: overrides are for testing layer paths.
 
