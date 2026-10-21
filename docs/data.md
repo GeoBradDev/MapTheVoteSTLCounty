@@ -550,8 +550,9 @@ answer with the typed text itself:
   with Try again, "Use my location" and the county's official lookup.
 - **Cost:** a county voter whose number and street the City also has in another ZIP, who
   types no ZIP, a ZIP that crosses the City line, or picks the suggestion, gets the City
-  referral; typing a county-only ZIP gets the precinct. A City geocoder outage makes every lookup without a county-only ZIP fail
-  (shown as address search not working, #18), picks of a suggestion included. The owner accepted both: neither sends a voter to a wrong county precinct.
+  referral; typing a county-only ZIP gets the precinct. A City geocoder outage makes every lookup without a county-only ZIP whose
+  answer could get a county precinct fail (shown as address search not working, #18), picks
+  of a suggestion included. The owner accepted both: neither sends a voter to a wrong county precinct.
 - **Not done:** looking up City addresses the county does not have (#57).
 
 `node scripts/check-geocoder.mjs`, 2026-10-21, rerun with the City check (#58): the 10 polling place addresses

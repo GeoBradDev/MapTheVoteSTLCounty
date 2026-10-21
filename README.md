@@ -273,8 +273,8 @@ lookup. Results are recorded in `docs/data.md` under Geocoding.
 
 When a service is slow or down, the app says so and offers a way forward (#18); it never
 guesses a precinct. "We could not find that address" means the sources that answered had
-no single answer: none has the address, two addresses fit, or the county and the City both
-list it in one ZIP. A lookup that could not finish says address search is not working instead: every
+no single answer: none has the address, two addresses or two precincts fit, the county and
+the City both list it in one ZIP, or the only fit is not exact. A lookup that could not finish says address search is not working instead: every
 source down, the City check or the county's precinct check failing or slow, Photon down after a county no
 match, or no county layer answering with Photon finding nothing. (With the live county
 layer down, the 2023 hosted copy's no match counts as an answer.)
