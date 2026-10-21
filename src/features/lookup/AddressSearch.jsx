@@ -37,6 +37,11 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
   const [empty, setEmpty] = useState(false);
   const formRef = useRef(null);
   const pointerPickRef = useRef(null);
+  // The last picked suggestion, while the box still holds its label. Searching
+  // again sends the pick, not the label as typed text: the label's ZIP is the
+  // source's, not one the voter typed, and the geocoder's City check treats
+  // the two differently (#58).
+  const pickedRef = useRef(null);
   const id = useId();
   const listboxId = `${id}-listbox`;
   const hintId = `${id}-hint`;
@@ -75,6 +80,7 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
 
   function handleChange(event) {
     const value = event.target.value;
+    pickedRef.current = null;
     setText(value);
     onEdit?.();
     setEmpty(false);
@@ -86,6 +92,7 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
 
   function pick(suggestion) {
     if (busy) return;
+    pickedRef.current = suggestion;
     setText(suggestion.label);
     reset();
     onSubmit(suggestion);
@@ -117,7 +124,8 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
       return;
     }
     reset();
-    onSubmit(trimmed);
+    const picked = pickedRef.current;
+    onSubmit(picked && picked.label.trim() === trimmed ? picked : trimmed);
   }
 
   function handleKeyDown(event) {

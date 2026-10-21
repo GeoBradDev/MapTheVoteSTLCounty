@@ -31,7 +31,9 @@ Domain skills:
    (a fixed list of county-only ZIPs). A typed town no longer skips the check. For a picked
    suggestion, the ZIP in its label is the county record's, not the voter's, so the check
    ignores it (revision after review finding 1: picking the county's `6135 Washington Ave
-   ... 63134` suggestion still gave FER022).
+   ... 63134` suggestion still gave FER022). Searching again while the box still holds the
+   picked label sends the pick again (revision after review finding 2: the label resent as
+   text skipped the check and gave FER022).
 4. A City match counts when a City `PointAddress` has the typed house number and the typed
    whole street under the strict rules (`matchesStreet` in `addressMatch.js`), and its ZIP
    equals the typed ZIP when one is typed (a candidate with no ZIP counts). Then the answer is
@@ -76,6 +78,8 @@ Domain skills:
   the address box says the address is "sent only to these services", so it must name the City
   check too (added during implementation, found in the live drive).
 - `scripts/record-fixtures.mjs`: records the City geocoder fixtures.
+- `src/features/lookup/AddressSearch.jsx` and the frozen `AddressSearch.repick58.test.jsx`:
+  a search with a pick's label unchanged in the box resends the pick.
 - `scripts/check-geocoder.mjs`: the City check in the app chains; the #58 cases.
 - `docs/data.md`, `README.md`, `docs/progress.md`.
 
