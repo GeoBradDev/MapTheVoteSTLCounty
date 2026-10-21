@@ -1,7 +1,7 @@
 // Fixtures are live responses recorded by scripts/record-fixtures.mjs. The real
 // data client runs against a stubbed fetch. The page is imported fresh for each
 // test, since the client caches the polls list for the page's lifetime.
-import { render, screen, within } from '@testing-library/react';
+import { configure, getConfig, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
@@ -53,6 +53,20 @@ function withAttributes(fixture, changes) {
   };
 }
 
+// One role query on this page takes about 200 ms in jsdom, and a wait that
+// times out reports failure without a last check. On a busy machine the default
+// 1000 ms then ran out before the page had rendered (#64). 4000 ms keeps a real
+// hang failing on the query's own message, before Vitest's 5000 ms test timeout.
+let defaultWait;
+beforeAll(() => {
+  defaultWait = getConfig().asyncUtilTimeout;
+  configure({ asyncUtilTimeout: 4000 });
+});
+
+afterAll(() => {
+  configure({ asyncUtilTimeout: defaultWait });
+});
+
 beforeEach(async () => {
   fetchMock = vi.fn();
   vi.stubGlobal('fetch', fetchMock);
@@ -80,6 +94,19 @@ const heading = () => screen.getByRole('heading', { level: 1 });
 const liveRegion = () => document.querySelector('[aria-live="polite"]');
 const cardHeadings = () => screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
 const ready = (code) => screen.findByText(copy.ready(code));
+
+// The page's alert is always there, empty until a load fails, so waiting for
+// an alert alone can return it before the message arrives (#64). The address
+// search shown for "not found" brings more, empty, alerts. This waits for the
+// one alert that holds `text`.
+async function alertSaying(text) {
+  const holding = () =>
+    screen
+      .getAllByRole('alert')
+      .filter((alert) => alert.textContent.replace(/\s+/g, ' ').includes(text));
+  await waitFor(() => expect(holding()).toHaveLength(1));
+  return holding()[0];
+}
 
 describe('PrecinctPage', () => {
   it('loads only the precinct in the URL', async () => {
@@ -381,8 +408,7 @@ describe('PrecinctPage', () => {
 
   it('says a malformed code is not found, without a request', async () => {
     renderAt('nope');
-    const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent(copy.errors.notFound);
+    await alertSaying(copy.errors.notFound);
     expect(fetchMock).not.toHaveBeenCalled();
     // No result cards: only the search offered instead.
     expect(cardHeadings()).toEqual([copy.searchInstead]);
@@ -462,22 +488,21 @@ describe('PrecinctPage', () => {
     renderAt('Polls%20moved%20to%20City%20Hall');
     expect(heading()).toHaveTextContent(copy.notFoundHeading);
     expect(heading()).not.toHaveTextContent(/polls|city hall/i);
-    expect(await screen.findByRole('alert')).toHaveTextContent(copy.errors.notFound);
+    await alertSaying(copy.errors.notFound);
     expect(heading()).not.toHaveTextContent(/polls|city hall/i);
   });
 
   it('says an unknown code is not found', async () => {
     fetchMock.mockImplementation(() => respond({ ...byId, features: [] }));
     renderAt('ZZ999');
-    expect(await screen.findByRole('alert')).toHaveTextContent(copy.errors.notFound);
+    await alertSaying(copy.errors.notFound);
     expect(liveRegion()).toHaveTextContent(/^$/);
   });
 
   it('says a failed load failed, with the official lookup link', async () => {
     fetchMock.mockImplementation(() => respond({}, 404));
     renderAt('CC007');
-    const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent(copy.errors.failed);
+    const alert = await alertSaying(copy.errors.failed);
     expect(within(alert).getByRole('link', { name: copy.officialLookup })).toHaveAttribute(
       'href',
       election.officialLookupUrl,

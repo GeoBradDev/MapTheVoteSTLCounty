@@ -39,8 +39,10 @@ fixing the wait"); vercel-react-best-practices, not applicable because no React 
 
 ## Order of work
 
-1. Add an `alertSaying(text)` helper that waits until the one `role="alert"` holds `text`, and
-   returns it. Use it in the four tests that today do `findByRole('alert')` then
+1. Add an `alertSaying(text)` helper that waits until exactly one `role="alert"` holds `text`, and
+   returns it. It picks by text because the address search shown for "not found" brings more,
+   empty, alerts (found while proving the helper: a plain `getByRole('alert')` then throws
+   "multiple elements"). Use it in the four tests that today do `findByRole('alert')` then
    `toHaveTextContent`.
 2. Give the file's waits headroom: `configure({ asyncUtilTimeout: 4000 })` from
    `@testing-library/react` in `beforeAll`, restored in `afterAll`, with a comment on why. 4000 ms
@@ -61,8 +63,10 @@ screen reader announces later text, per #18).
 
 ## Proof
 
-- Criterion 2: the scratch delayed-response test returns `""` from the old pattern; with
-  `alertSaying` the same delayed response passes (the helper waits for the text).
+- Criterion 2: a scratch test (not committed) with the precinct response delayed 2 s: the old
+  pattern fails (`findByRole('alert')` returns the empty alert), `alertSaying` passes after about
+  2 s. With no delay both pass. The old pattern only passed because the message landed during
+  Testing Library's post-wait `setTimeout(0)` drain, which loses the race to a busy event loop.
 - Criterion 1: the full suite repeated under load (several runs at once) with no PrecinctPage
   failure, compared with the stress run on main that failed.
 - Criterion 3: the diff shows only wait changes; the test count is unchanged.
