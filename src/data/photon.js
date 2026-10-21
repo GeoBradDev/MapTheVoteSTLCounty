@@ -76,6 +76,8 @@ const CANONICAL = {
   ninth: '9',
   tenth: '10',
 };
+// St. Louis in words() form.
+const ST_LOUIS = 'st louis';
 const DIRECTIONS = new Set(['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw']);
 // Street types, leaving out "st", which may start a city ("St. Louis").
 const STREET_TYPES = new Set('rd ave dr blvd ln ct pl ter pkwy hwy cir trl sq way'.split(' '));
@@ -122,7 +124,7 @@ function labelOf(props) {
 // Photon gives St. Louis City, an independent city, as a city with no county.
 function countyOf(props) {
   if (props.county) return props.county;
-  if (props.state === 'Missouri' && words(props.city).join(' ') === 'st louis') {
+  if (props.state === 'Missouri' && words(props.city).join(' ') === ST_LOUIS) {
     return 'St. Louis city';
   }
   return undefined;
@@ -150,26 +152,51 @@ function hasNumber(housenumber, typed) {
     });
 }
 
-// Typed text names a feature when its street part (before the first comma)
-// starts with the feature's house number followed by the feature's whole
-// street, word for word, and a typed ZIP, if any, is the feature's postcode.
-// A word after the street may not be a direction or street type, so "Main St
-// N" and "Halls Ferry Rd" do not match a street named "Main St" or "Halls
-// Ferry". A different or missing direction, name or type is no match: "100 S
-// Lindbergh Blvd" is not "100 Lindbergh Blvd", and "8025 Maryland Ave Clayton"
-// is not "8025 Clayton Rd".
+// The last ZIP typed after the house number, if any.
+function typedZip(text) {
+  const zips = [...text.replace(/^\s*\S+/, '').matchAll(/\b(\d{5})(?:-\d{4})?\b/g)];
+  return zips.at(-1)?.[1];
+}
+
+// The town typed after the first comma, without state and ZIP, if any.
+function typedTown(text) {
+  const [, part = ''] = text.split(',');
+  return words(part)
+    .filter((word) => !/^\d/.test(word) && word !== 'mo' && word !== 'missouri')
+    .join(' ');
+}
+
+// Typed text names a feature when:
+// - its street part (before the first comma) starts with the feature's house
+//   number and then the feature's whole street, word for word, with no
+//   direction or street type after it ("100 S Lindbergh Blvd" is not "100
+//   Lindbergh Blvd", "8025 Maryland Ave Clayton" is not "8025 Clayton Rd");
+// - a typed ZIP is the feature's postcode, and a typed town other than St.
+//   Louis is the feature's town;
+// - a feature in a named town other than St. Louis has that town or its ZIP
+//   typed, since the same address can exist in two towns. St. Louis is the
+//   mailing city for much of the county, so it confirms nothing.
+// Typing a suggestion's own label back always matches.
 function matchesTyped(text, props) {
+  if (words(text).join(' ') === words(labelOf(props)).join(' ')) return true;
   const [streetPart] = text.split(',');
   const [number, ...typed] = words(streetPart);
   if (!number || !/^\d/.test(number) || !hasNumber(props.housenumber, number)) return false;
-  const zip =
-    text.slice(streetPart.length).match(/\b(\d{5})(?:-\d{4})?\b/)?.[1] ??
-    streetPart.match(/\s(\d{5})(?:-\d{4})?\s*$/)?.[1];
-  if (zip && props.postcode && String(props.postcode).slice(0, 5) !== zip) return false;
   const street = words(props.street);
   if (!street.length || !street.every((word, i) => typed[i] === word)) return false;
   const next = typed[street.length];
-  return !next || !(DIRECTIONS.has(next) || STREET_TYPES.has(next));
+  if (next && (DIRECTIONS.has(next) || STREET_TYPES.has(next))) return false;
+  // "Elm St Louis" could be Elm Street in St. Louis or Elm (any type) in St. Louis.
+  if (street.at(-1) === 'st' && next === 'louis') return false;
+
+  const zip = typedZip(text);
+  const postcode = props.postcode ? String(props.postcode).slice(0, 5) : null;
+  if (zip && postcode && zip !== postcode) return false;
+  const town = words(props.city ?? props.district).join(' ');
+  const typedPlace = typedTown(text);
+  if (typedPlace && typedPlace !== ST_LOUIS && town && typedPlace !== town) return false;
+  const confirmed = (zip && zip === postcode) || (typedPlace && typedPlace === town);
+  return !town || town === ST_LOUIS || Boolean(confirmed);
 }
 
 /**

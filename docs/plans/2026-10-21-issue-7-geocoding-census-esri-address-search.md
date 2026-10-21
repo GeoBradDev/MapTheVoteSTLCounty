@@ -55,7 +55,9 @@ Recorded in `docs/data.md` under Geocoding. Summary:
    the typed street part (before the first comma) must start with the match's house number
    and then its whole street, word for word, with the same direction and street type
    (spellings like Road/Rd, South/S, Saint/St, Mount/Mt, First/1st compare as one), and a
-   typed ZIP must be its postcode; otherwise `null`. A picked suggestion geocodes from the suggestion with no second
+   typed ZIP must be its postcode and a typed town other than St. Louis its town; a match in
+   a named town other than St. Louis needs that town or its ZIP typed; typing a suggestion's
+   own label back always matches; otherwise `null`. A picked suggestion geocodes from the suggestion with no second
    request.
 4. A timeout (8 s), network error, non-2xx (429 included) or malformed body rejects with
    `GeocoderUnavailableError`; a caller abort rejects with an AbortError. The lookup then
@@ -107,8 +109,10 @@ attribution. 4. Live check script and docs. 5. Live drive in a browser.
   on another street; the house number, street and ZIP checks on typed text return null
   instead (review findings: a typed city word must not satisfy the street check, and a
   different direction or street type is another street; frozen tests
-  `src/data/photon.strict.test.js` and `src/data/photon.street.test.js`). A voter who
-  leaves out the street type gets no match and is pointed to the suggestions.
+  `src/data/photon.strict.test.js`, `src/data/photon.street.test.js` and, for the same
+  address in another town, `src/data/photon.town.test.js`). A voter who leaves out the
+  street type, or the town and ZIP of an address in a named town, gets no match and is
+  told to add the ZIP or pick a suggestion.
 
 ## Proof
 

@@ -254,7 +254,7 @@ describe('geocode', () => {
       state: 'Illinois',
     });
     const fetch = fakeFetch(() => respond(collection(elsewhere)));
-    const place = await createPhotonGeocoder({ fetch }).geocode('10 Main St');
+    const place = await createPhotonGeocoder({ fetch }).geocode('10 Main St, Belleville');
     expect(place).toMatchObject({ state: 'Illinois' });
     expect(place.county).toBeUndefined();
   });

@@ -270,7 +270,7 @@ it would need a proxy, which would send address text through a server of ours.
 `category=Address` keeps suggestions in and around the county. Apartment units come
 back as `Subaddress` matches (`8025 Maryland Ave, Unit 5A`).
 
-Esri's current terms, read 2026-10-21 (do not assume them, re-check before launch):
+Esri's terms, read 2026-10-21 for the spike (Esri was not chosen; see Choice below):
 - https://developers.arcgis.com/rest/geocode/ : "An ArcGIS Location Platform or
   ArcGIS Online account is required to use the services." Pricing on that page:
   not-stored geocodes 20K free per month, then $0.50 per 1,000; suggests $0.
@@ -279,7 +279,7 @@ Esri's current terms, read 2026-10-21 (do not assume them, re-check before launc
   stored unless the request passes `forStorage=true` with a valid token. We never
   store results, so `forStorage` stays false.
 - Requests without a token still succeed today, but that is not permission: the
-  terms require an account, so we should send a token.
+  terms require an account and a token.
 
 Accuracy, 10 polling place addresses across the county (north, south, west,
 central, unincorporated), each geocoded from its street and ZIP and compared with
@@ -317,12 +317,16 @@ The "Photon (app)" column is the app's own provider (`src/data/photon.js`), from
 than the raw result on purpose: typed text (the part before the first comma) must
 start with the result's house number and then its whole street, word for word, with
 the same direction and street type ("100 S Lindbergh Blvd" is not "100 Lindbergh
-Blvd", and "8025 Maryland Ave Clayton" is not "8025 Clayton Rd"), and a typed ZIP must
-be its postcode, so the Galleria (Photon's answer is 1155, the mall, not 1417)
+Blvd", and "8025 Maryland Ave Clayton" is not "8025 Clayton Rd"); a typed ZIP must be
+its postcode and a typed town other than St. Louis its town; and a result in a named
+town other than St. Louis needs that town or its ZIP typed, because the same address
+can exist in two towns ("St. Louis" is the mailing city for much of the county, so it
+confirms nothing). Typing a suggestion's own label back always matches. So the Galleria (Photon's answer is 1155, the mall, not 1417)
 gives no match instead of a nearby building. Photon also answers "8025 Maryland Ave"
 with 8025 Bonhomme Ave, which the check turns into no match. Neither apartment
 address above is in OpenStreetMap; both give no match. A no match tells the voter
-to pick a suggestion, try "Use my location" or use the county's official lookup.
+to add the ZIP, pick a suggestion, try "Use my location" or use the county's official
+lookup.
 Photon gives St. Louis City, an independent city, as `city: Saint Louis` with no
 `county`; the provider fills `county: St. Louis city` for that case so the City
 referral (#8) works.

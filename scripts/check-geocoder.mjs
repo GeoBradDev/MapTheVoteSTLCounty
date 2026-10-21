@@ -5,7 +5,8 @@
 // point for that site. "no match" is safe (the voter is sent to "Use my
 // location" and the county's official lookup); a wrong precinct is not.
 // Usage: node scripts/check-geocoder.mjs [base URL]   (default: public Photon)
-// Exits 1 when any address lands in the wrong precinct.
+// Exits 1 when any address lands in the wrong precinct, or with the error when
+// Photon is still unavailable after three tries (it answers 503 now and then).
 
 import { readFile } from 'node:fs/promises';
 import { getPrecinctAtPoint } from '../src/data/arcgis.js';
@@ -19,6 +20,18 @@ const polls = JSON.parse(
 ).features;
 const geocoder = createPhotonGeocoder({ baseUrl: process.argv[2] });
 
+// Public Photon fails now and then; try again a few times before giving up.
+async function withRetry(call) {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await call();
+    } catch (error) {
+      if (attempt === 3) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
+    }
+  }
+}
+
 const precinctAt = async (point) => (await getPrecinctAtPoint(point))?.precinct ?? 'outside';
 
 let right = 0;
@@ -30,9 +43,10 @@ for (const loc of LOCS) {
   const [lng, lat] = site.geometry.coordinates;
   const text = `${site.properties.address}, MO ${site.properties.zipcode}`;
   const want = await precinctAt({ lat, lng });
-  const place = await geocoder.geocode(text);
+  const place = await withRetry(() => geocoder.geocode(text));
   const got = place ? await precinctAt(place) : null;
-  const firstSuggestion = (await geocoder.suggest(text.split(',')[0].slice(0, 14)))[0]?.label;
+  const partial = text.split(',')[0].slice(0, 14);
+  const firstSuggestion = (await withRetry(() => geocoder.suggest(partial)))[0]?.label;
   if (!place) none += 1;
   else if (got === want) right += 1;
   else wrong.push(`${text}: ${got}, want ${want}`);

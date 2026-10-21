@@ -6,7 +6,7 @@ export const copy = {
   errorAfterLink: 'You can also use the',
   errors: {
     noMatch:
-      'We could not find that address. Check the street number and name, pick a suggestion as you type, or try Use my location.',
+      'We could not find that address. Add your ZIP code, pick a suggestion as you type, or try Use my location.',
     unavailable: 'Address search is not available right now. Use my location instead.',
     failed: 'We could not look up your precinct right now. Try again.',
   },
