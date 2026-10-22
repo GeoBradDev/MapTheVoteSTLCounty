@@ -842,7 +842,9 @@ such as `City of St. Louis` or `State of Missouri`), and two placeholder rows, `
 United States` and `Vice-President of the United States`, each a polygon of about 1,100 m² with
 its own `districtid`. A point query returns one row per office there: 22 at City Hall (8
 distinct `districtid` values). A districts card should drop the two placeholders and group the
-rows that share a `districtid` (#90). The app reads `electedoffice`, `district` and
+rows that share a `districtid` (#90). The statewide and some district polygons reach past the City line (the
+county point -90.33, 38.62 gets 9 rows, among them Missouri Senate District 4), so a districts
+answer is never the test of being in the City: the precinct and boundary queries are. The app reads `electedoffice`, `district` and
 `districtid` only. The layer also holds each officeholder's name, photo, party and contact
 details (`repname1` to `repname7`, `repimageurl*`, `party*`, `districturl*`, `phone*`,
 `email*`, `facebook*`, `twitter*`, `fulladdr*`); the app never asks for them (a test fails if
