@@ -1,6 +1,9 @@
 # Checks the live election layers, the geocoder, the learn topics' source
 # links and the pages the election config links every day through Election
 # Day, and opens an issue (or comments on the open one) when a check fails.
+# During early voting it also checks the election layers, wait time layers
+# included, every 2 hours of the voting day, so a board that starts or stops
+# reporting line counts is noticed the same day (#106).
 # It has no pull_request or push trigger, so a live outage can never block a
 # merge: the CI workflow (ci.yml) never calls a live service.
 
@@ -10,6 +13,11 @@ on:
   schedule:
     # 12:00 UTC: 7 a.m. in Chicago while daylight time lasts, 6 a.m. after.
     - cron: '0 12 * * *'
+    # Every 2 hours from 14:00 to 22:00 UTC: 9 a.m. to 5 p.m. in Chicago in
+    # daylight time, 8 a.m. to 4 p.m. after. Only on days inside the config's
+    # early voting dates (scripts/electionWindow.mjs), so these stop after the
+    # last early voting day with no edit. Keep it equal to WAITS_CRON there.
+    - cron: '0 14-22/2 * * *'
   workflow_dispatch:
 
 permissions:
@@ -36,20 +44,29 @@ jobs:
         with:
           persist-credentials: false
 
-      # Scheduled runs stop once Election Day is over in the config's time zone.
-      # A manual run always checks. This runs first, on the runner's own Node,
-      # so a failing install after the election cannot open an issue; the
-      # script and the config import nothing from node_modules.
+      # What this run checks: everything (`full`), the election config check
+      # only (`waits`, the open-hours runs during early voting) or nothing
+      # (`off`). The daily run stops once Election Day is over in the config's
+      # time zone; a manual run always checks everything. This runs first, on
+      # the runner's own Node, so a failing install after the election cannot
+      # open an issue: electionWindow.mjs and the config import nothing (not
+      # check-config.mjs, which imports the app and its packages).
       - name: Election window
         id: window
+        env:
+          EVENT_SCHEDULE: ${{ github.event.schedule }}
         run: |
-          past=$(node --input-type=module -e "
+          mode=$(node --input-type=module -e "
             import election from './src/config/election.js';
-            import { isPastElection } from './scripts/check-config.mjs';
-            console.log(isPastElection(election));
+            import { windowFor } from './scripts/electionWindow.mjs';
+            console.log(windowFor(election, {
+              event: process.env.GITHUB_EVENT_NAME,
+              schedule: process.env.EVENT_SCHEDULE,
+            }));
           ")
-          if [ "$past" = true ] && [ "$GITHUB_EVENT_NAME" = schedule ]; then
-            echo "Election Day is over: skipping the scheduled checks."
+          echo "Run mode: $mode"
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          if [ "$mode" = off ]; then
             echo "active=false" >> "$GITHUB_OUTPUT"
           else
             echo "active=true" >> "$GITHUB_OUTPUT"
@@ -68,12 +85,28 @@ jobs:
         id: config
         if: steps.window.outputs.active == 'true'
         timeout-minutes: 25
-        run: node scripts/check-config.mjs
+        run: node scripts/check-config.mjs --warnings "$RUNNER_TEMP/wait-warnings.txt"
+
+      # A warning (early voting sites open with no fresh line count, or County
+      # reports that match no site) never fails the run, so list it on the
+      # run's summary.
+      - name: List warnings
+        if: ${{ !cancelled() && steps.window.outputs.active == 'true' }}
+        run: |
+          file="$RUNNER_TEMP/wait-warnings.txt"
+          if [ -s "$file" ]; then
+            {
+              echo "### Warnings from the election config check"
+              echo
+              sed 's/^/- /' "$file"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       # These run even when an earlier check failed, so one issue reports all.
+      # The open-hours runs (mode `waits`) skip them: once a day is enough.
       - name: Geocoder check
         id: geocoder
-        if: ${{ !cancelled() && steps.window.outputs.active == 'true' }}
+        if: ${{ !cancelled() && steps.window.outputs.active == 'true' && steps.window.outputs.mode == 'full' }}
         timeout-minutes: 20
         run: node scripts/check-geocoder.mjs
 
@@ -86,13 +119,13 @@ jobs:
       # to open in a browser.
       - name: Content link check
         id: links
-        if: ${{ !cancelled() && steps.window.outputs.active == 'true' }}
+        if: ${{ !cancelled() && steps.window.outputs.active == 'true' && steps.window.outputs.mode == 'full' }}
         timeout-minutes: 15
         run: node scripts/check-content-links.mjs --skipped "$RUNNER_TEMP/skipped-links.txt"
 
       # A skip never fails the run, so list it on the run's summary every day.
       - name: List skipped links
-        if: ${{ !cancelled() && steps.window.outputs.active == 'true' }}
+        if: ${{ !cancelled() && steps.window.outputs.active == 'true' && steps.window.outputs.mode == 'full' }}
         run: |
           file="$RUNNER_TEMP/skipped-links.txt"
           if [ -s "$file" ]; then
@@ -121,6 +154,13 @@ jobs:
           - Content link check (scripts/check-content-links.mjs): $LINKS_OUTCOME
 
           Log: $run_url"
+          warnings_file="$RUNNER_TEMP/wait-warnings.txt"
+          if [ -s "$warnings_file" ]; then
+            body="$body
+
+          Warnings from the election config check:
+          $(sed 's/^/- /' "$warnings_file")"
+          fi
           skipped_file="$RUNNER_TEMP/skipped-links.txt"
           if [ -s "$skipped_file" ]; then
             body="$body
