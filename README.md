@@ -362,8 +362,8 @@ the early voting card to the `absentee` topic, each only once that topic exists
 `src/features/learn/learnA11y.test.jsx` runs axe on the pages with fixture topics.
 
 Translations (#19): put a topic with the same `id` under another locale, such as
-`content/es/learn/voter-id.md`, and add that locale's labels to
-`src/features/learn/learnCopy.js`. A locale shows the English topic until its own exists.
+`content/es/learn/voter-id.md`. A locale shows the English topic until its own exists. The
+labels around a topic are in that locale's messages (see [Languages](#languages)).
 
 `node scripts/check-content-links.mjs` requests every source and link in every topic, and every
 page `src/config/election.js` links (each `sources` entry and each value whose key ends in `Url`
@@ -375,6 +375,25 @@ challenge, which only a browser gets past, is a SKIP: it does not fail the run, 
 must open the URL in a browser. Any other `403` fails. It exits 1 on any failure;
 `--skipped <file>` writes the skipped URLs to a file. The data health workflow runs it daily
 (see below), never on pull requests.
+
+## Languages
+
+Every word the app shows is in `src/i18n/en.json` and reaches the page through `t()`
+(`src/i18n/index.js`), mostly by way of the copy module next to each feature, such as
+`src/features/lookup/resultsCopy.js`. Messages fill in `{name}` values and pick plurals with
+`{count, plural, one {...} other {...}}`. Values from the county's data, such as district
+names, election values from `src/config/election.js`, and the names of the address search
+services and their data (from the geocoder modules, as the privacy notice requires) are shown as
+they are. So are the home page's tab title, which is `index.html`'s, the map's credit line
+and MapLibre's own built-in text (its gesture hints and the map's label). ESLint's
+`react/jsx-no-literals` fails on words typed straight into JSX.
+
+To add a language, such as Spanish: copy `en.json` to `src/i18n/es.json`, translate the
+values (keep the keys and the `{...}` names), and add its line to `LOCALES` in
+`src/i18n/config.js`. A key it lacks falls back to English. The language switcher appears once
+there are two languages; choosing one loads its file, sets `<html lang>` and redraws the page
+in it, keeping focus and what the page has loaded. The site always starts in English. Dates are formatted for the language in the election's time zone,
+`America/Chicago`.
 
 ## Data health check
 
@@ -477,7 +496,8 @@ accepts one (#38): the county's address layers, the City geocoder and the precin
 point queries. Photon has no POST endpoint, so it gets the typed text in a GET query string;
 the notice says so. A new request that carries either must do the same, and a service worker
 (#25) must not put those requests in Cache Storage, which `no-store` does not cover. The plain-language
-notice at `/privacy` (`src/features/privacy/privacyCopy.js`) says what each third party gets;
+notice at `/privacy` (`src/features/privacy/privacyCopy.js`, its text under `privacy` in
+`src/i18n/en.json` and every other language's file) says what each third party gets;
 change it in the same change as any new service or any change to what is sent. `src/test/no-storage.test.js` fails
 when app code under `src` uses browser storage, cookies or the console, and
 `src/test/addressPrivacy.test.jsx` runs a lookup and checks storage, cookies, Cache Storage

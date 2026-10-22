@@ -3,6 +3,7 @@ import { Link } from 'wouter';
 import election from '../../config/election.js';
 import { getPolls } from '../../data/arcgis.js';
 import { CARD_TOPICS } from '../learn/cardTopics.js';
+import { getLocale } from '../../i18n/index.js';
 import { getTopic } from '../learn/topics.js';
 import AssignedPollingPlace from './AssignedPollingPlace.jsx';
 import { directionsLinks, isAppleMobile } from './nearbyPolls.js';
@@ -50,7 +51,7 @@ function Hours() {
 
 // Shown only once the voter ID topic is published (#22, #23).
 function VoterIdLink() {
-  const topic = getTopic(CARD_TOPICS.voterId);
+  const topic = getTopic(CARD_TOPICS.voterId, getLocale());
   if (!topic) return null;
   return (
     <p className="mt-3">

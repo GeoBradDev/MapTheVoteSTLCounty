@@ -1,0 +1,325 @@
+{
+  "site": {
+    "pageTitle": "{name} | St. Louis County Voter Guide"
+  },
+  "app": {
+    "skipLink": "Skip to main content",
+    "language": "Language"
+  },
+  "footer": {
+    "privacy": "Privacy"
+  },
+  "notFound": {
+    "heading": "Page not found",
+    "body": "There is no page at this address.",
+    "home": "Go to the home page"
+  },
+  "time": {
+    "am": "a.m.",
+    "pm": "p.m.",
+    "hour": "{hour} {period}",
+    "hourMinute": "{hour}:{minute} {period}"
+  },
+  "errorBoundary": {
+    "heading": "Something went wrong",
+    "body": "This page could not be shown. Reload it to try again, or use the",
+    "officialLookup": "county's official lookup",
+    "reload": "Reload the page",
+    "home": "Go to the home page"
+  },
+  "retry": {
+    "retry": "Try again",
+    "retrying": "Trying again...",
+    "slow": "Still working... This is taking longer than usual."
+  },
+  "home": {
+    "heading": "St. Louis County Voter Guide",
+    "intro": "Find your precinct, polling places near you and your sample ballot.",
+    "electionDay": "Election Day is {date}.",
+    "moreInfo": "More information",
+    "howToVote": "How to vote",
+    "countySite": "St. Louis County Board of Elections website"
+  },
+  "addressSearch": {
+    "label": "Enter your address",
+    "hint": "The home address where you are registered to vote.",
+    "submit": "Find my precinct",
+    "busy": "Finding your precinct...",
+    "empty": "Type your address first.",
+    "suggestions": "Address suggestions",
+    "suggestionCount": "{count, plural, one {# suggestion} other {# suggestions}}. Use the up and down arrows to choose."
+  },
+  "useMyLocation": {
+    "button": "Use my location",
+    "busy": "Finding your location...",
+    "privacy": "Your location is used only to find your precinct. This site does not save it.",
+    "notHome": "Results are for where your device is now, which may not be your home address. Your ballot is based on the address where you are registered to vote.",
+    "errors": {
+      "denied": "Location access was not allowed. Type your address instead.",
+      "timeout": "Finding your location took too long. Try again, or type your address instead.",
+      "unavailable": "Your location could not be found. Try again, or type your address instead.",
+      "insecure": "Location works only on a secure (HTTPS) page. Type your address instead.",
+      "unsupported": "This browser cannot share your location. Type your address instead.",
+      "coarse": "Your device could only estimate your location roughly, so it might show the wrong precinct. Try again, or type your address instead."
+    }
+  },
+  "lookup": {
+    "officialLookup": "county's official lookup",
+    "errorAfterLink": "You can also use the",
+    "errors": {
+      "noMatch": "We could not find that address. Check it, add your ZIP code, pick a suggestion as you type, or try Use my location.",
+      "unavailable": "Address search is not working right now, so we could not check that address. Try again in a minute, or try Use my location.",
+      "failed": "We could not look up your precinct right now: the county's precinct map did not answer. Try again in a minute.",
+      "offline": "You appear to be offline. Check your internet connection, then try again."
+    },
+    "attribution": {
+      "searchBy": "Address search:",
+      "then": "or, when needed,",
+      "by": "by",
+      "data": "data ©",
+      "cityCheck": "An address found outside St. Louis City may also be checked with the",
+      "privacy": "Your address is sent only to these services, to find your precinct. This site does not save it."
+    }
+  },
+  "outOfCounty": {
+    "stlCity": {
+      "heading": "This address is in the City of St. Louis",
+      "text": "The City of St. Louis is separate from St. Louis County and has its own election board. For your polling place, sample ballot and registration, go to the",
+      "link": "St. Louis City Board of Election Commissioners",
+      "after": "."
+    },
+    "missouri": {
+      "heading": "This address is outside St. Louis County",
+      "text": "This guide covers St. Louis County only. To find your polling place and sample ballot anywhere in Missouri, use the",
+      "link": "Missouri Secretary of State Voter Outreach Center",
+      "after": "."
+    },
+    "outOfState": {
+      "heading": "This address is outside Missouri",
+      "text": "This guide covers St. Louis County, Missouri only. Your local election office can tell you where and how to vote."
+    },
+    "unknown": {
+      "heading": "This location is outside St. Louis County",
+      "text": "This guide covers St. Louis County only. If you vote anywhere else in Missouri, including the City of St. Louis, use the",
+      "link": "Missouri Secretary of State Voter Outreach Center",
+      "after": ".",
+      "outsideMissouri": "Outside Missouri, your local election office can tell you where and how to vote."
+    },
+    "countyUnmatched": {
+      "heading": "We could not find a precinct for this location",
+      "text": "It looks like this location is in St. Louis County, but no voting precinct matched it. Find your precinct with the",
+      "link": "county's official lookup",
+      "after": "."
+    }
+  },
+  "assignedPollingPlace": {
+    "rule": "In St. Louis County, on Election Day you must vote at your assigned polling place. A provisional ballot cast at the wrong polling place is not counted.",
+    "central": "If there is a problem at your assigned polling place, you may be able to vote at a central polling place instead.",
+    "confirm": "To confirm your assigned polling place, call the St. Louis County Board of Elections at",
+    "stateLookup": "Missouri Secretary of State Voter Outreach Center",
+    "mayAlso": "You may also be able to find it with the",
+    "sources": "Sources:",
+    "sourceNames": {
+      "missouriLaw": "Missouri law (section 115.430)",
+      "secretaryOfState": "Missouri Secretary of State",
+      "countyLookup": "St. Louis County Board of Elections Polling Place Lookup"
+    }
+  },
+  "results": {
+    "heading": "Precinct {code}",
+    "notFoundHeading": "Precinct not found",
+    "unincorporated": "Unincorporated St. Louis County",
+    "searchAnother": "Search another address",
+    "ready": "Results for precinct {code} are ready.",
+    "officialLookup": "county's official lookup",
+    "pageTitle": "Precinct {code} | St. Louis County Voter Guide",
+    "notFoundTitle": "Precinct not found | St. Louis County Voter Guide",
+    "searchInstead": "Search for your address",
+    "share": {
+      "button": "Share this page",
+      "title": "Precinct {code} voter information",
+      "note": "The link opens the results for precinct {code}. It does not include your address.",
+      "copied": "Link copied.",
+      "manual": "Copy this link:"
+    },
+    "status": {
+      "label": "Precinct status",
+      "nonresidentialFallback": "This is a nonresidential precinct: it has no residential addresses for voting. For questions, contact the",
+      "countySite": "St. Louis County Board of Elections",
+      "notInElection": "There is nothing on the ballot in this precinct for this election.",
+      "unknown": "We could not confirm whether this precinct votes in this election. Check the"
+    },
+    "cards": {
+      "polls": "Polling places near you",
+      "ballot": "Sample ballot",
+      "earlyVoting": "Early voting",
+      "districts": "Your districts",
+      "pending": "For now, find this in the"
+    },
+    "polls": {
+      "listLabel": "Nearest polling places",
+      "fromCenter": "Distances are from the center of precinct {code}. Search your address to measure from your home.",
+      "unnamed": "Polling place",
+      "unnamedWithLoc": "Polling place {loc}",
+      "lessThanTenth": "Less than 0.1 miles away",
+      "distance": "{miles} {count, plural, one {mile} other {miles}} away",
+      "directions": "Get directions",
+      "appleMaps": "Apple Maps",
+      "linkTarget": "to {name}",
+      "showMore": "Show more polling places",
+      "hoursLabel": "Election Day hours:",
+      "hours": "{open} to {close}",
+      "inLine": "If you are in line at {close}, you can still vote.",
+      "nearestNote": "These are the nearest Election Day polling places. The nearest one may not be your assigned polling place.",
+      "earlyVotingPointer": "To vote in person before Election Day, see Early voting below.",
+      "beforeYouGo": "Before you go:",
+      "source": "Source",
+      "sourceNames": {
+        "missouriLaw": "Missouri law",
+        "countyBoard": "St. Louis County Board of Elections"
+      },
+      "staleNote": "We could not check this list for changes. It was loaded at {time}",
+      "staleNoteOnDate": "We could not check this list for changes. It was loaded on {date} at {time}",
+      "failed": "We could not load polling places right now. Find them with the",
+      "none": "We could not find polling places near here. Find them with the"
+    },
+    "ballot": {
+      "intro": "The sample ballot shows the contests and measures on your ballot.",
+      "open": "Open your sample ballot (PDF)",
+      "newTab": "(opens a PDF in a new tab, or downloads it)",
+      "missing": "We could not find the sample ballot for this precinct. Find it with the"
+    },
+    "earlyVoting": {
+      "intro": "Places to vote in person before Election Day, with the county's dates and hours.",
+      "groupsLabel": "Dates and hours",
+      "groups": {
+        "boe": "Board of Elections office",
+        "abs": "Satellite sites"
+      },
+      "siteKinds": {
+        "boe": "Board of Elections office",
+        "abs": "Satellite site"
+      },
+      "status": {
+        "openNow": "Open today until {close}",
+        "opensToday": "Opens today at {open}",
+        "opensOn": "Opens {date} at {open}",
+        "ended": "Early voting has ended."
+      },
+      "weekdays": "Weekdays, {from} to {to}",
+      "range": "{from} to {to}",
+      "hours": "{open} to {close}",
+      "lastVerified": "Last verified {date}.",
+      "listLabel": "Nearest early voting sites",
+      "showAll": "Show all {count} early voting sites",
+      "note": "Note:",
+      "mail": "To vote by mail or with an absentee ballot, see",
+      "howToVote": "How to vote",
+      "or": "or the",
+      "countySite": "St. Louis County Board of Elections website",
+      "failed": "We could not load early voting sites right now. Find them with the",
+      "none": "We could not find early voting sites. Find them with the"
+    },
+    "districts": {
+      "labels": {
+        "congressional": "U.S. House",
+        "stateSenate": "State Senate",
+        "stateHouse": "State House",
+        "countyCouncil": "County Council",
+        "municipality": "Municipality",
+        "ward": "City ward or district",
+        "township": "Township",
+        "school": "School district",
+        "juniorCollege": "Community college subdistrict",
+        "fire": "Fire protection district",
+        "ambulance": "Ambulance district",
+        "ambulanceSubdistrict": "Ambulance subdistrict",
+        "library": "Library district",
+        "sewer": "Sewer district",
+        "light": "Light district",
+        "road": "Road district",
+        "communityImprovement": "Community improvement district",
+        "business": "Business district",
+        "transportation": "Transportation development district",
+        "neighborhoodImprovement": "Neighborhood improvement district",
+        "annexation": "Annexation area"
+      },
+      "source": "From the St. Louis County Board of Elections precinct data.",
+      "missing": "We could not find the districts for this precinct. Find them with the"
+    },
+    "map": {
+      "label": "Map of precinct {code} and nearby polling places",
+      "legend": "The shaded area is precinct {code}. Numbers on the map match the list below.",
+      "origin": "The dark dot is your address or location.",
+      "basemap": "Map:",
+      "data": "Precinct and polling place data:",
+      "county": "St. Louis County Board of Elections"
+    },
+    "errors": {
+      "notFound": "We could not find that precinct. Search for your address, or use the",
+      "failed": "We could not load this precinct right now. The county's precinct data may be slow or down. Try again in a minute, or use the",
+      "offline": "You appear to be offline, so we could not load this precinct. Check your internet connection and try again, or use the"
+    }
+  },
+  "learn": {
+    "pageHeading": "How to vote",
+    "pageTitle": "{name} | St. Louis County Voter Guide",
+    "intro": "Short guides to voting in St. Louis County, each checked against official sources.",
+    "groups": {
+      "before-you-vote": "Before you vote",
+      "ways-to-vote": "Ways to vote",
+      "at-the-polls": "At the polls",
+      "get-help": "Get help"
+    },
+    "empty": {
+      "notReady": "Our voting guides are not ready yet. For official information on how to vote, see the",
+      "countySite": "St. Louis County Board of Elections website"
+    },
+    "moreHelp": "More help",
+    "lookup": "Look up your precinct, nearby polling places, sample ballot and districts",
+    "countySite": "St. Louis County Board of Elections website",
+    "allTopics": "All voting guides",
+    "sourcesHeading": "Sources",
+    "citationLabel": "Source {n}: {label}",
+    "lastVerified": "Last checked against these sources on {date}."
+  },
+  "privacy": {
+    "heading": "Privacy",
+    "intro": "This site helps you find your precinct, polling places and sample ballot. It has no accounts, no analytics and no server of its own: your browser talks straight to the public services below. Here is what each one gets, and what this site never keeps.",
+    "never": {
+      "heading": "What this site never does",
+      "noSaving": "It never saves your address or your location: they are not put in the page address (URL), in browser storage, in cookies or in your browser's cache. Your browser history and cache do keep the precinct pages you open, like /p/CC007.",
+      "noTracking": "It has no analytics, ads or tracking, and sets no cookies.",
+      "sharedLink": "A shared link holds only your precinct code, like /p/CC007, never your address."
+    },
+    "sent": {
+      "heading": "What is sent where",
+      "intro": "Each service below sees your IP address, as any website you visit does, and keeps its own logs under its own policy.",
+      "addressSearch": {
+        "heading": "Address search",
+        "text": "What you type in the address box goes first to St. Louis County's address points ({countyAddresses}), or to the county's copy of them on Esri's ArcGIS Online ({countyAddressesCopy}) when the first cannot be reached. The county gets it in the body of the request, not in its web address. It also goes to {service} by {serviceBy} ({openSearch}) when the county has no match or cannot be reached; {service} gets it as part of the request's web address. When you search for an address and it is found outside St. Louis City, its house number and street (not the town, ZIP code or unit) also go to the City of St. Louis's address search ({cityAddresses}), in the body of the request, to check that the City does not have the same address. It is skipped when you typed a ZIP code that is entirely outside the City, or when the address was found in another county. Suggestions are looked up as you type, so the county and {service} get each part of the address as you type it; the City gets only the address you search for. Your browser does not keep any of these requests or their answers in its cache."
+      },
+      "findingPrecinct": {
+        "heading": "Finding your precinct",
+        "text": "The point where your address was found, or your device's location if you choose Use my location, goes to St. Louis County's election maps on Esri's ArcGIS Online ({electionMaps}), in the body of the request, not in its web address. When the address you type has several entries in the county's address points, like the units of an apartment building, the points of all of them go there first, the same way, to check that they are in one precinct. Your browser does not keep these requests or their answers in its cache. Opening a shared link sends only the precinct code."
+      },
+      "useMyLocation": {
+        "heading": "Use my location",
+        "text": "Your browser asks for your permission before it shares your location with this site, unless you allowed it before. The site uses it only to find your precinct, mark it on the map and list the nearest places to vote."
+      },
+      "map": {
+        "heading": "The map",
+        "text": "The map's streets and labels come from OpenFreeMap ({basemap}). Those requests show which area is on screen: your precinct and the polling places near it."
+      },
+      "website": {
+        "heading": "This website",
+        "text": "Render, which hosts this site, sees the address of each page your browser loads from it, like /p/CC007, as any web host does."
+      }
+    },
+    "links": {
+      "heading": "Links to other sites",
+      "text": "Links to other sites, like the county's, take you to those sites. They are not told which page of this site you came from."
+    },
+    "backHome": "Back to home"
+  }
+}

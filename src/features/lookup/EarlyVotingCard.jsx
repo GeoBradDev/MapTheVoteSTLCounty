@@ -3,6 +3,7 @@ import { Link } from 'wouter';
 import election from '../../config/election.js';
 import { getAbsenteeSites } from '../../data/arcgis.js';
 import { CARD_TOPICS } from '../learn/cardTopics.js';
+import { getLocale, translated } from '../../i18n/index.js';
 import { getTopic } from '../learn/topics.js';
 import { earlyVotingStatus, formatLongDate, scheduleLines } from './earlyVoting.js';
 import { directionsLinks, isAppleMobile } from './nearbyPolls.js';
@@ -18,7 +19,8 @@ const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
 /** How often the open or closed status is worked out again. */
 const TICK_MS = 60_000;
 
-const t = copy.earlyVoting;
+// The early voting text in the current language.
+const t = translated(() => copy.earlyVoting);
 const { schedules, sources, lastVerified } = election.earlyVoting;
 // The groups the config has hours for, in config order, that have a label.
 const groupKeys = Object.keys(schedules).filter((key) => t.groups[key]);
@@ -123,7 +125,7 @@ function Schedules({ now }) {
  */
 export default function EarlyVotingCard({ code, origin }) {
   // The absentee topic, once published (#22, #23); until then, the index.
-  const absentee = getTopic(CARD_TOPICS.absentee);
+  const absentee = getTopic(CARD_TOPICS.absentee, getLocale());
   // { rows, loadedAt } once loaded, { error: true, attempt } on failure. A
   // failed load can be tried again; it stays shown while it is (#18). A list
   // left open past the max age refreshes when the tab is shown again (#84).

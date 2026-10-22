@@ -1,23 +1,22 @@
-// All the home page text, kept in one file so the i18n work (#19) can move it
-// to en.json without touching the markup. Election names and dates come from
-// src/config/election.js, never from here.
-export const copy = {
-  heading: 'St. Louis County Voter Guide',
-  intro: 'Find your precinct, polling places near you and your sample ballot.',
+// All the home page text. The text is in src/i18n/en.json (#19). Election
+// names and dates come from src/config/election.js, never from here.
+import { formatCalendarDate, translated } from '../../i18n/index.js';
+
+export const copy = translated((t) => ({
+  heading: t('home.heading'),
+  intro: t('home.intro'),
   /** @param {string} isoDate YYYY-MM-DD @param {string} timeZone */
   electionDay: (isoDate, timeZone) => {
-    // Noon UTC is the same calendar day in every US time zone.
-    const date = new Date(`${isoDate}T12:00:00Z`);
-    const formatted = new Intl.DateTimeFormat('en-US', {
+    const formatted = formatCalendarDate(isoDate, {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       timeZone,
-    }).format(date);
-    return `Election Day is ${formatted}.`;
+    });
+    return t('home.electionDay', { date: formatted });
   },
-  moreInfo: 'More information',
-  howToVote: 'How to vote',
-  countySite: 'St. Louis County Board of Elections website',
-};
+  moreInfo: t('home.moreInfo'),
+  howToVote: t('home.howToVote'),
+  countySite: t('home.countySite'),
+}));
