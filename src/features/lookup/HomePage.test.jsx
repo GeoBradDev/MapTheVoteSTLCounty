@@ -3,12 +3,13 @@ import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import election from '../../config/election.js';
 import { copy as searchCopy } from './addressSearchCopy.js';
+import { copy as ruleCopy } from './assignedPollingPlaceCopy.js';
 import { copy } from './homeCopy.js';
 import HomePage from './HomePage.jsx';
 
 function renderHome() {
   const { hook } = memoryLocation({ path: '/' });
-  render(
+  return render(
     <Router hook={hook}>
       <HomePage />
     </Router>,
@@ -40,13 +41,18 @@ describe('HomePage', () => {
     expect(screen.getByRole('button', { name: /use my location/i })).toBeInTheDocument();
   });
 
-  it('states the vote-anywhere rule with a link to its official source', () => {
-    renderHome();
-    const line = screen.getByText(copy.voteAnywhere).closest('p');
-    expect(within(line).getByRole('link', { name: copy.voteAnywhereSource })).toHaveAttribute(
-      'href',
-      election.voteAnywhere.sources[0],
-    );
+  it('says Election Day voters must use their assigned polling place, with sources (#72)', () => {
+    const { container } = renderHome();
+    const box = screen.getByText(ruleCopy.rule).closest('div');
+    expect(
+      within(box).getByRole('link', { name: election.electionDayPollingPlace.phone }),
+    ).toBeInTheDocument();
+    for (const url of election.electionDayPollingPlace.sources) {
+      expect(
+        within(box).getByRole('link', { name: ruleCopy.sourceNames[new URL(url).host] }),
+      ).toHaveAttribute('href', url);
+    }
+    expect(container).not.toHaveTextContent(/any polling place/i);
   });
 
   it('links to "How to vote" and the official county election site', () => {

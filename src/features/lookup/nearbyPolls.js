@@ -1,6 +1,7 @@
 // The polling places nearest a point, for the "Polling places near you" card.
-// St. Louis County voters may vote at any polling place (issue #1), so the card
-// lists the closest ones by straight-line distance, not one assigned place.
+// County data assigns no polling place to a precinct, so the card lists the
+// closest ones by straight-line distance and says the voter must confirm their
+// assigned one (issue #72).
 
 /** Mean Earth radius in miles (IUGG mean radius, 6371.0088 km). */
 const EARTH_RADIUS_MILES = 3958.7613;

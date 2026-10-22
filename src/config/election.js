@@ -40,8 +40,10 @@
  *   absentee hours, keyed by the polls layer's `abs_type`.
  * @property {{ open: string, close: string, inLineAtCloseMayVote: boolean,
  *   sources: string[], lastVerified: string }} electionDayHours
- * @property {{ sources: string[], lastVerified: string }} voteAnywhere Where
- *   the rule that a county voter may vote at any polling place is stated.
+ * @property {{ sources: string[], lastVerified: string, phone: string }}
+ *   electionDayPollingPlace Where the rule that a county voter must vote at
+ *   their assigned polling place on Election Day is stated, and the county
+ *   board's number for confirming that polling place.
  */
 
 // The 2025 map. congressional_district_20 is the old map; do not show it.
@@ -142,12 +144,20 @@ const election = deepFreeze({
     lastVerified: '2026-10-20',
   },
 
-  // Decided in issue #1: "Voters in Saint Louis County may vote at any polling
-  // place." Confirm with the Board (314-615-1800) before each election that it
-  // still applies; if not, remove the line from the home page.
-  voteAnywhere: {
-    sources: ['https://stlouiscovotes.info/faq/'],
+  // Owner decision on issue #72 (2026-10-21), replacing the issue #1 line that
+  // county voters may vote at any polling place: follow RSMo 115.430. A voter
+  // must vote at their assigned polling place on Election Day, and a
+  // provisional ballot cast at the wrong one is not counted. The Secretary of
+  // State says the same. County data assigns no polling place to a precinct
+  // (docs/data.md), so the app says how to confirm it: the phone number is on
+  // the county board's Contact Us page.
+  electionDayPollingPlace: {
+    sources: [
+      'https://revisor.mo.gov/main/OneSection.aspx?section=115.430',
+      'https://www.sos.mo.gov/elections/goVoteMissouri/electionday',
+    ],
     lastVerified: '2026-10-21',
+    phone: '314-615-1800',
   },
 });
 

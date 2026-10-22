@@ -95,7 +95,10 @@ export const copy = {
     hours: (open, close) => `${formatTime(open)} to ${formatTime(close)}`,
     /** @param {string} close HH:MM */
     inLine: (close) => `If you are in line at ${formatTime(close)}, you can still vote.`,
-    voteAnywhere: 'You can vote at any polling place in St. Louis County.',
+    // County data assigns no polling place to a precinct (#72).
+    nearestNote:
+      'These are the nearest Election Day polling places. The nearest one may not be your assigned polling place.',
+    earlyVotingPointer: 'To vote in person before Election Day, see Early voting below.',
     // Before the voter ID topic's title, which is the link (#23).
     beforeYouGo: 'Before you go:',
     source: 'Source',

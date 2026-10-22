@@ -4,6 +4,7 @@ import election from '../../config/election.js';
 import { getPolls } from '../../data/arcgis.js';
 import { CARD_TOPICS } from '../learn/cardTopics.js';
 import { getTopic } from '../learn/topics.js';
+import AssignedPollingPlace from './AssignedPollingPlace.jsx';
 import { distanceOrigin } from './distanceOrigin.js';
 import { directionsLinks, isAppleMobile, nearestPolls } from './nearbyPolls.js';
 import PrecinctMap from './PrecinctMap.jsx';
@@ -113,8 +114,8 @@ function PollRow({ poll, apple, headingRef }) {
 
 /**
  * The body of the "Polling places near you" card: the closest Election Day
- * polling places, Election Day hours, and the rule that any county polling
- * place works.
+ * polling places, Election Day hours, and the rule that a voter must use their
+ * assigned polling place (#72).
  * @param {{ code: string, origin: { lat: number, lng: number } | null }} props
  *   `origin` is the looked-up point, held in memory only; without one,
  *   distances are from the precinct's center.
@@ -164,8 +165,15 @@ export default function PollsCard({ code, origin }) {
     <div ref={targetRef} tabIndex={-1} className="mt-2">
       {/* Said while loading too, so the line does not push the card down when
           the list arrives (#27). */}
-      {!origin && !result?.error && !(rows && rows.length === 0) && (
-        <p className="text-muted">{copy.polls.fromCenter(code)}</p>
+      {/* Said while loading too, so the lines do not push the card down when
+          the list arrives (#27). The nearest note comes before the list, so it
+          is read first: county data assigns no polling place to a precinct
+          (#72). */}
+      {!result?.error && !(rows && rows.length === 0) && (
+        <>
+          <p>{copy.polls.nearestNote}</p>
+          {!origin && <p className="mt-2 text-muted">{copy.polls.fromCenter(code)}</p>}
+        </>
       )}
 
       {!result && <ListSkeleton />}
@@ -219,12 +227,11 @@ export default function PollsCard({ code, origin }) {
 
       <VoterIdLink />
 
-      <p className="mt-3">
-        <span>{copy.polls.voteAnywhere}</span>{' '}
-        <a href={election.voteAnywhere.sources[0]} rel="noreferrer" className={linkClass}>
-          {copy.polls.source}
-        </a>
-      </p>
+      <div className="mt-3">
+        <AssignedPollingPlace linkClass={linkClass} />
+      </div>
+
+      <p className="mt-3">{copy.polls.earlyVotingPointer}</p>
     </div>
   );
 }
