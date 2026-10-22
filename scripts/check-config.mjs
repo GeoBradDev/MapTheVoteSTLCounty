@@ -4,17 +4,27 @@
 // src/config/election.js, so it works again next election.
 //
 // Usage: node scripts/check-config.mjs [--layer <key>=<path>]... [--ballot-sample <n|all>]
+//          [--warnings <file>]
 //   --layer replaces one of the config's layer paths for this run, for example
 //   to try a new layer before editing the config.
 //   --ballot-sample sets how many sample ballot links get a HEAD request
 //   (BALLOT_SAMPLE_SIZE by default); `all` checks every link.
-// Prints one PASS, FAIL or SKIP line per check and exits 1 when any check fails.
+//   --warnings writes each WARN line to <file> too, for the workflow's summary.
+// Prints one PASS, FAIL, SKIP or WARN line per check and exits 1 when any
+// check fails or is skipped. A WARN never changes the exit code: it is
+// something a person should look at, like early voting sites open with no
+// fresh line count, that is not proof the config is wrong.
 
-import { realpathSync } from 'node:fs';
+import { realpathSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import election from '../src/config/election.js';
 import { PRECINCT_CODE } from '../src/data/arcgis.js';
 import { fileNameMatchesPrecinct, parseSampleBallot } from '../src/data/sampleBallot.js';
+import { parseCityHours, selectCityWaits, selectCountyWaits } from '../src/data/waitTimes.js';
+import { earlyVotingStatus, zonedNow } from '../src/features/lookup/earlyVoting.js';
+import { isPastElection } from './electionWindow.mjs';
+
+export { isPastElection };
 
 /** A sane number of precincts. 1213 for November 2026. */
 export const PRECINCT_RANGE = { min: 900, max: 1600 };
@@ -168,7 +178,9 @@ async function requestOnce(fetchImpl, url, { method = 'GET', timeoutMs }) {
  * @param {number} [options.retryDelayMs] The wait before a retry, times the attempt.
  * @param {number} [options.timeoutMs] How long one request may take.
  * @param {number} [options.attempts] How many tries a transient failure gets.
- * @returns {Promise<{ name: string, status: 'pass' | 'fail' | 'skip', detail: string }[]>}
+ * @param {Date | number} [options.now] The time the wait time checks judge
+ *   open hours and freshness at; by default, the time they read the reports.
+ * @returns {Promise<{ name: string, status: 'pass' | 'fail' | 'skip' | 'warn', detail: string }[]>}
  */
 export async function runHealthCheck(
   config,
@@ -179,6 +191,7 @@ export async function runHealthCheck(
     retryDelayMs = 2000,
     timeoutMs = 15000,
     attempts = 3,
+    now: fixedNow,
   } = {},
 ) {
   const results = [];
@@ -215,11 +228,14 @@ export async function runHealthCheck(
       returnGeometry: 'false',
     });
 
-  // Runs one check. `body` returns a detail line or throws a CheckError; any
-  // other error is a bug in this script and is not caught.
+  // Runs one check. `body` returns a detail line, or `{ warn }` for a detail
+  // line that is a warning, or throws a CheckError; any other error is a bug
+  // in this script and is not caught.
   async function check(name, body) {
     try {
-      record(name, 'pass', await body());
+      const detail = await body();
+      if (typeof detail === 'object' && detail !== null) record(name, 'warn', detail.warn);
+      else record(name, 'pass', detail);
       return true;
     } catch (error) {
       if (!(error instanceof CheckError)) throw error;
@@ -371,11 +387,16 @@ export async function runHealthCheck(
   }
 
   // 5. The absentee filter finds sites, and each kind of site has hours.
+  /** The absentee sites' attributes, kept for the County wait reports check. */
+  let absenteeSites = null;
+  const waitTimes = config.waitTimes;
   if (layerOk.polls) {
     await check('absentee sites', async () => {
       const body = await query('polls', {
         where: config.absenteeWhere,
-        outFields: 'loc,name,abs_type',
+        outFields: ['loc', 'name', 'abs_type', waitTimes?.county?.pollsField]
+          .filter(Boolean)
+          .join(','),
         returnGeometry: 'false',
       });
       const sites = (body.features ?? []).map((f) => f?.attributes ?? {});
@@ -391,6 +412,13 @@ export async function runHealthCheck(
             'earlyVoting.schedules',
         );
       }
+      // Trimmed like the app's own rows (normalize in src/data/arcgis.js), so
+      // the County join below matches what the app matches.
+      absenteeSites = sites.map((site) =>
+        Object.fromEntries(
+          Object.entries(site).map(([k, v]) => [k, typeof v === 'string' ? v.trim() : v]),
+        ),
+      );
       return `${sites.length} sites (${[...types].sort().join(', ')})`;
     });
   } else {
@@ -428,7 +456,240 @@ export async function runHealthCheck(
     skip('known points', layerOk.precincts ? 'countyBoundary' : 'precincts');
   }
 
+  // 7. The wait time layers (#106, #132): each answers with the fields the app
+  // reads, then whether its board's reports are fresh. Fields, not rows, decide
+  // pass or fail: the County view is empty whenever its sites are closed.
+  // Open sites with nothing fresh, or County reports that match no site, are
+  // warnings for a person to look at.
+  if (waitTimes?.enabled) {
+    const sources = Object.entries(WAIT_SOURCES).filter(([key]) => waitTimes[key]?.enabled);
+    const waitLayerOk = {};
+    for (const [key, { extraFields }] of sources) {
+      const source = waitTimes[key];
+      const where = `waitTimes.${key} (${source.layer})`;
+      const want = [source.siteField, source.valueField, source.timeField];
+      for (const field of extraFields) want.push(source[field]);
+      waitLayerOk[key] = await check(`wait layer ${key}`, async () => {
+        let info;
+        try {
+          info = await request(`${source.serviceRoot}/${source.layer}?f=json`);
+        } catch (error) {
+          if (!(error instanceof CheckError)) throw error;
+          const hint = error.transient ? '' : '. Check this path in src/config/election.js.';
+          throw new CheckError(`${where}: ${error.message}${hint}`);
+        }
+        const have = new Set((Array.isArray(info.fields) ? info.fields : []).map((f) => f?.name));
+        const missing = want.filter((f) => !have.has(f));
+        if (missing.length) throw new CheckError(`${where}: missing fields ${missing.join(', ')}`);
+        return `${where}: ${info.name ?? 'unnamed'}, expected fields present (${want.length})`;
+      });
+    }
+
+    // The rows of one wait layer. Any failure names the config key and layer;
+    // a feature without fields fails, as it fails every load in the app.
+    const waitRows = async (key, outFields) => {
+      const source = waitTimes[key];
+      const where = `waitTimes.${key} (${source.layer})`;
+      let body;
+      try {
+        body = await request(
+          `${source.serviceRoot}/${source.layer}/query?${new URLSearchParams({
+            f: 'json',
+            where: source.where,
+            outFields: outFields.join(','),
+            orderByFields: `${source.timeField} DESC`,
+            returnGeometry: 'false',
+          })}`,
+        );
+      } catch (error) {
+        if (!(error instanceof CheckError)) throw error;
+        const hint = error.transient
+          ? ''
+          : '. Check the layer and its where clause in src/config/election.js.';
+        throw new CheckError(`${where}: ${error.message}${hint}`);
+      }
+      if (!Array.isArray(body?.features)) {
+        throw new CheckError(`${where}: the response has no features list`);
+      }
+      const rows = body.features.map((f) => f?.attributes);
+      if (rows.some((row) => row === null || typeof row !== 'object')) {
+        throw new CheckError(`${where}: a feature has no attributes`);
+      }
+      return rows;
+    };
+    const maxAge = waitTimes.maxAgeMinutes;
+    const quiet = `Sites are open and none has reported in the last ${maxAge} minutes.`;
+    const newestReport = (rows, field) => {
+      const times = rows
+        .map((r) => r[field])
+        // A finite number can still be outside the Date range.
+        .filter((t) => typeof t === 'number' && !Number.isNaN(new Date(t).getTime()));
+      return times.length ? reportTime(Math.max(...times), config.timeZone) : 'none';
+    };
+
+    // Read the clock here, not at the start: the checks above can take minutes
+    // of retries, and a report made since then would look like a clock error.
+    const now = fixedNow ?? Date.now();
+    for (const [key] of sources) {
+      const source = waitTimes[key];
+      const name = `wait reports ${key}`;
+      if (!waitLayerOk[key]) {
+        record(name, 'skip', `the wait layer ${key} check failed`);
+        continue;
+      }
+      if (key === 'county') {
+        if (!absenteeSites) {
+          record(name, 'skip', 'the absentee sites check failed');
+          continue;
+        }
+        await check(name, async () => {
+          const reports = await waitRows(key, [
+            source.siteField,
+            source.timeField,
+            source.valueField,
+          ]);
+          const keys = new Set(absenteeSites.map((s) => s[source.pollsField]).filter(Boolean));
+          const open = absenteeSites.filter(
+            (s) =>
+              keys.has(s[source.pollsField]) &&
+              earlyVotingStatus(config.earlyVoting?.schedules?.[s.abs_type], now, config.timeZone)
+                .kind === 'openNow',
+          ).length;
+          const shown = selectCountyWaits(
+            reports,
+            absenteeSites.map((properties) => ({ properties })),
+            now,
+          ).length;
+          const unmatched = reports.filter((r) => !keys.has(r[source.siteField]));
+          const newest = newestReport(reports, source.timeField);
+          const warnings = [];
+          // Only the count: report senders are ArcGIS user names, which may be a
+          // person's, and this line goes on the public run summary and issue.
+          if (unmatched.length) {
+            warnings.push(
+              `${unmatched.length} reports match no site's ${source.pollsField} on the polls layer.`,
+            );
+          }
+          let detail;
+          if (open === 0) {
+            detail = `${source.source}: closed. No site is open now; ${reports.length} reports in the view`;
+            if (reports.length) detail += `; newest report ${newest}`;
+          } else {
+            if (shown === 0) warnings.push(quiet);
+            detail =
+              `${source.source}: ${shown ? 'fresh' : 'not fresh'}. ${shown} of ${open} open ` +
+              `sites have a current count; ${unmatched.length} reports match no site; ` +
+              `newest report ${newest}`;
+          }
+          return warnings.length ? { warn: `${detail}. ${warnings.join(' ')}` } : detail;
+        });
+      } else {
+        await check(name, async () => {
+          const rows = await waitRows(key, [
+            source.siteField,
+            source.valueField,
+            source.timeField,
+            source.commentsField,
+            source.hoursField,
+          ]);
+          const { date, minutes } = zonedNow(now, config.timeZone);
+          const weekday = new Date(`${date}T00:00:00Z`).getUTCDay();
+          const closedText = String(source.closedText ?? '').toLowerCase();
+          // As in the app, a "poll closed" comment closes a site only on a
+          // report from today; one left from an earlier day does not.
+          const open = rows.filter((row) => {
+            const time = row[source.timeField];
+            const reportedToday =
+              typeof time === 'number' &&
+              !Number.isNaN(new Date(time).getTime()) &&
+              zonedNow(time, config.timeZone).date === date;
+            if (
+              reportedToday &&
+              closedText &&
+              String(row[source.commentsField] ?? '')
+                .toLowerCase()
+                .includes(closedText)
+            )
+              return false;
+            const hours = parseCityHours(row[source.hoursField])?.[weekday];
+            return (
+              Boolean(hours) && minutes >= toMinutes(hours.open) && minutes < toMinutes(hours.close)
+            );
+          }).length;
+          const withValue = rows.filter((r) => Number.isInteger(r[source.valueField])).length;
+          const shown = selectCityWaits(rows, now).length;
+          const newest = newestReport(rows, source.timeField);
+          const counts = `${withValue} of ${rows.length} rows have a ${source.valueField}`;
+          // The app treats a site whose hours it cannot read as closed, so a
+          // change in the board's hours format would hide every count while
+          // this check said "closed".
+          const unreadable = rows.filter(
+            (r) => parseCityHours(r[source.hoursField]) === null,
+          ).length;
+          const warnings = [];
+          // The City layer lists its sites all season, open or not: no row at
+          // all means the filter no longer matches, and every count is gone.
+          if (rows.length === 0) {
+            warnings.push(
+              `No row matches waitTimes.${key}.where (${source.where}): check the filter ` +
+                "against the City board's dashboard.",
+            );
+          }
+          if (unreadable) {
+            warnings.push(
+              `${unreadable} ${unreadable === 1 ? 'row has' : 'rows have'} ${source.hoursField} ` +
+                'text the app cannot read, so it never shows a count.',
+            );
+          }
+          let detail;
+          if (open === 0) {
+            detail = `${source.source}: closed. No site is open now by its hours; ${counts}; newest report ${newest}`;
+          } else {
+            if (shown === 0) warnings.push(quiet);
+            detail =
+              `${source.source}: ${shown ? 'fresh' : 'not fresh'}. ${counts}; ${open} open now, ` +
+              `${shown} with a current count; newest report ${newest}`;
+          }
+          return warnings.length ? { warn: `${detail}. ${warnings.join(' ')}` } : detail;
+        });
+      }
+    }
+  }
+
   return results;
+}
+
+/** The wait time sources the check knows, and the extra fields each must have. */
+const WAIT_SOURCES = {
+  county: { extraFields: [] },
+  city: { extraFields: ['hoursField', 'commentsField'] },
+};
+
+const toMinutes = (time) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5));
+
+/** A report time as `YYYY-MM-DD HH:MM <zone>`, in the election's time zone. */
+function reportTime(ms, timeZone) {
+  const { date, minutes } = zonedNow(ms, timeZone);
+  const hh = String(Math.floor(minutes / 60)).padStart(2, '0');
+  const mm = String(minutes % 60).padStart(2, '0');
+  return `${date} ${hh}:${mm} ${timeZone}`;
+}
+
+/**
+ * The exit code for a run: 1 when any check failed or was skipped, 0
+ * otherwise. A warning never fails the run.
+ * @param {{ status: string }[]} results
+ */
+export function exitCodeFor(results) {
+  return results.some((r) => r.status === 'fail' || r.status === 'skip') ? 1 : 0;
+}
+
+/**
+ * The warnings, one line each, as `name: detail`.
+ * @param {{ name: string, status: string, detail: string }[]} results
+ */
+export function warningLines(results) {
+  return results.filter((r) => r.status === 'warn').map((r) => `${r.name}: ${r.detail}`);
 }
 
 /**
@@ -473,36 +734,22 @@ export function randomSample(items, count) {
 }
 
 /**
- * Whether the election is over: today in the config's time zone is after
- * Election Day.
- * @param {{ electionDate: string, timeZone: string }} config
- * @param {Date} [now]
- */
-export function isPastElection(config, now = new Date()) {
-  const parts = Object.fromEntries(
-    new Intl.DateTimeFormat('en-US', {
-      timeZone: config.timeZone,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    })
-      .formatToParts(now)
-      .map(({ type, value }) => [type, value]),
-  );
-  const today = `${parts.year}-${parts.month}-${parts.day}`;
-  return today > config.electionDate;
-}
-
-/**
  * Reads the command line.
  * @param {string[]} args
  * @param {object} config The election config, to check layer keys against.
- * @returns {{ layers: Record<string, string>, ballotSample?: number }}
+ * @returns {{ layers: Record<string, string>, ballotSample?: number, warnings?: string }}
  */
 export function parseArgs(args, config) {
   const layers = {};
   let ballotSample;
+  let warnings;
   for (let i = 0; i < args.length; i += 1) {
+    if (args[i] === '--warnings') {
+      warnings = args[i + 1];
+      if (!warnings || warnings.startsWith('--')) throw new Error('--warnings needs a file path');
+      i += 1;
+      continue;
+    }
     if (args[i] === '--ballot-sample') {
       const value = args[i + 1] ?? '';
       if (value === 'all') ballotSample = Infinity;
@@ -521,14 +768,15 @@ export function parseArgs(args, config) {
     layers[key] = value;
     i += 1;
   }
-  return { layers, ballotSample };
+  return { layers, ballotSample, warnings };
 }
 
 async function main(args) {
   let layers;
   let ballotSample;
+  let warnings;
   try {
-    ({ layers, ballotSample } = parseArgs(args, election));
+    ({ layers, ballotSample, warnings } = parseArgs(args, election));
   } catch (error) {
     console.error(error.message);
     return 2;
@@ -536,15 +784,30 @@ async function main(args) {
   const config = { ...election, layers: { ...election.layers, ...layers } };
   console.log(`Checking ${config.electionName} layers under ${config.serviceRoot}`);
   const results = await runHealthCheck(config, { ballotSample });
+  return report(results, { warnings });
+}
+
+/**
+ * Prints the results, writes the warnings file when asked (before deciding
+ * the exit code, so a failing run's issue still gets its warnings; empty when
+ * nothing warned) and returns the exit code.
+ * @param {{ name: string, status: string, detail: string }[]} results
+ * @param {{ warnings?: string, log?: (line: string) => void, error?: (line: string) => void }} [options]
+ * @returns {number}
+ */
+export function report(results, { warnings, log = console.log, error = console.error } = {}) {
   for (const { name, status, detail } of results) {
-    console.log(`${status.toUpperCase().padEnd(4)} ${name}: ${detail}`);
+    log(`${status.toUpperCase().padEnd(4)} ${name}: ${detail}`);
   }
-  const failed = results.filter((r) => r.status !== 'pass');
-  if (failed.length) {
-    console.error(`\n${failed.length} of ${results.length} checks did not pass.`);
+  const warned = warningLines(results);
+  if (warnings) writeFileSync(warnings, warned.map((line) => `${line}\n`).join(''));
+  const failed = results.filter((r) => r.status === 'fail' || r.status === 'skip');
+  if (exitCodeFor(results)) {
+    error(`\n${failed.length} of ${results.length} checks did not pass.`);
     return 1;
   }
-  console.log(`\nAll ${results.length} checks passed.`);
+  const note = warned.length ? `, ${warned.length} with a warning` : '';
+  log(`\nAll ${results.length} checks passed${note}.`);
   return 0;
 }
 

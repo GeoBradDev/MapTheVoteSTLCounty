@@ -392,6 +392,24 @@ tab left in the background for days shows a moved polling place when the voter r
 (not while the tab stays visible); a refresh that fails keeps the rows shown and says when they
 were loaded. The service worker (#25) must not keep serving an answer older than this max age.
 
+### Wait times: the first day counts appear
+
+The early voting line counts (`waitTimes` in the config) come from each board's own layer. On
+the first day a board's counts appear, and again after either board changes its dashboard:
+
+1. Run `node scripts/check-config.mjs` while sites are open. Each wait source's line must say
+   fresh, and the County line must say 0 reports match no site.
+2. County: open `/early-voting` next to the County board's own page (the link under Official
+   sources). Pick three sites and check the count and the report time match, and that the times
+   read as Central time (the two pages should agree to the minute). The page does not list City
+   sites yet (#91): for the City, compare the newest report time on the check's City line with
+   the City board's dashboard instead.
+3. Check the unit: both boards report people in line, not minutes (docs/data.md), and the page
+   always says "people in line". If a board's page starts showing minutes, turn that source off
+   (step 4) and open an issue: changing its `unit` alone does not change what the page says.
+4. If a check fails or counts are wrong, set that source's `enabled` to `false` and deploy. The
+   page then shows the sites and the official links without counts.
+
 ## Learn content
 
 Each voter education topic is one Markdown file, `content/<locale>/learn/<id>.md`, with front
@@ -493,7 +511,7 @@ in it, keeping focus and what the page has loaded. The site always starts in Eng
 Before each election, after editing `src/config/election.js`, check the live layers it names:
 
 ```sh
-node scripts/check-config.mjs [--layer <key>=<path>] [--ballot-sample <n|all>]
+node scripts/check-config.mjs [--layer <key>=<path>] [--ballot-sample <n|all>] [--warnings <file>]
 ```
 
 It checks that each configured layer answers with the geometry and every field the app reads,
@@ -502,7 +520,14 @@ link parses and its file name names that precinct (and that 5 random links serve
 `Content-Disposition` file name names the same precinct), that the absentee filter finds sites with
 hours in the config, and that one known point per County Council district lands in a precinct
 in that district and inside the county boundary layer, while a point in St. Louis City lands in
-neither. It prints PASS, FAIL or SKIP per check and exits 1 on any failure; a wrong
+neither. For each wait time source in `waitTimes` that is turned on (County and City early voting
+line counts), it checks the layer has every field the config names, then prints one line naming
+the board and whether its counts are fresh: open sites, how many have a count the app would show
+now, County reports that match no early voting site, and the newest report time. An empty County
+view while sites are closed passes. Sites open with no fresh count, County reports that match
+no site (counted, never named: the senders are user names), City hours text the app cannot
+read, or a City filter that matches no row are a WARN: printed, written to `--warnings <file>` if given, and never a failure. It
+prints PASS, FAIL, SKIP or WARN per check and exits 1 on any failure or skip; a wrong
 layer path fails with the config key, the path and the service's error. `--layer` tries another
 path for one layer without editing the config. `--ballot-sample` checks that many random sample
 ballot links instead of 5, or every link with `all` (one request each to the county's portal, so
@@ -511,7 +536,12 @@ the script.
 
 `.github/workflows/data-health.yml` runs this check, `scripts/check-geocoder.mjs` and
 `scripts/check-content-links.mjs` every day at 12:00 UTC until Election Day is over in the
-config's time zone, and on demand from the Actions tab (**Data health**, **Run workflow**). On
+config's time zone, and on demand from the Actions tab (**Data health**, **Run workflow**).
+During early voting (the first `from` to the last `to` in `earlyVoting.schedules`) it also runs
+this check alone every 2 hours from 14:00 to 22:00 UTC, so a board that starts or stops
+reporting line counts is noticed the same day; `scripts/electionWindow.mjs` decides which run
+does what, and imports nothing, because it runs before `npm ci`. Warnings go on each run's
+summary page. On
 a failure it opens an issue labeled `data health`, or comments on the one already open; close
 that issue once it is fixed. Links the content check skipped behind a bot challenge are listed
 on every run's summary page and in that issue; open each in a browser before Election Day.

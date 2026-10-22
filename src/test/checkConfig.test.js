@@ -1,24 +1,44 @@
 // Runs the data health check (scripts/check-config.mjs) against a stubbed
 // ArcGIS service, healthy and broken in each way the check must catch.
 // @vitest-environment node
-import { readFile } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
+import { cp, mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { parse } from 'yaml';
+import absenteeSites from '../../docs/raw/fixtures/absentee-sites.json';
 import { POLL_FIELDS, PRECINCT_FIELDS } from '../data/arcgis.js';
+import { cityFresh, cityStale, countyFresh } from '../data/waitTimes.fixtures.js';
 import election from '../config/election.js';
 import {
   BALLOT_SAMPLE_SIZE,
   KNOWN_POINTS,
   OUTSIDE_POINT,
   contentDispositionFileName,
+  exitCodeFor,
   expectedLayers,
   isPastElection,
   parseArgs,
   randomSample,
+  report,
   runHealthCheck,
+  warningLines,
 } from '../../scripts/check-config.mjs';
+import { WAITS_CRON, isEarlyVotingPeriod, windowFor } from '../../scripts/electionWindow.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
+
+// A time on the wait fixtures' recording day, Thursday 2026-10-22, in Chicago
+// (UTC-5 then). Built with Date.UTC: the hardcoding test scans this file.
+const oct22 = (hours, minutes = 0, seconds = 0) =>
+  Date.UTC(2026, 9, 22, hours + 5, minutes, seconds);
+// Just after the County fixture was recorded, with sites open.
+const NOW = oct22(9, 0, 30);
+
+const { county: countyWait, city: cityWait } = election.waitTimes;
+const waitLayerPath = (source) => `${source.serviceRoot}/${source.layer}`;
+const waitFields = (source, extra = []) =>
+  [source.siteField, source.valueField, source.timeField, ...extra].map((name) => ({ name }));
 const councilField = election.districtFields.find((d) => d.key === 'countyCouncil').field;
 
 const ballotUrl = (i) =>
@@ -57,10 +77,27 @@ function healthyWorld() {
   return {
     layers,
     precincts,
-    absentee: [
-      { loc: '019', name: 'BOARD', abs_type: 'boe' },
-      { loc: '172', name: 'LIBRARY', abs_type: 'abs' },
-    ],
+    // The recorded early voting sites, with the County's wait join field.
+    absentee: absenteeSites.features.map(({ properties: p }) => ({
+      loc: p.loc,
+      name: p.name,
+      abs_type: p.abs_type,
+      [countyWait.pollsField]: p[countyWait.pollsField],
+    })),
+    // The wait time layers (#106), as recorded at 9:00 a.m. on 2026-10-22.
+    waits: {
+      [waitLayerPath(countyWait)]: {
+        info: { name: 'Voters_in_Line_v2', fields: waitFields(countyWait) },
+        rows: countyFresh,
+      },
+      [waitLayerPath(cityWait)]: {
+        info: {
+          name: 'VotingLocations_currentwait',
+          fields: waitFields(cityWait, [cityWait.hoursField, cityWait.commentsField]),
+        },
+        rows: cityFresh,
+      },
+    },
     // By default every known point is where it should be.
     pointPrecinct: (lng, lat) => {
       const known = KNOWN_POINTS.find((p) => p.lng === lng && p.lat === lat);
@@ -73,6 +110,7 @@ function healthyWorld() {
       disposition: disposition(servedFileName(url)),
     }),
     calls: [],
+    waitQueries: [],
   };
 }
 
@@ -94,6 +132,15 @@ function stubFetch(world) {
       if (type) headers['content-type'] = type;
       if (cd) headers['content-disposition'] = cd;
       return new Response(null, { status, headers });
+    }
+    const wait = Object.entries(world.waits).find(
+      ([root]) => url.href.startsWith(`${root}?`) || url.href.startsWith(`${root}/query?`),
+    );
+    if (wait) {
+      const [, layer] = wait;
+      if (!url.pathname.endsWith('/query')) return json(layer.info);
+      world.waitQueries.push(url.searchParams);
+      return json({ features: layer.rows.map((attributes) => ({ attributes })) });
     }
     const prefix = `${election.serviceRoot}/`;
     if (!url.href.startsWith(prefix)) throw new TypeError('fetch failed');
@@ -132,6 +179,7 @@ async function run(world, config = election, options = {}) {
     fetch: stubFetch(world),
     sample: (items, count) => items.slice(0, count),
     retryDelayMs: 0,
+    now: NOW,
     ...options,
   });
   return Object.fromEntries(results.map((r) => [r.name, r]));
@@ -155,6 +203,10 @@ describe('runHealthCheck', () => {
       'sample ballot PDFs',
       'absentee sites',
       'known points',
+      'wait layer county',
+      'wait layer city',
+      'wait reports county',
+      'wait reports city',
     ]);
     expect(results['precinct count'].detail).toBe('1000 precincts, 990 In Election');
     expect(results['sample ballot PDFs'].detail).toMatch(/^5 of 5/);
@@ -549,6 +601,416 @@ describe('randomSample', () => {
   });
 });
 
+// The wait time layers (#106, #132): fields first, then whether each board's
+// reports are fresh. A quiet board while sites are open is a warning, never a
+// failure: the scheduled run must not fail because no one stood in line.
+describe('wait time checks', () => {
+  const county = waitLayerPath(countyWait);
+  const city = waitLayerPath(cityWait);
+
+  it('passes on the recorded layers and names each board and whether it is fresh', async () => {
+    const results = await run(healthyWorld());
+    expect(results['wait layer county']).toEqual({
+      name: 'wait layer county',
+      status: 'pass',
+      detail: `waitTimes.county (${countyWait.layer}): Voters_in_Line_v2, expected fields present (3)`,
+    });
+    expect(results['wait layer city'].detail).toBe(
+      `waitTimes.city (${cityWait.layer}): VotingLocations_currentwait, expected fields present (5)`,
+    );
+    expect(results['wait reports county']).toEqual({
+      name: 'wait reports county',
+      status: 'pass',
+      detail:
+        `${countyWait.source}: fresh. 19 of 21 open sites have a current count; ` +
+        '0 reports match no site; newest report 2026-10-22 09:00 America/Chicago',
+    });
+    expect(results['wait reports city']).toEqual({
+      name: 'wait reports city',
+      status: 'pass',
+      detail:
+        `${cityWait.source}: fresh. 7 of 8 rows have a ${cityWait.valueField}; ` +
+        '1 open now, 1 with a current count; newest report 2026-10-22 08:10 America/Chicago',
+    });
+  });
+
+  it('asks each layer for its own fields, filter and newest first', async () => {
+    const world = healthyWorld();
+    await run(world);
+    const [countyQuery, cityQuery] = world.waitQueries;
+    expect(countyQuery.get('where')).toBe(countyWait.where);
+    expect(countyQuery.get('outFields').split(',').sort()).toEqual(
+      [countyWait.siteField, countyWait.timeField, countyWait.valueField].sort(),
+    );
+    expect(countyQuery.get('orderByFields')).toBe(`${countyWait.timeField} DESC`);
+    expect(cityQuery.get('where')).toBe(cityWait.where);
+    // Never outFields=*: the City layer also holds staff contact fields.
+    expect(cityQuery.get('outFields').split(',').sort()).toEqual(
+      [
+        cityWait.siteField,
+        cityWait.valueField,
+        cityWait.timeField,
+        cityWait.commentsField,
+        cityWait.hoursField,
+      ].sort(),
+    );
+  });
+
+  it('fails a wait layer missing a field the app reads, and skips its reports', async () => {
+    const world = healthyWorld();
+    world.waits[county].info.fields = world.waits[county].info.fields.filter(
+      (f) => f.name !== countyWait.valueField,
+    );
+    world.waits[city].info.fields = world.waits[city].info.fields.filter(
+      (f) => f.name !== cityWait.timeField && f.name !== cityWait.commentsField,
+    );
+    const results = await run(world);
+    expect(results['wait layer county']).toMatchObject({
+      status: 'fail',
+      detail: `waitTimes.county (${countyWait.layer}): missing fields ${countyWait.valueField}`,
+    });
+    expect(results['wait layer city'].detail).toBe(
+      `waitTimes.city (${cityWait.layer}): missing fields ${cityWait.timeField}, ${cityWait.commentsField}`,
+    );
+    expect(results['wait reports county'].status).toBe('skip');
+    expect(results['wait reports city'].status).toBe('skip');
+    expect(exitCodeFor(Object.values(results))).toBe(1);
+  });
+
+  it('fails a wait layer that does not answer, naming the config key', async () => {
+    const world = healthyWorld();
+    world.fail = (url) =>
+      url.href.startsWith(`${city}?`)
+        ? json({ error: { code: 400, message: 'Invalid URL', details: ['Invalid URL'] } })
+        : null;
+    const results = await run(world);
+    expect(results['wait layer city']).toMatchObject({
+      status: 'fail',
+      detail:
+        `waitTimes.city (${cityWait.layer}): ArcGIS error 400: Invalid URL. ` +
+        'Check this path in src/config/election.js.',
+    });
+  });
+
+  it('passes an empty County view while every site is closed', async () => {
+    const world = healthyWorld();
+    world.waits[county].rows = [];
+    const results = await run(world, election, { now: oct22(18) });
+    expect(results['wait reports county']).toEqual({
+      name: 'wait reports county',
+      status: 'pass',
+      detail: `${countyWait.source}: closed. No site is open now; 0 reports in the view`,
+    });
+  });
+
+  it('warns, without failing, when sites are open and no report is fresh', async () => {
+    const world = healthyWorld();
+    world.waits[city].rows = cityStale;
+    // Noon: every County report is 3 hours old, every City report a day old.
+    const results = await run(world, election, { now: oct22(12) });
+    expect(results['wait reports county']).toEqual({
+      name: 'wait reports county',
+      status: 'warn',
+      detail:
+        `${countyWait.source}: not fresh. 0 of 21 open sites have a current count; ` +
+        '0 reports match no site; newest report 2026-10-22 09:00 America/Chicago. ' +
+        `Sites are open and none has reported in the last ${election.waitTimes.maxAgeMinutes} minutes.`,
+    });
+    expect(results['wait reports city'].status).toBe('warn');
+    expect(results['wait reports city'].detail).toMatch(
+      /^St\. Louis City .*: not fresh\. 7 of 8 rows .* 8 open now, 0 with a current count; newest report 2026-10-21 /,
+    );
+    expect(exitCodeFor(Object.values(results))).toBe(0);
+    expect(warningLines(Object.values(results))).toEqual([
+      `wait reports county: ${results['wait reports county'].detail}`,
+      `wait reports city: ${results['wait reports city'].detail}`,
+    ]);
+  });
+
+  it('warns when County reports match no early voting site (a join problem)', async () => {
+    const world = healthyWorld();
+    world.waits[county].rows = [
+      { Creator: 'abs699boec', CreationDate: oct22(9), linecount: 4 },
+      { Creator: 'abs699boec', CreationDate: oct22(8, 30), linecount: 2 },
+      { Creator: 'someone', CreationDate: oct22(8, 45), linecount: 1 },
+      ...countyFresh,
+    ];
+    const result = (await run(world))['wait reports county'];
+    expect(result.status).toBe('warn');
+    expect(result.detail).toContain('3 reports match no site');
+    expect(result.detail).toContain(
+      `3 reports match no site's ${countyWait.pollsField} on the polls layer.`,
+    );
+    // Report senders are ArcGIS user names, which may be a person's: the
+    // public run summary and issue get the count only.
+    expect(result.detail).not.toContain('abs699boec');
+    expect(result.detail).not.toContain('someone');
+  });
+
+  it('joins on the trimmed site key, as the app does', async () => {
+    const world = healthyWorld();
+    world.absentee = world.absentee.map((site) => ({
+      ...site,
+      [countyWait.pollsField]: ` ${site[countyWait.pollsField]} `,
+    }));
+    const result = (await run(world))['wait reports county'];
+    expect(result.status).toBe('pass');
+    expect(result.detail).toContain('19 of 21 open sites have a current count');
+  });
+
+  it('judges the reports at the time it reads them, not when the run started', async () => {
+    const world = healthyWorld();
+    const realNow = Date.now;
+    // The run starts at 7 p.m. (closed); by the wait checks it is 9:00:30.
+    let clock = oct22(19);
+    Date.now = () => clock;
+    try {
+      world.fail = (url) => {
+        if (url.href.includes(election.layers.countyBoundary)) clock = NOW;
+        return null;
+      };
+      const results = await run(world, election, { now: undefined });
+      expect(results['wait reports county'].detail).toMatch(/: fresh\. 19 of 21/);
+    } finally {
+      Date.now = realNow;
+    }
+  });
+
+  it('warns when a City hours text cannot be read, which would hide its counts', async () => {
+    const world = healthyWorld();
+    world.waits[city].rows = cityFresh.map((row) =>
+      row.name === 'Buder Library' ? { ...row, [cityWait.hoursField]: 'Weekdays 9 to 5' } : row,
+    );
+    const result = (await run(world))['wait reports city'];
+    expect(result.status).toBe('warn');
+    expect(result.detail).toContain(
+      `1 row has ${cityWait.hoursField} text the app cannot read, so it never shows a count.`,
+    );
+  });
+
+  it('skips the County reports when the absentee sites could not be read', async () => {
+    const world = healthyWorld();
+    world.absentee = [];
+    const results = await run(world);
+    expect(results['wait reports county']).toMatchObject({
+      status: 'skip',
+      detail: 'the absentee sites check failed',
+    });
+    // The City needs no County site.
+    expect(results['wait reports city'].status).toBe('pass');
+  });
+
+  it('reports a time out of the Date range instead of crashing', async () => {
+    const world = healthyWorld();
+    world.waits[county].rows = [
+      { Creator: 'abs601boec', CreationDate: 1e20, linecount: 1 },
+      ...countyFresh,
+    ];
+    world.waits[city].rows = [{ ...cityFresh[0], [cityWait.timeField]: -1e17 }, ...cityFresh];
+    const results = await run(world);
+    expect(results['wait reports county'].detail).toContain(
+      'newest report 2026-10-22 09:00 America/Chicago',
+    );
+    expect(results['wait reports city'].detail).toContain(
+      'newest report 2026-10-22 08:10 America/Chicago',
+    );
+  });
+
+  it('fails a row answer with a feature that has no fields, as the app does', async () => {
+    const world = healthyWorld();
+    world.fail = (url) =>
+      url.href.startsWith(`${county}/query?`) ? json({ features: [{ attributes: null }] }) : null;
+    const result = (await run(world))['wait reports county'];
+    expect(result).toMatchObject({
+      status: 'fail',
+      detail: `waitTimes.county (${countyWait.layer}): a feature has no attributes`,
+    });
+  });
+
+  it('names the config key and layer when the row query fails', async () => {
+    const world = healthyWorld();
+    world.fail = (url) =>
+      url.href.startsWith(`${city}/query?`)
+        ? json({ error: { code: 400, message: 'Invalid query' } })
+        : null;
+    expect((await run(world))['wait reports city']).toMatchObject({
+      status: 'fail',
+      detail:
+        `waitTimes.city (${cityWait.layer}): ArcGIS error 400: Invalid query. ` +
+        'Check the layer and its where clause in src/config/election.js.',
+    });
+  });
+
+  // As in the app, "poll closed" counts only on a report from today: the
+  // comment left from the evening before must not hide a quiet open site.
+  it('ignores a closed comment on a report from an earlier day', async () => {
+    const world = healthyWorld();
+    const board = cityFresh.find((r) => r.name === 'St. Louis City Board of Elections');
+    world.waits[city].rows = [
+      {
+        ...board,
+        [cityWait.commentsField]: cityWait.closedText,
+        [cityWait.timeField]: Date.UTC(2026, 9, 21, 22, 5),
+      },
+    ];
+    const result = (await run(world))['wait reports city'];
+    expect(result.status).toBe('warn');
+    expect(result.detail).toContain('1 open now, 0 with a current count');
+
+    world.waits[city].rows = [{ ...board, [cityWait.commentsField]: cityWait.closedText }];
+    const today = (await run(world))['wait reports city'];
+    expect(today.status).toBe('pass');
+    expect(today.detail).toContain('closed. No site is open now');
+  });
+
+  it('warns when the City filter finds no early voting rows at all', async () => {
+    const world = healthyWorld();
+    world.waits[city].rows = [];
+    const result = (await run(world))['wait reports city'];
+    expect(result.status).toBe('warn');
+    expect(result.detail).toContain(
+      `No row matches waitTimes.city.where (${cityWait.where}): check the filter`,
+    );
+  });
+
+  it('asks nothing of a source the config turns off', async () => {
+    const world = healthyWorld();
+    const config = {
+      ...election,
+      waitTimes: { ...election.waitTimes, city: { ...cityWait, enabled: false } },
+    };
+    const results = await run(world, config);
+    expect(results['wait layer city']).toBeUndefined();
+    expect(results['wait reports city']).toBeUndefined();
+    expect(world.calls.some((c) => c.url.startsWith(city))).toBe(false);
+    expect(results['wait reports county'].status).toBe('pass');
+
+    const off = healthyWorld();
+    await run(off, { ...election, waitTimes: { ...election.waitTimes, enabled: false } });
+    expect(off.calls.some((c) => c.url.startsWith(county) || c.url.startsWith(city))).toBe(false);
+  });
+});
+
+describe('report', () => {
+  const r = (name, status) => ({ name, status, detail: `${name} detail` });
+  const quiet = { log: () => {}, error: () => {} };
+  let dir;
+  beforeEach(async () => {
+    dir = await mkdtemp(path.join(tmpdir(), 'check-config-'));
+  });
+  afterEach(() => rm(dir, { recursive: true, force: true }));
+
+  it('writes the warnings file on a failing run too, so the issue gets them', async () => {
+    const file = path.join(dir, 'warnings.txt');
+    const code = report([r('a', 'fail'), r('b', 'warn'), r('c', 'warn')], {
+      warnings: file,
+      ...quiet,
+    });
+    expect(code).toBe(1);
+    expect(await readFile(file, 'utf8')).toBe('b: b detail\nc: c detail\n');
+  });
+
+  // The workflow lists the file only when it is not empty (`[ -s ]`).
+  it('leaves an empty file when nothing warned', async () => {
+    const file = path.join(dir, 'warnings.txt');
+    expect(report([r('a', 'pass')], { warnings: file, ...quiet })).toBe(0);
+    expect(await readFile(file, 'utf8')).toBe('');
+  });
+
+  it('prints one line per check and says how many warned', () => {
+    const lines = [];
+    const code = report([r('a', 'pass'), r('b', 'warn')], {
+      log: (line) => lines.push(line),
+      error: (line) => lines.push(line),
+    });
+    expect(code).toBe(0);
+    expect(lines).toEqual([
+      'PASS a: a detail',
+      'WARN b: b detail',
+      '\nAll 2 checks passed, 1 with a warning.',
+    ]);
+  });
+});
+
+describe('exitCodeFor', () => {
+  it('fails on a failure or a skip, never on a warning', () => {
+    const r = (status) => ({ name: status, status, detail: '' });
+    expect(exitCodeFor([r('pass'), r('warn')])).toBe(0);
+    expect(exitCodeFor([r('pass'), r('skip')])).toBe(1);
+    expect(exitCodeFor([r('warn'), r('fail')])).toBe(1);
+  });
+});
+
+describe('the election window (scripts/electionWindow.mjs)', () => {
+  // A made-up election, so this block holds no value from the real config.
+  const config = {
+    electionDate: '2030-11-05',
+    timeZone: 'America/Chicago',
+    earlyVoting: {
+      schedules: {
+        boe: [{ from: '2030-09-24', to: '2030-11-01', days: 'weekdays' }],
+        abs: [{ from: '2030-10-22', to: '2030-11-04', days: 'daily' }],
+      },
+    },
+  };
+  const daily = { event: 'schedule', schedule: '0 12 * * *' };
+  const waits = { event: 'schedule', schedule: WAITS_CRON };
+  // Noon in Chicago on a date, in daylight or standard time.
+  const noon = (date) => new Date(`${date}T17:30:00Z`);
+
+  it('knows the early voting period from the first opening to the last closing', () => {
+    expect(isEarlyVotingPeriod(config, noon('2030-09-23'))).toBe(false);
+    expect(isEarlyVotingPeriod(config, noon('2030-09-24'))).toBe(true);
+    expect(isEarlyVotingPeriod(config, noon('2030-11-04'))).toBe(true);
+    // 11:30 p.m. on the last day in Chicago is already the next day in UTC.
+    expect(isEarlyVotingPeriod(config, new Date('2030-11-05T05:30:00Z'))).toBe(true);
+    expect(isEarlyVotingPeriod(config, noon('2030-11-05'))).toBe(false);
+  });
+
+  it('runs every check daily through Election Day, then nothing', () => {
+    expect(windowFor(config, daily, noon('2030-11-05'))).toBe('full');
+    expect(windowFor(config, daily, noon('2030-11-06'))).toBe('off');
+  });
+
+  it('runs the open-hours wait checks only during early voting', () => {
+    expect(windowFor(config, waits, noon('2030-09-23'))).toBe('off');
+    expect(windowFor(config, waits, noon('2030-10-15'))).toBe('waits');
+    expect(windowFor(config, waits, noon('2030-11-05'))).toBe('off');
+  });
+
+  it('always runs everything by hand', () => {
+    expect(windowFor(config, { event: 'workflow_dispatch' }, noon('2031-01-01'))).toBe('full');
+  });
+
+  // The workflow decides the window before `npm ci`, so the module must load
+  // with no node_modules at all.
+  it('loads with no installed packages, with the real config', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'election-window-'));
+    try {
+      await cp(
+        path.join(ROOT, 'scripts/electionWindow.mjs'),
+        path.join(dir, 'scripts/electionWindow.mjs'),
+      );
+      await cp(path.join(ROOT, 'src/config/election.js'), path.join(dir, 'src/config/election.js'));
+      await cp(path.join(ROOT, 'package.json'), path.join(dir, 'package.json'));
+      const out = execFileSync(
+        process.execPath,
+        [
+          '--input-type=module',
+          '-e',
+          "import election from './src/config/election.js';" +
+            "import { windowFor } from './scripts/electionWindow.mjs';" +
+            "console.log(windowFor(election, { event: 'workflow_dispatch' }));",
+        ],
+        { cwd: dir, encoding: 'utf8' },
+      );
+      expect(out.trim()).toBe('full');
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+});
+
 describe('isPastElection', () => {
   // A made-up election, so this file holds no value from the real config.
   const config = { electionDate: '2030-11-05', timeZone: 'America/Chicago' };
@@ -572,6 +1034,14 @@ describe('parseArgs', () => {
     expect(() => parseArgs(['--verbose'], election)).toThrow(/Unknown argument/);
   });
 
+  it('reads --warnings as a file path', () => {
+    expect(parseArgs(['--warnings', '/tmp/w.txt'], election)).toEqual({
+      layers: {},
+      warnings: '/tmp/w.txt',
+    });
+    expect(() => parseArgs(['--warnings'], election)).toThrow(/--warnings needs a file path/);
+  });
+
   it('reads --ballot-sample as a count or all', () => {
     expect(parseArgs(['--ballot-sample', '25'], election)).toEqual({
       layers: {},
@@ -593,7 +1063,34 @@ describe('data health workflow', () => {
 
   it('runs on a schedule and by hand, never on pull requests or pushes', () => {
     expect(Object.keys(workflow.on).sort()).toEqual(['schedule', 'workflow_dispatch']);
-    expect(workflow.on.schedule).toHaveLength(1);
+    // Daily, plus every 2 hours of the voting day for the wait checks (#106).
+    expect(workflow.on.schedule.map((s) => s.cron)).toEqual(['0 12 * * *', WAITS_CRON]);
+  });
+
+  // The window step runs before npm ci: check-config.mjs imports the app,
+  // which imports packages, so the step must use the package-free module.
+  it('decides the window with the package-free module, from the cron that fired', () => {
+    const window = Object.values(workflow.jobs)[0].steps.find((s) => s.id === 'window');
+    expect(window.run).toContain('./scripts/electionWindow.mjs');
+    expect(window.run).not.toContain('check-config');
+    expect(window.env.EVENT_SCHEDULE).toBe('${{ github.event.schedule }}');
+  });
+
+  it('runs only the config check on the open-hours runs, and lists its warnings', () => {
+    const steps = Object.values(workflow.jobs)[0].steps;
+    const file = '$RUNNER_TEMP/wait-warnings.txt';
+    const config = steps.find((s) => s.id === 'config');
+    expect(config.run).toContain(`--warnings "${file}"`);
+    expect(config.if).not.toContain('mode');
+    for (const id of ['geocoder', 'links']) {
+      expect(steps.find((s) => s.id === id).if).toContain("steps.window.outputs.mode == 'full'");
+    }
+    const summary = steps.find(
+      (s) => s.run?.includes(file) && s.run.includes('$GITHUB_STEP_SUMMARY'),
+    );
+    expect(summary.if).toContain('!cancelled()');
+    expect(steps.indexOf(summary)).toBeGreaterThan(steps.indexOf(config));
+    expect(steps.find((s) => s.if === 'failure()').run).toContain(file);
   });
 
   it('may write issues and nothing else, and does not keep the token on disk', () => {
@@ -638,8 +1135,10 @@ describe('data health workflow', () => {
     const file = '$RUNNER_TEMP/skipped-links.txt';
     const links = steps.find((s) => s.id === 'links');
     expect(links.run).toContain(`--skipped "${file}"`);
-    const summary = steps.find((s) => s.run?.includes('$GITHUB_STEP_SUMMARY'));
-    expect(summary.run).toContain(file);
+    const summary = steps.find(
+      (s) => s.run?.includes('$GITHUB_STEP_SUMMARY') && s.run.includes(file),
+    );
+    expect(summary).toBeDefined();
     expect(summary.if).toContain('!cancelled()');
     expect(steps.indexOf(summary)).toBeGreaterThan(steps.indexOf(links));
     const report = steps.find((s) => s.if === 'failure()');

@@ -1,7 +1,8 @@
 // Failure states in a real browser (#18), on the production build. Each test
 // answers or breaks every service the app calls, from recorded fixtures: the
 // county's address layers (live and hosted), Photon, the City of St. Louis
-// geocoder, the county's precinct and polls layers. Nothing reaches the
+// geocoder, the county's precinct and polls layers, and the County and City
+// early voting line count layers (#106). Nothing reaches the
 // network. A failure is a network error (what a CORS refusal or a dropped
 // connection looks like to the page), a timeout or an HTTP 5xx.
 import AxeBuilder from '@axe-core/playwright';
@@ -13,7 +14,8 @@ import { DEFAULT_BASE_URL as PHOTON_URL } from '../src/data/photon.js';
 import { copy as errorCopy } from '../src/features/lookup/errorCopy.js';
 import { copy as lookupCopy } from '../src/features/lookup/lookupCopy.js';
 import { copy as resultsCopy } from '../src/features/lookup/resultsCopy.js';
-import { CODE, fixtureBody } from './fixtures.js';
+import { copy as waitCopy } from '../src/features/waitTimes/waitTimesCopy.js';
+import { CODE, WAITS_RECORDED_AT, fixtureBody } from './fixtures.js';
 
 const ADDRESS = '1318 Ross Ave';
 
@@ -46,15 +48,27 @@ const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'];
 
 const json = (body) => ({ contentType: 'application/json', body });
 
+const waitLayer = (source) => `${source.serviceRoot}/${source.layer}/`;
+
 /**
  * Routes every request. Each service is 'ok' (fixtures), a number (that HTTP
  * status), 'network' (a refused or CORS-blocked request), or a
  * function of the route. The precinct point query answers CC007 when ok.
+ * `waits` picks fresh, stale or empty line counts per board (e2e/fixtures.js).
  */
 async function services(
   page,
-  { live = 'ok', hosted = 'ok', photon = 'network', city = 'ok', precincts = 'ok', polls = 'ok' },
-  { delayMs = 0 } = {},
+  {
+    live = 'ok',
+    hosted = 'ok',
+    photon = 'network',
+    city = 'ok',
+    precincts = 'ok',
+    polls = 'ok',
+    countyWaits = 'ok',
+    cityWaits = 'ok',
+  },
+  { delayMs = 0, waits = {} } = {},
 ) {
   const behave = async (route, how, body) => {
     if (typeof how === 'function') return how(route, body);
@@ -69,6 +83,12 @@ async function services(
     if (url.href.startsWith(HOSTED_URL)) return behave(route, hosted, COUNTY_ROSS);
     if (url.href.startsWith(CITY_GEOCODER_URL)) return behave(route, city, CITY_NONE);
     if (url.href.startsWith(PHOTON_URL)) return behave(route, photon, '{"features":[]}');
+    if (url.href.startsWith(waitLayer(election.waitTimes.county))) {
+      return behave(route, countyWaits, fixtureBody(url.href, null, { waits }));
+    }
+    if (url.href.startsWith(waitLayer(election.waitTimes.city))) {
+      return behave(route, cityWaits, fixtureBody(url.href, null, { waits }));
+    }
     if (!url.href.startsWith(election.serviceRoot)) return route.abort();
     if (delayMs) await new Promise((resolve) => setTimeout(resolve, delayMs));
     if (url.pathname.includes(election.layers.polls)) {
@@ -277,5 +297,86 @@ test.describe('precinct page', () => {
     await expect(page.getByRole('button', { name: errorCopy.retry })).toHaveCount(2);
     await expect(page.getByRole('heading', { name: resultsCopy.cards.districts })).toBeVisible();
     await expectNoAxeViolations(page);
+  });
+});
+
+// The early voting wait times page (#104) with every state of the line count
+// layers (#106), at the time the fixtures were recorded, while every County
+// site is open. Whatever the counts do, the sites, their hours and the official
+// links stay on the page.
+test.describe('early voting wait times', () => {
+  const COUNT = /in line, reported/;
+
+  test.beforeEach(async ({ page }) => {
+    await page.clock.setFixedTime(WAITS_RECORDED_AT);
+  });
+
+  async function open(page) {
+    await page.goto('/early-voting');
+    const list = page.getByRole('list', { name: waitCopy.listLabel });
+    await expect(list).toBeVisible();
+    return list;
+  }
+
+  // The page as it must look with no count to show: every site listed with
+  // no count, and the official sources linked.
+  async function expectNoCounts(page, list) {
+    await expect(list.getByText(waitCopy.noCount).first()).toBeVisible();
+    await expect(list.getByText(COUNT)).toHaveCount(0);
+    await expect(
+      page.getByRole('link', { name: waitCopy.countyLink(election.waitTimes.county.source) }),
+    ).toHaveAttribute('href', election.waitTimes.county.sourceUrl);
+    await expect(
+      page.getByRole('link', { name: waitCopy.cityLink(election.waitTimes.city.source) }),
+    ).toHaveAttribute('href', election.waitTimes.city.sourceUrl);
+  }
+
+  test('fresh County counts show on the open sites', async ({ page }) => {
+    await services(page, {}, { waits: { county: 'fresh', city: 'fresh' } });
+    const list = await open(page);
+    await expect(list.getByText(COUNT).first()).toBeVisible();
+    await expect(page.getByTestId('wait-status-shown')).toHaveText(/^Line counts checked at /);
+  });
+
+  for (const state of ['stale', 'empty']) {
+    test(`${state} County counts: no count shown, and the check still succeeded`, async ({
+      page,
+    }) => {
+      await services(page, {}, { waits: { county: state, city: state } });
+      const list = await open(page);
+      await expect(page.getByTestId('wait-status-shown')).toHaveText(/^Line counts checked at /);
+      await expectNoCounts(page, list);
+    });
+  }
+
+  for (const [label, how] of [
+    ['answering 503', 503],
+    ['refused (network or CORS)', 'network'],
+  ]) {
+    test(`County line counts ${label}: the page says so and keeps the sites`, async ({ page }) => {
+      await services(page, { countyWaits: how, cityWaits: how });
+      const list = await open(page);
+      await expect(page.getByTestId('wait-status-shown')).toHaveText(waitCopy.status.unavailable);
+      await expectNoCounts(page, list);
+      await expectNoAxeViolations(page);
+    });
+  }
+
+  test('County line counts timing out: the page says so after the timeout', async ({ page }) => {
+    // Two attempts of the client's 8 s timeout, then the page's answer.
+    test.setTimeout(60_000);
+    await services(page, { countyWaits: () => new Promise(() => {}) });
+    const list = await open(page);
+    await expect(page.getByTestId('wait-status-shown')).toHaveText(waitCopy.status.unavailable, {
+      timeout: 30_000,
+    });
+    await expectNoCounts(page, list);
+  });
+
+  test('City line counts failing leaves the County counts shown', async ({ page }) => {
+    await services(page, { cityWaits: 503 });
+    const list = await open(page);
+    await expect(list.getByText(COUNT).first()).toBeVisible();
+    await expect(page.getByTestId('wait-status-shown')).toHaveText(/^Line counts checked at /);
   });
 });
