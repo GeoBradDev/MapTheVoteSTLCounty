@@ -93,7 +93,7 @@ The owner approved the wording as is and chose to stay anonymous (comment on #71
 - `README.md`'s Nonpartisan statement (#29) already has the approved wording; its note that
   the wording is "being settled in #71" is replaced by a pointer to `footer.statement`.
 - The `index.html` meta description stays in `index.html`, like the tab title: it is not
-  page text, and per-route and translated copies belong to #98. README's Languages section
-  lists it with the tab title among the strings shown as they are.
+  page text, per-route copies belong to #98, and translating it belongs to #120. README's
+  Languages section lists it with the tab title among the strings shown as they are.
 - Proof: the gate, plus a string comparison of every new en.json value against the strings
   in 7b8c75f.
