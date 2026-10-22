@@ -134,6 +134,11 @@ const county = {
     polls: 'polls_2026_11_view/FeatureServer/1',
     countyBoundary: 'St_Louis_County_Boundary/FeatureServer/0',
   },
+  // The layers the County block names (field lists; docs/data.md has the
+  // inspection). Each value's own source is next to it.
+  sources: [
+    'https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/precincts_2026_11_view/FeatureServer/1?f=pjson',
+  ],
   absenteeWhere: "abs_type IN ('abs','boe')",
   sampleBallotUrlPattern:
     /^https:\/\/stlouiscovotes\.maps\.arcgis\.com\/sharing\/rest\/content\/items\/[0-9a-f]{32}\/data$/,
@@ -230,7 +235,8 @@ const city = {
     precincts: 'ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/1',
   },
   precinctField: 'precinctid',
-  // Where the code shape was checked: the precincts layer's own description.
+  // The precincts layer the code shape was checked against (its field list;
+  // docs/data.md has the check).
   sources: [
     `${cityServiceRoot}/ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/1?f=pjson`,
   ],

@@ -1,5 +1,6 @@
-// Official offices a voter outside St. Louis County is sent to. These do not
-// change between elections, so they are not in election.js. Check each link
+// Official offices a voter outside St. Louis County is sent to, and the City
+// board's lookup a City precinct page links (#86). These do not change
+// between elections, so they are not in election.js. Check each link
 // still answers before every election.
 
 /** @typedef {{ url: string, source: string, lastVerified: string }} Referral */

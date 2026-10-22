@@ -739,7 +739,7 @@ is extra help only: precincts and polling places still come from the county laye
 
 The county board's website is now a page on the county's own site:
 `https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/`
-(`countySiteUrl` in `src/config/election.js`, #73). Checked 2026-10-21:
+(the County block's `boardSiteUrl` in `src/config/election.js`, read as `countySiteUrl`, #73). Checked 2026-10-21:
 
 - The board's old site, `stlouiscovotes.info`, is retired. Every page tried (`/`, `/faq/`,
   `/voting/absentee-voting/`, `/about-us/`, `/registration/`) answers `200` with

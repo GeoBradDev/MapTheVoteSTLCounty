@@ -91,6 +91,6 @@ export function isPrecinctCode(code) {
  */
 export function cityPrecinctId(code) {
   if (!CITY_PRECINCT_CODE.test(code))
-    throw new arcgis.NotFound(`Not a City precinct code: ${code}`);
+    throw new arcgis.NotFound(`Not a City precinct code: ${JSON.stringify(code)}`);
   return `W ${Number(code.slice(1, 3))} P ${Number(code.slice(4))}`;
 }
