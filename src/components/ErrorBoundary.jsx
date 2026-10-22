@@ -1,5 +1,6 @@
 import { Component, useEffect, useRef } from 'react';
 import election from '../config/election.js';
+import { applyHead } from '../pageHead.js';
 import { copy } from './errorBoundaryCopy.js';
 import { usePageTitle } from './usePageTitle.js';
 
@@ -12,6 +13,10 @@ function ErrorScreen() {
   usePageTitle(copy.heading);
   useEffect(() => {
     headingRef.current?.focus();
+  }, []);
+  // Not the failed page's head (#99): the shell's description, no canonical.
+  useEffect(() => {
+    applyHead(document, null);
   }, []);
   return (
     <>

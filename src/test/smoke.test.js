@@ -20,6 +20,15 @@ const SHELL =
   '</head><body><div id="root"></div></body></html>';
 
 const PREVIEW_SHELL = SHELL.replace('</head>', '<meta name="robots" content="noindex"></head>');
+// A pre-rendered public page (#99): its canonical in the head, its markup in
+// the root.
+const prerendered = (shell, route) =>
+  shell
+    .replace('</head>', `<link rel="canonical" href="https://mapthevotestl.com${route}"></head>`)
+    .replace(
+      '<div id="root"></div>',
+      `<div id="root" data-prerendered="${route}"><div><h1 tabindex="-1">Page</h1></div></div>`,
+    );
 const ROBOTS = 'User-agent: *\nAllow: /\nSitemap: https://mapthevotestl.com/sitemap.xml\n';
 const PREVIEW_ROBOTS = 'User-agent: *\nDisallow: /\n';
 const SITEMAP =
@@ -37,9 +46,13 @@ const GOOD_HEADERS = {
 // A host that behaves like the Render Blueprint (render.yaml), with overrides per test.
 // `preview` serves what a pull request preview build ships; `robots` and
 // `sitemap` set to 'missing' leave those files out, so the rewrite answers
-// them with the shell, as Render does.
+// them with the shell, as Render does. `pages` set to 'shell' leaves the
+// pre-rendered pages out, so the shell answers them too; `deepLink` set to
+// 'home' answers a precinct link with the pre-rendered home page, and
+// 'indexable' with a production shell (no noindex).
 function stubHost({
   deepLink = 'shell',
+  pages = 'prerendered',
   asset = 'js',
   headers = true,
   preview = false,
@@ -68,6 +81,22 @@ function stubHost({
         ...(headers && { 'cache-control': 'public, max-age=31536000, immutable' }),
       });
       return res.end('console.log(1)');
+    }
+    if (pages === 'prerendered' && ['/', '/learn', '/learn/voter-id'].includes(req.url)) {
+      res.writeHead(200, {
+        ...common,
+        'content-type': 'text/html; charset=utf-8',
+        ...(headers && { 'cache-control': 'no-cache' }),
+      });
+      return res.end(prerendered(shell, req.url));
+    }
+    if (deepLink === 'indexable' && req.url === '/p/CC007') {
+      res.writeHead(200, { ...common, 'content-type': 'text/html; charset=utf-8' });
+      return res.end(SHELL);
+    }
+    if (deepLink === 'home' && req.url === '/p/CC007') {
+      res.writeHead(200, { ...common, 'content-type': 'text/html; charset=utf-8' });
+      return res.end(prerendered(shell, '/'));
     }
     if (deepLink === 'redirect' && req.url === '/p/CC007') {
       res.writeHead(301, { location: '/index.html' });
@@ -113,9 +142,12 @@ describe('smoke test against stub hosts', () => {
 
     expect(failedChecks(results)).toEqual([]);
     expect(results.map((r) => r.name)).toEqual([
-      'GET / returns the app shell',
+      'GET / returns the home page',
       'hard load of /p/CC007 returns the app shell',
       'hashed asset returns JavaScript',
+      'hard load of / returns the pre-rendered page',
+      'hard load of /learn returns the pre-rendered page',
+      'hard load of /learn/voter-id returns the pre-rendered page',
       '/robots.txt is text naming the sitemap',
       '/sitemap.xml is XML, not the app shell',
       'headers on /',
@@ -150,14 +182,24 @@ describe('smoke test against stub hosts', () => {
 
     expect(failedChecks(results)).toEqual([]);
     expect(results.map((r) => r.name)).toEqual([
-      'GET / returns the app shell',
+      'GET / returns the home page',
       'hard load of /p/CC007 returns the app shell',
       'hashed asset returns JavaScript',
+      'hard load of / returns the pre-rendered page',
+      'hard load of /learn returns the pre-rendered page',
+      'hard load of /learn/voter-id returns the pre-rendered page',
       '/robots.txt keeps every crawler out',
-      'the app shell is marked noindex',
+      'the home page and the app shell are marked noindex',
       'headers on /',
       'headers on the hashed asset',
     ]);
+  });
+
+  it('fails a preview whose app shell, served for precinct links, is not noindex', async () => {
+    server = stubHost({ preview: true, deepLink: 'indexable' });
+    const results = await runSmoke(await listen(server), { preview: true });
+
+    expect(failedChecks(results)).toEqual(['the home page and the app shell are marked noindex']);
   });
 
   it('fails a preview check against a production host', async () => {
@@ -166,7 +208,7 @@ describe('smoke test against stub hosts', () => {
 
     expect(failedChecks(results)).toEqual([
       '/robots.txt keeps every crawler out',
-      'the app shell is marked noindex',
+      'the home page and the app shell are marked noindex',
     ]);
   });
 
@@ -179,6 +221,24 @@ describe('smoke test against stub hosts', () => {
 
   it('fails when a deep link redirects to the shell instead of being rewritten', async () => {
     server = stubHost({ deepLink: 'redirect' });
+    const results = await runSmoke(await listen(server));
+
+    expect(failedChecks(results)).toEqual(['hard load of /p/CC007 returns the app shell']);
+  });
+
+  it('fails when the public pages are answered with the shell, not pre-rendered', async () => {
+    server = stubHost({ pages: 'shell' });
+    const results = await runSmoke(await listen(server));
+
+    expect(failedChecks(results)).toEqual([
+      'hard load of / returns the pre-rendered page',
+      'hard load of /learn returns the pre-rendered page',
+      'hard load of /learn/voter-id returns the pre-rendered page',
+    ]);
+  });
+
+  it('fails when a deep link gets a pre-rendered page instead of the empty shell', async () => {
+    server = stubHost({ deepLink: 'home' });
     const results = await runSmoke(await listen(server));
 
     expect(failedChecks(results)).toEqual(['hard load of /p/CC007 returns the app shell']);
@@ -213,7 +273,7 @@ describe('smoke test against stub hosts', () => {
     const results = await runSmoke(await listen(server), { checkHeaders: false });
 
     expect(failedChecks(results)).toEqual([]);
-    expect(results).toHaveLength(5);
+    expect(results).toHaveLength(8);
   });
 
   it('fails instead of throwing when the host is unreachable', async () => {
@@ -225,7 +285,7 @@ describe('smoke test against stub hosts', () => {
 
     const results = await runSmoke(url, { checkHeaders: false });
 
-    expect(failedChecks(results)).toContain('GET / returns the app shell');
+    expect(failedChecks(results)).toContain('GET / returns the home page');
   });
 });
 
@@ -241,7 +301,7 @@ describe('smoke test CLI', () => {
     server = stubHost();
     const { stdout } = await promisify(execFile)('node', [SCRIPT, await listen(server)]);
 
-    expect(stdout).toContain('7 of 7 checks passed');
+    expect(stdout).toContain('10 of 10 checks passed');
   });
 
   it('runs the preview checks with --preview', async () => {
@@ -253,7 +313,7 @@ describe('smoke test CLI', () => {
     ]);
 
     expect(stdout).toContain('PASS /robots.txt keeps every crawler out');
-    expect(stdout).toContain('7 of 7 checks passed');
+    expect(stdout).toContain('10 of 10 checks passed');
   });
 
   it('exits 1 and prints the failure when a check fails', async () => {

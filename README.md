@@ -183,6 +183,23 @@ The site is a Render static site defined by the Blueprint in `render.yaml`: the 
 publish directory, the custom domain (`mapthevotestl.com`), the SPA rewrite, the security
 headers and the cache rules. `src/test/render.test.js` checks it.
 
+- **Files and the rewrites:** the build pre-renders the public pages (see
+  [Search engines](#search-engines)): `dist/index.html` is the home page, and `learn/`,
+  `learn/<id>/` and `privacy/` each hold an `index.html`. `dist/shell.html` is the empty
+  client-rendered app shell. Render never rewrites a path where a file exists, but it serves
+  a directory's `index.html` only for the path with a trailing slash (`/learn/`, not
+  `/learn`), so `render.yaml` rewrites each pre-rendered page's path to its file, one rule per
+  page, and then every other path, precinct pages included, to `/shell.html`. A new topic needs
+  its own rule; `src/test/render.test.js` fails until it has one. `npm run preview` answers
+  paths the same way (`src/prerender/plugin.js`).
+- **Route changes show only on production.** A PR preview keeps the service's existing
+  route rules, so a change to `routes` in `render.yaml` cannot be checked before merge. Merge
+  it outside election weeks, then run `npm run smoke -- https://mapthevotestl.com` once the
+  deploy finishes. If a check fails, revert the merge commit on `main` and also delete, in the
+  Dashboard, any rule the revert took out of `render.yaml` (a sync keeps Dashboard rules, and
+  a page rule left behind points at a file the older build lacks). The same goes for a topic
+  that is removed or renamed: delete its old rule in the Dashboard too.
+
 - **Deploys:** a push to `main` deploys after CI passes (`autoDeployTrigger: checksPass`).
   A change only under `docs/` or to `README.md` does not build. Markdown under `content/`
   still builds, because the learn topics are built from it.
@@ -198,13 +215,15 @@ headers and the cache rules. `src/test/render.test.js` checks it.
   new origin (a geocoder, map tiles, fonts) must add it to the policy in `render.yaml` in the
   same change, or the browser blocks the request in production.
 - **Cache-Control:** no two header rules may match the same path; Render does not document
-  how they combine. The app shell sends `no-cache` and hashed `/assets/` files are
+  how they combine. The app shell and the pre-rendered pages send `no-cache` and hashed `/assets/` files are
   `immutable`; `/robots.txt` and `/sitemap.xml` are cached for an hour. A new route needs its
   own `no-cache` rule.
 - **Rollback:** in the Render Dashboard, open the service's **Deploys** page, find an earlier
   successful deploy and click **Rollback**. This redeploys that build's files only: headers,
   redirects and rewrites are not rolled back, so a bad header change needs a fix in
-  `render.yaml`. A Dashboard rollback also turns off automatic deploys; fix or revert the
+  `render.yaml`. A build from before the pre-rendered pages (#99) has no `shell.html`, so
+  rolling back to one leaves deep links without a page until the rewrite in `render.yaml`
+  points at `/index.html` again. A Dashboard rollback also turns off automatic deploys; fix or revert the
   change on `main`, then turn them back on in the service's **Settings**.
 
 One-time setup (owner): in the Render Dashboard choose **New > Blueprint**, connect this
@@ -220,12 +239,13 @@ After a deploy, check the live site or a PR preview:
 npm run smoke -- https://<site-or-preview-url>
 ```
 
-It checks that `/` and a hard load of `/p/CC007` return the app shell, that a hashed asset is
-served as JavaScript, that `/robots.txt` is a text file with a `Sitemap:` line and
+It checks that `/` returns the home page and a hard load of `/p/CC007` the app shell (with
+nothing pre-rendered in it), that a hashed asset is served as JavaScript, that a hard load of `/`,
+`/learn` and `/learn/voter-id` returns the page pre-rendered, with its `h1` and canonical, that `/robots.txt` is a text file with a `Sitemap:` line and
 `/sitemap.xml` is XML (not the app shell), and that the expected security and cache headers are
 present. It exits 1 and lists what failed. Against a host that sets no headers, such as
 `npm run preview`, add `--skip-headers`. Against a PR preview, add `--preview`: it then checks
-that `/robots.txt` says `Disallow: /` and the shell carries `noindex`, instead of the sitemap. The expected headers are a table at the top of `scripts/smoke.mjs`; change it
+that `/robots.txt` says `Disallow: /` and the home page and the shell carry `noindex`, instead of the sitemap. The expected headers are a table at the top of `scripts/smoke.mjs`; change it
 when the host's header config changes. `src/test/render.test.js` checks `render.yaml` against
 that table, so change both together.
 
@@ -242,9 +262,25 @@ Every build writes `robots.txt`, and a production build writes `sitemap.xml`, bo
 - **Not in the sitemap:** precinct pages (`/p/<code>`). `robots.txt` does not disallow them:
   a disallowed URL can still be indexed from links, without its content, and a crawler cannot
   see a `noindex` on a page it may not fetch. Whether they carry `noindex` is #98.
+- **Pre-rendered pages:** the indexed pages above are static HTML too, so crawlers and link preview
+  bots that do not run JavaScript get each page's content and its own title, description,
+  canonical (`siteUrl` plus the path) and Open Graph tags (`og:type`, `og:site_name`,
+  `og:title`, `og:description`, `og:url`). After the client build, `src/prerender/plugin.js`
+  renders `src/entry-server.jsx` in Node for each path `prerenderPaths()` in `src/pageHead.js`
+  lists (the sitemap's own list, `publicPaths()` in `src/config/publicPages.js`), and the browser hydrates the markup (`src/main.jsx`). The head values come from
+  `pageHead()`, which the app also applies on every in-app navigation. A description is the
+  page's own text, never new wording: `site.description` in `src/i18n/en.json` for the home
+  page, as written (a test keeps `index.html`'s the same), and the intro of `/learn` and
+  `/privacy` and a topic's first paragraph, each cut to 155 characters. A topic's paragraph
+  counts only when it comes before the topic's first heading (one under a heading describes
+  that section, not the page); a topic without one gets the `/learn` intro. Code that runs at module load or while
+  rendering must work without `window`, `document` or `navigator`; `npm test` renders every
+  pre-rendered path in Node. Precinct pages are never pre-rendered (their data is live) and
+  keep the shell's head; what they and the not-found page carry is #98.
 - **PR previews:** Render sets `IS_PULL_REQUEST=true` in a preview build. The build then
   writes a `robots.txt` of `User-agent: *` / `Disallow: /`, adds
-  `<meta name="robots" content="noindex">` to `index.html` and writes no sitemap. A local
+  `<meta name="robots" content="noindex">` to `index.html` (and so to the shell and every
+  pre-rendered page, which are built from it) and writes no sitemap. A local
   build and CI build as production.
 - **The `onrender.com` copy:** the service also answers at its default `onrender.com`
   address. Render can turn that address off once a service has a custom domain (it then
@@ -389,6 +425,9 @@ ArcGIS portal, listed in
 `src/features/learn/content/officialSources.js`; add a host there in a reviewed change, never
 per topic.
 
+A new topic also needs its rewrite in `render.yaml` (see [Deploy](#deploy)); the tests fail
+until it has one.
+
 For each new election, re-read every topic's sources, then update its `election` and
 `lastVerified`; the build fails until you do. `src/features/learn/topics.js` loads the topics
 (`getTopics`, `getTopic`) and `src/features/learn/TopicArticle.jsx` renders one.
@@ -428,7 +467,8 @@ Every word the app shows is in `src/i18n/en.json` and reaches the page through `
 names, election values from `src/config/election.js`, and the names of the address search
 services and their data (from the geocoder modules, as the privacy notice requires) are shown as
 they are. So are the home page's tab title and its search and link-preview description, both
-`index.html`'s, the map's credit line and MapLibre's own built-in text (its gesture hints and
+`index.html`'s (also `site.name` and `site.description` in `en.json`, which a test keeps the
+same, for the pre-rendered pages and in-app navigation), the map's credit line and MapLibre's own built-in text (its gesture hints and
 the map's label). ESLint's `react/jsx-no-literals` fails on words typed straight into JSX.
 
 To add a language, such as Spanish: copy `en.json` to `src/i18n/es.json`, translate the

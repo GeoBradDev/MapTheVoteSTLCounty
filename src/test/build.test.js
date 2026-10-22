@@ -2,7 +2,7 @@
 // source check can see: utilities Tailwind generates from class names it finds
 // in scanned files, @source inline() safelists, and JSX arbitrary values.
 // @vitest-environment node
-import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, stat } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { gzipSync } from 'node:zlib';
@@ -180,5 +180,89 @@ describe('production build', () => {
 
   it('ships no red or blue color', () => {
     expect(builtColorProblems(css)).toEqual([]);
+  });
+
+  // Pre-rendered public pages (#99): what a crawler or link preview bot gets
+  // with no JavaScript.
+  describe('pre-rendered pages', () => {
+    const page = (file) => readFile(path.join(outDir, file), 'utf8');
+    const canonicalOf = (doc) => doc.match(/<link rel="canonical" href="([^"]+)">/)?.[1] ?? null;
+    const rootOf = (doc) => doc.match(/<div id="root"[^>]*>([\s\S]*)<\/div>\s*<\/body>/)?.[1];
+
+    it('writes one page per sitemap entry, at the path the sitemap names', async () => {
+      const sitemap = await page('sitemap.xml');
+      const paths = [...sitemap.matchAll(/<loc>https:\/\/mapthevotestl\.com([^<]*)<\/loc>/g)].map(
+        (m) => m[1],
+      );
+      expect(paths).toContain('/learn/voter-id');
+      for (const route of paths) {
+        const file = route === '/' ? 'index.html' : `${route.slice(1)}/index.html`;
+        const doc = await page(file);
+        expect(doc, file).toContain(`data-prerendered="${route}"`);
+        expect(canonicalOf(doc), file).toBe(`https://mapthevotestl.com${route}`);
+        expect(doc.match(/<h1\b/g), file).toHaveLength(1);
+        expect(doc, file).toMatch(/<meta property="og:title" content="[^"]+">/);
+        expect(doc.match(/<meta name="description"/g), file).toHaveLength(1);
+      }
+    });
+
+    it('writes a topic with its heading, text, title and description', async () => {
+      const doc = await page('learn/voter-id/index.html');
+      expect(doc).toContain('<title>What ID to bring | St. Louis County Voter Guide</title>');
+      expect(doc).toMatch(/<h1[^>]*>What ID to bring<\/h1>/);
+      expect(doc).toContain('In Missouri, you must show a photo ID when you vote in person.');
+      expect(doc).toMatch(
+        /<meta name="description" content="In Missouri, you must show a photo ID/,
+      );
+    });
+
+    it('pre-renders exactly the sitemap entries, no page more or less', async () => {
+      const sitemap = await page('sitemap.xml');
+      const paths = [...sitemap.matchAll(/<loc>https:\/\/mapthevotestl\.com([^<]*)<\/loc>/g)]
+        .map((m) => m[1])
+        .sort();
+      const files = (await readdir(outDir, { recursive: true }))
+        .map((f) => f.replaceAll('\\', '/'))
+        .filter((f) => f.endsWith('index.html'))
+        .map((f) => (f === 'index.html' ? '/' : `/${f.slice(0, -'/index.html'.length)}`))
+        .sort();
+      expect(files).toEqual(paths);
+    });
+
+    it('writes the home page as index.html, with the address search', async () => {
+      expect(html).toContain('data-prerendered="/"');
+      expect(html).toContain('role="combobox"');
+      expect(canonicalOf(html)).toBe('https://mapthevotestl.com/');
+    });
+
+    it('keeps the client-rendered shell for every other path, with no page in it', async () => {
+      const shell = await page('shell.html');
+      expect(rootOf(shell)).toBe('');
+      expect(shell).toContain('<div id="root"></div>');
+      expect(canonicalOf(shell)).toBeNull();
+      expect(shell).not.toMatch(/property="og:/);
+      expect(shell).toContain('<title>St. Louis County Voter Guide</title>');
+      const scripts = (doc) =>
+        [...doc.matchAll(/(?:src|href)="(\/assets\/[^"]+)"/g)].map((m) => m[1]);
+      expect(scripts(shell)).toEqual(scripts(html));
+    });
+
+    it('bakes no precinct page into the build', async () => {
+      await expect(stat(path.join(outDir, 'p'))).rejects.toThrow(/ENOENT/);
+    });
+
+    it('needs nothing the Content-Security-Policy blocks on any page', async () => {
+      for (const file of ['learn/index.html', 'learn/voter-id/index.html', 'privacy/index.html']) {
+        const doc = await page(file);
+        const scripts = [...doc.matchAll(/<script\b[^>]*>/g)].map((m) => m[0]);
+        expect(
+          scripts.filter((tag) => !/\bsrc="\/assets\//.test(tag)),
+          file,
+        ).toEqual([]);
+        expect(doc, file).not.toMatch(/<style\b/i);
+        expect(doc, file).not.toMatch(/\sstyle=/i);
+        expect(doc, file).not.toMatch(/\son[a-z]+=/i);
+      }
+    });
   });
 });

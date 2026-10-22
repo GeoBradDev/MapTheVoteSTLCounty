@@ -26,12 +26,67 @@ services:
     # Render adds www.mapthevotestl.com and redirects it here.
     domains:
       - mapthevotestl.com
-    # Render never rewrites a path where a file exists, so /assets/*, /sw.js
-    # and icons are served as files; everything else gets the app shell.
+    # Render never rewrites a path where a file exists, so /assets/*, /sw.js,
+    # icons and the pre-rendered public pages (#99) are served as files. It
+    # serves a directory's index.html only for the path with a trailing slash
+    # (/learn/, not /learn: checked on PR #127's preview), so each pre-rendered
+    # page but the home page (dist/index.html) has its own rewrite to its file,
+    # before the catch-all. One rule per page, not /learn/:topic, so an unknown
+    # topic still gets the shell and the app's not-found page; a new topic needs
+    # its rule (src/test/render.test.js fails until it has one). Everything
+    # else, precinct pages included, gets the client-rendered app shell,
+    # shell.html (src/prerender/plugin.js). PR previews keep the service's
+    # existing rules, so check a change here on production after it deploys
+    # (README, Deploy).
     routes:
       - type: rewrite
+        source: /learn
+        destination: /learn/index.html
+      - type: rewrite
+        source: /learn/absentee
+        destination: /learn/absentee/index.html
+      - type: rewrite
+        source: /learn/accessible-voting
+        destination: /learn/accessible-voting/index.html
+      - type: rewrite
+        source: /learn/check-registration
+        destination: /learn/check-registration/index.html
+      - type: rewrite
+        source: /learn/help-voting
+        destination: /learn/help-voting/index.html
+      - type: rewrite
+        source: /learn/mail-in-ballots
+        destination: /learn/mail-in-ballots/index.html
+      - type: rewrite
+        source: /learn/military-overseas
+        destination: /learn/military-overseas/index.html
+      - type: rewrite
+        source: /learn/moved-or-changed-name
+        destination: /learn/moved-or-changed-name/index.html
+      - type: rewrite
+        source: /learn/provisional-ballots
+        destination: /learn/provisional-ballots/index.html
+      - type: rewrite
+        source: /learn/registration-deadlines
+        destination: /learn/registration-deadlines/index.html
+      - type: rewrite
+        source: /learn/voter-id
+        destination: /learn/voter-id/index.html
+      - type: rewrite
+        source: /learn/what-to-expect
+        destination: /learn/what-to-expect/index.html
+      - type: rewrite
+        source: /learn/who-to-contact
+        destination: /learn/who-to-contact/index.html
+      - type: rewrite
+        source: /learn/your-rights
+        destination: /learn/your-rights/index.html
+      - type: rewrite
+        source: /privacy
+        destination: /privacy/index.html
+      - type: rewrite
         source: /*
-        destination: /index.html
+        destination: /shell.html
     headers:
       - path: /*
         name: Referrer-Policy
@@ -75,12 +130,16 @@ services:
           upgrade-insecure-requests
       # Cache-Control: no two rules may match the same path. Render does not
       # document how same-name rules combine, and a joined or wrong value could
-      # keep voters on an old build. The shell always revalidates; hashed
-      # assets never change.
+      # keep voters on an old build. The shell and the pre-rendered pages
+      # (under /, /learn and /privacy) always revalidate; hashed assets never
+      # change.
       - path: /
         name: Cache-Control
         value: no-cache
       - path: /index.html
+        name: Cache-Control
+        value: no-cache
+      - path: /shell.html
         name: Cache-Control
         value: no-cache
       - path: /p/*

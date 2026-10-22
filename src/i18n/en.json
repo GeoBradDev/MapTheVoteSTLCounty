@@ -1,5 +1,7 @@
 {
   "site": {
+    "name": "St. Louis County Voter Guide",
+    "description": "A nonpartisan, unofficial guide for St. Louis County voters: find your precinct, polling places and sample ballot. Not affiliated with any board of elections.",
     "pageTitle": "{name} | St. Louis County Voter Guide"
   },
   "app": {

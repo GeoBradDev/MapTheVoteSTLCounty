@@ -167,9 +167,14 @@ describe.each([
     expect(locs.sort()).toEqual(expected.map((p) => `${siteUrl}${p}`).sort());
   });
 
-  it(preview ? 'marks the shell noindex' : 'leaves the shell indexable', async () => {
-    const html = await readFile(path.join(outDir, 'index.html'), 'utf8');
-    const metas = html.match(/<meta name="robots"[^>]*>/g) ?? [];
-    expect(metas).toEqual(preview ? [NOINDEX] : []);
-  });
+  // index.html is the pre-rendered home page and shell.html the shell every
+  // other path gets (#99); a pre-rendered topic is built the same way.
+  it.each(['index.html', 'shell.html', 'learn/voter-id/index.html'])(
+    preview ? 'marks %s noindex' : 'leaves %s indexable',
+    async (file) => {
+      const html = await readFile(path.join(outDir, file), 'utf8');
+      const metas = html.match(/<meta name="robots"[^>]*>/g) ?? [];
+      expect(metas).toEqual(preview ? [NOINDEX] : []);
+    },
+  );
 });

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { Route, Switch, useLocation } from 'wouter';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import NotFoundPage from './components/NotFoundPage.jsx';
@@ -10,6 +10,8 @@ import PrecinctPage from './features/lookup/PrecinctPage.jsx';
 import PrivacyPage from './features/privacy/PrivacyPage.jsx';
 import { t, useLocale } from './i18n/index.js';
 import LanguageSwitcher from './i18n/LanguageSwitcher.jsx';
+import { endHydration } from './hydrate.js';
+import { applyHead, pageHead } from './pageHead.js';
 
 // The path as wouter reports it: decoded with decodeURI, or as is when that fails.
 function decodedPath() {
@@ -26,11 +28,14 @@ function decodedPath() {
 // The listener is added when this module loads, before wouter adds its own:
 // the browser runs microtasks between popstate listeners, so wouter's update
 // renders the new page and runs the effect below before any listener added
-// after wouter's would run.
+// after wouter's would run. The build's server render (#99) loads this module
+// in Node, where there is no window and no history.
 let poppedPath = null;
-window.addEventListener('popstate', () => {
-  poppedPath = decodedPath();
-});
+if (typeof window !== 'undefined') {
+  window.addEventListener('popstate', () => {
+    poppedPath = decodedPath();
+  });
+}
 
 /**
  * After an in-app navigation (not the first load), starts the new page at the
@@ -45,6 +50,14 @@ window.addEventListener('popstate', () => {
 function usePageArrival() {
   const [location] = useLocation();
   const previous = useRef(location);
+  const first = useRef(location);
+
+  // From the first in-app navigation on, pages focus their heading as usual
+  // (src/hydrate.js). A layout effect, so it runs before the new page's own
+  // (passive) focus effect.
+  useLayoutEffect(() => {
+    if (location !== first.current) endHydration();
+  }, [location]);
 
   useEffect(() => {
     if (previous.current === location) return;
@@ -56,6 +69,27 @@ function usePageArrival() {
     if (focused && focused !== document.body && focused.id !== 'main') return;
     document.querySelector('main h1[tabindex="-1"]')?.focus({ preventScroll: fromHistory });
   }, [location]);
+}
+
+/**
+ * Keeps the head describing the page shown (#99): a public page's title,
+ * description, canonical and Open Graph tags, or the shell's description with
+ * no canonical on any other page. A pre-rendered page arrives with its own
+ * head, and the title each page puts back when it goes is the one it found,
+ * so a public page's title is set here too (the home page sets none itself).
+ * Other pages set their own titles. It renders after the page, so its effect
+ * runs after the page's (which keeps the title the page found to put back),
+ * and inside the error boundary, so a page that throws takes it away with it
+ * and the error screen sets its own head.
+ */
+function PageHead({ location }) {
+  const locale = useLocale();
+  useEffect(() => {
+    const head = pageHead(location);
+    if (head) document.title = head.title;
+    applyHead(document, head);
+  }, [location, locale]);
+  return null;
 }
 
 export default function App() {
@@ -84,6 +118,8 @@ export default function App() {
             <Route path="/privacy" component={PrivacyPage} />
             <Route component={NotFoundPage} />
           </Switch>
+          {/* After the page, so its effect runs after the page's own. */}
+          <PageHead location={location} />
         </ErrorBoundary>
       </main>
       <LanguageSwitcher />
