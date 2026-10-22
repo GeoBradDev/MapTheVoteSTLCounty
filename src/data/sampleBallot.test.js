@@ -2,7 +2,7 @@
 // @vitest-environment node
 import nonresidential from '../../docs/raw/fixtures/precinct-nonresidential.json';
 import byId from '../../docs/raw/fixtures/precinct-by-id.json';
-import { parseSampleBallot } from './sampleBallot.js';
+import { fileNameMatchesPrecinct, parseSampleBallot } from './sampleBallot.js';
 
 // The recorded CC007 link, so no election-specific URL is written here.
 const URL_OK = byId.features[0].attributes.html.match(/href=(\S+?)>/)[1];
@@ -243,5 +243,33 @@ describe('parseSampleBallot', () => {
     ['class', `Polls closed<span class="x"> or not</span>`],
   ])('shows nothing for an attribute it does not know: %s', (_, html) => {
     expect(parseSampleBallot(html)).toEqual({ message: null });
+  });
+});
+
+describe('fileNameMatchesPrecinct', () => {
+  it.each([
+    ['CC-007.pdf', 'CC007'],
+    ['AP-001.pdf', 'AP001'],
+    ['MER-013.pdf', 'MER013'],
+    ['cc-007.PDF', 'CC007'],
+    ['CC007.pdf', 'CC007'],
+    ['CC-007', 'CC007'],
+    [' CC-007.pdf ', 'CC007'],
+  ])('matches %s to %s', (fileName, code) => {
+    expect(fileNameMatchesPrecinct(fileName, code)).toBe(true);
+  });
+
+  it.each([
+    ['another precinct', 'CC-008.pdf', 'CC007'],
+    ['another prefix', 'CR-007.pdf', 'CC007'],
+    ['a longer number', 'CC-0070.pdf', 'CC007'],
+    ['a code inside other text', 'Old CC-007.pdf', 'CC007'],
+    ['a name with no code', 'Sample Ballot.pdf', 'CC007'],
+    ['no file name', null, 'CC007'],
+    ['an empty file name', '', 'CC007'],
+    ['no code', 'CC-007.pdf', null],
+    ['an empty code', '.pdf', ''],
+  ])('does not match %s', (_, fileName, code) => {
+    expect(fileNameMatchesPrecinct(fileName, code)).toBe(false);
   });
 });

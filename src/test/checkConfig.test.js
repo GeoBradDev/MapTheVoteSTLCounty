@@ -33,7 +33,7 @@ function healthyWorld() {
       ? {
           precinct: code,
           in_election: 'In Election',
-          html: `Sample Ballot: <a href=${ballotUrl(i + 1)}>AB-${i}.pdf</a>`,
+          html: `Sample Ballot: <a href=${ballotUrl(i + 1)}>AB-${String(i).padStart(3, '0')}.pdf</a>`,
         }
       : { precinct: code, in_election: 'Nonresidential Precinct', html: 'No ballot here.' };
   });
@@ -225,6 +225,21 @@ describe('runHealthCheck', () => {
     expect(detail).toContain('AB996 (Nonresidential Precinct): expected a message');
   });
 
+  it('fails, naming each precinct, when a link names another precinct (#82)', async () => {
+    const world = healthyWorld();
+    // Two precincts' links swapped: both still valid and unique.
+    const [a, b] = [world.precincts[7].html, world.precincts[8].html];
+    world.precincts[7].html = b;
+    world.precincts[8].html = a;
+    world.precincts[9].html = `Sample Ballot: <a href=${ballotUrl(10)}>Sample Ballot.pdf</a>`;
+    const { detail, status } = (await run(world))['sample ballot links'];
+    expect(status).toBe('fail');
+    expect(detail).toMatch(/^3 precincts fail/);
+    expect(detail).toContain('AB007: link names AB-008.pdf, not this precinct');
+    expect(detail).toContain('AB008: link names AB-007.pdf, not this precinct');
+    expect(detail).toContain('AB009: link names Sample Ballot.pdf, not this precinct');
+  });
+
   it('fails when the precinct query is cut off', async () => {
     const world = healthyWorld();
     world.exceeded = true;
@@ -239,8 +254,10 @@ describe('runHealthCheck', () => {
     world.precincts[995].html = world.precincts[4].html;
     const { detail, status } = (await run(world))['sample ballot links'];
     expect(status).toBe('fail');
-    expect(detail).toMatch(/^4 precincts fail/);
+    // AB001 now holds AB002's link, so it also names another precinct (#82).
+    expect(detail).toMatch(/^5 precincts fail/);
     expect(detail).toContain('AB000: no valid link');
+    expect(detail).toContain('AB001: link names AB-002.pdf, not this precinct');
     expect(detail).toContain('AB002: link shared with another precinct');
     expect(detail).toContain('AB003: no valid link');
     expect(detail).toContain('AB995 (Nonresidential Precinct): expected a message');
