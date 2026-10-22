@@ -75,11 +75,13 @@ From the issue, with the owner's #102 findings (comment on #103, 2026-10-22) app
 - `src/data/waitTimes.fixtures.js` (new): minimal fixtures built from real 2026-10-22 rows
   (#102 recorded them in its own branch; #102 may replace these with its files).
 - `src/data/arcgis.test.js`: request shape for the two new queries.
-- `src/features/waitTimes/waitTimesStore.js` (new): the shared loop.
-- `src/features/waitTimes/useWaitTimes.js` (new): the hook (`useSyncExternalStore`).
+- `src/features/waitTimes/useWaitTimes.js` (new): the shared loop
+  (`createWaitTimesStore`) and the hook (`useSyncExternalStore`).
 - `src/features/waitTimes/useWaitTimes.test.jsx` (new): one request per interval with
   several readers, pause and resume, failure keeps then ages out.
-- `scripts/check-config.mjs`: `absentee` in its polls fields.
+- `scripts/check-config.mjs`: the County join field (from config) in its polls fields.
+- `src/config/election.test.js`: the `waitTimes` block's shape.
+- `src/test/checkConfig.test.js`: the polls fields list.
 - `src/test/render.test.js`: wait layers' origins are allowed by `connect-src`.
 - `render.yaml`: the `connect-src` comment names the wait layers (no policy change).
 - `docs/data.md`: a short pointer to the client under the wait times notes, only if a line
@@ -123,3 +125,15 @@ config move (#86).
 - Live drive: a scratch script runs `getCountyWaits()` and `getCityWaits()` against the
   live layers during open hours and prints the entries; and the hook mounted in the dev
   server's console shows one request per jurisdiction per 30 s in the network log.
+
+## Revisions during implementation
+
+- The store and the hook share one file, `src/features/waitTimes/useWaitTimes.js`; a
+  separate store module added nothing.
+- Each jurisdiction in config has its own `serviceRoot` and relative `layer`, like the
+  main layers: the hardcoding test treats a full URL ending in `/FeatureServer/N` as a
+  layer path and would flag `https:` everywhere.
+- Status `ok` with no entries means "no current count" (the view is empty, or kept values
+  aged out while the last request succeeded); `unavailable` only follows a failure.
+- `docs/data.md`: no edit here. The #102 branch rewrites its "Wait times" section, and an
+  edit here would conflict with it; Phase 8 records what that section should gain.

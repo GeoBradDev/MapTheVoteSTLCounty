@@ -11,6 +11,7 @@ import byId from '../../docs/raw/fixtures/precinct-by-id.json';
 import geometry from '../../docs/raw/fixtures/precinct-geometry.json';
 import nonresidential from '../../docs/raw/fixtures/precinct-nonresidential.json';
 import election from '../config/election.js';
+import { cityFresh, countyFresh } from './waitTimes.fixtures.js';
 
 const PRECINCTS = `${election.serviceRoot}/${election.layers.precincts}/query`;
 const BOUNDARY = `${election.serviceRoot}/${election.layers.countyBoundary}/query`;
@@ -316,7 +317,7 @@ describe('getPolls', () => {
     expect(base).toBe(POLLS);
     expect(params).toEqual({
       where: '1=1',
-      outFields: 'loc,name,address,zipcode,abs_type,notes_abs',
+      outFields: 'loc,name,address,zipcode,abs_type,notes_abs,absentee',
       outSR: '4326',
       geometryPrecision: '6',
       f: 'geojson',
@@ -463,7 +464,7 @@ describe('getAbsenteeSites', () => {
     expect(base).toBe(POLLS);
     expect(params).toEqual({
       where: election.absenteeWhere,
-      outFields: 'loc,name,address,zipcode,abs_type,notes_abs',
+      outFields: 'loc,name,address,zipcode,abs_type,notes_abs,absentee',
       outSR: '4326',
       geometryPrecision: '6',
       f: 'geojson',
@@ -699,5 +700,111 @@ describe('errors', () => {
     fetchMock.mockResolvedValue(respond(atPoint));
     await client.getPrecinctAtPoint({ lat: 38.62, lng: -90.33 });
     expect(vi.getTimerCount()).toBe(0);
+  });
+});
+
+describe('wait times (#103)', () => {
+  const { county, city } = election.waitTimes;
+  const COUNTY = `${county.serviceRoot}/${county.layer}/query`;
+  const CITY = `${city.serviceRoot}/${city.layer}/query`;
+  const POLLS = `${election.serviceRoot}/${election.layers.polls}/query`;
+  // 9:00:30 a.m. Central on Thursday 2026-10-22, when the fixtures were recorded.
+  const NOW = Date.UTC(2026, 9, 22, 14, 0, 30);
+  const rows = (list) => ({ features: list.map((attributes) => ({ attributes })) });
+
+  // Answers each layer from its fixture; records nothing else.
+  function routeLayers(answers) {
+    fetchMock.mockImplementation(async (input) => {
+      const url = new URL(input);
+      const base = `${url.origin}${url.pathname}`;
+      if (!(base in answers)) throw new Error(`unexpected request ${base}`);
+      return respond(answers[base]);
+    });
+  }
+
+  function requestTo(base) {
+    const calls = fetchMock.mock.calls.filter(([input]) => String(input).startsWith(`${base}?`));
+    expect(calls).toHaveLength(1);
+    const [input, init = {}] = calls[0];
+    // No voter data: a plain cacheable GET, like the other whole-layer queries.
+    expect(init.method ?? 'GET').toBe('GET');
+    expect(init.body).toBeUndefined();
+    return Object.fromEntries(new URL(input).searchParams);
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(NOW);
+  });
+
+  it('asks the polls layer for the absentee join field', () => {
+    expect(client.POLL_FIELDS).toContain(county.pollsField);
+  });
+
+  it('getCountyWaits asks the County layer for its three fields, newest first', async () => {
+    routeLayers({ [COUNTY]: rows(countyFresh), [POLLS]: absenteeSites });
+    await client.getCountyWaits();
+    expect(requestTo(COUNTY)).toEqual({
+      where: county.where,
+      outFields: [county.siteField, county.timeField, county.valueField].join(','),
+      orderByFields: `${county.timeField} DESC`,
+      returnGeometry: 'false',
+      f: 'json',
+    });
+  });
+
+  it('getCountyWaits joins each report to an absentee site and keeps the newest', async () => {
+    routeLayers({ [COUNTY]: rows(countyFresh), [POLLS]: absenteeSites });
+    const entries = await client.getCountyWaits();
+    expect(entries).toHaveLength(19);
+    const board = entries.find((e) => e.siteId === 'abs601boec');
+    expect(board).toMatchObject({ jurisdiction: 'county', unit: county.unit, value: 0 });
+    expect(board.reportedAt).toBeInstanceOf(Date);
+  });
+
+  it('getCountyWaits returns nothing for the empty view', async () => {
+    routeLayers({ [COUNTY]: rows([]), [POLLS]: absenteeSites });
+    expect(await client.getCountyWaits()).toEqual([]);
+  });
+
+  it('getCityWaits asks only for the fields it reads, never *', async () => {
+    routeLayers({ [CITY]: rows(cityFresh) });
+    await client.getCityWaits();
+    expect(requestTo(CITY)).toEqual({
+      where: city.where,
+      outFields: [
+        city.siteField,
+        city.valueField,
+        city.timeField,
+        city.commentsField,
+        city.hoursField,
+      ].join(','),
+      returnGeometry: 'false',
+      f: 'json',
+    });
+  });
+
+  it('getCityWaits returns the sites open now with a report from today', async () => {
+    routeLayers({ [CITY]: rows(cityFresh) });
+    const entries = await client.getCityWaits();
+    expect(entries.map((e) => e.siteId)).toEqual(['St._Louis_City_Election_Board']);
+    expect(entries[0]).toMatchObject({ jurisdiction: 'city', unit: city.unit, value: 0 });
+  });
+
+  it('retries a 5xx once, like the other queries', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW);
+    fetchMock
+      .mockResolvedValueOnce(respond({}, 503))
+      .mockResolvedValueOnce(respond(rows(cityFresh)));
+    const pending = client.getCityWaits();
+    await vi.runAllTimersAsync();
+    expect(await pending).toHaveLength(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('rejects with ServiceError on an ArcGIS error body', async () => {
+    fetchMock.mockResolvedValue(respond(errorBody));
+    await expect(client.getCityWaits()).rejects.toBeInstanceOf(client.ServiceError);
   });
 });

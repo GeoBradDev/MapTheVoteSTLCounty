@@ -6,6 +6,7 @@
 // (#38). Queries by precinct code or for a whole layer stay cacheable GETs.
 import election from '../config/election.js';
 import { isFresh, layerMaxAgeMs } from './freshness.js';
+import { selectCityWaits, selectCountyWaits } from './waitTimes.js';
 
 /** Precinct codes: a 2 or 3 letter township prefix plus 3 digits, like CC007. */
 export const PRECINCT_CODE = /^[A-Z]{2,3}\d{3}$/;
@@ -25,7 +26,10 @@ export const PRECINCT_FIELDS = Object.freeze([
   ]),
 ]);
 
-/** The polling place fields the app reads (#27). */
+/**
+ * The polling place fields the app reads (#27). The last is the early voting
+ * site's key in the County's wait time reports (#103).
+ */
 export const POLL_FIELDS = Object.freeze([
   'loc',
   'name',
@@ -33,6 +37,7 @@ export const POLL_FIELDS = Object.freeze([
   'zipcode',
   'abs_type',
   'notes_abs',
+  election.waitTimes.county.pollsField,
 ]);
 
 /** How long one attempt may take before it is aborted. */
@@ -86,8 +91,16 @@ function checkCode(code) {
   if (!PRECINCT_CODE.test(code)) throw new NotFound(`Not a precinct code: ${JSON.stringify(code)}`);
 }
 
+// A layer is a key of `election.layers`, or a wait time source from the
+// config, which names its own service root.
+function layerUrl(layer) {
+  return typeof layer === 'string'
+    ? `${election.serviceRoot}/${election.layers[layer]}`
+    : `${layer.serviceRoot}/${layer.layer}`;
+}
+
 function queryUrl(layer, params) {
-  return `${election.serviceRoot}/${election.layers[layer]}/query?${new URLSearchParams(params)}`;
+  return `${layerUrl(layer)}/query?${new URLSearchParams(params)}`;
 }
 
 function isObject(value) {
@@ -160,9 +173,7 @@ const PRIVATE_INIT = Object.freeze({
 // A GET query, or with `private` set a POST whose parameters are in the body
 // and out of the URL, the HTTP cache and the referrer.
 async function query(layer, params, { private: isPrivate = false } = {}) {
-  const url = isPrivate
-    ? `${election.serviceRoot}/${election.layers[layer]}/query`
-    : queryUrl(layer, params);
+  const url = isPrivate ? `${layerUrl(layer)}/query` : queryUrl(layer, params);
   const init = isPrivate ? { ...PRIVATE_INIT, body: new URLSearchParams(params) } : {};
   const fieldsKey = params.f === 'geojson' ? 'properties' : 'attributes';
   try {
@@ -361,3 +372,51 @@ export const getPolls = sharedLayer('polls', '1=1', POLL_FIELDS);
  *   normalized properties, including `abs_type` and `notes_abs`.
  */
 export const getAbsenteeSites = sharedLayer('polls', election.absenteeWhere, POLL_FIELDS);
+
+// The rows of a wait time layer: attributes only, no geometry. A plain GET:
+// the query carries no voter data, and the layers send max-age=30.
+async function waitRows(source, params) {
+  const body = await query(source, { ...params, returnGeometry: 'false', f: 'json' });
+  return body.features.map((f) => f.attributes);
+}
+
+/**
+ * The County's current early voting line counts (#103): the newest fresh
+ * report per absentee site that is open now. The County's view holds only the
+ * last 2 hours of early voting reports, so it is empty while the sites are
+ * closed.
+ * @returns {Promise<import('./waitTimes.js').WaitEntry[]>}
+ */
+export async function getCountyWaits() {
+  const county = election.waitTimes.county;
+  const [reports, sites] = await Promise.all([
+    waitRows(county, {
+      where: county.where,
+      outFields: [county.siteField, county.timeField, county.valueField].join(','),
+      orderByFields: `${county.timeField} DESC`,
+    }),
+    getAbsenteeSites(),
+  ]);
+  return selectCountyWaits(reports, sites.features, Date.now());
+}
+
+/**
+ * The City's current early voting line counts (#103), by the City Board's
+ * own dashboard rules. Never `outFields=*`: the layer also holds staff
+ * contact fields.
+ * @returns {Promise<import('./waitTimes.js').WaitEntry[]>}
+ */
+export async function getCityWaits() {
+  const city = election.waitTimes.city;
+  const rows = await waitRows(city, {
+    where: city.where,
+    outFields: [
+      city.siteField,
+      city.valueField,
+      city.timeField,
+      city.commentsField,
+      city.hoursField,
+    ].join(','),
+  });
+  return selectCityWaits(rows, Date.now());
+}

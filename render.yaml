@@ -101,7 +101,8 @@ services:
         name: Strict-Transport-Security
         value: max-age=31536000
       # connect-src: the county ArcGIS services (src/config/election.js
-      # serviceRoot), the county address points for address search (#49,
+      # serviceRoot, and the County and City early voting wait time layers in
+      # waitTimes, #103, on the same host), the county address points for address search (#49,
       # src/data/countyAddress.js: the live county server and its hosted
       # copy), the City of St. Louis's geocoder for the City check (#58,
       # src/data/cityAddress.js), the Photon geocoder (#7) and the OpenFreeMap basemap

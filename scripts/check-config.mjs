@@ -95,7 +95,11 @@ export function expectedLayers(config) {
   ];
   return {
     precincts: { geometryType: 'esriGeometryPolygon', fields: [...new Set(precinctFields)] },
-    polls: { geometryType: 'esriGeometryPoint', fields: POLL_FIELDS },
+    // The wait time join field (#103): the County's reports name a site by it.
+    polls: {
+      geometryType: 'esriGeometryPoint',
+      fields: [...POLL_FIELDS, config.waitTimes.county.pollsField],
+    },
     countyBoundary: { geometryType: 'esriGeometryPolygon', fields: BOUNDARY_FIELDS },
   };
 }
