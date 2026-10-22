@@ -194,13 +194,14 @@ function LocationButton({ onLocate }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const pressRef = useRef(0);
-  const mounted = useRef(true);
-  useEffect(
-    () => () => {
+  // Set again on every mount: StrictMode runs the cleanup once in between.
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
       mounted.current = false;
-    },
-    [],
-  );
+    };
+  }, []);
 
   async function handleClick() {
     if (busy) return;

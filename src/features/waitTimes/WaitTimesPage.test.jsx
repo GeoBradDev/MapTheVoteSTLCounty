@@ -1,5 +1,6 @@
 // The early voting wait times page (#104), with the County and City fixtures
 // #102 recorded on 2026-10-22 and the real #103 selection and loop.
+import { StrictMode } from 'react';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Router } from 'wouter';
@@ -29,12 +30,15 @@ const countyEmpty = async () => selectCountyWaits(rowsOf(countyEmptyBody), sites
 const cityFresh = async () => selectCityWaits(rowsOf(cityFreshBody));
 const cityStale = async () => selectCityWaits(rowsOf(cityStaleBody));
 
+// In StrictMode, as src/main.jsx renders the app: effects run twice on mount.
 function renderPage({ loadSites = async () => sites, waitSource } = {}) {
   const location = memoryLocation({ path: '/early-voting' });
   return render(
-    <Router hook={location.hook}>
-      <WaitTimesPage loadSites={loadSites} waitSource={waitSource} />
-    </Router>,
+    <StrictMode>
+      <Router hook={location.hook}>
+        <WaitTimesPage loadSites={loadSites} waitSource={waitSource} />
+      </Router>
+    </StrictMode>,
   );
 }
 
@@ -231,7 +235,11 @@ describe('WaitTimesPage', () => {
 
   it('offers a retry when the sites cannot be loaded', async () => {
     const user = userEvent.setup();
-    const loadSites = vi.fn().mockRejectedValueOnce(new Error('down')).mockResolvedValue(sites);
+    let down = true;
+    const loadSites = vi.fn(async () => {
+      if (down) throw new Error('down');
+      return sites;
+    });
     renderPage({
       loadSites,
       waitSource: createWaitTimesStore({ county: countyEmpty, city: null }),
@@ -241,6 +249,7 @@ describe('WaitTimesPage', () => {
       'href',
       election.officialLookupUrl,
     );
+    down = false;
     await user.click(screen.getByRole('button', { name: /try again/i }));
     await screen.findByRole('list', { name: copy.listLabel });
   });
