@@ -17,7 +17,7 @@ const RECORDED_ON = '2026-10-22';
 // Absentee Voting Lookup app, as recorded in docs/data.md). Pinned here rather
 // than read from the election config, which the next election rewrites.
 const RECORDED_DAY_HOURS = { open: '08:00', close: '16:30' };
-// The 21 absentee site usernames (polls_2026_11_view.absentee) on the
+// The 21 absentee site usernames (the polls layer's `absentee`) on the
 // recording day. The County renumbers them each election.
 const RECORDED_DAY_SITES = new Set(Array.from({ length: 21 }, (_, i) => `abs${601 + i}boec`));
 const { timeZone } = election;
