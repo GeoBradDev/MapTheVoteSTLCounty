@@ -78,7 +78,9 @@ polling place."), which now redirects; the April 7, 2026 FAQ PDF
 (https://extcontent.stlouisco.com/BOE/2026/FAQ.pdf) still says yes to "Can I vote at any
 polling place in St. Louis County?". It conflicts with the statute, so the app no longer
 says it. The City of St. Louis Board says City voters may vote at any of its listed
-locations; that is the City's own rule, for a City results page (#89).
+locations
+(https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/polling-places/index.cfm,
+read 2026-10-21); that is the City's own rule, for a City results page (#89).
 
 The data assigns no polling place to a precinct (checked again 2026-10-21):
 - No precinct field exists on `polls_2026_11_view`, and no polling place field

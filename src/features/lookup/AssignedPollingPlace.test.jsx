@@ -12,6 +12,8 @@ describe('AssignedPollingPlace', () => {
     const { container } = render(<AssignedPollingPlace />);
     expect(screen.getByText(copy.rule)).toBeInTheDocument();
     expect(container).toHaveTextContent(/must vote at your assigned polling place/);
+    // County only: the City of St. Louis has its own board and rule (#89).
+    expect(screen.getByText(copy.rule)).toHaveTextContent(/^In St\. Louis County,/);
     expect(container).toHaveTextContent(/provisional ballot cast at the wrong polling place/);
     expect(container).toHaveTextContent(/not counted/);
   });

@@ -5,7 +5,7 @@
 // and the Secretary of State, like the provisional ballots topic (#22).
 export const copy = {
   // The central polling place sentence keeps the Secretary of State's own hedge.
-  rule: 'On Election Day, you must vote at your assigned polling place. A provisional ballot cast at the wrong polling place is not counted.',
+  rule: 'In St. Louis County, on Election Day you must vote at your assigned polling place. A provisional ballot cast at the wrong polling place is not counted.',
   central:
     'If there is a problem at your assigned polling place, you may be able to vote at a central polling place instead.',
   // Then the phone number as a link.

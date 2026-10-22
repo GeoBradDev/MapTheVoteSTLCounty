@@ -2,7 +2,7 @@ import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
 import { copy } from './assignedPollingPlaceCopy.js';
 
-/** `tel:` link for a US number written 314-615-1800. */
+/** `tel:` link for a US number written like 555-555-0100. */
 function telHref(phone) {
   return `tel:+1${phone.replaceAll('-', '')}`;
 }

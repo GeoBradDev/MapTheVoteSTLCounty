@@ -96,7 +96,7 @@ Domain skills:
   component adds the SOS's own hedged sentence about it, since no topic on `main` covers it
   yet (review finding 2).
 - Duplicate link names: the hours already link "Missouri law" (115.407); the new link is named
-  "Missouri law, section 115.430" so the two differ.
+  "Missouri law (section 115.430)" so the two differ.
 - Layout shift (#27): the new note before the list is static and shows while loading.
 - The Voter Outreach Center blocks automated requests (403 to curl), as it already did for
   the out-of-county notice that links it; the link is the one the county's own apps use.

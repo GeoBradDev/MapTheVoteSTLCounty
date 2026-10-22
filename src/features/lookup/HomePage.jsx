@@ -29,7 +29,8 @@ export default function HomePage() {
       </div>
 
       <div className="mt-8 rounded-md bg-surface-raised p-4">
-        <AssignedPollingPlace linkClass={linkClass} />
+        {/* Its links sit inside sentences, so they keep the plain link style. */}
+        <AssignedPollingPlace />
       </div>
 
       <nav aria-label={copy.moreInfo} className="mt-6">
