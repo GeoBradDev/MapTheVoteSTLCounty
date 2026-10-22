@@ -286,10 +286,11 @@ is on `stlouis-mo.gov`; `stlelections.com` is a parked domain for sale (checked
 
 "Use my location": `getDeviceLocation` in `src/features/lookup/deviceLocation.js`
 returns only `{ lat, lng }` from the browser's position, which is the
-coordinates-only place `locate` takes. A position whose accuracy radius is missing, not a
-valid number or above `MAX_ACCURACY_M` (100 m) is turned away as `coarse` instead, and nothing
-is sent for it (#83): a laptop's Wi-Fi or IP estimate, or a phone with precise location off,
-can be kilometers off and open the wrong precinct. Only an accepted position's coordinates are sent, as the
+coordinates-only place `locate` takes. A position whose accuracy radius is missing, negative,
+not a valid number or above `MAX_ACCURACY_M` (100 m) is turned away as `coarse` instead, and
+nothing is sent for it (#83): a laptop's Wi-Fi or IP estimate, or a phone with precise location
+off, can be kilometers off and open the wrong precinct page. Only an accepted position's
+coordinates are sent, as the
 `geometry` of the precinct and boundary queries, in a POST body with
 `cache: 'no-store'`, no cookies and no referrer (#38), never a URL. The app never puts them in the page URL, history state or
 browser storage; it keeps them only in memory (`src/features/lookup/lookupPoint.js`), so

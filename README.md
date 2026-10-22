@@ -314,13 +314,15 @@ Cache Storage or IndexedDB, so those two run only where they exist). A test also
 Content-Security-Policy allows an origin the notice does not name.
 
 The tests run in jsdom, so check a real browser by hand before each election: look up an
-address and use Use my location (on a phone with precise location on, or with an emulated location
-whose accuracy is set to 100 m or less: a rougher fix is turned away before any query, #83), then in the browser's devtools confirm that Application shows
+address and use Use my location, then in the browser's devtools confirm that Application shows
 no Local Storage, Session Storage, IndexedDB, Cookies or Cache Storage entries for the site and
 that the URL is `/p/<code>` only. In the Network panel, confirm that the requests carrying the
 address or the coordinates go only to the hosts the notice names, that the point queries are
 POSTs with no coordinates in their URL, and that none of those requests comes back from the
 HTTP cache.
+Use my location turns away a fix with an accuracy radius over 100 m before any query (#83), so
+for this check use a phone with precise location on, or an emulated location whose accuracy is
+set to 100 m or less. If it says the location is only a rough estimate, press it again.
 
 ## Share links
 
