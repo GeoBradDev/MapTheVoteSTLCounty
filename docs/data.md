@@ -789,9 +789,8 @@ The City's precincts are layer 1 of `ElectionGeography_public_4533ffc5e0c84851a3
 in the City Board's ArcGIS org (`HZXbCkpCSqbGd0vK`). Its `precinctid` reads
 `W <ward> P <precinct>` with no zero padding, like `W 1 P 12`. Checked on 2026-10-22: 207
 precincts, every one in that form, wards 1 to 14, precincts 1 to 21 within a ward, no
-duplicates. So `W01P12` is `W 1 P 12` (`cityPrecinctId` in `src/data/cityPrecinctCode.js`).
-Two digits each leaves room for a ward or precinct number up to 99. The conversion both ways
-is `src/data/cityPrecinctCode.js`. The rest of the City layers are under St. Louis City below.
+duplicates. So `W01P12` is `W 1 P 12`. Two digits each leaves room for a ward or precinct
+number up to 99. The conversion both ways is `src/data/cityPrecinctCode.js`. The rest of the City layers are under St. Louis City below.
 
 `src/config/election.js` holds the shared election values and one block per jurisdiction
 (`county`, `city`), each with its `id`, display name, board, service root, layers and
@@ -834,10 +833,14 @@ point -90.33, 38.62 returns none; City Hall returns `W 14 P 2`).
 
 ### Districts: `ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/2`
 
-46 polygons, one per office: wards 1 to 14, Missouri House 76 to 82 and 84, Missouri Senate 4
-and 5, U.S. House "First District", Community College Trustee Subdistricts 2 and 3, the Board
-of Education, and the citywide and statewide offices (which share a `districtid` such as `City
-of St. Louis` or `State of Missouri`). The app reads `electedoffice`, `district` and
+46 polygons: wards 1 to 14, Missouri House 76 to 82 and 84, Missouri Senate 4 and 5, U.S.
+House "First District", Community College Trustee Subdistricts 2 and 3, the Board of
+Education, the citywide and statewide offices (one polygon per office, sharing a `districtid`
+such as `City of St. Louis` or `State of Missouri`), and two placeholder rows, `President of the
+United States` and `Vice-President of the United States`, each a polygon of about 1,100 m² with
+its own `districtid`. A point query returns one row per office there: 22 at City Hall (8
+distinct `districtid` values). A districts card should drop the two placeholders and group the
+rows that share a `districtid` (#90). The app reads `electedoffice`, `district` and
 `districtid` only. The layer also holds each officeholder's name, photo, party and contact
 details (`repname1` to `repname7`, `repimageurl*`, `party*`, `districturl*`, `phone*`,
 `email*`, `facebook*`, `twitter*`, `fulladdr*`); the app never asks for them (a test fails if
@@ -853,7 +856,7 @@ fails every query on 2026-10-22 (`400 Unable to perform query operation` on the 
 outline (`interiorPoint` in `src/data/interiorPoint.js`: the middle of the widest stretch inside
 the polygon along 9 horizontal lines). It holds because every City precinct lies inside exactly
 one district per office: for all 207 precincts, the districts at the interior points along 9
-lines across the full-resolution polygon were the same set every time (8 districts each), and the
+lines across the full-resolution polygon were the same set every time (8 distinct `districtid` values each), and the
 ward always matched the precinct's ward. Two other ways fail: a polygon intersect also returns
 the districts a precinct only touches (`W 14 P 8` got Missouri House 76, 78 and 79), and the
 centroid falls outside `W 14 P 8` and `W 14 P 18`, landing in House 78 and 79 instead of 76.
@@ -862,8 +865,9 @@ inside the full polygon for all 207.
 
 ### Voting locations: `VotingLocations_currentwait_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/0`
 
-76 points, owner `ESRI_BOE`, every row `municipality = 'City of St. Louis'`, `type = 'Voting
-Center'`, `nextelectdate` 2026-11-03. The same layer is the City wait time source (Wait times
+76 points, owner `ESRI_BOE`, every row `type = 'Voting Center'`, `nextelectdate` 2026-11-03; `municipality` is `City of
+St. Louis` on 73 and empty on 3 (Julia Davis Library, St. Joan of Arc, and Henry Elementary,
+which is not public), so the filters do not use it. The same layer is the City wait time source (Wait times
 above). The app reads `facilityid` (unique, the site's id, `loc` in the cards), `name`,
 `fulladdr` (no ZIP in it) and `pollingPlaceZipCode`. Never `*`: it also holds staff contact
 fields (`pocname`, `pocemail`, `pocphone`).

@@ -62,7 +62,7 @@ const cityQuery = (street) => ({
 // The City Board's layers (#87).
 const cityConfig = election.jurisdictions.city;
 const cityLayer = (key) => `${cityConfig.serviceRoot}/${cityConfig.layers[key]}/query`;
-const cityPointQuery = (key, [lng, lat], outFields, where) => ({
+const cityPointQuery = ([lng, lat], outFields, where) => ({
   ...(where ? { where } : {}),
   ...pointQuery(lng, lat),
   outFields,
@@ -132,11 +132,11 @@ const FIXTURES = {
   // The City's layers, at City Hall and at a county point (#87).
   'city-precinct-at-point.json': [
     cityLayer('precincts'),
-    cityPointQuery('precincts', CITY, cityConfig.precinctField),
+    cityPointQuery(CITY, cityConfig.precinctField),
   ],
   'city-precinct-at-county.json': [
     cityLayer('precincts'),
-    cityPointQuery('precincts', COUNTY_POINT, cityConfig.precinctField),
+    cityPointQuery(COUNTY_POINT, cityConfig.precinctField),
   ],
   'city-precinct-by-id.json': [
     cityLayer('precincts'),
@@ -160,17 +160,17 @@ const FIXTURES = {
   ],
   'city-districts-at-point.json': [
     cityLayer('districts'),
-    cityPointQuery('districts', CITY, cityDistrictFields),
+    cityPointQuery(CITY, cityDistrictFields),
   ],
   'city-polls.json': [cityLayer('sites'), citySites(cityConfig.pollsWhere)],
   'city-early-voting-sites.json': [cityLayer('sites'), citySites(cityConfig.earlyVotingWhere)],
   'city-boundary-inside.json': [
     cityLayer('boundary'),
-    cityPointQuery('boundary', CITY, 'OBJECTID', cityConfig.boundaryWhere),
+    cityPointQuery(CITY, 'OBJECTID', cityConfig.boundaryWhere),
   ],
   'city-boundary-at-county.json': [
     cityLayer('boundary'),
-    cityPointQuery('boundary', COUNTY_POINT, 'OBJECTID', cityConfig.boundaryWhere),
+    cityPointQuery(COUNTY_POINT, 'OBJECTID', cityConfig.boundaryWhere),
   ],
   // An invalid field: ArcGIS answers HTTP 200 with an error body.
   'error-body.json': [precincts, { where: 'no_such_field=1', f: 'json' }],

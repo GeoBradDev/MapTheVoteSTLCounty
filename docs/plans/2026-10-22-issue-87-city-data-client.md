@@ -85,8 +85,10 @@ style changes. dataviz, django and the rest: not applicable because no charts or
 - `src/features/lookup/PrecinctPage.test.jsx`: a comment naming #89 as the stub's end.
 - `src/config/election.test.js`: City block shape.
 - `scripts/check-config.mjs`, `src/test/checkConfig.test.js`: City checks.
-- `scripts/record-fixtures.mjs`, `docs/raw/fixtures/city-*.json`.
-- `docs/data.md`, `README.md` (Election config paragraph), `docs/progress.md`.
+- `scripts/record-fixtures.mjs` (City fixtures, and a file name prefix argument so the City
+  ones can be re-recorded alone), `docs/raw/fixtures/city-*.json`.
+- `docs/data.md`, `docs/progress.md`, `README.md` (Election config paragraph, a St. Louis City
+  data sources line, the fixture re-record step and the Data health check paragraph).
 
 ## Order of work
 
