@@ -37,3 +37,14 @@ export function cityPrecinctCode(id) {
   const [, ward, precinct] = match;
   return `W${ward.padStart(2, '0')}P${precinct.padStart(2, '0')}`;
 }
+
+/**
+ * The ward and precinct numbers of a City code, for the page's header line
+ * (#89): W01P12 is ward 1, precinct 12.
+ * @param {unknown} code
+ * @returns {{ ward: number, precinct: number } | null}
+ */
+export function cityWardPrecinct(code) {
+  if (typeof code !== 'string' || !CITY_PRECINCT_CODE.test(code)) return null;
+  return { ward: Number(code.slice(1, 3)), precinct: Number(code.slice(4)) };
+}

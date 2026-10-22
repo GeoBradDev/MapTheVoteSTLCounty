@@ -6,7 +6,7 @@
 // navigation and reduced motion while the results load.
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { CODE, fixtureBody, WAITS_RECORDED_AT } from './fixtures.js';
+import { CITY_CODE, CODE, fixtureBody, WAITS_RECORDED_AT } from './fixtures.js';
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'];
 
@@ -44,6 +44,18 @@ const ROUTES = [
       await expect(page.getByRole('radiogroup', { name: 'Sort sites' })).toBeVisible();
       await expect(
         page.getByRole('link', { name: 'See wait times at every early voting site' }),
+      ).toBeVisible();
+    },
+  },
+  {
+    // A City precinct (#89): the City's polling places, its Election Day rule
+    // and the cards still to come.
+    path: `/p/${CITY_CODE}`,
+    ready: async (page) => {
+      await expect(page.getByText(`Results for precinct ${CITY_CODE} are ready.`)).toBeAttached();
+      await expect(page.getByRole('list', { name: 'Nearest polling places' })).toBeVisible();
+      await expect(
+        page.getByText('The St. Louis City Board of Election Commissioners says:'),
       ).toBeVisible();
     },
   },

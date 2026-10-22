@@ -20,7 +20,9 @@
         "facilityid": "12th_&_Park_Recreation_Center",
         "name": "12th & Park Recreation Center",
         "fulladdr": "1410 S Tucker Blvd",
-        "pollingPlaceZipCode": "63104"
+        "pollingPlaceZipCode": "63104",
+        "entrydetails": "off the parking lot accessed from Tucker Blvd.",
+        "disabledentry": "off the parking lot accessed from Tucker Blvd."
       }
     },
     {
@@ -36,7 +38,9 @@
         "facilityid": "Adams_School",
         "name": "Adams Elementary School",
         "fulladdr": "1311 Tower Grove Ave",
-        "pollingPlaceZipCode": "63110"
+        "pollingPlaceZipCode": "63110",
+        "entrydetails": "off parking lot accessed from Vista Ave.",
+        "disabledentry": "off parking lot accessed from Vista Ave."
       }
     },
     {
@@ -52,7 +56,9 @@
         "facilityid": "American_Czech_Educational_Center",
         "name": "American-Czech Educational Center",
         "fulladdr": "4690 Lansdowne Ave",
-        "pollingPlaceZipCode": "63116"
+        "pollingPlaceZipCode": "63116",
+        "entrydetails": "off parking lot accessed from Lansdowne Ave.",
+        "disabledentry": "off parking lot accessed from Lansdowne Ave."
       }
     },
     {
@@ -68,7 +74,9 @@
         "facilityid": "Association_of_Survivors_of_the_Srebrenica_Genocid",
         "name": "Association of Survivors of the Srebrenica Genocide",
         "fulladdr": "5039 Gravois Ave",
-        "pollingPlaceZipCode": null
+        "pollingPlaceZipCode": null,
+        "entrydetails": "at main entrance on Gravois Ave. Street parking only.",
+        "disabledentry": "at main entrance on Gravois Ave. Street parking only."
       }
     },
     {
@@ -84,7 +92,9 @@
         "facilityid": "Immaculate_Heart_Of_Mary_Church",
         "name": "Atlas Elementary School - IHM",
         "fulladdr": "4092 Blow St",
-        "pollingPlaceZipCode": "63116"
+        "pollingPlaceZipCode": "63116",
+        "entrydetails": "off parking lot accessed from Blow St.",
+        "disabledentry": "off parking lot accessed from Blow St."
       }
     },
     {
@@ -100,7 +110,9 @@
         "facilityid": "Better_Famliy_Life",
         "name": "Better Family Life",
         "fulladdr": "5415 Page Blvd",
-        "pollingPlaceZipCode": "63112"
+        "pollingPlaceZipCode": "63112",
+        "entrydetails": "off parking lot accessed from Arlington Ave.",
+        "disabledentry": "off parking lot accessed from Arlington Ave."
       }
     },
     {
@@ -116,7 +128,9 @@
         "facilityid": "Mathews_Dickey",
         "name": "Boy's & Girls Club - Mathews Dickey",
         "fulladdr": "4245 N Kingshighway Blvd",
-        "pollingPlaceZipCode": "63115"
+        "pollingPlaceZipCode": "63115",
+        "entrydetails": "off parking lot accessed from Penrose St.",
+        "disabledentry": "off parking lot accessed from Penrose St."
       }
     },
     {
@@ -132,7 +146,9 @@
         "facilityid": "Bryan_Hill_School",
         "name": "Bryan Hill Elementary School",
         "fulladdr": "2128 Gano Ave",
-        "pollingPlaceZipCode": "63107"
+        "pollingPlaceZipCode": "63107",
+        "entrydetails": "off back parking lot accessed from John Ave.",
+        "disabledentry": "off back parking lot accessed from John Ave."
       }
     },
     {
@@ -148,7 +164,9 @@
         "facilityid": "Buder_Library",
         "name": "Buder Library",
         "fulladdr": "4401 Hampton Ave",
-        "pollingPlaceZipCode": "63109"
+        "pollingPlaceZipCode": "63109",
+        "entrydetails": "off back parking lot accessed from Lansdowne Ave.",
+        "disabledentry": "off back parking lot accessed from Lansdowne Ave."
       }
     },
     {
@@ -164,7 +182,9 @@
         "facilityid": "Buder_School",
         "name": "Buder School",
         "fulladdr": "5319 Lansdowne Ave",
-        "pollingPlaceZipCode": "63109"
+        "pollingPlaceZipCode": "63109",
+        "entrydetails": "off parking lot accessed from Sutherland Ave.",
+        "disabledentry": "off parking lot accessed from Sutherland Ave."
       }
     },
     {
@@ -180,7 +200,9 @@
         "facilityid": "Busch_Student_Center",
         "name": "Busch Student Center",
         "fulladdr": "20 N Grand Blvd",
-        "pollingPlaceZipCode": null
+        "pollingPlaceZipCode": null,
+        "entrydetails": "at 20 N Grand Blvd. Street parking only. ",
+        "disabledentry": "at 20 N Grand Blvd. Street parking only. "
       }
     },
     {
@@ -196,7 +218,9 @@
         "facilityid": "Carondelet_Branch_Library",
         "name": "Carondelet Branch Library",
         "fulladdr": "6800 Michigan Ave",
-        "pollingPlaceZipCode": "63111"
+        "pollingPlaceZipCode": "63111",
+        "entrydetails": "off parking lot accessed from Michigan Ave.",
+        "disabledentry": "off parking lot accessed from Michigan Ave."
       }
     },
     {
@@ -212,7 +236,9 @@
         "facilityid": "Carpenter_Library",
         "name": "Carpenter Branch Library",
         "fulladdr": "3309 S Grand Blvd",
-        "pollingPlaceZipCode": "63118"
+        "pollingPlaceZipCode": "63118",
+        "entrydetails": "off parking lot accessed from McDonald Ave., or through the library's main entrance on Grand Blvd.",
+        "disabledentry": "off parking lot accessed from McDonald Ave."
       }
     },
     {
@@ -228,7 +254,9 @@
         "facilityid": "Carr_Lane",
         "name": "Carr Lane VPA Middle School",
         "fulladdr": "1004 N Jefferson Ave",
-        "pollingPlaceZipCode": "63106"
+        "pollingPlaceZipCode": "63106",
+        "entrydetails": "off parking lot accessed from Carr St.",
+        "disabledentry": "off parking lot accessed from Carr St."
       }
     },
     {
@@ -244,7 +272,9 @@
         "facilityid": "Central_Library",
         "name": "Central Library",
         "fulladdr": "1301 Olive St",
-        "pollingPlaceZipCode": "63103"
+        "pollingPlaceZipCode": "63103",
+        "entrydetails": "on Locust St. or at main entrance on Olive St. Street parking only.",
+        "disabledentry": "on Locust St."
       }
     },
     {
@@ -260,7 +290,9 @@
         "facilityid": "Christ_Southern_Missionary_Baptist",
         "name": "Christ Southern Missionary Baptist",
         "fulladdr": "5630 Page Blvd",
-        "pollingPlaceZipCode": "63112"
+        "pollingPlaceZipCode": "63112",
+        "entrydetails": "off Temple Pl. Street parking only.",
+        "disabledentry": "off Temple Pl. Street parking only."
       }
     },
     {
@@ -276,7 +308,9 @@
         "facilityid": "Deaconess_Foundation",
         "name": "Deaconess Foundation",
         "fulladdr": "1000 N Vandeventer Ave",
-        "pollingPlaceZipCode": "63113"
+        "pollingPlaceZipCode": "63113",
+        "entrydetails": "off parking lot accessed from Bell Ave.",
+        "disabledentry": "off parking lot accessed from Bell Ave."
       }
     },
     {
@@ -292,7 +326,9 @@
         "facilityid": "Dewey_School",
         "name": "Dewey School",
         "fulladdr": "6746 Clayton Ave",
-        "pollingPlaceZipCode": "63139"
+        "pollingPlaceZipCode": "63139",
+        "entrydetails": "off Central Ave. Street parking only.",
+        "disabledentry": "off Central Ave. Street parking only."
       }
     },
     {
@@ -308,7 +344,9 @@
         "facilityid": "Friendly_Temple_Missionary_Church",
         "name": "Friendly Temple Missionary Church (Fellowship Hall)",
         "fulladdr": "5544 Dr Martin Luther King Dr",
-        "pollingPlaceZipCode": "63112"
+        "pollingPlaceZipCode": "63112",
+        "entrydetails": "off parking lot accessed from Dr. Martin Luther King Dr.",
+        "disabledentry": "off parking lot accessed from Dr. Martin Luther King Dr."
       }
     },
     {
@@ -324,7 +362,9 @@
         "facilityid": "Froebel_School",
         "name": "Froebel Elementary School",
         "fulladdr": "3709 Nebraska Ave",
-        "pollingPlaceZipCode": "63118"
+        "pollingPlaceZipCode": "63118",
+        "entrydetails": "off parking lot accessed from Pennsylvania Ave.",
+        "disabledentry": "off parking lot accessed from Pennsylvania Ave."
       }
     },
     {
@@ -340,7 +380,9 @@
         "facilityid": "Gateway_Science_Academy_OLS",
         "name": "Gateway Science Academy - Sorrows",
         "fulladdr": "5020 Rhodes Ave",
-        "pollingPlaceZipCode": "63109"
+        "pollingPlaceZipCode": "63109",
+        "entrydetails": "off parking lot accessed from Rhodes Ave.",
+        "disabledentry": "at double doors off parking lot accessed from Rhodes Ave."
       }
     },
     {
@@ -356,7 +398,9 @@
         "facilityid": "Gene_Slays_Boys_&_Girls_Club",
         "name": "Gene Slay's Boys & Girls Club",
         "fulladdr": "2524 S Eleventh St",
-        "pollingPlaceZipCode": "63104"
+        "pollingPlaceZipCode": "63104",
+        "entrydetails": "at front of building on S 11th St. Street parking only.",
+        "disabledentry": "at ramp at S 11th St. and Sidney St."
       }
     },
     {
@@ -372,7 +416,9 @@
         "facilityid": "Greater_Leonard_Church",
         "name": "Greater Leonard MB Church - Education Building",
         "fulladdr": "2501 N 11 St",
-        "pollingPlaceZipCode": "63106"
+        "pollingPlaceZipCode": "63106",
+        "entrydetails": "off Benton St. Street parking only.",
+        "disabledentry": "off Benton St. Street parking only."
       }
     },
     {
@@ -388,7 +434,9 @@
         "facilityid": "Hamilton_School",
         "name": "Hamilton Elementary School",
         "fulladdr": "5819 Westminster Pl",
-        "pollingPlaceZipCode": "63112"
+        "pollingPlaceZipCode": "63112",
+        "entrydetails": "off parking lot accessed from Westminster Pl. or Laurel St.",
+        "disabledentry": "off parking lot accessed from Westminster Pl. or Laurel St."
       }
     },
     {
@@ -404,7 +452,9 @@
         "facilityid": "Hickey_School",
         "name": "Hickey School",
         "fulladdr": "3111 Cora Ave",
-        "pollingPlaceZipCode": "63115"
+        "pollingPlaceZipCode": "63115",
+        "entrydetails": "off parking lot accessed from Greer Ave.",
+        "disabledentry": "at ramp in parking lot accessed from Greer Ave."
       }
     },
     {
@@ -420,7 +470,9 @@
         "facilityid": "Hodgen_School",
         "name": "Hodgen CBA Elementary School",
         "fulladdr": "1616 California Ave",
-        "pollingPlaceZipCode": "63104"
+        "pollingPlaceZipCode": "63104",
+        "entrydetails": "off parking lot accessed from California Ave.; walk along the north side of the building",
+        "disabledentry": "off parking lot accessed from California Ave.; walk along the north side of the building"
       }
     },
     {
@@ -436,7 +488,9 @@
         "facilityid": "IL_Monastero",
         "name": "Il Monastero",
         "fulladdr": "3050 Olive St",
-        "pollingPlaceZipCode": "63103"
+        "pollingPlaceZipCode": "63103",
+        "entrydetails": "off parking lot accessed from Olive St.",
+        "disabledentry": "at ramp in parking lot accessed from Olive St."
       }
     },
     {
@@ -452,7 +506,9 @@
         "facilityid": "International_Institute",
         "name": "International Institute",
         "fulladdr": "3401 Arsenal St",
-        "pollingPlaceZipCode": "63118"
+        "pollingPlaceZipCode": "63118",
+        "entrydetails": "off back parking lot accessed from Louisiana Ave.",
+        "disabledentry": "off back parking lot accessed from Louisiana Ave."
       }
     },
     {
@@ -468,7 +524,9 @@
         "facilityid": "Jubilee_Community_Church",
         "name": "Jubilee Community Church",
         "fulladdr": "4231 N Grand Blvd",
-        "pollingPlaceZipCode": "63107"
+        "pollingPlaceZipCode": "63107",
+        "entrydetails": "off parking lot accessed from N Grand Blvd.",
+        "disabledentry": "off parking lot accessed from N Grand Blvd."
       }
     },
     {
@@ -484,7 +542,9 @@
         "facilityid": "Julia_Davis",
         "name": "Julia Davis Library",
         "fulladdr": "4415 Natural Bridge Ave",
-        "pollingPlaceZipCode": null
+        "pollingPlaceZipCode": null,
+        "entrydetails": "off parking lot accessed from Natural Bridge Ave.",
+        "disabledentry": "off parking lot accessed from Natural Bridge Ave."
       }
     },
     {
@@ -500,7 +560,9 @@
         "facilityid": "Kingshighway_Branch_Library",
         "name": "Kingshighway Branch Library",
         "fulladdr": "2260 S Vandeventer Ave",
-        "pollingPlaceZipCode": "63110"
+        "pollingPlaceZipCode": "63110",
+        "entrydetails": "off parking lot accessed from S Vandeventer Ave. or Shenandoah Ave.",
+        "disabledentry": "off parking lot accessed from S Vandeventer Ave. or Shenandoah Ave."
       }
     },
     {
@@ -516,7 +578,9 @@
         "facilityid": "Lexington_School",
         "name": "Lexington Elementary School",
         "fulladdr": "5030 Lexington Ave",
-        "pollingPlaceZipCode": "63115"
+        "pollingPlaceZipCode": "63115",
+        "entrydetails": "off parking lot accessed from N Kingshighway Blvd.",
+        "disabledentry": "off parking lot accessed from N Kingshighway Blvd."
       }
     },
     {
@@ -532,7 +596,9 @@
         "facilityid": "Machacek_Library",
         "name": "Machacek Library",
         "fulladdr": "6424 Scanlan Ave",
-        "pollingPlaceZipCode": null
+        "pollingPlaceZipCode": null,
+        "entrydetails": "off parking lot accessed from Scanlan Ave.",
+        "disabledentry": "off parking lot accessed from Scanlan Ave."
       }
     },
     {
@@ -548,7 +614,9 @@
         "facilityid": "Mann_School",
         "name": "Mann Elementary School",
         "fulladdr": "4047 Juniata St",
-        "pollingPlaceZipCode": "63116"
+        "pollingPlaceZipCode": "63116",
+        "entrydetails": "at gym doors on Juniata St. Street parking only.",
+        "disabledentry": "at gym doors on Juniata St. Street parking only."
       }
     },
     {
@@ -564,7 +632,9 @@
         "facilityid": "Mason_School",
         "name": "Mason School",
         "fulladdr": "6031 Southwest Ave",
-        "pollingPlaceZipCode": "63139"
+        "pollingPlaceZipCode": "63139",
+        "entrydetails": "off parking lot accessed from Southwest Ave.",
+        "disabledentry": "off parking lot accessed from Southwest Ave."
       }
     },
     {
@@ -580,7 +650,9 @@
         "facilityid": "McDonnell_Medical_Sciences_Building",
         "name": "McDonnell Medical Sciences Building",
         "fulladdr": "4565 McKinley Ave",
-        "pollingPlaceZipCode": null
+        "pollingPlaceZipCode": null,
+        "entrydetails": "off circle drive accessed from McKinley Ave.",
+        "disabledentry": "off circle drive accessed from McKinley Ave."
       }
     },
     {
@@ -596,7 +668,9 @@
         "facilityid": "Mullanphy_School",
         "name": "Mullanphy Elementary School",
         "fulladdr": "4221 Shaw Ave",
-        "pollingPlaceZipCode": "63110"
+        "pollingPlaceZipCode": "63110",
+        "entrydetails": "off parking lot accessed from Tower Grove Ave.",
+        "disabledentry": "off parking lot accessed from Tower Grove Ave."
       }
     },
     {
@@ -612,7 +686,9 @@
         "facilityid": "Nance_School",
         "name": "Nance Elementary School",
         "fulladdr": "8959 Riverview Blvd",
-        "pollingPlaceZipCode": "63147"
+        "pollingPlaceZipCode": "63147",
+        "entrydetails": "off parking lot accessed from Riverview Blvd.",
+        "disabledentry": "off parking lot accessed from Riverview Blvd."
       }
     },
     {
@@ -628,7 +704,9 @@
         "facilityid": "Neighborhood_Innovation_Center_-_STL",
         "name": "Neighborhood Innovation Center-STL",
         "fulladdr": "3207 Meramec St",
-        "pollingPlaceZipCode": "63118"
+        "pollingPlaceZipCode": "63118",
+        "entrydetails": "off parking lot accessed from Meramec St.",
+        "disabledentry": "off parking lot accessed from Meramec St."
       }
     },
     {
@@ -644,7 +722,9 @@
         "facilityid": "New_Sunny_Mount_Church",
         "name": "New Sunny Mount Hunter's Hall",
         "fulladdr": "4700 W Florissant Ave",
-        "pollingPlaceZipCode": "63115"
+        "pollingPlaceZipCode": "63115",
+        "entrydetails": "off parking lot accessed from Rosalie St.",
+        "disabledentry": "off parking lot accessed from Rosalie St."
       }
     },
     {
@@ -660,7 +740,9 @@
         "facilityid": "Newstead_Missionary_Baptist",
         "name": "Newstead Missionary Baptist Church",
         "fulladdr": "4370 N Market St.",
-        "pollingPlaceZipCode": "63113"
+        "pollingPlaceZipCode": "63113",
+        "entrydetails": "off N Market St.",
+        "disabledentry": "at ramp off N Market St."
       }
     },
     {
@@ -676,7 +758,9 @@
         "facilityid": "Nottingham_School",
         "name": "Nottingham CAJT High School",
         "fulladdr": "4915 Donovan Ave",
-        "pollingPlaceZipCode": "63109"
+        "pollingPlaceZipCode": "63109",
+        "entrydetails": "off Donovan Ave. Parking lot behind building off Neosho St.",
+        "disabledentry": "off parking lot accessed from Neosho St."
       }
     },
     {
@@ -692,7 +776,9 @@
         "facilityid": "Salvation_Army_Temple_Corps",
         "name": "Salvation Army Temple Corps",
         "fulladdr": "2740 Arsenal St",
-        "pollingPlaceZipCode": "63118"
+        "pollingPlaceZipCode": "63118",
+        "entrydetails": "off parking lot accessed from Arsenal St. or California Ave.",
+        "disabledentry": "off parking lot accessed from Arsenal St. or California Ave."
       }
     },
     {
@@ -708,7 +794,9 @@
         "facilityid": "Schlafly_Library",
         "name": "Schlafly Library",
         "fulladdr": "225 N Euclid Ave",
-        "pollingPlaceZipCode": "63108"
+        "pollingPlaceZipCode": "63108",
+        "entrydetails": "through the Lindell Blvd. entrance, the Euclid Ave. entrance, or the parking garage entrance on Euclid Ave. Parking validated in the Argyle Garage.",
+        "disabledentry": "through the doors on Euclid Ave."
       }
     },
     {
@@ -724,7 +812,9 @@
         "facilityid": "Shaw_School",
         "name": "Shaw VPA Elementary School",
         "fulladdr": "5329 Columbia Ave",
-        "pollingPlaceZipCode": "63139"
+        "pollingPlaceZipCode": "63139",
+        "entrydetails": "off parking lot accessed from Macklind Ave.",
+        "disabledentry": "off parking lot accessed from Macklind Ave."
       }
     },
     {
@@ -740,7 +830,9 @@
         "facilityid": "Shenandoah_School",
         "name": "Shenandoah Elementary School",
         "fulladdr": "3412 Shenandoah Ave",
-        "pollingPlaceZipCode": "63104"
+        "pollingPlaceZipCode": "63104",
+        "entrydetails": "off Tennessee Ave.",
+        "disabledentry": "off Tennessee Ave."
       }
     },
     {
@@ -756,7 +848,9 @@
         "facilityid": "Sigel_School",
         "name": "Sigel Elementary School",
         "fulladdr": "2039 Russell Blvd",
-        "pollingPlaceZipCode": "63104"
+        "pollingPlaceZipCode": "63104",
+        "entrydetails": "off parking lot accessed from Russell Blvd.",
+        "disabledentry": "off parking lot accessed from Russell Blvd."
       }
     },
     {
@@ -772,7 +866,9 @@
         "facilityid": "St._Joan_of_Arc",
         "name": "St. Joan of Arc",
         "fulladdr": "5821 Pernod Ave",
-        "pollingPlaceZipCode": null
+        "pollingPlaceZipCode": null,
+        "entrydetails": "at gymnasium doors off parking lot accessed from Pernod Ave.",
+        "disabledentry": "at gymnasium doors off parking lot accessed from Pernod Ave."
       }
     },
     {
@@ -788,7 +884,9 @@
         "facilityid": "Youth_&_Family_Center",
         "name": "The Youth & Family Center",
         "fulladdr": "818 Cass Ave",
-        "pollingPlaceZipCode": "63106"
+        "pollingPlaceZipCode": "63106",
+        "entrydetails": "off parking lot accessed from 9th St.",
+        "disabledentry": "off parking lot accessed from 9th St."
       }
     },
     {
@@ -804,7 +902,9 @@
         "facilityid": "Walnut_Park_Library",
         "name": "Walnut Park Library",
         "fulladdr": "5760 W Florissant Ave",
-        "pollingPlaceZipCode": "63120"
+        "pollingPlaceZipCode": "63120",
+        "entrydetails": "off parking lot accessed from W Florissant Ave.",
+        "disabledentry": "off parking lot accessed from W Florissant Ave."
       }
     },
     {
@@ -820,7 +920,9 @@
         "facilityid": "Washington_Montessori_School",
         "name": "Washington Montessori School",
         "fulladdr": "1130 N Euclid Ave",
-        "pollingPlaceZipCode": "63113"
+        "pollingPlaceZipCode": "63113",
+        "entrydetails": "through the doors on N Euclid Ave.",
+        "disabledentry": "through the doors on N Euclid Ave."
       }
     },
     {
@@ -836,7 +938,9 @@
         "facilityid": "West_Side_MB_Church",
         "name": "West Side MB Church",
         "fulladdr": "4675 Page Blvd",
-        "pollingPlaceZipCode": null
+        "pollingPlaceZipCode": null,
+        "entrydetails": "at back of building, off parking lot accessed from Marcus Ave.",
+        "disabledentry": "at back of building, off parking lot accessed from Marcus Ave."
       }
     },
     {
@@ -852,7 +956,9 @@
         "facilityid": "Wild_Carrot",
         "name": "Wild Carrot",
         "fulladdr": "3901 Shaw Blvd",
-        "pollingPlaceZipCode": "63110"
+        "pollingPlaceZipCode": "63110",
+        "entrydetails": "through the doors on 39th St. Street parking only.",
+        "disabledentry": "through the doors on 39th St. Street parking only."
       }
     },
     {
@@ -868,7 +974,9 @@
         "facilityid": "Wilkinson_School",
         "name": "Wilkinson Early Childhood Center",
         "fulladdr": "1921 Prather Ave",
-        "pollingPlaceZipCode": "63139"
+        "pollingPlaceZipCode": "63139",
+        "entrydetails": "off parking lot accessed from Mitchell Ave.",
+        "disabledentry": "off parking lot accessed from Mitchell Ave."
       }
     },
     {
@@ -884,7 +992,9 @@
         "facilityid": "Woerner_School",
         "name": "Woerner School",
         "fulladdr": "6131 Leona St",
-        "pollingPlaceZipCode": "63116"
+        "pollingPlaceZipCode": "63116",
+        "entrydetails": "off parking lot accessed from Ray Ave.",
+        "disabledentry": "off parking lot accessed from Ray Ave."
       }
     },
     {
@@ -900,7 +1010,9 @@
         "facilityid": "Woodward_School",
         "name": "Woodward Elementary School",
         "fulladdr": "725 Bellerive Blvd",
-        "pollingPlaceZipCode": "63111"
+        "pollingPlaceZipCode": "63111",
+        "entrydetails": "off parking lot accessed from Bates St. and Alabama Ave.",
+        "disabledentry": "off parking lot accessed from Bates St. and Alabama Ave."
       }
     }
   ]

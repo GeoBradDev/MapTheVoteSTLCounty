@@ -395,7 +395,10 @@ describe.each([
       name: raw.properties[siteFields.name],
       address: raw.properties[siteFields.address],
       zipcode: raw.properties[siteFields.zip],
+      entry: raw.properties[siteFields.entry],
+      accessibleEntry: raw.properties[siteFields.accessibleEntry],
     });
+    expect(result.features[0].properties.accessibleEntry).toMatch(/\S/);
     expect(typeof result.loadedAt).toBe('number');
   });
 
@@ -415,6 +418,8 @@ describe.each([
         [siteFields.name]: ' A Library ',
         [siteFields.address]: '1 Main St ',
         [siteFields.zip]: '',
+        [siteFields.entry]: ' off Main St. ',
+        [siteFields.accessibleEntry]: ' ',
       },
     };
     fetchMock.mockResolvedValue(respond({ ...fixture, features: [feature] }));
@@ -423,6 +428,8 @@ describe.each([
       name: 'A Library',
       address: '1 Main St',
       zipcode: null,
+      entry: 'off Main St.',
+      accessibleEntry: null,
     });
   });
 

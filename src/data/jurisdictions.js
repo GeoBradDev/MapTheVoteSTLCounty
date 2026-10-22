@@ -7,7 +7,12 @@ import referrals from '../config/referrals.js';
 import * as arcgis from './arcgis.js';
 import { CITY_PRECINCT_CODE } from './cityPrecinctCode.js';
 
-export { CITY_PRECINCT_CODE, cityPrecinctCode, cityPrecinctId } from './cityPrecinctCode.js';
+export {
+  CITY_PRECINCT_CODE,
+  cityPrecinctCode,
+  cityPrecinctId,
+  cityWardPrecinct,
+} from './cityPrecinctCode.js';
 
 /**
  * @typedef {object} Jurisdiction
@@ -59,15 +64,16 @@ export function loadCityClient() {
   return cityClient;
 }
 
-// Every City answer is "not found" until the City results page (#89): the
-// results cards still carry County text and the County's Election Day rule,
-// and the page asks for the polls and outline before the precinct answers, so
-// wiring these alone would fetch City layers for a page that shows nothing of
-// them. #89 points them at loadCityClient().
-const notYet = () =>
-  Promise.reject(new arcgis.NotFound('City precinct results are not served yet (#89)'));
+// The City early voting card is not built yet (#91), so its sites are "not
+// found" without a request: the page asks for them before the precinct
+// answers, and fetching them would load a layer no card shows.
+const earlyVotingNotYet = () =>
+  Promise.reject(new arcgis.NotFound('City early voting sites are not served yet (#91)'));
 
-/** @type {Jurisdiction} The City: a stub until #89. */
+/**
+ * @type {Jurisdiction} The City (#89): its data code in ./cityArcgis.js, loaded
+ * on first use.
+ */
 export const city = Object.freeze({
   id: 'city',
   config: jurisdictions.city,
@@ -75,10 +81,10 @@ export const city = Object.freeze({
   // Stable official pages, kept in referrals.js (see the City block).
   officialLookupUrl: referrals.stlCityLookup.url,
   boardSiteUrl: referrals.stlCityBoard.url,
-  getPrecinct: notYet,
-  getPolls: notYet,
-  getEarlyVotingSites: notYet,
-  getOutline: notYet,
+  getPrecinct: (code) => loadCityClient().then((c) => c.getCityPrecinctById(code)),
+  getPolls: () => loadCityClient().then((c) => c.getCityPolls()),
+  getEarlyVotingSites: earlyVotingNotYet,
+  getOutline: (code) => loadCityClient().then((c) => c.getCityPrecinctGeometry(code)),
 });
 
 /**

@@ -1,6 +1,11 @@
 // @vitest-environment node
 import { NotFound } from './arcgis.js';
-import { CITY_PRECINCT_CODE, cityPrecinctCode, cityPrecinctId } from './cityPrecinctCode.js';
+import {
+  CITY_PRECINCT_CODE,
+  cityPrecinctCode,
+  cityPrecinctId,
+  cityWardPrecinct,
+} from './cityPrecinctCode.js';
 
 describe('City precinct codes (#86, #87)', () => {
   it('match W, a 2 digit ward, P and a 2 digit precinct', () => {
@@ -48,4 +53,17 @@ describe('City precinct codes (#86, #87)', () => {
       expect(cityPrecinctCode(value)).toBeNull();
     },
   );
+});
+
+describe('cityWardPrecinct (#89)', () => {
+  it('reads the ward and precinct numbers from a City code', () => {
+    expect(cityWardPrecinct('W01P12')).toEqual({ ward: 1, precinct: 12 });
+    expect(cityWardPrecinct('W14P02')).toEqual({ ward: 14, precinct: 2 });
+  });
+
+  it('is null for anything that is not a City code', () => {
+    for (const value of ['CC007', 'W1P12', 'w01p12', '', null, undefined, 12]) {
+      expect(cityWardPrecinct(value)).toBeNull();
+    }
+  });
 });

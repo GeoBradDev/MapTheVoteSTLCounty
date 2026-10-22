@@ -97,6 +97,8 @@ describe('nearestPolls', () => {
         absType: 'abs',
         absNote: 'Use the north door',
         waitKey: 'abs612boec',
+        entry: null,
+        accessibleEntry: null,
         lat: 38.7,
         lng: -90.3,
         miles: 0,
@@ -136,6 +138,34 @@ describe('nearestPolls', () => {
       { lat: 38.5, lng: -90.3 },
     );
     expect(rows.map((r) => r.loc)).toEqual(['001', '002']);
+  });
+
+  // The City's layer is published in mixed case, initialisms and all (#89):
+  // casing it again would turn "Carr Lane VPA Middle School" into "Vpa".
+  it('keeps text that is already in mixed case as published', () => {
+    const [row] = nearestPolls(
+      {
+        features: [
+          poll('Carr Lane VPA Middle School', 38.6, -90.3, {
+            address: '1004 N Jefferson Ave',
+            entry: 'off parking lot accessed from Carr St.',
+            accessibleEntry: 'at ramp in parking lot accessed from Greer Ave.',
+          }),
+        ],
+      },
+      { lat: 38.6, lng: -90.3 },
+    );
+    expect(row.name).toBe('Carr Lane VPA Middle School');
+    expect(row.address).toBe('1004 N Jefferson Ave');
+    expect(row.entry).toBe('off parking lot accessed from Carr St.');
+    expect(row.accessibleEntry).toBe('at ramp in parking lot accessed from Greer Ave.');
+  });
+
+  it('keeps the City fixture names as published', async () => {
+    const { default: cityPolls } = await import('../../../docs/raw/fixtures/city-polls.json');
+    const rows = pollRows(cityPolls);
+    const names = cityPolls.features.map((f) => f.properties.name.trim());
+    expect(rows.map((r) => r.name)).toEqual(names);
   });
 
   it('leaves out a ZIP that is missing, and an address that is missing', () => {

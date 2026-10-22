@@ -63,6 +63,12 @@ export const copy = translated((t) => ({
   // For a URL whose text is not a precinct code: never echo that text.
   notFoundHeading: t('results.notFoundHeading'),
   unincorporated: t('results.unincorporated'),
+  /**
+   * A City precinct's line under the heading (#89), like "City of St. Louis,
+   * Ward 1, Precinct 12".
+   * @param {string} place @param {number} ward @param {number} precinct
+   */
+  cityPrecinct: (place, ward, precinct) => t('results.cityPrecinct', { place, ward, precinct }),
   searchAnother: t('results.searchAnother'),
   /** @param {string} code */
   ready: (code) => t('results.ready', { code }),
@@ -101,8 +107,11 @@ export const copy = translated((t) => ({
     ballot: t('results.cards.ballot'),
     earlyVoting: t('results.cards.earlyVoting'),
     districts: t('results.cards.districts'),
-    // For a card that is not built yet.
+    // For a card that is not built yet: the County's lookup, or for a City
+    // precinct the City Board's site (#89).
     pending: t('results.cards.pending'),
+    pendingCity: t('results.cards.pendingCity'),
+    cityBoardSite: t('results.cards.cityBoardSite'),
   },
   polls: {
     listLabel: t('results.polls.listLabel'),
@@ -120,6 +129,13 @@ export const copy = translated((t) => ({
     },
     /** @param {string | null} address @param {string | null} zip */
     address: (address, zip) => [address, zip && `MO ${zip}`].filter(Boolean).join(', '),
+    // The City Board's entrance notes, as published (#89).
+    /** @param {string} text */
+    entryBoth: (text) => t('results.polls.entryBoth', { text }),
+    /** @param {string} text */
+    entry: (text) => t('results.polls.entry', { text }),
+    /** @param {string} text */
+    accessibleEntry: (text) => t('results.polls.accessibleEntry', { text }),
     directions: t('results.polls.directions'),
     appleMaps: t('results.polls.appleMaps'),
     /** @param {string} name For screen readers: which place the link is for. */
@@ -134,6 +150,11 @@ export const copy = translated((t) => ({
     inLine: (close) => t('results.polls.inLine', { close: formatTime(close) }),
     // County data assigns no polling place to a precinct (#72).
     nearestNote: t('results.polls.nearestNote'),
+    // The City's: any City voter may vote at any of them, in the City Board's
+    // words, below the list (#89).
+    nearestNoteCity: t('results.polls.nearestNoteCity'),
+    // Before the City Board's quoted rule (#89).
+    cityRule: t('results.polls.cityRule'),
     earlyVotingPointer: t('results.polls.earlyVotingPointer'),
     // Before the voter ID topic's title, which is the link (#23).
     beforeYouGo: t('results.polls.beforeYouGo'),
@@ -144,6 +165,8 @@ export const copy = translated((t) => ({
       'stlouiscountymo.gov': t('results.polls.sourceNames.countyBoard'),
       // The county's own ArcGIS apps, such as its Absentee Voting Lookup.
       'stlouiscovotes.maps.arcgis.com': t('results.polls.sourceNames.countyBoard'),
+      // The City Board's pages on the City's site (#89).
+      'www.stlouis-mo.gov': t('results.polls.sourceNames.cityBoard'),
     },
     /**
      * After a refresh of a list already shown fails (#84).
@@ -252,10 +275,13 @@ export const copy = translated((t) => ({
     basemap: t('results.map.basemap'),
     data: t('results.map.data'),
     county: t('results.map.county'),
+    city: t('results.polls.sourceNames.cityBoard'),
   },
   errors: {
     notFound: t('results.errors.notFound'),
     failed: t('results.errors.failed'),
+    // The same, for a City precinct (#89).
+    failedCity: t('results.errors.failedCity'),
     offline: t('results.errors.offline'),
   },
 }));
