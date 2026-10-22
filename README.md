@@ -521,8 +521,9 @@ neither. For each wait time source in `waitTimes` that is turned on (County and 
 line counts), it checks the layer has every field the config names, then prints one line naming
 the board and whether its counts are fresh: open sites, how many have a count the app would show
 now, County reports that match no early voting site, and the newest report time. An empty County
-view while sites are closed passes. Sites open with no fresh count, or County reports that match
-no site, are a WARN: printed, written to `--warnings <file>` if given, and never a failure. It
+view while sites are closed passes. Sites open with no fresh count, County reports that match
+no site (counted, never named: the senders are user names), or City hours text the app cannot
+read are a WARN: printed, written to `--warnings <file>` if given, and never a failure. It
 prints PASS, FAIL, SKIP or WARN per check and exits 1 on any failure or skip; a wrong
 layer path fails with the config key, the path and the service's error. `--layer` tries another
 path for one layer without editing the config. `--ballot-sample` checks that many random sample

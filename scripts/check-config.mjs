@@ -179,7 +179,7 @@ async function requestOnce(fetchImpl, url, { method = 'GET', timeoutMs }) {
  * @param {number} [options.timeoutMs] How long one request may take.
  * @param {number} [options.attempts] How many tries a transient failure gets.
  * @param {Date | number} [options.now] The time the wait time checks judge
- *   open hours and freshness at.
+ *   open hours and freshness at; by default, the time they read the reports.
  * @returns {Promise<{ name: string, status: 'pass' | 'fail' | 'skip' | 'warn', detail: string }[]>}
  */
 export async function runHealthCheck(
@@ -191,7 +191,7 @@ export async function runHealthCheck(
     retryDelayMs = 2000,
     timeoutMs = 15000,
     attempts = 3,
-    now = Date.now(),
+    now: fixedNow,
   } = {},
 ) {
   const results = [];
@@ -412,7 +412,13 @@ export async function runHealthCheck(
             'earlyVoting.schedules',
         );
       }
-      absenteeSites = sites;
+      // Trimmed like the app's own rows (normalize in src/data/arcgis.js), so
+      // the County join below matches what the app matches.
+      absenteeSites = sites.map((site) =>
+        Object.fromEntries(
+          Object.entries(site).map(([k, v]) => [k, typeof v === 'string' ? v.trim() : v]),
+        ),
+      );
       return `${sites.length} sites (${[...types].sort().join(', ')})`;
     });
   } else {
@@ -501,6 +507,9 @@ export async function runHealthCheck(
       return times.length ? reportTime(Math.max(...times), config.timeZone) : 'none';
     };
 
+    // Read the clock here, not at the start: the checks above can take minutes
+    // of retries, and a report made since then would look like a clock error.
+    const now = fixedNow ?? Date.now();
     for (const [key] of sources) {
       const source = waitTimes[key];
       const name = `wait reports ${key}`;
@@ -534,10 +543,11 @@ export async function runHealthCheck(
           const unmatched = reports.filter((r) => !keys.has(r[source.siteField]));
           const newest = newestReport(reports, source.timeField);
           const warnings = [];
+          // Only the count: report senders are ArcGIS user names, which may be a
+          // person's, and this line goes on the public run summary and issue.
           if (unmatched.length) {
-            const who = [...new Set(unmatched.map((r) => String(r[source.siteField])))].sort();
             warnings.push(
-              `Reports from ${who.join(', ')} match no site's ${source.pollsField} on the polls layer.`,
+              `${unmatched.length} reports match no site's ${source.pollsField} on the polls layer.`,
             );
           }
           let detail;
@@ -582,13 +592,29 @@ export async function runHealthCheck(
           const shown = selectCityWaits(rows, now).length;
           const newest = newestReport(rows, source.timeField);
           const counts = `${withValue} of ${rows.length} rows have a ${source.valueField}`;
-          if (open === 0) {
-            return `${source.source}: closed. No site is open now by its hours; ${counts}; newest report ${newest}`;
+          // The app treats a site whose hours it cannot read as closed, so a
+          // change in the board's hours format would hide every count while
+          // this check said "closed".
+          const unreadable = rows.filter(
+            (r) => parseCityHours(r[source.hoursField]) === null,
+          ).length;
+          const warnings = [];
+          if (unreadable) {
+            warnings.push(
+              `${unreadable} ${unreadable === 1 ? 'row has' : 'rows have'} ${source.hoursField} ` +
+                'text the app cannot read, so it never shows a count.',
+            );
           }
-          const detail =
-            `${source.source}: ${shown ? 'fresh' : 'not fresh'}. ${counts}; ${open} open now, ` +
-            `${shown} with a current count; newest report ${newest}`;
-          return shown ? detail : { warn: `${detail}. ${quiet}` };
+          let detail;
+          if (open === 0) {
+            detail = `${source.source}: closed. No site is open now by its hours; ${counts}; newest report ${newest}`;
+          } else {
+            if (shown === 0) warnings.push(quiet);
+            detail =
+              `${source.source}: ${shown ? 'fresh' : 'not fresh'}. ${counts}; ${open} open now, ` +
+              `${shown} with a current count; newest report ${newest}`;
+          }
+          return warnings.length ? { warn: `${detail}. ${warnings.join(' ')}` } : detail;
         });
       }
     }

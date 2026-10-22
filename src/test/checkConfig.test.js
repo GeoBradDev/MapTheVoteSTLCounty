@@ -738,7 +738,52 @@ describe('wait time checks', () => {
     expect(result.status).toBe('warn');
     expect(result.detail).toContain('3 reports match no site');
     expect(result.detail).toContain(
-      `Reports from abs699boec, someone match no site's ${countyWait.pollsField} on the polls layer.`,
+      `3 reports match no site's ${countyWait.pollsField} on the polls layer.`,
+    );
+    // Report senders are ArcGIS user names, which may be a person's: the
+    // public run summary and issue get the count only.
+    expect(result.detail).not.toContain('abs699boec');
+    expect(result.detail).not.toContain('someone');
+  });
+
+  it('joins on the trimmed site key, as the app does', async () => {
+    const world = healthyWorld();
+    world.absentee = world.absentee.map((site) => ({
+      ...site,
+      [countyWait.pollsField]: ` ${site[countyWait.pollsField]} `,
+    }));
+    const result = (await run(world))['wait reports county'];
+    expect(result.status).toBe('pass');
+    expect(result.detail).toContain('19 of 21 open sites have a current count');
+  });
+
+  it('judges the reports at the time it reads them, not when the run started', async () => {
+    const world = healthyWorld();
+    const realNow = Date.now;
+    // The run starts at 7 p.m. (closed); by the wait checks it is 9:00:30.
+    let clock = oct22(19);
+    Date.now = () => clock;
+    try {
+      world.fail = (url) => {
+        if (url.href.includes(election.layers.countyBoundary)) clock = NOW;
+        return null;
+      };
+      const results = await run(world, election, { now: undefined });
+      expect(results['wait reports county'].detail).toMatch(/: fresh\. 19 of 21/);
+    } finally {
+      Date.now = realNow;
+    }
+  });
+
+  it('warns when a City hours text cannot be read, which would hide its counts', async () => {
+    const world = healthyWorld();
+    world.waits[city].rows = cityFresh.map((row) =>
+      row.name === 'Buder Library' ? { ...row, [cityWait.hoursField]: 'Weekdays 9 to 5' } : row,
+    );
+    const result = (await run(world))['wait reports city'];
+    expect(result.status).toBe('warn');
+    expect(result.detail).toContain(
+      `1 row has ${cityWait.hoursField} text the app cannot read, so it never shows a count.`,
     );
   });
 

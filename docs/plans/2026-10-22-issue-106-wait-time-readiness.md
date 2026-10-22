@@ -26,8 +26,8 @@ are tasks 1 and 2 below. The PR says `Closes #132`.
      hours field, how many the app would show now, and the newest report time from
      `timeField` (`created_date_*`, never `last_edited_date`).
    "Would show now" uses the app's own `selectCountyWaits` and `selectCityWaits`.
-3. Sites open with nothing fresh, or County reports that match no site, are a WARN, not a
-   FAIL: WARN prints, never changes the exit code, and is listed on the workflow run's
+3. Sites open with nothing fresh, County reports that match no site, or City rows whose hours
+   text the app cannot read (it would never show their counts) are a WARN, not a FAIL: WARN prints, never changes the exit code, and is listed on the workflow run's
    summary page (via `--warnings <file>`) and in any failure issue the run opens.
 4. `data-health.yml` keeps the daily 12:00 UTC run and adds a run every 2 hours from 14:00 to
    22:00 UTC (9 a.m. to 5 p.m. Central in daylight time, 8 a.m. to 4 p.m. after). Those extra
@@ -51,6 +51,13 @@ are tasks 1 and 2 below. The PR says `Closes #132`.
 8. README: the Data health check section describes the wait checks, WARN and the open-hours
    runs; the Election config section gets a short runbook for the first day wait data
    appears (values match the board's own map, times are Central, units are people).
+
+Revised after review finder 1: the wait checks read the clock when they run, not at the start
+of the run (retries can take minutes); the County join trims site keys as the app does;
+unmatched County report senders are counted, never named, because they are ArcGIS user names
+and the line reaches the public run summary and issue; the City unreadable-hours warning above;
+and the config step limit goes from 25 to 30 minutes (job 73 to 78), since the 4 new requests
+push the worst case to about 26 minutes.
 
 ## Files that change
 - `scripts/electionWindow.mjs` (new): `isPastElection` (moved), `isEarlyVotingPeriod`,
