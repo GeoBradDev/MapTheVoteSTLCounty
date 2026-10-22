@@ -110,3 +110,7 @@ six new card tests fail for the expected reasons: the list still holds the neare
   notes whether focus was in the card before the new rows commit, and if the commit leaves
   focus on the page, moves it to the card (`targetRef`), as the retry flow does (#18).
   Covered by a new PollsCard test, committed red first.
+- Review finding (finder 2): the polls card has no clock, so a stale note shown before
+  midnight kept "loaded at 11:50 p.m." without the day after midnight. `StaleNote` now
+  re-checks the day every minute (`StaleNote.test.jsx`, committed red first).
+  `loadedAtParts` is exported from `useNearestSites.js` for it.
