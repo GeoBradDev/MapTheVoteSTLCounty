@@ -20,8 +20,10 @@ Contents: [Nonpartisan statement](#nonpartisan-statement) ·
 ## Nonpartisan statement
 
 A nonpartisan, unofficial guide. Not affiliated with the St. Louis County Board of Elections
-or the St. Louis City Board of Election Commissioners. (The statement the site itself shows is
-being settled in #71; keep this line the same as the site's once it is.)
+or the St. Louis City Board of Election Commissioners. (The site's footer opens with this
+statement on every page: it is the start of `footer.statement` in `src/i18n/en.json`, which
+then adds "For official information, visit:" before links to both boards. Keep the two the
+same.)
 
 - **Reference tool only.** It says where, when and how to vote. It makes no endorsements and
   no comment on any candidate, party or ballot measure, and it never ranks or orders
@@ -384,9 +386,9 @@ Every word the app shows is in `src/i18n/en.json` and reaches the page through `
 `{count, plural, one {...} other {...}}`. Values from the county's data, such as district
 names, election values from `src/config/election.js`, and the names of the address search
 services and their data (from the geocoder modules, as the privacy notice requires) are shown as
-they are. So are the home page's tab title, which is `index.html`'s, the map's credit line
-and MapLibre's own built-in text (its gesture hints and the map's label). ESLint's
-`react/jsx-no-literals` fails on words typed straight into JSX.
+they are. So are the home page's tab title and its search and link-preview description, both
+`index.html`'s, the map's credit line and MapLibre's own built-in text (its gesture hints and
+the map's label). ESLint's `react/jsx-no-literals` fails on words typed straight into JSX.
 
 To add a language, such as Spanish: copy `en.json` to `src/i18n/es.json`, translate the
 values (keep the keys and the `{...}` names), and add its line to `LOCALES` in

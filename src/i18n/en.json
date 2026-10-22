@@ -7,6 +7,10 @@
     "language": "Language"
   },
   "footer": {
+    "statement": "A nonpartisan, unofficial guide. Not affiliated with the St. Louis County Board of Elections or the St. Louis City Board of Election Commissioners. For official information, visit:",
+    "officialSites": "Official election offices",
+    "countySite": "St. Louis County Board of Elections website",
+    "citySite": "St. Louis City Board of Election Commissioners website",
     "privacy": "Privacy"
   },
   "notFound": {
@@ -35,6 +39,7 @@
   "home": {
     "heading": "St. Louis County Voter Guide",
     "intro": "Find your precinct, polling places near you and your sample ballot.",
+    "unofficial": "This is an independent, nonpartisan guide, not an official county or city site.",
     "electionDay": "Election Day is {date}.",
     "moreInfo": "More information",
     "howToVote": "How to vote",
@@ -285,7 +290,7 @@
   },
   "privacy": {
     "heading": "Privacy",
-    "intro": "This site helps you find your precinct, polling places and sample ballot. It has no accounts, no analytics and no server of its own: your browser talks straight to the public services below. Here is what each one gets, and what this site never keeps.",
+    "intro": "This site is an independent, nonpartisan guide. It is not run by or affiliated with the St. Louis County Board of Elections or the St. Louis City Board of Election Commissioners. It helps you find your precinct, polling places and sample ballot. It has no accounts, no analytics and no server of its own: your browser talks straight to the public services below. Here is what each one gets, and what this site never keeps.",
     "never": {
       "heading": "What this site never does",
       "noSaving": "It never saves your address or your location: they are not put in the page address (URL), in browser storage, in cookies or in your browser's cache. Your browser history and cache do keep the precinct pages you open, like /p/CC007.",

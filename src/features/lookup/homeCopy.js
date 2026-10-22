@@ -5,6 +5,9 @@ import { formatCalendarDate, translated } from '../../i18n/index.js';
 export const copy = translated((t) => ({
   heading: t('home.heading'),
   intro: t('home.intro'),
+  // Says up front that this is not the county's own site (#71); the footer
+  // names the official boards.
+  unofficial: t('home.unofficial'),
   /** @param {string} isoDate YYYY-MM-DD @param {string} timeZone */
   electionDay: (isoDate, timeZone) => {
     const formatted = formatCalendarDate(isoDate, {
