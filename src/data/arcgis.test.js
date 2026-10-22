@@ -380,6 +380,79 @@ describe('getPolls', () => {
   });
 });
 
+// The max age of a loaded layer (#84). Only the clock is faked: promises and
+// the retry delay run for real.
+describe.each([
+  ['getPolls', polls],
+  ['getAbsenteeSites', absenteeSites],
+])('%s max age', (name, fixture) => {
+  const MINUTE = 60_000;
+  // Ten days before Election Day, at noon in Chicago, built from the config.
+  const [year, month, day] = election.electionDate.split('-').map(Number);
+  const before = Date.UTC(year, month - 1, day - 10, 17);
+  const electionDayNoon = Date.UTC(year, month - 1, day, 18);
+  const { minutes, electionDayMinutes } = election.layerMaxAge;
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(before);
+    fetchMock.mockImplementation(async () => respond(fixture));
+  });
+
+  it('reuses the answer up to the max age', async () => {
+    const a = await client[name]();
+    vi.setSystemTime(before + minutes * MINUTE);
+    expect(await client[name]()).toBe(a);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('fetches again once the answer is older than the max age', async () => {
+    const a = await client[name]();
+    vi.setSystemTime(before + minutes * MINUTE + 1);
+    const b = await client[name]();
+    expect(b).not.toBe(a);
+    expect(b.features).toHaveLength(fixture.features.length);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    // The new answer is shared again.
+    expect(await client[name]()).toBe(b);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('says when the answer was loaded', async () => {
+    const a = await client[name]();
+    expect(a.loadedAt).toBe(before);
+    vi.setSystemTime(before + minutes * MINUTE + 1);
+    expect((await client[name]()).loadedAt).toBe(before + minutes * MINUTE + 1);
+  });
+
+  it('uses the shorter max age on Election Day', async () => {
+    vi.setSystemTime(electionDayNoon);
+    const a = await client[name]();
+    vi.setSystemTime(electionDayNoon + electionDayMinutes * MINUTE);
+    expect(await client[name]()).toBe(a);
+    vi.setSystemTime(electionDayNoon + electionDayMinutes * MINUTE + 1);
+    expect(await client[name]()).not.toBe(a);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('shares a refetch in flight between callers', async () => {
+    await client[name]();
+    vi.setSystemTime(before + minutes * MINUTE + 1);
+    const [b, c] = await Promise.all([client[name](), client[name]()]);
+    expect(c).toBe(b);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not keep a failed refetch: the next call fetches again', async () => {
+    await client[name]();
+    vi.setSystemTime(before + minutes * MINUTE + 1);
+    fetchMock.mockImplementationOnce(async () => respond(errorBody));
+    await expect(client[name]()).rejects.toBeInstanceOf(client.ServiceError);
+    expect((await client[name]()).features).toHaveLength(fixture.features.length);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+});
+
 describe('getAbsenteeSites', () => {
   const POLLS = `${election.serviceRoot}/${election.layers.polls}/query`;
 
