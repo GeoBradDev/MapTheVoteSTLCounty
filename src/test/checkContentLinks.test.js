@@ -492,3 +492,32 @@ describe('metaRefreshTarget, resolved as a browser resolves it', () => {
     ).toBeNull();
   });
 });
+
+// Fourth review round on #74: Cloudflare injects its detection script and
+// Turnstile into ordinary pages, so those alone are not a challenge.
+describe('a 403 that only loads Cloudflare scripts', () => {
+  const one = [{ url: 'https://a.gov/page/', files: ['f'] }];
+  it('fails, since it is not a challenge page', async () => {
+    for (const body of [
+      '<h1>403 Forbidden</h1><script src="/cdn-cgi/challenge-platform/scripts/jsd/main.js"></script>',
+      '<h1>Sorry, you have been blocked</h1><script src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>',
+    ]) {
+      const [result] = await checkLinks(one, {
+        fetch: async () => page(body, { status: 403 }),
+        attempts: 1,
+      });
+      expect(result).toMatchObject({ status: 'fail', detail: 'HTTP 403' });
+    }
+  });
+
+  it('skips a challenge page that sets the challenge options', async () => {
+    const [result] = await checkLinks(one, {
+      fetch: async () =>
+        page('<title>Just a moment...</title><script>window._cf_chl_opt={cvId:"3"};</script>', {
+          status: 403,
+        }),
+      attempts: 1,
+    });
+    expect(result).toMatchObject({ status: 'skip' });
+  });
+});
