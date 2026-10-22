@@ -333,28 +333,20 @@ async function requestOnce(fetchImpl, url, timeoutMs) {
   }
 }
 
-/** The host part of a URL, or the URL itself when it does not parse. */
-function hostOf(url) {
-  try {
-    return new URL(url).host;
-  } catch {
-    return url;
-  }
-}
-
 /**
  * Requests each URL, retrying network errors, 429 and 5xx answers. A bot
  * challenge is a skip: neither a pass nor a failure. A request that timed out
  * gets `lastTimeoutMs` on its last try, since www.sos.mo.gov sometimes waits
- * about 60 s before it answers a healthy page (#116). Once a URL fails even
- * that long try, its host is taken as down, and its later URLs get only
- * `timeoutMs`.
+ * about 60 s before it answers a healthy page (#116). At most `maxLongTries`
+ * URLs in a run get that long try, so a site that stalls on every page cannot
+ * push the run past its step limit; later ones get only `timeoutMs`.
  * @param {{ url: string, files: string[] }[]} links
  * @param {object} [options]
  * @param {typeof fetch} [options.fetch]
  * @param {number} [options.timeoutMs] How long one request may take.
  * @param {number} [options.lastTimeoutMs] How long the last try may take when
  *   the try before it timed out.
+ * @param {number} [options.maxLongTries] How many long last tries a run may make.
  * @param {number} [options.attempts] Tries per URL.
  * @param {number} [options.retryDelayMs] The wait before a retry, times the attempt.
  * @param {(result: object) => unknown} [options.onResult] Called with each result as soon
@@ -367,21 +359,21 @@ export async function checkLinks(
     fetch: fetchImpl = fetch,
     timeoutMs = 15000,
     lastTimeoutMs = 75000,
+    maxLongTries = 3,
     attempts = 3,
     retryDelayMs = 2000,
     onResult = () => {},
   } = {},
 ) {
   const results = [];
-  const downHosts = new Set();
+  let longTries = 0;
   for (const { url, files } of links) {
-    const host = hostOf(url);
     let outcome;
     for (let attempt = 1; attempt <= attempts; attempt += 1) {
       const longTry =
-        attempt > 1 && attempt === attempts && outcome.timedOut && !downHosts.has(host);
+        attempt > 1 && attempt === attempts && outcome.timedOut && longTries < maxLongTries;
+      if (longTry) longTries += 1;
       outcome = await requestOnce(fetchImpl, url, longTry ? lastTimeoutMs : timeoutMs);
-      if (longTry && outcome.timedOut) downHosts.add(host);
       if (outcome.ok || !outcome.transient || attempt === attempts) break;
       await new Promise((resolve) => setTimeout(resolve, retryDelayMs * attempt));
     }

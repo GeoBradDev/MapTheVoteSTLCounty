@@ -198,22 +198,48 @@ describe('checkLinks', () => {
     expect(result).toMatchObject({ status: 'fail', detail: 'request failed: no answer in 10 ms' });
   });
 
-  it('gives no long try to more URLs on a host whose long try failed', async () => {
+  it('gives at most maxLongTries URLs a long last try in one run', async () => {
     const calls = [];
     const results = await checkLinks(
       [
-        { url: 'https://down.gov/a', files: ['f'] },
-        { url: 'https://down.gov/b', files: ['f'] },
-        { url: 'https://other.gov/', files: ['f'] },
+        { url: 'https://a.gov/', files: ['f'] },
+        { url: 'https://b.gov/', files: ['f'] },
+        { url: 'https://c.gov/', files: ['f'] },
       ],
-      { fetch: hanging(calls), timeoutMs: 10, lastTimeoutMs: 30, attempts: 2, retryDelayMs: 0 },
+      {
+        fetch: hanging(calls),
+        timeoutMs: 10,
+        lastTimeoutMs: 30,
+        maxLongTries: 2,
+        attempts: 2,
+        retryDelayMs: 0,
+      },
     );
     expect(results.map((r) => r.detail)).toEqual([
       'request failed: no answer in 30 ms',
-      'request failed: no answer in 10 ms',
       'request failed: no answer in 30 ms',
+      'request failed: no answer in 10 ms',
     ]);
     expect(calls).toHaveLength(6);
+  });
+
+  it('keeps the normal timeout after a 5xx or 429 answer', async () => {
+    for (const status of [503, 429]) {
+      let tries = 0;
+      const answerThenHang = (url, init) => {
+        tries += 1;
+        if (tries === 1) return Promise.resolve(new Response('', { status }));
+        return hanging([])(url, init);
+      };
+      const [result] = await checkLinks([links[0]], {
+        fetch: answerThenHang,
+        timeoutMs: 10,
+        lastTimeoutMs: 5000,
+        attempts: 2,
+        retryDelayMs: 0,
+      });
+      expect(result).toMatchObject({ detail: 'request failed: no answer in 10 ms' });
+    }
   });
 
   it('uses the normal timeout for a single try', async () => {

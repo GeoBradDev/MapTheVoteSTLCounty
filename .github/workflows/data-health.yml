@@ -28,7 +28,7 @@ jobs:
     # that hits its limit is cancelled and reports nothing, so each live check
     # has its own step limit, which fails that step and still opens the issue.
     # The job limit is the step limits plus setup.
-    timeout-minutes: 70
+    timeout-minutes: 73
     steps:
       # The token may write issues: do not leave it in .git/config, where
       # dependency install scripts could read it.
@@ -78,17 +78,16 @@ jobs:
         run: node scripts/check-geocoder.mjs
 
       # Every source and link in content/<locale>/learn/ (#21) and every page
-      # the election config links (#74). Each dead URL can take about 51 s
-      # (3 tries of 15 s plus waits). A URL that keeps timing out gets 75 s on
-      # its last try, since www.sos.mo.gov sometimes stalls about 60 s on a
-      # healthy page (#116), so it can take about 111 s; after one URL fails
-      # that long try, its host's other URLs get 15 s tries only. A page behind
-      # a bot challenge is skipped, not failed, and listed for a person to open
-      # in a browser.
+      # the election config links (#74). A dead URL takes about 51 s (3 tries
+      # of 15 s plus waits). www.sos.mo.gov sometimes stalls about 60 s on a
+      # healthy page (#116), so up to 3 URLs a run that time out twice get 75 s
+      # on their last try: about 111 s each, 3 minutes more in all. A page
+      # behind a bot challenge is skipped, not failed, and listed for a person
+      # to open in a browser.
       - name: Content link check
         id: links
         if: ${{ !cancelled() && steps.window.outputs.active == 'true' }}
-        timeout-minutes: 12
+        timeout-minutes: 15
         run: node scripts/check-content-links.mjs --skipped "$RUNNER_TEMP/skipped-links.txt"
 
       # A skip never fails the run, so list it on the run's summary every day.
