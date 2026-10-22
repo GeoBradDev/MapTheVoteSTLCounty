@@ -1,0 +1,218 @@
+{
+  "objectIdFieldName": "ObjectId",
+  "uniqueIdField": {
+    "name": "ObjectId",
+    "isSystemMaintained": true
+  },
+  "globalIdFieldName": "globalid",
+  "geometryType": "esriGeometryPoint",
+  "spatialReference": {
+    "wkid": 102100,
+    "latestWkid": 3857
+  },
+  "fields": [
+    {
+      "name": "facilityid",
+      "type": "esriFieldTypeString",
+      "alias": "Voting Location ID",
+      "sqlType": "sqlTypeOther",
+      "length": 50,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "name",
+      "type": "esriFieldTypeString",
+      "alias": "Voting Location Name",
+      "sqlType": "sqlTypeOther",
+      "length": 255,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "earlyvotingstartdate",
+      "type": "esriFieldTypeDate",
+      "alias": "Early Voting Start Date",
+      "sqlType": "sqlTypeOther",
+      "length": 8,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "earlyvotingenddate",
+      "type": "esriFieldTypeDate",
+      "alias": "Early Voting End Date",
+      "sqlType": "sqlTypeOther",
+      "length": 8,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "earlyvotingoperhours",
+      "type": "esriFieldTypeString",
+      "alias": "Early Voting Operational Hours",
+      "sqlType": "sqlTypeOther",
+      "length": 150,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "comments",
+      "type": "esriFieldTypeString",
+      "alias": "Comments",
+      "sqlType": "sqlTypeOther",
+      "length": 500,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "waittime",
+      "type": "esriFieldTypeSmallInteger",
+      "alias": "Wait Time (Minutes)",
+      "sqlType": "sqlTypeOther",
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "created_date_1740505041182",
+      "type": "esriFieldTypeDate",
+      "alias": "Created On",
+      "sqlType": "sqlTypeOther",
+      "length": 8,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "last_edited_date_1740505041182",
+      "type": "esriFieldTypeDate",
+      "alias": "Last Edited On",
+      "sqlType": "sqlTypeOther",
+      "length": 8,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "last_edited_date",
+      "type": "esriFieldTypeDate",
+      "alias": "Last Edited On",
+      "sqlType": "sqlTypeOther",
+      "length": 8,
+      "domain": null,
+      "defaultValue": null
+    }
+  ],
+  "features": [
+    {
+      "attributes": {
+        "facilityid": "Buder_Library",
+        "name": "Buder Library",
+        "earlyvotingstartdate": 1792512000000,
+        "earlyvotingenddate": 1793656800000,
+        "earlyvotingoperhours": "Mo (13:00-16:00); Tu (11:00-17:00); W-Th (11:00-19:00); Fr-Sa (11:00-16:30); Su (Closed))",
+        "comments": null,
+        "waittime": 0,
+        "created_date_1740505041182": 1792625575903,
+        "last_edited_date_1740505041182": 1792625575903,
+        "last_edited_date": 1791573982282
+      }
+    },
+    {
+      "attributes": {
+        "facilityid": "Carpenter_Library",
+        "name": "Carpenter Branch Library",
+        "earlyvotingstartdate": 1792512000000,
+        "earlyvotingenddate": 1793656800000,
+        "earlyvotingoperhours": "Mo (13:00-16:00); Tu-Th (11:00-17:00); Fr-Sa (11:00-16:30);Su (Closed))",
+        "comments": null,
+        "waittime": 4,
+        "created_date_1740505041182": 1792618241585,
+        "last_edited_date_1740505041182": 1792618241585,
+        "last_edited_date": 1791573982926
+      }
+    },
+    {
+      "attributes": {
+        "facilityid": "Kingshighway_Branch_Library",
+        "name": "Kingshighway Branch Library",
+        "earlyvotingstartdate": 1792512000000,
+        "earlyvotingenddate": 1793656800000,
+        "earlyvotingoperhours": "Mo (13:00-16:00); Tu-Th (11:00-17:00); Fr-Sa (11:00-16:30);Su (Closed))",
+        "comments": null,
+        "waittime": 0,
+        "created_date_1740505041182": 1792618194291,
+        "last_edited_date_1740505041182": 1792618194291,
+        "last_edited_date": 1791573986537
+      }
+    },
+    {
+      "attributes": {
+        "facilityid": "Schlafly_Library",
+        "name": "Schlafly Library",
+        "earlyvotingstartdate": 1792512000000,
+        "earlyvotingenddate": 1793656800000,
+        "earlyvotingoperhours": "Mo (13:00-16:00); Tu (11:00-17:00); W-Th (11:00-19:00); Fr-Sa (11:00-16:30); Su (Closed))",
+        "comments": null,
+        "waittime": 3,
+        "created_date_1740505041182": 1792625457624,
+        "last_edited_date_1740505041182": 1792625457624,
+        "last_edited_date": 1791573989017
+      }
+    },
+    {
+      "attributes": {
+        "facilityid": "Walnut_Park_Library",
+        "name": "Walnut Park Library",
+        "earlyvotingstartdate": 1792512000000,
+        "earlyvotingenddate": 1793656800000,
+        "earlyvotingoperhours": "Mo (13:00-16:00); Tu-Th (11:00-17:00); Fr-Sa (11:00-16:30);Su (Closed))",
+        "comments": null,
+        "waittime": 0,
+        "created_date_1740505041182": 1792620013031,
+        "last_edited_date_1740505041182": 1792620013031,
+        "last_edited_date": 1791573989804
+      }
+    },
+    {
+      "attributes": {
+        "facilityid": "St._Louis_City_Election_Board",
+        "name": "St. Louis City Board of Elections",
+        "earlyvotingstartdate": 1792512000000,
+        "earlyvotingenddate": 1793660400000,
+        "earlyvotingoperhours": "Mo-Fr (08:00-17:00)",
+        "comments": null,
+        "waittime": 0,
+        "created_date_1740505041182": 1792617567063,
+        "last_edited_date_1740505041182": 1792617567063,
+        "last_edited_date": 1791573992296
+      }
+    },
+    {
+      "attributes": {
+        "facilityid": "Julia_Davis",
+        "name": "Julia Davis Library",
+        "earlyvotingstartdate": 1792512000000,
+        "earlyvotingenddate": 1793656800000,
+        "earlyvotingoperhours": "Mo (13:00-16:00); Tu (11:00-17:00); W-Th (11:00-19:00); Fr-Sa (11:00-16:30); Su (Closed))",
+        "comments": null,
+        "waittime": 0,
+        "created_date_1740505041182": 1792625322039,
+        "last_edited_date_1740505041182": 1792625322039,
+        "last_edited_date": 1791573992762
+      }
+    },
+    {
+      "attributes": {
+        "facilityid": "St._Joan_of_Arc",
+        "name": "St. Joan of Arc",
+        "earlyvotingstartdate": 1793116800000,
+        "earlyvotingenddate": 1793656800000,
+        "earlyvotingoperhours": "Mo (13:00-16:00); Tu (11:00-17:00); W-Th (11:00-19:00); Fr-Sa (11:00-16:30); Su (Closed))",
+        "comments": "New early voting site! Opens Tuesday, October 27!",
+        "waittime": null,
+        "created_date_1740505041182": null,
+        "last_edited_date_1740505041182": null,
+        "last_edited_date": 1792595076409
+      }
+    }
+  ]
+}

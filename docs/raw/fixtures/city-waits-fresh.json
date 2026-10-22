@@ -1,0 +1,116 @@
+{
+  "objectIdFieldName": "ObjectId",
+  "uniqueIdField": {
+    "name": "ObjectId",
+    "isSystemMaintained": true
+  },
+  "globalIdFieldName": "globalid",
+  "geometryType": "esriGeometryPoint",
+  "spatialReference": {
+    "wkid": 102100,
+    "latestWkid": 3857
+  },
+  "fields": [
+    {
+      "name": "name",
+      "type": "esriFieldTypeString",
+      "alias": "Voting Location Name",
+      "sqlType": "sqlTypeOther",
+      "length": 255,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "waittime",
+      "type": "esriFieldTypeSmallInteger",
+      "alias": "Wait Time (Minutes)",
+      "sqlType": "sqlTypeOther",
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "last_edited_date_1740505041182",
+      "type": "esriFieldTypeDate",
+      "alias": "Last Edited On",
+      "sqlType": "sqlTypeOther",
+      "length": 8,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "created_date_1740505041182",
+      "type": "esriFieldTypeDate",
+      "alias": "Created On",
+      "sqlType": "sqlTypeOther",
+      "length": 8,
+      "domain": null,
+      "defaultValue": null
+    }
+  ],
+  "features": [
+    {
+      "attributes": {
+        "name": "St. Louis City Board of Elections",
+        "waittime": 0,
+        "last_edited_date_1740505041182": 1792674645407,
+        "created_date_1740505041182": 1792674645407
+      }
+    },
+    {
+      "attributes": {
+        "name": "Buder Library",
+        "waittime": 0,
+        "last_edited_date_1740505041182": 1792625575903,
+        "created_date_1740505041182": 1792625575903
+      }
+    },
+    {
+      "attributes": {
+        "name": "Schlafly Library",
+        "waittime": 3,
+        "last_edited_date_1740505041182": 1792625457624,
+        "created_date_1740505041182": 1792625457624
+      }
+    },
+    {
+      "attributes": {
+        "name": "Julia Davis Library",
+        "waittime": 0,
+        "last_edited_date_1740505041182": 1792625322039,
+        "created_date_1740505041182": 1792625322039
+      }
+    },
+    {
+      "attributes": {
+        "name": "Walnut Park Library",
+        "waittime": 0,
+        "last_edited_date_1740505041182": 1792620013031,
+        "created_date_1740505041182": 1792620013031
+      }
+    },
+    {
+      "attributes": {
+        "name": "Carpenter Branch Library",
+        "waittime": 4,
+        "last_edited_date_1740505041182": 1792618241585,
+        "created_date_1740505041182": 1792618241585
+      }
+    },
+    {
+      "attributes": {
+        "name": "Kingshighway Branch Library",
+        "waittime": 0,
+        "last_edited_date_1740505041182": 1792618194291,
+        "created_date_1740505041182": 1792618194291
+      }
+    },
+    {
+      "attributes": {
+        "name": "St. Joan of Arc",
+        "waittime": null,
+        "last_edited_date_1740505041182": null,
+        "created_date_1740505041182": null
+      }
+    }
+  ]
+}

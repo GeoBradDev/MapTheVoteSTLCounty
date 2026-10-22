@@ -49,3 +49,5 @@ One line per issue: number, PR, summary, follow-ups.
 - #29: https://github.com/GeoBradDev/MapTheVoteSTLCounty/pull/119: README now covers purpose, nonpartisan statement (uses PR #115's proposed wording; update if #71 wording changes), privacy, disclaimer, data sources, nine steps for a new election, contributing and license status. City new-election steps left to #95. New issue #118 (choose a license).
 - #19: https://github.com/GeoBradDev/MapTheVoteSTLCounty/pull/121: Every app string now comes from src/i18n/en.json through t(); Spanish needs only es.json plus one config line; English output verified identical. Follow-ups: PR #115 must move its new strings into en.json when rebased; new issue #120 (Spanish launch: starting language, remaining untranslated text).
 - #22: PR #68 was merged by the owner after review; the vote-anywhere conflict was resolved by #72 (owner chose to follow RSMo 115.430).
+
+## Batch 4 (2026-10-22)
