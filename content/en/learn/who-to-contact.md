@@ -33,7 +33,7 @@ County.[^county-polls-app]
 - **Phone:** 314-615-1800[^county-polls-app][^county-absentee-app]
 - **Relay Missouri:** 711[^county-polls-app]
 - **Email:** vote@stlouiscountymo.gov[^county-polls-app]
-- **Office:** 725 Northwest Plaza Drive, St. Ann, MO 63074[^county-absentee-app]
+- **Office:** 725 Northwest Plaza Drive, ZIP code 63074[^county-absentee-app]
 - **Office hours:** weekdays through Friday, October 30, 8 a.m. to 4:30 p.m.[^county-absentee-app]
 - **Website:** [St. Louis County Board of Elections](https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/)[^county-board]
 

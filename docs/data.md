@@ -639,8 +639,9 @@ The county board's website is now a page on the county's own site:
   `/voting/absentee-voting/`, `/about-us/`, `/registration/`) answers `200` with
   `<meta http-equiv="refresh" content="0; URL=...">` to the page above, so no deep link
   survives. The app no longer links or cites it, the learn topics may not cite it
-  (`officialSources.js`), and `src/test/retired-sites.test.js` keeps its URLs out of `src/`,
-  `content/`, `render.yaml` and `index.html`. Sources retired with it: the FAQ (the "vote at
+  (`officialSources.js`), and `src/test/retired-sites.test.js` keeps it and
+  `stlouiscountymovotes.gov` out of `content/`, `render.yaml`, `index.html` and the code under
+  `src/` (comment lines and tests may name them). Sources retired with it: the FAQ (the "vote at
   any polling place" line and the Election Day hours), the Contact Us page (the phone number,
   office address and hours) and the Registration page.
 - The board's `.gov` domain, `stlouiscountymovotes.gov`, still answers `301` to

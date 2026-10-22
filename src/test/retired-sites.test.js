@@ -14,19 +14,32 @@ const isTest = (file) => /\.test\.jsx?$/.test(file);
 /** Hosts no link or source may name, with each subdomain. */
 const RETIRED_HOSTS = ['stlouiscovotes.info', 'stlouiscountymovotes.gov'];
 
-/** A URL whose host is a retired host or one of its subdomains. */
-function retiredUrls(text) {
-  const found = [];
-  for (const match of text.matchAll(/https?:\/\/[^\s"'`)<>\]]+/g)) {
-    let host;
-    try {
-      host = new URL(match[0]).hostname;
-    } catch {
-      continue;
-    }
-    if (RETIRED_HOSTS.some((h) => host === h || host.endsWith(`.${h}`))) found.push(match[0]);
-  }
-  return found;
+const HOST_PATTERN = RETIRED_HOSTS.map((h) => h.replaceAll('.', '\\.')).join('|');
+
+/**
+ * Every mention of a retired host, or a subdomain of one, as a URL or bare
+ * text, in any letter case: "https://stlouiscovotes.info.", "HTTPS://...",
+ * "//www.stlouiscovotes.info/faq" or "visit stlouiscovotes.info". A host that
+ * only ends in one, like evil-stlouiscovotes.info, is not a mention.
+ */
+function retiredMentions(text) {
+  const pattern = new RegExp(
+    `(?<![\\w.-])((?:[a-z0-9-]+\\.)*(?:${HOST_PATTERN}))(?![\\w-]|\\.[a-z0-9])`,
+    'gi',
+  );
+  return [...text.matchAll(pattern)].map((m) => m[1].toLowerCase());
+}
+
+/**
+ * A JavaScript file's text without its whole-line comments, which may explain
+ * why a host is retired. Code, strings and every other file are kept whole.
+ */
+function withoutComments(file, text) {
+  if (!/\.jsx?$/.test(file)) return text;
+  return text
+    .split('\n')
+    .filter((line) => !/^\s*(\/\/|\/\*|\*)/.test(line))
+    .join('\n');
 }
 
 async function filesUnder(dir) {
@@ -35,13 +48,42 @@ async function filesUnder(dir) {
 }
 
 describe('retired county board sites', () => {
-  it('finds a retired URL and its subdomains, and nothing else', () => {
+  it('finds a retired host and its subdomains in any form, and nothing else', () => {
     expect(
-      retiredUrls(
+      retiredMentions(
         'a https://stlouiscovotes.info/faq/ b (https://www.stlouiscountymovotes.gov/) c ' +
-          'https://stlouiscovotes.maps.arcgis.com/apps d https://evil-stlouiscovotes.info/',
+          'Visit https://stlouiscovotes.info. Or HTTPS://STLouisCoVotes.info, ' +
+          '`https://stlouiscovotes.info${path}` //www.stlouiscovotes.info/faq ' +
+          "'stlouiscovotes.info': x, see stlouiscovotes.info!",
       ),
-    ).toEqual(['https://stlouiscovotes.info/faq/', 'https://www.stlouiscountymovotes.gov/']);
+    ).toEqual([
+      'stlouiscovotes.info',
+      'www.stlouiscountymovotes.gov',
+      'stlouiscovotes.info',
+      'stlouiscovotes.info',
+      'stlouiscovotes.info',
+      'www.stlouiscovotes.info',
+      'stlouiscovotes.info',
+      'stlouiscovotes.info',
+    ]);
+  });
+
+  it('ignores hosts that only resemble a retired one', () => {
+    expect(
+      retiredMentions(
+        'https://stlouiscovotes.maps.arcgis.com/apps https://evil-stlouiscovotes.info/ ' +
+          'https://stlouiscovotes.info.example.com/ https://stlouiscountymovotes.gov2.com/ ' +
+          'https://stlouiscountymo.gov/st-louis-county-government/',
+      ),
+    ).toEqual([]);
+  });
+
+  it('reads JavaScript code but not its comment lines', () => {
+    const js = "// was stlouiscovotes.info\n/**\n * stlouiscovotes.info\n */\nconst a = 'x';\n";
+    expect(withoutComments('src/a.js', js)).toBe("const a = 'x';\n");
+    expect(withoutComments('content/en/learn/a.md', '// stlouiscovotes.info')).toBe(
+      '// stlouiscovotes.info',
+    );
   });
 
   it('skips only test files', () => {
@@ -51,7 +93,7 @@ describe('retired county board sites', () => {
     expect(isTest('content/en/learn/test.md')).toBe(false);
   });
 
-  it('are not linked or cited in the app, its content or its host config', async () => {
+  it('are not named in the app, its content or its host config', async () => {
     const files = [
       ...(await filesUnder(path.join(ROOT, 'src'))),
       ...(await filesUnder(path.join(ROOT, 'content'))),
@@ -60,8 +102,9 @@ describe('retired county board sites', () => {
     ].filter((file) => !isTest(file));
     const found = [];
     for (const file of files) {
-      for (const url of retiredUrls(await readFile(file, 'utf8'))) {
-        found.push(`${path.relative(ROOT, file)}: ${url}`);
+      const text = await readFile(file, 'utf8');
+      for (const host of retiredMentions(withoutComments(file, text))) {
+        found.push(`${path.relative(ROOT, file)}: ${host}`);
       }
     }
     expect(found).toEqual([]);

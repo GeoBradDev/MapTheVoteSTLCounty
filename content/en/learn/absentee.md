@@ -63,7 +63,7 @@ Satellite sites are open:[^county-absentee-app]
 - Saturday, October 24 and Saturday, October 31, 9 a.m. to 1 p.m.[^county-absentee-app]
 - Monday, November 2, 8 a.m. to 5 p.m.[^county-absentee-app]
 
-The Board of Elections office, 725 Northwest Plaza Drive, St. Ann, has the same hours.[^county-absentee-app] It
+The Board of Elections office, at 725 Northwest Plaza Drive, has the same hours.[^county-absentee-app] It
 also opened earlier, on Tuesday, September 22.[^county-absentee-app] Before
 October 20, you need one of the reasons below to vote there.[^rsmo-115-277]
 

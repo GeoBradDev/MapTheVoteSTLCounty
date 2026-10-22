@@ -90,7 +90,7 @@ No payments, email, API or data skill applies.
   tests read `election.countySiteUrl`, so they assert the new href with no change;
   `election-hardcoding.test.js` keeps the URL out of the rest of `src/`.
 - Criteria 3 and 5: `AssignedPollingPlace.test.jsx` (distinct, non-empty names per source) and
-  a `resultsCopy` lookup check in the precinct page tests.
+  `src/features/lookup/resultsCopy.test.js` (`sourceName` of `countySiteUrl`).
 - Criterion 6: `topic.test.js`.
 - Criterion 7: the build's content validation (`npm test` and `npm run build`).
 - Live drive: run the production build, open `/`, `/learn`, `/learn/who-to-contact` and a
@@ -114,3 +114,10 @@ https://stlouiscovotes.info/faq/` and `rejects https://www.stlouiscovotes.info/a
 - Review 1: `check-registration.md`'s phone line said a call checks registration, which the
   polling place app does not say; narrowed to "Questions? Call ...". README's official hosts
   sentence updated.
+- Review 2: the office address lost its only source for "St. Ann, MO" (the absentee layer gives
+  only the street and ZIP 63074), so `who-to-contact.md` and `absentee.md` drop the city.
+  `retired-sites.test.js` missed host-only URLs followed by punctuation, an uppercase scheme,
+  template literals and bare hosts; it now matches any mention of a retired host in any case,
+  skipping only JavaScript comment lines and tests, with unit cases for each form (they fail
+  against the old URL regex). Added `resultsCopy.test.js` for the board's source name, the
+  proof criterion 3 promised.
