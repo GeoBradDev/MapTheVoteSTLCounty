@@ -48,7 +48,8 @@ const GOOD_HEADERS = {
 // `sitemap` set to 'missing' leave those files out, so the rewrite answers
 // them with the shell, as Render does. `pages` set to 'shell' leaves the
 // pre-rendered pages out, so the shell answers them too; `deepLink` set to
-// 'home' answers a precinct link with the pre-rendered home page.
+// 'home' answers a precinct link with the pre-rendered home page, and
+// 'indexable' with a production shell (no noindex).
 function stubHost({
   deepLink = 'shell',
   pages = 'prerendered',
@@ -88,6 +89,10 @@ function stubHost({
         ...(headers && { 'cache-control': 'no-cache' }),
       });
       return res.end(prerendered(shell, req.url));
+    }
+    if (deepLink === 'indexable' && req.url === '/p/CC007') {
+      res.writeHead(200, { ...common, 'content-type': 'text/html; charset=utf-8' });
+      return res.end(SHELL);
     }
     if (deepLink === 'home' && req.url === '/p/CC007') {
       res.writeHead(200, { ...common, 'content-type': 'text/html; charset=utf-8' });
@@ -137,7 +142,7 @@ describe('smoke test against stub hosts', () => {
 
     expect(failedChecks(results)).toEqual([]);
     expect(results.map((r) => r.name)).toEqual([
-      'GET / returns the app shell',
+      'GET / returns the home page',
       'hard load of /p/CC007 returns the app shell',
       'hashed asset returns JavaScript',
       'hard load of /learn returns the pre-rendered page',
@@ -176,16 +181,23 @@ describe('smoke test against stub hosts', () => {
 
     expect(failedChecks(results)).toEqual([]);
     expect(results.map((r) => r.name)).toEqual([
-      'GET / returns the app shell',
+      'GET / returns the home page',
       'hard load of /p/CC007 returns the app shell',
       'hashed asset returns JavaScript',
       'hard load of /learn returns the pre-rendered page',
       'hard load of /learn/voter-id returns the pre-rendered page',
       '/robots.txt keeps every crawler out',
-      'the app shell is marked noindex',
+      'the home page and the app shell are marked noindex',
       'headers on /',
       'headers on the hashed asset',
     ]);
+  });
+
+  it('fails a preview whose app shell, served for precinct links, is not noindex', async () => {
+    server = stubHost({ preview: true, deepLink: 'indexable' });
+    const results = await runSmoke(await listen(server), { preview: true });
+
+    expect(failedChecks(results)).toEqual(['the home page and the app shell are marked noindex']);
   });
 
   it('fails a preview check against a production host', async () => {
@@ -194,7 +206,7 @@ describe('smoke test against stub hosts', () => {
 
     expect(failedChecks(results)).toEqual([
       '/robots.txt keeps every crawler out',
-      'the app shell is marked noindex',
+      'the home page and the app shell are marked noindex',
     ]);
   });
 
@@ -270,7 +282,7 @@ describe('smoke test against stub hosts', () => {
 
     const results = await runSmoke(url, { checkHeaders: false });
 
-    expect(failedChecks(results)).toContain('GET / returns the app shell');
+    expect(failedChecks(results)).toContain('GET / returns the home page');
   });
 });
 

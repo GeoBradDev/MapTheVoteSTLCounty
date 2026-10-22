@@ -230,13 +230,13 @@ After a deploy, check the live site or a PR preview:
 npm run smoke -- https://<site-or-preview-url>
 ```
 
-It checks that `/` and a hard load of `/p/CC007` return the app shell (the precinct page with
+It checks that `/` returns the home page and a hard load of `/p/CC007` the app shell (with
 nothing pre-rendered in it), that a hashed asset is served as JavaScript, that a hard load of
 `/learn` and of `/learn/voter-id` returns the page pre-rendered, with its `h1` and canonical, that `/robots.txt` is a text file with a `Sitemap:` line and
 `/sitemap.xml` is XML (not the app shell), and that the expected security and cache headers are
 present. It exits 1 and lists what failed. Against a host that sets no headers, such as
 `npm run preview`, add `--skip-headers`. Against a PR preview, add `--preview`: it then checks
-that `/robots.txt` says `Disallow: /` and the shell carries `noindex`, instead of the sitemap. The expected headers are a table at the top of `scripts/smoke.mjs`; change it
+that `/robots.txt` says `Disallow: /` and the home page and the shell carry `noindex`, instead of the sitemap. The expected headers are a table at the top of `scripts/smoke.mjs`; change it
 when the host's header config changes. `src/test/render.test.js` checks `render.yaml` against
 that table, so change both together.
 
@@ -258,7 +258,7 @@ Every build writes `robots.txt`, and a production build writes `sitemap.xml`, bo
   canonical (`siteUrl` plus the path) and Open Graph tags (`og:type`, `og:site_name`,
   `og:title`, `og:description`, `og:url`). After the client build, `src/prerender/plugin.js`
   renders `src/entry-server.jsx` in Node for each path `prerenderPaths()` in `src/pageHead.js`
-  lists, and the browser hydrates the markup (`src/main.jsx`). The head values come from
+  lists (the sitemap's own list, `publicPaths()` in `src/config/publicPages.js`), and the browser hydrates the markup (`src/main.jsx`). The head values come from
   `pageHead()`, which the app also applies on every in-app navigation. A description is the
   page's own text, never new wording: `site.description` in `src/i18n/en.json` for the home
   page (a test keeps `index.html`'s the same), the intro of `/learn` and `/privacy`, and a

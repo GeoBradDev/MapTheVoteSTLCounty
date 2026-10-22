@@ -108,17 +108,20 @@ async function check(name, fn) {
 export async function runSmoke(baseUrl, { checkHeaders = true, preview = false } = {}) {
   let root;
   let rootHtml;
+  let deepLinkHtml;
   let script;
   let asset;
 
   const results = [
-    await check('GET / returns the app shell', async () => {
+    // `/` is the pre-rendered home page (#99), loading the same app script.
+    await check('GET / returns the home page', async () => {
       root = await get(baseUrl, '/');
       ({ src: script, body: rootHtml } = await shellScript(root, '/'));
       return script;
     }),
     await check(`hard load of ${DEEP_LINK} returns the app shell`, async () => {
       const { src, body } = await shellScript(await get(baseUrl, DEEP_LINK), DEEP_LINK);
+      deepLinkHtml = body;
       if (script && src !== script) throw new Error(`script ${src}, but / has ${script}`);
       // Precinct pages are client-rendered from the empty shell, never a
       // pre-rendered page (#99).
@@ -150,9 +153,17 @@ export async function runSmoke(baseUrl, { checkHeaders = true, preview = false }
         const body = await fileBody(baseUrl, '/robots.txt', 'text/plain');
         if (!DISALLOW_ALL.test(body)) throw new Error('no "Disallow: /" line');
       }),
-      await check('the app shell is marked noindex', async () => {
-        if (rootHtml === undefined) throw new Error('no shell: the / check failed');
-        if (!NOINDEX.test(rootHtml)) throw new Error('no <meta name="robots" content="noindex">');
+      // The pre-rendered pages and the shell every other path gets are
+      // built from one template, but check both.
+      await check('the home page and the app shell are marked noindex', async () => {
+        for (const [name, html] of [
+          ['/', rootHtml],
+          [DEEP_LINK, deepLinkHtml],
+        ]) {
+          if (html === undefined) throw new Error(`no page: the ${name} check failed`);
+          if (!NOINDEX.test(html))
+            throw new Error(`no <meta name="robots" content="noindex"> on ${name}`);
+        }
       }),
     );
   } else {

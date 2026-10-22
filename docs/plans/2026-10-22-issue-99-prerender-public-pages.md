@@ -76,18 +76,30 @@ build its head hook on the `pageHead()` function added here.
 
 ## Files that change
 
-- `src/pageHead.js` (new): `PRERENDER_PATHS` helper input, `normalizePath(path)`,
-  `pageHead(path)` returning `{ title, description, canonical, url }` for public pages or
-  `null`, `shellHead()`, `describe(text)` (the 155 character cut), `topicDescription(topic)`.
+- `src/config/publicPages.js` (new) and its test: `publicPaths(topicIds)`, the one list of
+  public pages that both the sitemap (`searchEngines.js`) and the pre-render use.
+- `src/pageHead.js` (new): `prerenderPaths()`, `normalizePath(path)`, `pageHead(path)`
+  returning `{ title, description, canonical }` for public pages or `null`, `shellHead()`,
+  `describe(text)` (the 155 character cut), `topicDescription(topic)`, `headTags(head)` and
+  `applyHead(document, head)`.
 - `src/pageHead.test.js` (new).
-- `src/App.jsx` holds the App-level effect (`usePageHead`) that writes the head tags for the
+- `src/App.jsx` holds the head effect (a `PageHead` component rendered after the page and
+  inside the error boundary, so the error screen, which writes the shell's head itself in
+  `src/components/ErrorBoundary.jsx`, never gets the failed page's head) that writes the head tags for the
   current location, and sets a public page's title too: each page puts back the title it
   found when it goes, and on a pre-rendered page that chain starts from the pre-rendered
   title, so without it the home page (which sets no title) would keep a topic's title.
 - `src/pageHeadApp.test.jsx` (new): the head on navigation.
-- `src/hydrate.js`, `src/hydrate.test.js` (new): the hydrate-or-render decision.
+- `src/hydrate.js`, `src/hydrate.test.js` (new): the hydrate-or-render decision, and
+  `focusHeadingOnArrival()`, which `LearnPage`, `LearnTopicPage` and `PrivacyPage` now use:
+  a pre-rendered page can be scrolled or tabbed through before its script arrives, and
+  hydrating it must not pull focus or the scroll position back to the heading.
+- `src/components/NotFoundPage.jsx`: its comment (the rewrite target).
+- `src/features/learn/content/searchEngines.js` and its test: the sitemap uses
+  `publicPaths()`; the preview `noindex` check covers `shell.html` and a topic page.
 - `src/entry-server.jsx` (new): `render(path)` with `renderToString` inside
-  `<Router ssrPath>`, and `routes()` listing the paths and their head.
+  `<Router ssrPath>`, `renderRoute(path, template)` for the whole page, and
+  `prerenderPaths` re-exported.
 - `src/prerender/html.js` (new): pure functions that put the head tags and the markup into
   the built `index.html` template (escaping attribute values, failing loudly when the
   template does not have the expected title, description or root).

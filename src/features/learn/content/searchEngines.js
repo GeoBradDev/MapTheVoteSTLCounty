@@ -13,6 +13,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+import { publicPaths } from '../../../config/publicPages.js';
 import { siteUrl } from '../../../config/site.js';
 import { parseTopic } from './topic.js';
 import { topicFiles } from './vitePlugin.js';
@@ -43,13 +44,11 @@ export function robotsTxt({ preview }) {
  * @param {{ id: string, lastVerified: string }[]} topics
  */
 export function sitemapXml(topics) {
-  const byId = [...topics].sort((a, b) => a.id.localeCompare(b.id));
-  const pages = [
-    { path: '/' },
-    { path: '/learn' },
-    ...byId.map((t) => ({ path: `/learn/${t.id}`, lastmod: t.lastVerified })),
-    { path: '/privacy' },
-  ];
+  const lastmods = new Map(topics.map((t) => [`/learn/${t.id}`, t.lastVerified]));
+  const pages = publicPaths(topics.map((t) => t.id)).map((page) => ({
+    path: page,
+    lastmod: lastmods.get(page),
+  }));
   const urls = pages.map(({ path: page, lastmod }) =>
     [
       '  <url>',

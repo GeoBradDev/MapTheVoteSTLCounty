@@ -11,6 +11,7 @@
 // Descriptions are each page's own text, never new claims. Nothing here may
 // hold a query string, a hash, an address or coordinates (#20).
 
+import { publicPaths } from './config/publicPages.js';
 import { siteUrl } from './config/site.js';
 import { copy as learnCopy } from './features/learn/learnCopy.js';
 import { DEFAULT_LOCALE, getTopic, getTopics } from './features/learn/topics.js';
@@ -106,14 +107,12 @@ export function pageHead(route) {
 }
 
 /**
- * Every path the build pre-renders: the sitemap's pages (#97), with the topics
- * from the default locale, which holds every topic.
+ * Every path the build pre-renders: the sitemap's list of public pages (#97,
+ * src/config/publicPages.js), with the topics from the default locale, which
+ * holds every topic.
  */
 export function prerenderPaths() {
-  const topics = getTopics(DEFAULT_LOCALE)
-    .map((topic) => `/learn/${topic.id}`)
-    .sort();
-  return ['/', '/learn', ...topics, '/privacy'];
+  return publicPaths(getTopics(DEFAULT_LOCALE).map((topic) => topic.id));
 }
 
 /**

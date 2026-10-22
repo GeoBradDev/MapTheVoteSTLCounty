@@ -216,6 +216,19 @@ describe('production build', () => {
       );
     });
 
+    it('pre-renders exactly the sitemap entries, no page more or less', async () => {
+      const sitemap = await page('sitemap.xml');
+      const paths = [...sitemap.matchAll(/<loc>https:\/\/mapthevotestl\.com([^<]*)<\/loc>/g)]
+        .map((m) => m[1])
+        .sort();
+      const files = (await readdir(outDir, { recursive: true }))
+        .map((f) => f.replaceAll('\\', '/'))
+        .filter((f) => f.endsWith('index.html'))
+        .map((f) => (f === 'index.html' ? '/' : `/${f.slice(0, -'/index.html'.length)}`))
+        .sort();
+      expect(files).toEqual(paths);
+    });
+
     it('writes the home page as index.html, with the address search', async () => {
       expect(html).toContain('data-prerendered="/"');
       expect(html).toContain('role="combobox"');

@@ -3,9 +3,9 @@ import AddressLookup from '../features/lookup/AddressLookup.jsx';
 import { t } from '../i18n/index.js';
 import { usePageTitle } from './usePageTitle.js';
 
-// The host rewrites every path to index.html, so unknown paths land here
-// instead of a host 404. It offers the address search, so a voter with a
-// broken link can still look up their precinct.
+// The host rewrites every path with no file to the app shell (shell.html),
+// so unknown paths land here instead of a host 404. It offers the address
+// search, so a voter with a broken link can still look up their precinct.
 export default function NotFoundPage() {
   const heading = t('notFound.heading');
   usePageTitle(heading);
