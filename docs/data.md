@@ -253,10 +253,10 @@ Polygon, 1213 features. Unofficial turnout per precinct (`RV_Count`,
 
 ### Wait times
 
-Traced on 2026-10-21 and sampled during open hours on 2026-10-22 (#102). The County
-reports **people in line**. The City's unit is not settled: its field alias says minutes,
-but the City Board's own dashboard shows the same value as people in line (see City below;
-asked on #102). Keep the unit with the value and never turn one into the other. With no report in the last 2 hours, a site shows a quiet
+Traced on 2026-10-21 and sampled during open hours on 2026-10-22 (#102). Both
+jurisdictions report **people in line**. For the City this is the owner's decision
+(2026-10-22): its field alias says minutes, but the City Board's own dashboard shows the
+same value as people in line (see City below). Keep the unit with the value and never turn one into the other. With no report in the last 2 hours, a site shows a quiet
 "No current line count" with its hours and open status still shown; it is never hidden
 (owner decision on #102, 2026-10-22, option 1). That 2-hour rule applies to both
 jurisdictions; the City dashboard's own 1-hour "may be out of date" mark (below) is the City's
@@ -333,13 +333,14 @@ config.
   with reports, so never use
   it. A site with no report has `waittime` and both report dates null (St. Joan of Arc on
   2026-10-22, whose `comments` say it opens Tuesday, October 27).
-- **Unit, not settled:** the field alias is "Wait Time (Minutes)" and the values seen (0, 3,
+- **Unit, people in line (owner decision, 2026-10-22):** the field alias is "Wait Time (Minutes)" and the values seen (0, 3,
   4) fit either unit. The City Board's public "Election Wait Times Dashboard", owned by
   `ESRI_BOE` (dashboard `8548fe3a065a455182181399909102ef`, edited 2026-10-22; web map
   `2ded49cc432d4631a8e76e6584f0a3ac`, edited 2026-10-21), reads this layer with the same
   filter, titles it "People In Line", and shows `waittime` as "**N** Estimated People in
-  Line". No City Board `.gov` page linked the dashboard on 2026-10-22. The owner decides
-  which unit the app shows (#102).
+  Line". No City Board `.gov` page linked the dashboard on 2026-10-22. The owner chose
+  people in line, as the dashboard shows; `waitTimes.city.unit` in `src/config/election.js`
+  holds it.
 - **The dashboard's other rules:** it shows a report only while the site is open by its
   `earlyvotingoperhours` and only when the report is from today (Central), marks it "may be
   out of date" after 1 hour, and treats `comments` containing "poll closed" as a closed

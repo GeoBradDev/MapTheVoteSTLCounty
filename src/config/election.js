@@ -149,10 +149,10 @@ const election = deepFreeze({
   layerMaxAge: { minutes: 10, electionDayMinutes: 2 },
 
   // Early voting line counts (#103), traced in #102 (docs/data.md, "Wait
-  // times"). The County reports people in line; the City unit is an open
-  // owner question (see `city.valueField`). Both layers send max-age=30, so a 30 second refresh adds no load. 120 minutes matches the
-  // County view's own 2 hour window, so the app never shows a count the
-  // official app would not.
+  // times"). Both boards report people in line, not minutes (the City by
+  // owner decision, 2026-10-22). Both layers send max-age=30, so a 30 second
+  // refresh adds no load. 120 minutes matches the County view's own 2 hour
+  // window, so the app never shows a count the official app would not.
   waitTimes: {
     enabled: true,
     refreshSeconds: 30,
@@ -189,9 +189,9 @@ const election = deepFreeze({
       where: "publicview = 'Yes' AND earlyvoting = 'Yes'",
       // The site key in the owner's City query (#103 comment, 2026-10-22).
       siteField: 'name',
-      // Not settled (owner question on #102): the field alias says minutes,
-      // but the City Board's dashboard shows it as "Estimated People in Line".
-      // `unit` below follows the dashboard until the owner answers.
+      // People in line, not minutes (owner decision, 2026-10-22): the City
+      // Board's dashboard shows it as "Estimated People in Line", although the
+      // field alias says minutes.
       valueField: 'waittime',
       // The joined report's time. Never last_edited_date, the site row's own
       // edit time, which does not move with reports.
