@@ -142,3 +142,8 @@ error line (#93), the Clayton municipality no match (opened as #143, unrelated).
   City as a source; the City is not asked for suggestions once only the house number is left;
   `scripts/check-geocoder.mjs` fails when a City suggestion is missing and picks City Hall,
   6500 Chippewa St and 8900 Riverview Blvd from the City's suggestions too.
+- Review round 3: City suggestions are asked for once a street word of two letters or digits
+  is typed, so numbered and short streets (2100 S 12th St, 3500 Oz St) are suggested; the
+  README intro and the CSP comment say what the City now does. Searching the same City
+  address again on the City stub page stays on that URL, as a repeat search on any precinct
+  page does on `main`; #89 replaces the stub.

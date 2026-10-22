@@ -156,9 +156,10 @@ export function cityStreetOf(typed) {
   return streetOf(typed).replace(CITY_TAIL, '').trim();
 }
 
-// Text worth a suggestion request: a house number, then a word of at least
-// three letters, as the geocoder matches whole words only.
-const SUGGESTIBLE = /^\s*\d+[a-z]?\s+(?:\S+\s+)*[a-z]{3}/i;
+// Text worth a suggestion request: a house number, then a street word of at
+// least two letters or digits ("12th", "Oz"), as the geocoder matches whole
+// words only; a lone letter ("6135 W") is not yet a street.
+const SUGGESTIBLE = /^\s*\d+[a-z]?\s+(?:\S+\s+)*[a-z0-9]{2}/i;
 
 /** The most City suggestions offered at once. */
 const MAX_SUGGESTIONS = 5;

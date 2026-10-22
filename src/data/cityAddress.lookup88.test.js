@@ -200,6 +200,15 @@ describe('suggest(): City parcels as the voter types', () => {
     expect(fetch.calls[0].params.get('SingleLine')).toBe('5010 Nottingham Ave');
   });
 
+  it.each(['2100 S 12th St', '3500 Oz St', '1400 N 14th'])(
+    'asks for a numbered or short street name: %s',
+    async (text) => {
+      const fetch = answering({ candidates: [] });
+      await expect(city(fetch).suggest(text)).resolves.toEqual([]);
+      expect(fetch).toHaveBeenCalledTimes(1);
+    },
+  );
+
   it('matches the last typed word as a prefix', async () => {
     const suggestions = await city(answering(partial)).suggest('6135 Washington Bl');
     expect(suggestions.map((s) => s.label)).toEqual([

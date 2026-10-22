@@ -4,9 +4,9 @@ A nonpartisan voter guide for St. Louis County, Missouri, live at
 [mapthevotestl.com](https://mapthevotestl.com). A voter types an address or uses their
 location and gets their precinct, the nearest polling places, their sample ballot, their
 districts and the in-person absentee voting sites and hours, plus short "How to vote" guides
-built from official sources. A voter with a St. Louis City address gets their City precinct
-(#88); when it cannot be found, they are referred to the City's own Board of Election
-Commissioners.
+built from official sources. A voter with a St. Louis City address is sent to their City precinct's
+page (#88; its results arrive with #89); when the precinct cannot be found, they are referred
+to the City's own Board of Election Commissioners.
 
 It is for St. Louis County voters, on a phone first, and for whoever runs it for the next
 election: the sections below say how to set it up, where its data comes from and how to
