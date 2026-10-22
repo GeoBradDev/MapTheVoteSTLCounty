@@ -68,14 +68,19 @@ function usePageArrival() {
  * no canonical on any other page. A pre-rendered page arrives with its own
  * head, and the title each page puts back when it goes is the one it found,
  * so a public page's title is set here too (the home page sets none itself).
- * Other pages set their own titles. This runs after the page's own effects.
+ * Other pages set their own titles. It renders after the page, so its effect
+ * runs after the page's (which keeps the title the page found to put back),
+ * and inside the error boundary, so a page that throws takes it away with it
+ * and the error screen sets its own head.
  */
-function usePageHead(location, locale) {
+function PageHead({ location }) {
+  const locale = useLocale();
   useEffect(() => {
     const head = pageHead(location);
     if (head) document.title = head.title;
     applyHead(document, head);
   }, [location, locale]);
+  return null;
 }
 
 export default function App() {
@@ -83,8 +88,7 @@ export default function App() {
   const [location] = useLocation();
   // A new language re-renders every page in it (#19). The page is not
   // remounted, so focus stays on the language switcher and nothing reloads.
-  const locale = useLocale();
-  usePageHead(location, locale);
+  useLocale();
   return (
     <div className="flex min-h-screen flex-col bg-surface text-ink">
       <a
@@ -105,6 +109,8 @@ export default function App() {
             <Route path="/privacy" component={PrivacyPage} />
             <Route component={NotFoundPage} />
           </Switch>
+          {/* After the page, so its effect runs after the page's own. */}
+          <PageHead location={location} />
         </ErrorBoundary>
       </main>
       <LanguageSwitcher />
