@@ -123,3 +123,11 @@ issue), City sites (#91), analytics (#70).
   no-count line show only when the County source is on in the config (with it off, the card
   shows only the link). A held order lets go once focus is outside the list after any render,
   so it does not stick when the focused row is removed without a blur.
+- Review (finder 2): `PrivacyPage.test.jsx` now checks the notice names the results page's
+  early voting card (it fails with main's text). The hold no longer lets go when the window
+  loses focus (switching apps) with a row link still the active element. The
+  `privacyCopy.js` comment names both readers. Left as is: a failed County request with
+  nothing fresh kept shows the same one line as no data ("No current line count for these
+  sites"), which is true; the card does not repeat the page's "could not be loaded" status.
+- Done outside the diff: the note on #81, and follow-up issue #139 for the `/early-voting`
+  origin from a results page.

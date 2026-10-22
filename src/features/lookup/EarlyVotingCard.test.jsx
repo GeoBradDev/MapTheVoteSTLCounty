@@ -565,4 +565,22 @@ describe('line counts', () => {
     );
     outside.remove();
   });
+
+  it('keeps the held order when the window loses focus with a row link still focused', async () => {
+    const user = userEvent.setup();
+    const source = manualSource([entryFor(a, 1), entryFor(b, 20)]);
+    render(<EarlyVotingCard code="CC007" origin={ORIGIN} waitSource={source} />);
+    await list();
+    await user.click(screen.getByRole('radio', { name: waitCopy.sort.nearby(NEARBY_MILES) }));
+    const link = within((await items())[0]).getAllByRole('link')[0];
+    act(() => link.focus());
+    // Switching apps: a blur with no new target, and the link stays the
+    // document's active element.
+    act(() =>
+      link.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null })),
+    );
+    expect(link).toHaveFocus();
+    act(() => source.emit([entryFor(a, 20), entryFor(b, 1)]));
+    expect(rowNames(await list()).slice(0, 2)).toEqual([a.name, b.name]);
+  });
 });

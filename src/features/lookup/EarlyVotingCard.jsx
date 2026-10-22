@@ -285,7 +285,12 @@ export default function EarlyVotingCard({ code, origin, waitSource }) {
             className="mt-3 list-decimal space-y-3 pl-6"
             onFocus={() => setHeld((keys) => keys ?? rows.map((row) => row.key))}
             onBlur={(event) => {
-              if (!event.currentTarget.contains(event.relatedTarget)) setHeld(null);
+              // Focus moved outside the list. Not when the window lost focus:
+              // the row link is then still the active element.
+              const list = event.currentTarget;
+              if (!list.contains(event.relatedTarget) && !list.contains(document.activeElement)) {
+                setHeld(null);
+              }
             }}
           >
             {shownRows.map((site, i) => (
