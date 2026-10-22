@@ -417,6 +417,7 @@ export async function getCityWaits() {
       city.commentsField,
       city.hoursField,
     ].join(','),
+    orderByFields: `${city.timeField} DESC`,
   });
   return selectCityWaits(rows, Date.now());
 }

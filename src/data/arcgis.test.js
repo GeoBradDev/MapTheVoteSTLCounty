@@ -779,6 +779,7 @@ describe('wait times (#103)', () => {
         city.commentsField,
         city.hoursField,
       ].join(','),
+      orderByFields: `${city.timeField} DESC`,
       returnGeometry: 'false',
       f: 'json',
     });

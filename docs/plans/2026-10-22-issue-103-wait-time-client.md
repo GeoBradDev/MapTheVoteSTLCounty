@@ -146,3 +146,15 @@ config move (#86).
   aged out while the last request succeeded); `unavailable` only follows a failure.
 - `docs/data.md`: no edit here. The #102 branch rewrites its "Wait times" section, and an
   edit here would conflict with it; Phase 8 records what that section should gain.
+- Review (finder 2, note): a reader that mounts within `refreshSeconds` of the last tick
+  waits out the interval instead of asking again, so readers coming and going (the #104
+  page, then a #105 card) keep to one request per interval. A tab returning to visible
+  still asks at once, as the issue requires.
+- Coordinator message (2026-10-22) on the City source: it asked for `orderByFields` on
+  the report time, now added, and said `waittime` is minutes, keyed by `name`, timed by
+  `last_edited_date_1740505041182`. The City Board's own dashboard (item
+  `8548fe3a065a455182181399909102ef`, re-read on 2026-10-22) labels the value
+  "Estimated People in Line", times it by `created_date_1740505041182`, and the owner's
+  #102 comment names `facilityid` as the key. This branch follows the official dashboard
+  and the owner's comment (`unit: 'people'`, `facilityid`, `created_date_*`); the unit
+  is one config value, and the question goes to the owner before #104 shows City values.

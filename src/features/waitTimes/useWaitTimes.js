@@ -61,6 +61,9 @@ export function createWaitTimesStore(
   const listeners = new Set();
   const inFlight = new Set();
   let timer = null;
+  // When the loop last asked, so a reader mounting soon after the last one
+  // left waits out the interval instead of asking again.
+  let lastTickAt = null;
 
   function update(key, change) {
     state = withWaits({ ...state, [key]: { ...state[key], ...change } });
@@ -95,6 +98,7 @@ export function createWaitTimesStore(
     timer = null;
     if (listeners.size === 0 || isHidden()) return;
     timer = setTimeout(tick, refreshMs);
+    lastTickAt = Date.now();
     for (const key of KEYS) {
       if (!fetchers[key]) continue;
       prune(key, state[key].refreshFailed);
@@ -116,7 +120,12 @@ export function createWaitTimesStore(
       listeners.add(listener);
       if (listeners.size === 1) {
         document.addEventListener('visibilitychange', onVisibilityChange);
-        tick();
+        const elapsed = lastTickAt === null ? Infinity : Date.now() - lastTickAt;
+        if (elapsed < refreshMs && !isHidden()) {
+          timer = setTimeout(tick, refreshMs - elapsed);
+        } else {
+          tick();
+        }
       }
       return () => {
         listeners.delete(listener);

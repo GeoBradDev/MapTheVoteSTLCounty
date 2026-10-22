@@ -164,6 +164,21 @@ describe('useWaitTimes', () => {
     expect(seen.every((n) => n === 0)).toBe(true);
   });
 
+  it('keeps to one request per interval when readers come and go', async () => {
+    const county = vi.fn(async () => []);
+    const store = createWaitTimesStore({ county, city: null });
+    const first = render(<Reader name="a" store={store} />);
+    await settle();
+    first.unmount();
+    // A new page mounts its reader 10 s later: it waits out the interval.
+    await act(() => vi.advanceTimersByTimeAsync(10_000));
+    render(<Reader name="b" store={store} />);
+    await settle();
+    expect(county).toHaveBeenCalledTimes(1);
+    await act(() => vi.advanceTimersByTimeAsync(REFRESH - 10_000));
+    expect(county).toHaveBeenCalledTimes(2);
+  });
+
   it('stops when no component reads it', async () => {
     const county = vi.fn(async () => []);
     const store = createWaitTimesStore({ county, city: null });
