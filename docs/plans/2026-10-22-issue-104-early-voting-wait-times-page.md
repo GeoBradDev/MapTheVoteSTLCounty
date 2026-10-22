@@ -35,7 +35,8 @@ Domain skills:
   which owns the link from the results page.
 - "Shortest line within N miles" uses N = 5: the sites within 5 miles first, by the
   default order, then the rest nearest first.
-- Color bins: 0 to 4, 5 to 14, 15 or more people in line.
+- Color bins: 0 to 4, 5 to 14, 15 or more people in line (colors: see the owner feedback
+  under Revisions).
 - The status line is re-announced at most every 5 minutes.
 - No analytics event: #70 has not landed.
 
@@ -195,3 +196,10 @@ Chosen not to do: City rows (#91), the results page origin (#105), Election Day 
   names the line count layers. The first run stopped here (two extra finders in a row led
   to fixes); the resumed run's finder 7 reviewed this commit and found nothing, and the
   verifier found nothing against the criteria.
+- Owner feedback after the PR opened: the one-hue brown scale was too hard to tell apart,
+  and the owner proposed ColorBrewer's BrBG ramp. The bins are now teal (0 to 4), tan (5 to
+  14) and brown (15 or more), each marker outlined in ink so even the light tan stands out
+  3:1 on the basemap; marker numbers are 4.5:1 on their fill; `mapColors.test.js` checks
+  those and that every bin and the plain no-count marker are at least 0.15 apart in OKLab
+  (the old brown shades fail that). Criterion 5's "each passes 3:1" now holds through the
+  fill or the outline.

@@ -32,10 +32,7 @@ function Legend() {
       <ul aria-labelledby="wait-map-legend" className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
         {WAIT_BINS.map((bin, i) => (
           <li key={bin.min} className="flex items-center gap-2">
-            <span
-              aria-hidden="true"
-              className={`${SWATCH} border-surface ${WAIT_BIN_CLASSES[i]}`}
-            />
+            <span aria-hidden="true" className={`${SWATCH} ${WAIT_BIN_CLASSES[i]}`} />
             {copy.map.bin(bin)}
           </li>
         ))}

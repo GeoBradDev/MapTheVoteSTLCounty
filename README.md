@@ -640,8 +640,9 @@ ships its own few MapLibre layout rules (`src/features/lookup/precinctMap.css`) 
 The early voting wait times page (`/early-voting`, #104) has its own map, loaded only when
 the voter presses "Show map", on the same terms: the list holds everything on it, and it goes
 away on any failure. Its numbered markers match the list. A site with a current line count is
-filled by its bin on a one-hue light-to-dark scale (`--color-wait-*` in `src/index.css`, used
-only for markers and the legend, each at least 3:1 against the basemap,
+filled by its bin: teal, tan or brown, from ColorBrewer's BrBG ramp (`--color-wait-*` in
+`src/index.css`, used only for markers and the legend, each marker outlined in ink so it is at
+least 3:1 against the basemap,
 `src/features/waitTimes/mapColors.test.js`), and the legend names the unit and is hidden when
 no site has a count.
 

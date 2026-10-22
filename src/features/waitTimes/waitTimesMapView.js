@@ -20,7 +20,7 @@ const MARKER =
 
 function markerElement(bin, number) {
   const element = document.createElement('div');
-  const fill = bin === null ? NO_COUNT_CLASS : `border-surface ${WAIT_BIN_CLASSES[bin]}`;
+  const fill = bin === null ? NO_COUNT_CLASS : WAIT_BIN_CLASSES[bin];
   element.className = `${MARKER} ${fill}`;
   element.setAttribute('aria-hidden', 'true');
   element.textContent = String(number);
