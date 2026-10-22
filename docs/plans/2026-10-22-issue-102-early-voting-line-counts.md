@@ -89,6 +89,8 @@ app code changes.
   dashboard shows it as people in line. `docs/data.md` records both and leaves the choice to
   the owner, asked on #102, instead of asserting either. This replaces the first revision's
   "the City unit is people".
+- Later (after merge): the owner chose people in line (2026-10-22), and `docs/data.md` now
+  records that decision (#103).
 - Second review: the test now also pins the recording day's 21 site usernames (the County
   renumbers them each election) instead of reading `absentee-sites.json`, so re-recording
   the per-election fixtures before early voting opens leaves it green. The reason given for
