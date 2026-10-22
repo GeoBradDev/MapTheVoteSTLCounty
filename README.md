@@ -243,8 +243,8 @@ the script.
 config's time zone, and on demand from the Actions tab (**Data health**, **Run workflow**). On
 a failure it opens an issue labeled `data health`, or comments on the one already open; close
 that issue once it is fixed. Links the content check skipped behind a bot challenge are listed
-on every run's summary page and in that issue; open each in a browser before Election Day. The workflow never runs on pull requests, so a live outage cannot
-block a merge. For the next election, nothing in the workflow changes: it reads the new `electionDate`. GitHub turns off
+on every run's summary page and in that issue; open each in a browser before Election Day.
+The workflow never runs on pull requests, so a live outage cannot block a merge. For the next election, nothing in the workflow changes: it reads the new `electionDate`. GitHub turns off
 scheduled workflows in a public repository after 60 days with no activity; if the daily runs stop,
 turn the workflow back on in the Actions tab.
 
