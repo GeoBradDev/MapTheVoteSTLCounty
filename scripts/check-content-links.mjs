@@ -181,25 +181,32 @@ export function parseRefreshContent(content) {
     const end = rest.indexOf(rest[0], 1);
     rest = rest.slice(1, end === -1 ? undefined : end);
   }
-  // Trailing whitespace and controls are dropped by the URL parser too.
-  rest = rest.trim();
+  // The URL parser drops leading and trailing C0 controls and spaces, and
+  // nothing else: a no-break space stays part of the URL.
+  // eslint-disable-next-line no-control-regex
+  rest = rest.replace(/^[\u0000-\u0020]+|[\u0000-\u0020]+$/g, '');
   return { url: rest || null };
 }
 
-/** The page's `<meta>` elements in document order, as a browser builds them. */
-function metaElements(node, found = []) {
+/** The page's elements in document order, as a browser builds them. */
+function elements(node, found = []) {
   // Template contents are not part of the page, and a parsed page keeps them
   // outside childNodes.
   for (const child of node.childNodes ?? []) {
-    if (child.nodeName === 'meta') found.push(child);
-    metaElements(child, found);
+    if (child.attrs) found.push(child);
+    elements(child, found);
   }
   return found;
 }
 
+const attrOf = (element, name) => element.attrs.find((a) => a.name === name)?.value;
+
+/** ASCII lower case only, as HTML compares enumerated attribute values. */
+const asciiLower = (text) => text.replace(/[A-Z]/g, (c) => c.toLowerCase());
+
 /**
  * Where a page's `<meta http-equiv="refresh">` sends the browser, resolved
- * against `baseUrl`, or null when it has none or only reloads itself. The
+ * against the page's base URL, or null when it has none or only reloads itself. The
  * page is parsed as HTML with scripting on, as a browser would, so comments,
  * script text and noscript blocks never count. As in a browser, the first
  * refresh it can parse is the only one that counts.
@@ -208,20 +215,36 @@ function metaElements(node, found = []) {
  * @returns {string | null}
  */
 export function metaRefreshTarget(html, baseUrl) {
-  for (const meta of metaElements(parseHtml(html))) {
-    const attr = (name) => meta.attrs.find((a) => a.name === name)?.value;
-    if ((attr('http-equiv') ?? '').trim().toLowerCase() !== 'refresh') continue;
-    const content = attr('content');
+  const all = elements(parseHtml(html));
+  // The document's base URL: the first <base href> on the page, resolved
+  // against the page's own URL.
+  let documentBase = baseUrl;
+  const base = all.find((e) => e.nodeName === 'base' && attrOf(e, 'href') !== undefined);
+  if (base) {
+    try {
+      documentBase = new URL(attrOf(base, 'href'), baseUrl).href;
+    } catch {
+      // A base that does not parse is ignored.
+    }
+  }
+  for (const meta of all) {
+    if (meta.nodeName !== 'meta') continue;
+    if (asciiLower(attrOf(meta, 'http-equiv') ?? '') !== 'refresh') continue;
+    const content = attrOf(meta, 'content');
     if (content === undefined) continue;
     const refresh = parseRefreshContent(content);
     if (!refresh) continue;
     if (!refresh.url) return null;
+    let target;
     try {
-      return new URL(refresh.url, baseUrl).href;
+      target = new URL(refresh.url, documentBase);
     } catch {
       // A browser drops a refresh whose URL does not parse and reads the next.
       continue;
     }
+    // Browsers refuse to refresh to a javascript: URL, so the page stays.
+    if (target.protocol === 'javascript:') return null;
+    return target.href;
   }
   return null;
 }

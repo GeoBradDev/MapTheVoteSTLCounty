@@ -67,7 +67,14 @@ because no UI changes. django, fastapi, expo: not applicable because the repo us
   differently (abrupt comments, `<!--` in a script, text in a title or template, entities,
   two refreshes). It now parses the page with parse5 (scripting on, so `noscript` is text) and
   reads `content` by the HTML standard's declarative refresh steps: the first refresh a
-  browser can parse is the only one that counts.
+  browser can parse is the only one that counts. A third round added the page's `<base href>`,
+  an exact (ASCII case-insensitive, untrimmed) `http-equiv` match, URL-parser whitespace
+  rules, and ignores a `javascript:` target, which browsers refuse.
+- A refresh with a long delay (a session timeout such as `content="1200; url=/logout"`) to
+  another page fails like any other. That is what criterion 1 says, and none of today's links
+  has one (live drive). If one appears, a person reads the FAIL detail; a delay threshold is a
+  follow-up, not done here.
+- An HTTP `Refresh` response header is not checked; the issue asks only for the meta tag.
 - Reading bodies makes each check slower; capped at 512 KB, and only for `text/html`.
 - Skips are permanent for the county site, so a skip alone does not open an issue (it would
   open one every day for a page the owner checked by hand). It shows in the job summary and in
