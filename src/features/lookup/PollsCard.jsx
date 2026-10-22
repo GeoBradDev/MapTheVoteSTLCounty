@@ -5,12 +5,12 @@ import { getPolls } from '../../data/arcgis.js';
 import { CARD_TOPICS } from '../learn/cardTopics.js';
 import { getTopic } from '../learn/topics.js';
 import AssignedPollingPlace from './AssignedPollingPlace.jsx';
-import { distanceOrigin } from './distanceOrigin.js';
-import { directionsLinks, isAppleMobile, nearestPolls } from './nearbyPolls.js';
+import { directionsLinks, isAppleMobile } from './nearbyPolls.js';
 import PrecinctMap from './PrecinctMap.jsx';
 import RetryButton from './RetryButton.jsx';
 import { copy, sourceName } from './resultsCopy.js';
-import { useRetry } from './useRetry.js';
+import StaleNote from './StaleNote.jsx';
+import { useNearestSites } from './useNearestSites.js';
 
 const linkClass = 'text-primary underline';
 const tapLinkClass = `inline-flex min-h-11 items-center ${linkClass}`;
@@ -121,31 +121,14 @@ function PollRow({ poll, apple, headingRef }) {
  *   distances are from the precinct's center.
  */
 export default function PollsCard({ code, origin }) {
-  // { rows } once loaded, { error: true, attempt } on failure.
-  const [result, setResult] = useState(null);
-  // A failed load can be tried again; it stays shown while it is (#18).
-  const { attempt, loading, retry, done, targetRef } = useRetry();
+  // { rows, loadedAt } once loaded, { error: true, attempt } on failure. A
+  // failed load can be tried again; it stays shown while it is (#18). A list
+  // left open past the max age refreshes when the tab is shown again (#84).
+  const { result, loading, retry, targetRef } = useNearestSites(getPolls, code, origin);
   const [shown, setShown] = useState(election.nearbyPollCount);
   // The index of the first place a "Show more" revealed, which takes focus.
   const [focusFrom, setFocusFrom] = useState(null);
   const focusRef = useRef(null);
-
-  useEffect(() => {
-    let current = true;
-    Promise.all([getPolls(), distanceOrigin(code, origin)])
-      .then(
-        ([polls, point]) => ({ rows: nearestPolls(polls, point) }),
-        () => ({ error: true, attempt }),
-      )
-      .then((next) => {
-        if (!current) return;
-        setResult(next);
-        done();
-      });
-    return () => {
-      current = false;
-    };
-  }, [code, origin, attempt, done]);
 
   useEffect(() => {
     if (focusFrom !== null) focusRef.current?.focus();
@@ -206,6 +189,7 @@ export default function PollsCard({ code, origin }) {
               />
             ))}
           </ol>
+          {result.refreshFailed && <StaleNote loadedAt={result.loadedAt} />}
           {shown < rows.length && (
             <button
               type="button"

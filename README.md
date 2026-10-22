@@ -141,6 +141,15 @@ election name, an election-specific URL, a date, a layer or service name, the fi
 filter or the sample ballot pattern from the config there; it does not check hours, so read
 those from the config too. Text under `content/` may repeat them.
 
+The polling places layer the app keeps in memory (`getPolls` and `getAbsenteeSites`) has a max
+age (#84): `layerMaxAge` in the config, shorter on Election Day (the date in the config's time
+zone). `isFresh` and `layerMaxAgeMs` in `src/data/freshness.js` are the one rule for "too old":
+any later refreshed layer (wait times, City layers) uses them rather than its own expiry. The
+polling places and early voting cards fetch again when the tab is shown after the max age, so a
+tab left in the background for days shows a moved polling place when the voter returns to it
+(not while the tab stays visible); a refresh that fails keeps the rows shown and says when they
+were loaded. The service worker (#25) must not keep serving an answer older than this max age.
+
 ## Learn content
 
 Each voter education topic is one Markdown file, `content/<locale>/learn/<id>.md`, with front
@@ -287,7 +296,8 @@ county's official lookup next to Use my location, and every one but a no match h
 again button that repeats the same search, or the same device location without asking the
 device again, until the voter edits the address. The precinct page and its polling places
 and early voting cards show their own failures, each with Try again (the map still removes
-itself, #13); a failed page load moves focus to its message.
+itself, #13); a failed page load moves focus to its message. A failed refresh of a list already
+shown keeps its rows and says when they were loaded instead (#84).
 After `SLOW_MS` (`src/features/lookup/slowNotice.js`), the lookup and the precinct page say
 they are still working. When the browser reports no connection, the lookup's and the precinct
 page's messages say the voter appears to be offline (cached polling places wait for the PWA, #25). A page that throws
