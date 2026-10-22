@@ -402,17 +402,20 @@ in it, keeping focus and what the page has loaded. The site always starts in Eng
 Before each election, after editing `src/config/election.js`, check the live layers it names:
 
 ```sh
-node scripts/check-config.mjs [--layer <key>=<path>]
+node scripts/check-config.mjs [--layer <key>=<path>] [--ballot-sample <n|all>]
 ```
 
 It checks that each configured layer answers with the geometry and every field the app reads,
 that the precinct count is in a sane range, that every `In Election` precinct's sample ballot
-link parses and its file name names that precinct (and that 5 random links serve a PDF), that the absentee filter finds sites with
+link parses and its file name names that precinct (and that 5 random links serve a PDF whose
+`Content-Disposition` file name names the same precinct), that the absentee filter finds sites with
 hours in the config, and that one known point per County Council district lands in a precinct
 in that district and inside the county boundary layer, while a point in St. Louis City lands in
 neither. It prints PASS, FAIL or SKIP per check and exits 1 on any failure; a wrong
 layer path fails with the config key, the path and the service's error. `--layer` tries another
-path for one layer without editing the config. The thresholds and known points are at the top of
+path for one layer without editing the config. `--ballot-sample` checks that many random sample
+ballot links instead of 5, or every link with `all` (one request each to the county's portal, so
+run it by hand, for example once before Election Day, not on the schedule). The thresholds and known points are at the top of
 the script.
 
 `.github/workflows/data-health.yml` runs this check, `scripts/check-geocoder.mjs` and

@@ -10,6 +10,7 @@ import {
   BALLOT_SAMPLE_SIZE,
   KNOWN_POINTS,
   OUTSIDE_POINT,
+  contentDispositionFileName,
   expectedLayers,
   isPastElection,
   parseArgs,
@@ -24,6 +25,14 @@ const ballotUrl = (i) =>
   `https://stlouiscovotes.maps.arcgis.com/sharing/rest/content/items/${i
     .toString(16)
     .padStart(32, '0')}/data`;
+
+// The file the county serves at ballotUrl(i + 1): precinct AB<i>'s PDF.
+const servedFileName = (url) => {
+  const i = parseInt(url.split('/items/')[1].slice(0, 32), 16) - 1;
+  return `AB-${String(i).padStart(3, '0')}.pdf`;
+};
+// The portal's real header form (docs/data.md), with its size parameter.
+const disposition = (fileName) => `attachment; filename="${fileName}"; size=55289`;
 
 // A healthy world: 1000 precincts, 990 In Election with their own ballot link.
 function healthyWorld() {
@@ -58,7 +67,11 @@ function healthyWorld() {
       return known ? { precinct: 'AB001', [councilField]: known.council } : null;
     },
     inBoundary: (lng, lat) => KNOWN_POINTS.some((p) => p.lng === lng && p.lat === lat),
-    ballot: () => ({ status: 200, type: 'application/pdf' }),
+    ballot: (url) => ({
+      status: 200,
+      type: 'application/pdf',
+      disposition: disposition(servedFileName(url)),
+    }),
     calls: [],
   };
 }
@@ -76,8 +89,11 @@ function stubFetch(world) {
       if (answer) return answer;
     }
     if (init.method === 'HEAD') {
-      const { status, type } = world.ballot(url.href);
-      return new Response(null, { status, headers: type ? { 'content-type': type } : {} });
+      const { status, type, disposition: cd } = world.ballot(url.href);
+      const headers = {};
+      if (type) headers['content-type'] = type;
+      if (cd) headers['content-disposition'] = cd;
+      return new Response(null, { status, headers });
     }
     const prefix = `${election.serviceRoot}/`;
     if (!url.href.startsWith(prefix)) throw new TypeError('fetch failed');
@@ -111,11 +127,12 @@ function stubFetch(world) {
   };
 }
 
-async function run(world, config = election) {
+async function run(world, config = election, options = {}) {
   const results = await runHealthCheck(config, {
     fetch: stubFetch(world),
     sample: (items, count) => items.slice(0, count),
     retryDelayMs: 0,
+    ...options,
   });
   return Object.fromEntries(results.map((r) => [r.name, r]));
 }
@@ -270,13 +287,60 @@ describe('runHealthCheck', () => {
         ? { status: 200, type: 'text/html; charset=utf-8' }
         : url === ballotUrl(3)
           ? { status: 404 }
-          : { status: 200, type: 'application/pdf' };
+          : { status: 200, type: 'application/pdf', disposition: disposition(servedFileName(url)) };
     const results = await run(world);
     const heads = world.calls.filter((c) => c.method === 'HEAD');
     expect(heads).toHaveLength(BALLOT_SAMPLE_SIZE);
     expect(results['sample ballot PDFs'].detail).toBe(
-      `2 of 5: ${ballotUrl(2)}: Content-Type text/html; ${ballotUrl(3)}: HTTP 404`,
+      `2 of 5: AB001 (${ballotUrl(2)}): Content-Type text/html; ` +
+        `AB002 (${ballotUrl(3)}): HTTP 404`,
     );
+  });
+
+  it('fails, naming the precinct, when a sampled PDF is named for another precinct (#111)', async () => {
+    const world = healthyWorld();
+    // AB001's link text says AB-001.pdf, but its URL serves AB-007.pdf.
+    world.ballot = (url) => ({
+      status: 200,
+      type: 'application/pdf',
+      disposition: disposition(url === ballotUrl(2) ? 'AB-007.pdf' : servedFileName(url)),
+    });
+    const { status, detail } = (await run(world))['sample ballot PDFs'];
+    expect(status).toBe('fail');
+    expect(detail).toBe(`1 of 5: AB001 (${ballotUrl(2)}): the PDF is named AB-007.pdf`);
+  });
+
+  it('fails, naming the precinct, when a sampled PDF has no file name (#111)', async () => {
+    const world = healthyWorld();
+    world.ballot = (url) =>
+      url === ballotUrl(4)
+        ? { status: 200, type: 'application/pdf' }
+        : url === ballotUrl(5)
+          ? { status: 200, type: 'application/pdf', disposition: 'attachment' }
+          : { status: 200, type: 'application/pdf', disposition: disposition(servedFileName(url)) };
+    const { status, detail } = (await run(world))['sample ballot PDFs'];
+    expect(status).toBe('fail');
+    expect(detail).toBe(
+      `2 of 5: AB003 (${ballotUrl(4)}): no file name in Content-Disposition; ` +
+        `AB004 (${ballotUrl(5)}): no file name in Content-Disposition`,
+    );
+  });
+
+  it('passes when every sampled PDF is named for its precinct', async () => {
+    const { status, detail } = (await run(healthyWorld()))['sample ballot PDFs'];
+    expect(status).toBe('pass');
+    expect(detail).toBe('5 of 5 answer HEAD with a PDF named for their precinct');
+  });
+
+  it('checks as many links as ballotSample asks, or every link', async () => {
+    const some = healthyWorld();
+    await run(some, election, { ballotSample: 12 });
+    expect(some.calls.filter((c) => c.method === 'HEAD')).toHaveLength(12);
+
+    const every = healthyWorld();
+    const results = await run(every, election, { ballotSample: Infinity });
+    expect(every.calls.filter((c) => c.method === 'HEAD')).toHaveLength(990);
+    expect(results['sample ballot PDFs'].detail).toMatch(/^990 of 990 /);
   });
 
   it('fails when the absentee filter finds no site or a site has no hours', async () => {
@@ -451,6 +515,31 @@ describe('runHealthCheck', () => {
   });
 });
 
+describe('contentDispositionFileName', () => {
+  it("reads the portal's header, quoted or not, with other parameters", () => {
+    expect(contentDispositionFileName('attachment; filename="CC-007.pdf"; size=55289')).toBe(
+      'CC-007.pdf',
+    );
+    expect(contentDispositionFileName('attachment; filename=CC-007.pdf')).toBe('CC-007.pdf');
+    expect(contentDispositionFileName('inline;FILENAME="BON-001.pdf"')).toBe('BON-001.pdf');
+  });
+
+  it('prefers filename* over filename and decodes it', () => {
+    expect(
+      contentDispositionFileName(`attachment; filename="old.pdf"; filename*=UTF-8''CC%2D007.pdf`),
+    ).toBe('CC-007.pdf');
+  });
+
+  it('returns null when there is no file name', () => {
+    expect(contentDispositionFileName(null)).toBeNull();
+    expect(contentDispositionFileName('')).toBeNull();
+    expect(contentDispositionFileName('attachment')).toBeNull();
+    expect(contentDispositionFileName('attachment; filename=""')).toBeNull();
+    expect(contentDispositionFileName('attachment; filename="CC-007.pdf')).toBeNull();
+    expect(contentDispositionFileName(`attachment; filename*=UTF-8''%E0%A4%A`)).toBeNull();
+  });
+});
+
 describe('randomSample', () => {
   it('picks distinct items, at most the count', () => {
     const picked = randomSample(['a', 'b', 'c', 'd', 'e', 'f'], 5);
@@ -480,6 +569,18 @@ describe('parseArgs', () => {
     expect(() => parseArgs(['--layer', 'nope=a'], election)).toThrow(/No layer nope/);
     expect(() => parseArgs(['--layer'], election)).toThrow(/<key>=<path>/);
     expect(() => parseArgs(['--verbose'], election)).toThrow(/Unknown argument/);
+  });
+
+  it('reads --ballot-sample as a count or all', () => {
+    expect(parseArgs(['--ballot-sample', '25'], election)).toEqual({
+      layers: {},
+      ballotSample: 25,
+    });
+    expect(parseArgs(['--ballot-sample', 'all'], election).ballotSample).toBe(Infinity);
+    for (const bad of [undefined, '0', '-3', '2.5', 'many']) {
+      const args = bad === undefined ? ['--ballot-sample'] : ['--ballot-sample', bad];
+      expect(() => parseArgs(args, election)).toThrow(/--ballot-sample needs/);
+    }
   });
 });
 
