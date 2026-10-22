@@ -17,7 +17,9 @@ changes (the switcher renders nothing with one locale).
    Values from the county's data (district names, places), election values from
    `src/config/election.js` (the election's name), and the address search services' names
    and data names from the geocoder modules (the privacy notice requires them there) are not
-   translated.
+   translated. Nor, for now, are the map's credit line (`basemap.js`) and MapLibre's built-in
+   text (gesture hints, the canvas label), which a Spanish launch can pass through MapLibre's
+   `locale` option.
 2. English output is identical: every copy value, called with sample arguments, matches the
    value before the change, and the existing test suite passes unchanged.
 3. `t(key, params)` interpolates `{name}` and supports ICU-style plurals

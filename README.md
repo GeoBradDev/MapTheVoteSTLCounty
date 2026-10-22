@@ -384,7 +384,8 @@ Every word the app shows is in `src/i18n/en.json` and reaches the page through `
 `{count, plural, one {...} other {...}}`. Values from the county's data, such as district
 names, election values from `src/config/election.js`, and the names of the address search
 services and their data (from the geocoder modules, as the privacy notice requires) are shown as
-they are. So is the home page's tab title, which is `index.html`'s. ESLint's
+they are. So are the home page's tab title, which is `index.html`'s, the map's credit line
+and MapLibre's own built-in text (its gesture hints and the map's label). ESLint's
 `react/jsx-no-literals` fails on words typed straight into JSX.
 
 To add a language, such as Spanish: copy `en.json` to `src/i18n/es.json`, translate the
