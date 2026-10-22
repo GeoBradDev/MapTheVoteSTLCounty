@@ -62,6 +62,11 @@ and the line reaches the public run summary and issue; the City unreadable-hours
 and the config step limit goes from 25 to 30 minutes (job 73 to 78), since the 4 new requests
 push the worst case to about 26 minutes.
 
+Revised after review finder 3: a report time outside the Date range is ignored rather than
+crashing the run; a row answer with a feature that has no fields fails, as it fails the app;
+row query failures name the config key and layer like the metadata check; and a City filter
+that matches no row is a WARN (the City layer lists its sites all season).
+
 ## Files that change
 - `scripts/electionWindow.mjs` (new): `isPastElection` (moved), `isEarlyVotingPeriod`,
   `windowFor(config, event, now)` returning `full`, `waits` or `off` for the workflow.

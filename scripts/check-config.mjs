@@ -485,25 +485,45 @@ export async function runHealthCheck(
       });
     }
 
-    const waitRows = async (source, outFields) => {
-      const body = await request(
-        `${source.serviceRoot}/${source.layer}/query?${new URLSearchParams({
-          f: 'json',
-          where: source.where,
-          outFields: outFields.join(','),
-          orderByFields: `${source.timeField} DESC`,
-          returnGeometry: 'false',
-        })}`,
-      );
-      if (!Array.isArray(body?.features)) throw new CheckError('the response has no features list');
-      return body.features.map((f) => f?.attributes ?? {});
+    // The rows of one wait layer. Any failure names the config key and layer;
+    // a feature without fields fails, as it fails every load in the app.
+    const waitRows = async (key, outFields) => {
+      const source = waitTimes[key];
+      const where = `waitTimes.${key} (${source.layer})`;
+      let body;
+      try {
+        body = await request(
+          `${source.serviceRoot}/${source.layer}/query?${new URLSearchParams({
+            f: 'json',
+            where: source.where,
+            outFields: outFields.join(','),
+            orderByFields: `${source.timeField} DESC`,
+            returnGeometry: 'false',
+          })}`,
+        );
+      } catch (error) {
+        if (!(error instanceof CheckError)) throw error;
+        const hint = error.transient
+          ? ''
+          : '. Check the layer and its where clause in src/config/election.js.';
+        throw new CheckError(`${where}: ${error.message}${hint}`);
+      }
+      if (!Array.isArray(body?.features)) {
+        throw new CheckError(`${where}: the response has no features list`);
+      }
+      const rows = body.features.map((f) => f?.attributes);
+      if (rows.some((row) => row === null || typeof row !== 'object')) {
+        throw new CheckError(`${where}: a feature has no attributes`);
+      }
+      return rows;
     };
     const maxAge = waitTimes.maxAgeMinutes;
     const quiet = `Sites are open and none has reported in the last ${maxAge} minutes.`;
     const newestReport = (rows, field) => {
       const times = rows
         .map((r) => r[field])
-        .filter((t) => typeof t === 'number' && Number.isFinite(t));
+        // A finite number can still be outside the Date range.
+        .filter((t) => typeof t === 'number' && !Number.isNaN(new Date(t).getTime()));
       return times.length ? reportTime(Math.max(...times), config.timeZone) : 'none';
     };
 
@@ -523,7 +543,7 @@ export async function runHealthCheck(
           continue;
         }
         await check(name, async () => {
-          const reports = await waitRows(source, [
+          const reports = await waitRows(key, [
             source.siteField,
             source.timeField,
             source.valueField,
@@ -565,7 +585,7 @@ export async function runHealthCheck(
         });
       } else {
         await check(name, async () => {
-          const rows = await waitRows(source, [
+          const rows = await waitRows(key, [
             source.siteField,
             source.valueField,
             source.timeField,
@@ -599,6 +619,14 @@ export async function runHealthCheck(
             (r) => parseCityHours(r[source.hoursField]) === null,
           ).length;
           const warnings = [];
+          // The City layer lists its sites all season, open or not: no row at
+          // all means the filter no longer matches, and every count is gone.
+          if (rows.length === 0) {
+            warnings.push(
+              `No row matches waitTimes.${key}.where (${source.where}): check the filter ` +
+                "against the City board's dashboard.",
+            );
+          }
           if (unreadable) {
             warnings.push(
               `${unreadable} ${unreadable === 1 ? 'row has' : 'rows have'} ${source.hoursField} ` +

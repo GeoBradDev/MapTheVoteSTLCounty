@@ -799,6 +799,57 @@ describe('wait time checks', () => {
     expect(results['wait reports city'].status).toBe('pass');
   });
 
+  it('reports a time out of the Date range instead of crashing', async () => {
+    const world = healthyWorld();
+    world.waits[county].rows = [
+      { Creator: 'abs601boec', CreationDate: 1e20, linecount: 1 },
+      ...countyFresh,
+    ];
+    world.waits[city].rows = [{ ...cityFresh[0], [cityWait.timeField]: -1e17 }, ...cityFresh];
+    const results = await run(world);
+    expect(results['wait reports county'].detail).toContain(
+      'newest report 2026-10-22 09:00 America/Chicago',
+    );
+    expect(results['wait reports city'].detail).toContain(
+      'newest report 2026-10-22 08:10 America/Chicago',
+    );
+  });
+
+  it('fails a row answer with a feature that has no fields, as the app does', async () => {
+    const world = healthyWorld();
+    world.fail = (url) =>
+      url.href.startsWith(`${county}/query?`) ? json({ features: [{ attributes: null }] }) : null;
+    const result = (await run(world))['wait reports county'];
+    expect(result).toMatchObject({
+      status: 'fail',
+      detail: `waitTimes.county (${countyWait.layer}): a feature has no attributes`,
+    });
+  });
+
+  it('names the config key and layer when the row query fails', async () => {
+    const world = healthyWorld();
+    world.fail = (url) =>
+      url.href.startsWith(`${city}/query?`)
+        ? json({ error: { code: 400, message: 'Invalid query' } })
+        : null;
+    expect((await run(world))['wait reports city']).toMatchObject({
+      status: 'fail',
+      detail:
+        `waitTimes.city (${cityWait.layer}): ArcGIS error 400: Invalid query. ` +
+        'Check the layer and its where clause in src/config/election.js.',
+    });
+  });
+
+  it('warns when the City filter finds no early voting rows at all', async () => {
+    const world = healthyWorld();
+    world.waits[city].rows = [];
+    const result = (await run(world))['wait reports city'];
+    expect(result.status).toBe('warn');
+    expect(result.detail).toContain(
+      `No row matches waitTimes.city.where (${cityWait.where}): check the filter`,
+    );
+  });
+
   it('asks nothing of a source the config turns off', async () => {
     const world = healthyWorld();
     const config = {
