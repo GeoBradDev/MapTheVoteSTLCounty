@@ -187,8 +187,9 @@ headers and the cache rules. `src/test/render.test.js` checks it.
   A change only under `docs/` or to `README.md` does not build. Markdown under `content/`
   still builds, because the learn topics are built from it.
 - **Previews:** every pull request gets its own preview URL. A Blueprint cannot set headers
-  per preview, so previews send the production headers and no `X-Robots-Tag: noindex`. The
-  build keeps crawlers out of them instead (see [Search engines](#search-engines)).
+  per preview, but Render itself adds `X-Robots-Tag: noindex` to every preview (its docs say
+  so, and PR #126's preview sent it), and the build also keeps crawlers out of them (see
+  [Search engines](#search-engines)).
 - **Change config in `render.yaml`, not the Dashboard.** A Blueprint sync overwrites header
   and route rules that `render.yaml` defines and fully replaces `buildFilter`. Rules that
   exist only in the Dashboard are kept, so deleting a rule from `render.yaml` does not

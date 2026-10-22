@@ -64,6 +64,13 @@ Revision during implementation: the plugin first lived in `src/build/`, but
 that imports the build-time topic parsers, so it moved next to the learn content plugin, as
 the issue suggests.
 
+Finding after the PR opened: PR #126's Render preview passed `smoke --preview` (7 of 7), so
+Render does pass `IS_PULL_REQUEST` to the static build, and it sent `X-Robots-Tag: noindex`
+on every path, as Render's preview docs say. The README's Deploy bullet that said previews
+send no `X-Robots-Tag` was corrected. The preview `Disallow: /` stays, as the issue asks;
+since it stops compliant crawlers from seeing either noindex, whether a preview should allow
+crawling instead is noted for the owner in #125.
+
 ## Order of work
 
 1. Tests for `robotsTxt`, `sitemapXml`, the plugin in both modes (red), then the module.
