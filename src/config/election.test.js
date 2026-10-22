@@ -273,3 +273,38 @@ describe('the Election Day polling place rule', () => {
     expectSources([rule.phoneSource]);
   });
 });
+
+describe('wait times', () => {
+  const { waitTimes } = election;
+
+  it('refreshes no faster than the layers cache and keeps reports at most 2 hours', () => {
+    expect(typeof waitTimes.enabled).toBe('boolean');
+    expect(waitTimes.refreshSeconds).toBeGreaterThanOrEqual(30);
+    expect(waitTimes.maxAgeMinutes).toBeGreaterThan(0);
+    expect(waitTimes.maxAgeMinutes).toBeLessThanOrEqual(120);
+    expect(waitTimes.skewMinutes).toBeGreaterThanOrEqual(0);
+    expect(waitTimes.skewMinutes).toBeLessThan(15);
+    expectSources(waitTimes.sources);
+    expect(waitTimes.lastVerified).toMatch(ISO_DATE);
+  });
+
+  it.each(['county', 'city'])('names the %s layer, its fields, unit and board', (key) => {
+    const source = waitTimes[key];
+    expect(typeof source.enabled).toBe('boolean');
+    expect(source.serviceRoot).toMatch(/^https:\/\/[^/]+\/.+\/rest\/services$/);
+    expect(source.layer).toMatch(/^\w+\/FeatureServer\/\d+$/);
+    expect(source.where).toEqual(expect.any(String));
+    for (const field of ['siteField', 'valueField', 'timeField']) {
+      expect(source[field]).toMatch(/^\w+$/);
+    }
+    expect(['people', 'minutes']).toContain(source.unit);
+    expect(source.source).toMatch(/Board of Election/);
+  });
+
+  it('joins County reports on a polls layer field and reads City hours and comments', () => {
+    expect(waitTimes.county.pollsField).toMatch(/^\w+$/);
+    expect(waitTimes.city.hoursField).toMatch(/^\w+$/);
+    expect(waitTimes.city.commentsField).toMatch(/^\w+$/);
+    expect(waitTimes.city.closedText).toEqual(expect.any(String));
+  });
+});

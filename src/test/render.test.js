@@ -265,6 +265,14 @@ describe('Content-Security-Policy', () => {
     });
   });
 
+  // The wait time layers (#103) are in other ArcGIS orgs on the same host.
+  it('allows the wait time layers', () => {
+    const { county, city } = election.waitTimes;
+    for (const source of [county, city]) {
+      expect(csp.get('connect-src')).toContain(new URL(source.serviceRoot).origin);
+    }
+  });
+
   it('allows no inline script or style, no eval and no wildcard source', () => {
     const sources = directives.flatMap(([, values]) => values);
     for (const unsafe of ["'unsafe-inline'", "'unsafe-eval'", '*', 'https:', 'data:', 'blob:']) {

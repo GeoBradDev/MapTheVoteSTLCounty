@@ -401,6 +401,7 @@ describe('runHealthCheck', () => {
       'abs_type',
       'notes_abs',
       'inline',
+      election.waitTimes.county.pollsField,
     ]);
     expect(want.countyBoundary.fields).toEqual(['OBJECTID']);
     for (const field of ['precinct', 'in_election', 'html', election.congressionalField]) {

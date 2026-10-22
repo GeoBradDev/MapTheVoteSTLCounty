@@ -48,6 +48,37 @@
  * @property {{ minutes: number, electionDayMinutes: number }} layerMaxAge How
  *   long a loaded layer, such as the polling places, is reused before the app
  *   fetches it again, and the shorter limit on Election Day (#84).
+ * @property {WaitTimesConfig} waitTimes Early voting line counts (#103).
+ */
+
+/**
+ * One jurisdiction's wait time layer. Field names live here because a
+ * republish can rename them (the City's report fields carry a numeric suffix).
+ * @typedef {object} WaitTimesSource
+ * @property {boolean} enabled Whether the app asks this layer at all.
+ * @property {string} serviceRoot ArcGIS REST services root of the layer's org.
+ * @property {string} layer Layer path relative to `serviceRoot`.
+ * @property {string} where Where clause of the query.
+ * @property {string} siteField The report's site key.
+ * @property {string} valueField The report's value.
+ * @property {string} timeField The report's time, epoch milliseconds.
+ * @property {'people' | 'minutes'} unit What `valueField` counts. Never converted.
+ * @property {string} source The board that reports it, for the "Reported by" line.
+ */
+
+/**
+ * @typedef {object} WaitTimesConfig
+ * @property {boolean} enabled Turns every wait time request off.
+ * @property {number} refreshSeconds How often the shared loop asks each layer.
+ * @property {number} maxAgeMinutes A report older than this is not shown.
+ * @property {number} skewMinutes How far in the future a report time may be.
+ * @property {string[]} sources
+ * @property {string} lastVerified
+ * @property {WaitTimesSource & { pollsField: string }} county `pollsField` is
+ *   the polls layer field `siteField` matches.
+ * @property {WaitTimesSource & { hoursField: string, commentsField: string,
+ *   closedText: string }} city The site's hours text, its comments field, and
+ *   the comment text that marks a site closed.
  */
 
 // The 2025 map. congressional_district_20 is the old map; do not show it.
@@ -116,6 +147,62 @@ const election = deepFreeze({
   // the county again on every search; two on Election Day, when emergency
   // relocations happen (#84).
   layerMaxAge: { minutes: 10, electionDayMinutes: 2 },
+
+  // Early voting line counts (#103), traced in #102 (docs/data.md, "Wait
+  // times"). The County reports people in line; the City unit is an open
+  // owner question (see `city.valueField`). Both layers send max-age=30, so a 30 second refresh adds no load. 120 minutes matches the
+  // County view's own 2 hour window, so the app never shows a count the
+  // official app would not.
+  waitTimes: {
+    enabled: true,
+    refreshSeconds: 30,
+    maxAgeMinutes: 120,
+    skewMinutes: 5,
+    sources: [
+      // The county's Absentee Voting Lookup app shows these counts.
+      'https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=9301b4594bef4d9c9271778e4648179d',
+      // The City Board's public Election Wait Times Dashboard.
+      'https://www.arcgis.com/apps/dashboards/8548fe3a065a455182181399909102ef',
+    ],
+    lastVerified: '2026-10-22',
+    county: {
+      enabled: true,
+      // A different org from serviceRoot. The view keeps only early voting
+      // reports from the last 2 hours, so it is empty while sites are closed.
+      serviceRoot: 'https://services6.arcgis.com/IeWM0VelvUwce9qE/ArcGIS/rest/services',
+      layer: 'Voters_in_Line_View/FeatureServer/0',
+      where: '1=1',
+      siteField: 'Creator',
+      valueField: 'linecount',
+      timeField: 'CreationDate',
+      // Early voting reports come from the site's absentee username; Election
+      // Day reports would join on `username` (#107).
+      pollsField: 'absentee',
+      unit: 'people',
+      source: 'St. Louis County Board of Elections',
+    },
+    city: {
+      enabled: true,
+      serviceRoot: 'https://services6.arcgis.com/HZXbCkpCSqbGd0vK/ArcGIS/rest/services',
+      layer: 'VotingLocations_currentwait_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/0',
+      // The dashboard's own filter.
+      where: "publicview = 'Yes' AND earlyvoting = 'Yes'",
+      // The site key in the owner's City query (#103 comment, 2026-10-22).
+      siteField: 'name',
+      // Not settled (owner question on #102): the field alias says minutes,
+      // but the City Board's dashboard shows it as "Estimated People in Line".
+      // `unit` below follows the dashboard until the owner answers.
+      valueField: 'waittime',
+      // The joined report's time. Never last_edited_date, the site row's own
+      // edit time, which does not move with reports.
+      timeField: 'created_date_1740505041182',
+      hoursField: 'earlyvotingoperhours',
+      commentsField: 'comments',
+      closedText: 'poll closed',
+      unit: 'people',
+      source: 'St. Louis City Board of Election Commissioners',
+    },
+  },
 
   // From the county's Absentee Voting Lookup app introduction, re-read from the
   // app's live config on 2026-10-21 (issue #16). The board's old website showed
