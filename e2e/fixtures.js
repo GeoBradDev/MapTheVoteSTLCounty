@@ -16,14 +16,14 @@ const FIXTURES = {
   geometry: fixture('precinct-geometry'),
   byId: fixture('precinct-by-id'),
   none: fixture('precinct-at-city'),
-  // The early voting line counts (#102, #104), recorded at 9:00 a.m. Central
+  // The early voting line counts (#102, #104), recorded from 9:00 a.m. Central
   // on 2026-10-22: the County's fresh reports and the City's rows from the
   // day before, which the app never shows.
   countyWaits: fixture('county-waits-fresh'),
   cityWaits: fixture('city-waits-stale'),
 };
 
-/** When the wait fixtures were recorded: 9:05 a.m. Central, 2026-10-22. */
+/** A time just after the wait fixtures were recorded: 9:05 a.m. Central, 2026-10-22. */
 export const WAITS_RECORDED_AT = new Date(Date.UTC(2026, 9, 22, 14, 5));
 
 const waitLayer = (source) => `${source.serviceRoot}/${source.layer}/`;

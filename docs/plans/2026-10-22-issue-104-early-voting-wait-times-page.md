@@ -159,8 +159,8 @@ Chosen not to do: City rows (#91), the results page origin (#105), Election Day 
   check, out of the component file for fast refresh), `waitColors.js` (the bin tokens and
   classes, with `mapColors.test.js`).
 - The #103 store gains `checkedAt` per jurisdiction (when a request last succeeded), which
-  the status line reads; it is shown at most every 5 minutes, and "unavailable" shows only
-  after 5 minutes with no success, so the line never flips on every refresh.
+  the status line reads; "unavailable" shows only after 5 minutes with no success, so the
+  line never flips on every refresh (the throttle is refined under finder 3 below).
 - The list sits under a visible `h2` "Early voting sites" (axe heading order).
 - The privacy notice (`privacy.sent.useMyLocation`, `privacy.sent.map`) says how the wait
   times page uses the location and what the map's tile requests show, as the README requires

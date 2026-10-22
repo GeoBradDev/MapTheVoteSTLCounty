@@ -47,7 +47,9 @@ if (typeof window !== 'undefined') {
  * leaving focus on the body (or on main, where Safari puts it after a click),
  * moves focus to the new page's heading so a screen reader announces it.
  * Pages that focus their own heading do it in their own effects, which run
- * first, so they are left alone. Back and Forward do not scroll to the top,
+ * first, so they are left alone; a page loaded on demand (the wait times
+ * page, #104) mounts after this effect found no heading, and focuses its own
+ * when it arrives. Back and Forward do not scroll to the top,
  * so the position the browser restores stays, unless the page itself focuses
  * its heading on arrival.
  */

@@ -26,7 +26,12 @@ const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
 const buttonClass =
   'min-h-11 rounded-md border border-primary px-4 py-2 font-semibold text-primary aria-disabled:cursor-wait aria-disabled:opacity-70';
 
-/** The status line changes at most this often, so it is not re-announced every refresh. */
+/**
+ * The live region's "checked at" time moves on at most this often, so a
+ * screen reader does not hear it every refresh (the visible line, hidden from
+ * screen readers, has the latest). Also how long after the last success the
+ * counts are called unavailable.
+ */
 export const ANNOUNCE_MS = 5 * 60_000;
 
 const { schedules } = election.earlyVoting;
@@ -39,7 +44,7 @@ function clockTime(at) {
 }
 
 /**
- * When the counts were last checked, as the status line shows it: it moves on
+ * When the counts were last checked, as the live region says it: it moves on
  * only to a check at least ANNOUNCE_MS after the one shown (or to any check
  * when the clock went back), so a screen reader hears it at most that often.
  * @param {number | null} latest When the counts were last checked (ms).
