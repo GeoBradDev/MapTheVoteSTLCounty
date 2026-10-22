@@ -6,7 +6,7 @@
 // navigation and reduced motion while the results load.
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { CODE, fixtureBody } from './fixtures.js';
+import { CODE, fixtureBody, WAITS_RECORDED_AT } from './fixtures.js';
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'];
 
@@ -43,6 +43,16 @@ const ROUTES = [
     ready: (page) => expect(page.getByRole('combobox')).toBeVisible(),
   },
   {
+    // The wait times page (#104), at the time the wait fixtures were recorded,
+    // so the County's line counts show.
+    path: '/early-voting',
+    at: WAITS_RECORDED_AT,
+    ready: async (page) => {
+      await expect(page.getByRole('list', { name: 'Early voting sites' })).toBeVisible();
+      await expect(page.getByText(/people in line, reported/).first()).toBeVisible();
+    },
+  },
+  {
     path: '/learn',
     ready: (page) => expect(page.getByRole('heading', { level: 1 })).toBeVisible(),
   },
@@ -65,9 +75,10 @@ async function horizontalOverflow(page) {
   });
 }
 
-for (const { path, ready } of ROUTES) {
+for (const { path, ready, at } of ROUTES) {
   test.describe(path, () => {
     test.beforeEach(async ({ page }) => {
+      if (at) await page.clock.setFixedTime(at);
       await answerFromFixtures(page);
       await page.goto(path);
       await ready(page);
@@ -149,6 +160,32 @@ test('Back and Forward leave the scroll position to the browser', async ({ page 
   expect(await page.evaluate(() => window.scrollsToTop)).toBe(1);
 });
 
+test.describe('the early voting wait times page', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.clock.setFixedTime(WAITS_RECORDED_AT);
+    await answerFromFixtures(page);
+  });
+
+  test('opens from the home page and focuses its heading', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('link', { name: 'See early voting wait times' }).click();
+    const heading = page.getByRole('heading', { level: 1 });
+    await expect(heading).toHaveText('Early voting wait times');
+    await expect(heading).toBeFocused();
+  });
+
+  test('changes the sort with the arrow keys', async ({ page }) => {
+    await page.goto('/early-voting');
+    const list = page.getByRole('list', { name: 'Early voting sites' });
+    await expect(list.getByText(/people in line, reported/).first()).toBeVisible();
+    await page.getByRole('radio', { name: 'Open now, shortest line first' }).focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(page.getByRole('radio', { name: 'Name, A to Z' })).toBeChecked();
+    const names = await list.locator('li h3').allTextContents();
+    expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
+  });
+});
+
 test.describe('with reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
 
@@ -168,6 +205,10 @@ test.describe('the nonpartisan, unofficial statement', () => {
     await page.goto('/');
     await expect(page.getByText(/independent, nonpartisan guide/)).toBeInViewport({ ratio: 1 });
     await expect(page.getByRole('combobox')).toBeInViewport({ ratio: 1 });
+    // The wait times link too (#104), with no scrolling.
+    await expect(page.getByRole('link', { name: 'See early voting wait times' })).toBeInViewport({
+      ratio: 1,
+    });
   });
 
   test('prints on a results page, without the Privacy link', async ({ page }) => {

@@ -27,6 +27,14 @@
   --color-on-primary: oklch(0.99 0.003 90);
   --color-accent: oklch(0.72 0.12 80);
   --color-on-accent: oklch(0.22 0.005 90);
+  /*
+    The wait times map's people-in-line scale (#104), light to dark in one
+    hue, for markers and their legend only. Each passes 3:1 against the
+    basemap (src/features/waitTimes/mapColors.test.js).
+  */
+  --color-wait-low: oklch(0.62 0.12 75);
+  --color-wait-mid: oklch(0.5 0.1 75);
+  --color-wait-high: oklch(0.38 0.08 75);
 }
 
 /*

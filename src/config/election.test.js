@@ -299,6 +299,9 @@ describe('wait times', () => {
     }
     expect(['people', 'minutes']).toContain(source.unit);
     expect(source.source).toMatch(/Board of Election/);
+    // The board's own public page for these counts, linked from the wait
+    // times page (#104), and one of the block's sources.
+    expect(waitTimes.sources).toContain(source.sourceUrl);
   });
 
   it('joins County reports on a polls layer field and reads City hours and comments', () => {

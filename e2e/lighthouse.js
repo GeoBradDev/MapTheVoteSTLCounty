@@ -35,7 +35,7 @@ const MAX_LCP_MS = 2500;
 
 /**
  * The pages the issue names: landing, results (fixture precinct) and a learn
- * page. `shows` checks, in the page, that the run measured the real content
+ * page, and the early voting wait times page (#104). `shows` checks, in the page, that the run measured the real content
  * and not the not-found page, an error or a loading state. On the results page
  * it also checks content built from the precinct and poll fields the app asks
  * ArcGIS for: the municipality, the districts, the sample ballot link and each
@@ -64,6 +64,22 @@ const ROUTES = [
             !/^Polling place\b/.test(li.querySelector('h3')?.textContent ?? '') &&
             /MO \d{5}/.test(li.querySelector('p')?.textContent ?? ''),
         )
+      );
+    },
+  },
+  {
+    // The wait times page (#104): its heading and every site's name. The live
+    // counts depend on the clock, so they are not checked here.
+    path: '/early-voting',
+    shows: () => {
+      const rows = [...document.querySelectorAll('ol[aria-labelledby="wait-sites-heading"] > li')];
+      return (
+        document.querySelector('h1')?.textContent === 'Early voting wait times' &&
+        rows.length > 0 &&
+        rows.every((li) => {
+          const name = li.querySelector('h3')?.textContent ?? '';
+          return name !== '' && !/^Polling place\b/.test(name);
+        })
       );
     },
   },

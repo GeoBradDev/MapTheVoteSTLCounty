@@ -91,6 +91,25 @@ describe('useWaitTimes', () => {
     expect(screen.getByTestId('a')).toHaveTextContent('ok/off:abs602boec=3');
   });
 
+  // The wait times page says when counts were last checked (#104).
+  it('records when each jurisdiction last answered, and keeps it through a failure', async () => {
+    let fail = false;
+    const county = vi.fn(async () => {
+      if (fail) throw new Error('down');
+      return [];
+    });
+    const store = createWaitTimesStore({ county, city: null });
+    const unsubscribe = store.subscribe(() => {});
+    expect(store.getSnapshot().county.checkedAt).toBeNull();
+    await settle();
+    expect(store.getSnapshot().county.checkedAt).toBe(START);
+    fail = true;
+    await act(() => vi.advanceTimersByTimeAsync(REFRESH));
+    expect(store.getSnapshot().county.checkedAt).toBe(START);
+    expect(store.getSnapshot().city.checkedAt).toBeNull();
+    unsubscribe();
+  });
+
   it('stops in a hidden tab and refreshes at once on return', async () => {
     const county = vi.fn(async () => []);
     const store = createWaitTimesStore({ county, city: null });

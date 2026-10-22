@@ -17,6 +17,8 @@ import { stillShowable } from '../../data/waitTimes.js';
  *   answer arrived or values from it are still shown; `unavailable` when a
  *   request failed and nothing fresh is left.
  * @property {boolean} refreshFailed Whether the latest request failed.
+ * @property {number | null} checkedAt When a request last succeeded (ms), or
+ *   null before the first; a failure leaves it as it was.
  * @property {import('../../data/waitTimes.js').WaitEntry[]} waits
  */
 
@@ -34,6 +36,7 @@ function initialState(fetchers) {
   const part = (key) => ({
     status: fetchers[key] ? 'loading' : 'off',
     refreshFailed: false,
+    checkedAt: null,
     waits: [],
   });
   return withWaits({ county: part('county'), city: part('city') });
@@ -84,7 +87,7 @@ export function createWaitTimesStore(
     inFlight.add(key);
     try {
       const waits = await fetchers[key]();
-      update(key, { status: 'ok', refreshFailed: false, waits });
+      update(key, { status: 'ok', refreshFailed: false, checkedAt: Date.now(), waits });
     } catch {
       update(key, { refreshFailed: true });
       prune(key, true);

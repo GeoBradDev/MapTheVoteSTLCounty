@@ -42,6 +42,7 @@
     "heading": "St. Louis County Voter Guide",
     "intro": "Find your precinct, polling places near you and your sample ballot.",
     "unofficial": "This is an independent, nonpartisan guide, not an official county or city site.",
+    "waitTimes": "See early voting wait times",
     "electionDay": "Election Day is {date}.",
     "moreInfo": "More information",
     "howToVote": "How to vote",
@@ -267,6 +268,64 @@
       "failed": "We could not load this precinct right now. The county's precinct data may be slow or down. Try again in a minute, or use the",
       "offline": "You appear to be offline, so we could not load this precinct. Check your internet connection and try again, or use the"
     }
+  },
+  "waitTimes": {
+    "heading": "Early voting wait times",
+    "intro": "How many people are in line right now at each St. Louis County early voting site, as the county board's staff report it. No address needed.",
+    "season": {
+      "before": "Early voting runs from {from} to {to}. Line counts show here while sites are open.",
+      "ended": "Early voting has ended. On Election Day, vote at your assigned polling place.",
+      "findPollingPlace": "Find your polling place"
+    },
+    "status": {
+      "checked": "Line counts checked at {time}",
+      "unavailable": "Line counts could not be loaded right now. Each site's hours are still shown."
+    },
+    "refresh": "Counts are checked again every {seconds} seconds while this page is open.",
+    "count": "{count, plural, =0 {No one in line} one {About # person in line} other {About # people in line}}, reported {time}",
+    "noCount": "No current line count",
+    "reportedBy": "Reported by {board}",
+    "todayHours": "Today: {open} to {close}",
+    "sort": {
+      "legend": "Sort sites",
+      "line": "Open now, shortest line first",
+      "name": "Name, A to Z",
+      "nearest": "Nearest to you",
+      "nearby": "Shortest line within {miles} miles"
+    },
+    "location": {
+      "button": "Sort by distance from my location",
+      "busy": "Finding your location...",
+      "privacy": "Your location stays on this device, is used only to measure distances, and is not saved.",
+      "errors": {
+        "denied": "Location access was not allowed. The list keeps its current order.",
+        "timeout": "Finding your location took too long. Try again.",
+        "unavailable": "Your location could not be found. Try again.",
+        "insecure": "Location works only on a secure (HTTPS) page.",
+        "unsupported": "This browser cannot share your location.",
+        "coarse": "Your device could only estimate your location roughly. Try again with precise location on."
+      }
+    },
+    "listLabel": "Early voting sites",
+    "loading": "Loading early voting sites...",
+    "failed": "We could not load early voting sites right now. Find them with the",
+    "none": "We could not find early voting sites. Find them with the",
+    "map": {
+      "show": "Show map",
+      "hide": "Hide map",
+      "label": "Map of early voting sites",
+      "numbers": "Each marker's number matches the list.",
+      "legend": "People in line",
+      "bin": "{min} to {max}",
+      "binOpen": "{min} or more",
+      "noCount": "No current count"
+    },
+    "city": "St. Louis City early voting sites are not listed here yet. See the",
+    "cityLink": "St. Louis City Board of Election Commissioners wait times dashboard",
+    "disclaimer": "Each board's staff report these counts, and lines change quickly. A count is a guide, not a promise of how long you will wait.",
+    "sources": "Official sources:",
+    "countyLink": "St. Louis County Board of Elections absentee voting lookup",
+    "backHome": "Back to home"
   },
   "learn": {
     "pageHeading": "How to vote",

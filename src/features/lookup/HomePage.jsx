@@ -25,7 +25,14 @@ export default function HomePage() {
         <p className="mt-1 text-sm text-muted">{copy.unofficial}</p>
       </header>
 
-      <div className="mt-6">
+      {/* The first action, next to the address search (#104): no address needed. */}
+      <p className="mt-3">
+        <Link href="/early-voting" className={`${linkClass} font-semibold`}>
+          {copy.waitTimes}
+        </Link>
+      </p>
+
+      <div className="mt-3">
         <AddressLookup />
       </div>
 

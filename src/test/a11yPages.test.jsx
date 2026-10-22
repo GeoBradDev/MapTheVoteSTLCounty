@@ -37,7 +37,10 @@ async function violations(path) {
 }
 
 describe('axe on the app pages', () => {
-  it.each(['/', '/privacy', '/nope', '/p/nope'])('finds no violations on %s', async (path) => {
-    expect(await violations(path)).toEqual([]);
-  });
+  it.each(['/', '/early-voting', '/privacy', '/nope', '/p/nope'])(
+    'finds no violations on %s',
+    async (path) => {
+      expect(await violations(path)).toEqual([]);
+    },
+  );
 });

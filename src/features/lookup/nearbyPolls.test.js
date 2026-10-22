@@ -5,6 +5,7 @@ import {
   distanceMiles,
   isAppleMobile,
   nearestPolls,
+  pollRows,
   polygonCenter,
   titleCase,
 } from './nearbyPolls.js';
@@ -43,6 +44,22 @@ describe('distanceMiles', () => {
   });
 });
 
+describe('pollRows', () => {
+  it('lists every site with coordinates in layer order, with no distance', () => {
+    const rows = pollRows({
+      features: [
+        poll('B SITE', 38.6, -90.3, { absentee: 'abs602boec' }),
+        { type: 'Feature', geometry: null, properties: { name: 'NO GEOMETRY' } },
+        poll('A SITE', 38.7, -90.4, { absentee: '' }),
+      ],
+    });
+    expect(rows.map((r) => [r.name, r.waitKey, r.miles])).toEqual([
+      ['B Site', 'abs602boec', null],
+      ['A Site', null, null],
+    ]);
+  });
+});
+
 describe('nearestPolls', () => {
   it('sorts every polling place in the layer by distance, nearest first', () => {
     const origin = { lat: 38.66, lng: -90.45 };
@@ -65,6 +82,7 @@ describe('nearestPolls', () => {
             zipcode: 63121,
             abs_type: 'abs',
             notes_abs: 'Use the north door',
+            absentee: 'abs612boec',
           }),
         ],
       },
@@ -78,6 +96,7 @@ describe('nearestPolls', () => {
         zip: '63121',
         absType: 'abs',
         absNote: 'Use the north door',
+        waitKey: 'abs612boec',
         lat: 38.7,
         lng: -90.3,
         miles: 0,

@@ -28,6 +28,16 @@ describe('HomePage', () => {
     );
   });
 
+  // The first action next to the address search (#104): no address needed.
+  it('links to the early voting wait times before the address search', () => {
+    renderHome();
+    const link = screen.getByRole('link', { name: copy.waitTimes });
+    expect(link).toHaveAttribute('href', '/early-voting');
+    expect(
+      link.compareDocumentPosition(screen.getByRole('combobox')) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it('formats Election Day in the election time zone', () => {
     expect(copy.electionDay('2030-11-05', 'America/Chicago')).toBe(
       'Election Day is Tuesday, November 5, 2030.',
