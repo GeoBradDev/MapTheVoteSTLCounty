@@ -47,9 +47,10 @@ do not say is safe for PR previews, whose only address is an `onrender.com` one.
 
 - `src/features/learn/content/searchEngines.js` (new): `robotsTxt({ preview })`, `sitemapXml(topics)`,
   `readSitemapTopics(root)` (English topic files parsed with `parseTopic`), and the Vite
-  plugin `searchEngines({ preview })` that emits the files in `generateBundle` and adds the
-  meta tag in `transformIndexHtml`. `preview` defaults to
-  `process.env.IS_PULL_REQUEST === 'true'`.
+  plugin `searchEngines()` that emits the files in `generateBundle` and adds the meta tag
+  in `transformIndexHtml`. It takes no options: it reads `IS_PULL_REQUEST` through
+  `isPreviewBuild()` when the build's config resolves, so the tests pick the mode the way
+  Render does, through the environment.
 - `src/features/learn/content/searchEngines.test.js` (new): unit tests plus real builds in both modes.
 - `src/features/learn/content/vitePlugin.js`: export `topicFiles` for reuse.
 - `vite.config.js`: register the plugin.

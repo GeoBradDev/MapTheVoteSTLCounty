@@ -198,7 +198,8 @@ headers and the cache rules. `src/test/render.test.js` checks it.
   same change, or the browser blocks the request in production.
 - **Cache-Control:** no two header rules may match the same path; Render does not document
   how they combine. The app shell sends `no-cache` and hashed `/assets/` files are
-  `immutable`. A new route needs its own `no-cache` rule.
+  `immutable`; `/robots.txt` and `/sitemap.xml` are cached for an hour. A new route needs its
+  own `no-cache` rule.
 - **Rollback:** in the Render Dashboard, open the service's **Deploys** page, find an earlier
   successful deploy and click **Rollback**. This redeploys that build's files only: headers,
   redirects and rewrites are not rolled back, so a bad header change needs a fix in
@@ -249,8 +250,9 @@ Every build writes `robots.txt`, and a production build writes `sitemap.xml`, bo
   answers 404): the **Render Subdomain** toggle under **Custom Domains** in the service's
   Settings, or `renderSubdomainPolicy: disabled` in the Blueprint. Render does not offer a
   redirect, and its docs do not say whether turning it off affects PR previews, whose only
-  address is an `onrender.com` one, so `render.yaml` leaves it on. Try it in the Dashboard,
-  check that a new PR preview still loads, and then set it in `render.yaml`.
+  address is an `onrender.com` one, so `render.yaml` leaves it on for now. To turn it off, add
+  `renderSubdomainPolicy: disabled` to the service in `render.yaml` (not the Dashboard), then
+  check that the next PR preview still loads; if it does not, take the line out again.
 - **Search Console and Bing (owner):** verify `mapthevotestl.com` with a DNS TXT record, not a
   file or a meta tag in this repo. In [Google Search Console](https://search.google.com/search-console),
   add a **Domain** property for `mapthevotestl.com`, add the TXT record it shows at the
