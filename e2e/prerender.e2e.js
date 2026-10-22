@@ -134,6 +134,53 @@ test.describe('hydration', () => {
   });
 });
 
+// A pre-rendered page can be read, scrolled and tabbed through before its
+// script arrives. Hydrating it must not pull the voter back to the heading.
+test.describe('reading before the script arrives', () => {
+  // Holds the app's script back until `release()`.
+  async function holdScript(page) {
+    let release;
+    const released = new Promise((resolve) => {
+      release = resolve;
+    });
+    await page.route(/\/assets\/index-[\w-]+\.js$/, async (route) => {
+      await released;
+      await route.continue();
+    });
+    return release;
+  }
+
+  test('keeps the scroll position the voter moved to', async ({ page }) => {
+    await answerFromFixtures(page);
+    const release = await holdScript(page);
+    // Module scripts hold DOMContentLoaded back, so wait for the markup.
+    await page.goto('/learn/voter-id', { waitUntil: 'commit' });
+    await expect(page.locator('footer')).toBeAttached();
+    await page.evaluate(() => window.scrollTo(0, 400));
+    const scrolled = await page.evaluate(() => window.scrollY);
+    expect(scrolled).toBeGreaterThan(0);
+    release();
+    await page.waitForLoadState('networkidle');
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
+    await expect(page.locator('h1')).not.toBeFocused();
+  });
+
+  test('keeps focus where the voter tabbed to', async ({ page }) => {
+    await answerFromFixtures(page);
+    const release = await holdScript(page);
+    // Module scripts hold DOMContentLoaded back, so wait for the markup.
+    await page.goto('/learn/voter-id', { waitUntil: 'commit' });
+    await expect(page.locator('footer')).toBeAttached();
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Tab');
+    const before = await page.evaluate(() => document.activeElement?.outerHTML);
+    expect(before).not.toMatch(/^<body/);
+    release();
+    await page.waitForLoadState('networkidle');
+    expect(await page.evaluate(() => document.activeElement?.outerHTML)).toBe(before);
+  });
+});
+
 test.describe('precinct pages', () => {
   test('are served the empty shell, with no page baked in', async ({ request }) => {
     const body = await (await request.get(`/p/${CODE}`)).text();
