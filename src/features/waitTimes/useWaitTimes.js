@@ -120,8 +120,9 @@ export function createWaitTimesStore(
       listeners.add(listener);
       if (listeners.size === 1) {
         document.addEventListener('visibilitychange', onVisibilityChange);
+        // A negative elapsed time means the clock moved back: ask now.
         const elapsed = lastTickAt === null ? Infinity : Date.now() - lastTickAt;
-        if (elapsed < refreshMs && !isHidden()) {
+        if (elapsed >= 0 && elapsed < refreshMs && !isHidden()) {
           timer = setTimeout(tick, refreshMs - elapsed);
         } else {
           tick();

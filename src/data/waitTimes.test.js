@@ -186,7 +186,7 @@ describe('selectCityWaits', () => {
     const entries = selectCityWaits(cityFresh, oct22(9, 0, 30));
     expect(entries).toEqual([
       {
-        siteId: 'St._Louis_City_Election_Board',
+        siteId: 'St. Louis City Board of Elections',
         jurisdiction: 'city',
         unit: 'people',
         value: 0,
@@ -205,7 +205,7 @@ describe('selectCityWaits', () => {
 
   it('drops a report from yesterday even within maxAgeMinutes', () => {
     const row = {
-      [city.siteField]: 'Night_Site',
+      [city.siteField]: 'Night Site',
       [city.hoursField]: 'Mo-Su (00:00-23:59)',
       [city.commentsField]: null,
       [city.valueField]: 4,
@@ -218,7 +218,7 @@ describe('selectCityWaits', () => {
   });
 
   it('drops a site with no report: a null waittime and report time', () => {
-    const joan = cityFresh.find((r) => r[city.siteField] === 'St._Joan_of_Arc');
+    const joan = cityFresh.find((r) => r[city.siteField] === 'St. Joan of Arc');
     expect(selectCityWaits([joan], oct22(13, 0))).toEqual([]);
     const board = cityFresh[5];
     expect(selectCityWaits([{ ...board, [city.valueField]: null }], oct22(9))).toEqual([]);

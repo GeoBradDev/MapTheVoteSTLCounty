@@ -15,7 +15,7 @@ import { isFresh } from './freshness.js';
 /**
  * @typedef {object} WaitEntry
  * @property {string} siteId The County site's absentee username (the polls
- *   layer's `absentee`) or the City site's `facilityid`.
+ *   layer's `absentee`) or the City site's `name`.
  * @property {'county' | 'city'} jurisdiction
  * @property {'people' | 'minutes'} unit
  * @property {number} value A whole number, 0 or more.

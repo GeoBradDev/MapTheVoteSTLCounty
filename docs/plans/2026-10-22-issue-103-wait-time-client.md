@@ -29,13 +29,15 @@ From the issue, with the owner's #102 findings (comment on #103, 2026-10-22) app
 2. `absentee` is in `POLL_FIELDS` in `src/data/arcgis.js` and in the polls fields
    `scripts/check-config.mjs` checks.
 3. `getCityWaits()` queries the City layer in config with
-   `where=publicview = 'Yes' AND earlyvoting = 'Yes'`, `outFields` of only the site key,
+   `where=publicview = 'Yes' AND earlyvoting = 'Yes'`, `orderByFields` the report time
+   descending, `outFields` of only the site key (`name`),
    `waittime`, the report time (`created_date_1740505041182`), `comments` and the hours
    field (`earlyvotingoperhours`), `returnGeometry=false`. Never `outFields=*`.
 4. Every entry has the shape
    `{ siteId, jurisdiction: 'county' | 'city', unit, value, reportedAt: Date, source, openUntil: Date }`.
-   Both jurisdictions report people in line, so `unit` is `'people'` for both; the unit
-   comes from config and is never converted. `openUntil` (added) is when the site closes
+   The County reports people in line. The City unit is an open owner question; it is
+   `'people'` in config for now, per the City Board's dashboard. The unit comes from
+   config and is never converted. `openUntil` (added) is when the site closes
    today, so a kept entry can be dropped at closing without the schedule.
 5. An entry is returned only when: its value is a non-negative integer; `reportedAt` is
    within `maxAgeMinutes` and not more than `skewMinutes` in the future (`isFresh` in
@@ -150,11 +152,16 @@ config move (#86).
   waits out the interval instead of asking again, so readers coming and going (the #104
   page, then a #105 card) keep to one request per interval. A tab returning to visible
   still asks at once, as the issue requires.
-- Coordinator message (2026-10-22) on the City source: it asked for `orderByFields` on
-  the report time, now added, and said `waittime` is minutes, keyed by `name`, timed by
-  `last_edited_date_1740505041182`. The City Board's own dashboard (item
-  `8548fe3a065a455182181399909102ef`, re-read on 2026-10-22) labels the value
-  "Estimated People in Line", times it by `created_date_1740505041182`, and the owner's
-  #102 comment names `facilityid` as the key. This branch follows the official dashboard
-  and the owner's comment (`unit: 'people'`, `facilityid`, `created_date_*`); the unit
-  is one config value, and the question goes to the owner before #104 shows City values.
+- City source, per the coordinator's message and the owner's correction on #103
+  (2026-10-22, 14:27Z): the site key is `name` (was `facilityid`), and City reports come
+  newest first (`orderByFields` on the report time). The report time stays
+  `created_date_1740505041182`: the owner's correction keeps it, and on 2026-10-22
+  `last_edited_date_1740505041182` matched it on every site. The query also asks for
+  `comments` and `earlyvotingoperhours`, beyond the owner's field list, because the
+  open-now gate and the dashboard's "poll closed" rule need them (neither holds contact
+  data). The City unit is not settled (owner question on #102): it stays one config value,
+  `unit: 'people'` for now, following the City Board's own dashboard ("Estimated People
+  in Line", item `8548fe3a065a455182181399909102ef`, re-read on 2026-10-22). Nothing
+  shows City values until #104.
+- Review (finder 3): a reader mounting after the clock moved back asks at once instead of
+  waiting out a negative elapsed time.

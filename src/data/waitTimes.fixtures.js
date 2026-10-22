@@ -53,7 +53,7 @@ export const countyFresh = [
 /** The City layer at 9:00 a.m. Central, 2026-10-22: the Board office reported at 8:10 a.m. */
 export const cityFresh = [
   {
-    facilityid: 'Buder_Library',
+    name: 'Buder Library',
     earlyvotingoperhours:
       'Mo (13:00-16:00); Tu (11:00-17:00); W-Th (11:00-19:00); Fr-Sa (11:00-16:30); Su (Closed))',
     comments: null,
@@ -61,21 +61,21 @@ export const cityFresh = [
     created_date_1740505041182: 1792625575903,
   },
   {
-    facilityid: 'Carpenter_Library',
+    name: 'Carpenter Branch Library',
     earlyvotingoperhours: 'Mo (13:00-16:00); Tu-Th (11:00-17:00); Fr-Sa (11:00-16:30);Su (Closed))',
     comments: null,
     waittime: 4,
     created_date_1740505041182: 1792618241585,
   },
   {
-    facilityid: 'Kingshighway_Branch_Library',
+    name: 'Kingshighway Branch Library',
     earlyvotingoperhours: 'Mo (13:00-16:00); Tu-Th (11:00-17:00); Fr-Sa (11:00-16:30);Su (Closed))',
     comments: null,
     waittime: 0,
     created_date_1740505041182: 1792618194291,
   },
   {
-    facilityid: 'Schlafly_Library',
+    name: 'Schlafly Library',
     earlyvotingoperhours:
       'Mo (13:00-16:00); Tu (11:00-17:00); W-Th (11:00-19:00); Fr-Sa (11:00-16:30); Su (Closed))',
     comments: null,
@@ -83,21 +83,21 @@ export const cityFresh = [
     created_date_1740505041182: 1792625457624,
   },
   {
-    facilityid: 'Walnut_Park_Library',
+    name: 'Walnut Park Library',
     earlyvotingoperhours: 'Mo (13:00-16:00); Tu-Th (11:00-17:00); Fr-Sa (11:00-16:30);Su (Closed))',
     comments: null,
     waittime: 0,
     created_date_1740505041182: 1792620013031,
   },
   {
-    facilityid: 'St._Louis_City_Election_Board',
+    name: 'St. Louis City Board of Elections',
     earlyvotingoperhours: 'Mo-Fr (08:00-17:00)',
     comments: null,
     waittime: 0,
     created_date_1740505041182: 1792674645407,
   },
   {
-    facilityid: 'Julia_Davis',
+    name: 'Julia Davis Library',
     earlyvotingoperhours:
       'Mo (13:00-16:00); Tu (11:00-17:00); W-Th (11:00-19:00); Fr-Sa (11:00-16:30); Su (Closed))',
     comments: null,
@@ -105,7 +105,7 @@ export const cityFresh = [
     created_date_1740505041182: 1792625322039,
   },
   {
-    facilityid: 'St._Joan_of_Arc',
+    name: 'St. Joan of Arc',
     earlyvotingoperhours:
       'Mo (13:00-16:00); Tu (11:00-17:00); W-Th (11:00-19:00); Fr-Sa (11:00-16:30); Su (Closed))',
     comments: 'New early voting site! Opens Tuesday, October 27!',
@@ -117,7 +117,7 @@ export const cityFresh = [
 /** The City layer at 7:44 a.m. Central, 2026-10-22: every report is from 2026-10-21. */
 export const cityStale = [
   {
-    facilityid: 'Buder_Library',
+    name: 'Buder Library',
     earlyvotingoperhours:
       'Mo (13:00-16:00); Tu (11:00-17:00); W-Th (11:00-19:00); Fr-Sa (11:00-16:30); Su (Closed))',
     comments: null,
@@ -125,21 +125,21 @@ export const cityStale = [
     created_date_1740505041182: 1792625575903,
   },
   {
-    facilityid: 'Carpenter_Library',
+    name: 'Carpenter Branch Library',
     earlyvotingoperhours: 'Mo (13:00-16:00); Tu-Th (11:00-17:00); Fr-Sa (11:00-16:30);Su (Closed))',
     comments: null,
     waittime: 4,
     created_date_1740505041182: 1792618241585,
   },
   {
-    facilityid: 'Kingshighway_Branch_Library',
+    name: 'Kingshighway Branch Library',
     earlyvotingoperhours: 'Mo (13:00-16:00); Tu-Th (11:00-17:00); Fr-Sa (11:00-16:30);Su (Closed))',
     comments: null,
     waittime: 0,
     created_date_1740505041182: 1792618194291,
   },
   {
-    facilityid: 'Schlafly_Library',
+    name: 'Schlafly Library',
     earlyvotingoperhours:
       'Mo (13:00-16:00); Tu (11:00-17:00); W-Th (11:00-19:00); Fr-Sa (11:00-16:30); Su (Closed))',
     comments: null,
@@ -147,21 +147,21 @@ export const cityStale = [
     created_date_1740505041182: 1792625457624,
   },
   {
-    facilityid: 'Walnut_Park_Library',
+    name: 'Walnut Park Library',
     earlyvotingoperhours: 'Mo (13:00-16:00); Tu-Th (11:00-17:00); Fr-Sa (11:00-16:30);Su (Closed))',
     comments: null,
     waittime: 0,
     created_date_1740505041182: 1792620013031,
   },
   {
-    facilityid: 'St._Louis_City_Election_Board',
+    name: 'St. Louis City Board of Elections',
     earlyvotingoperhours: 'Mo-Fr (08:00-17:00)',
     comments: null,
     waittime: 0,
     created_date_1740505041182: 1792617567063,
   },
   {
-    facilityid: 'Julia_Davis',
+    name: 'Julia Davis Library',
     earlyvotingoperhours:
       'Mo (13:00-16:00); Tu (11:00-17:00); W-Th (11:00-19:00); Fr-Sa (11:00-16:30); Su (Closed))',
     comments: null,
@@ -169,7 +169,7 @@ export const cityStale = [
     created_date_1740505041182: 1792625322039,
   },
   {
-    facilityid: 'St._Joan_of_Arc',
+    name: 'St. Joan of Arc',
     earlyvotingoperhours:
       'Mo (13:00-16:00); Tu (11:00-17:00); W-Th (11:00-19:00); Fr-Sa (11:00-16:30); Su (Closed))',
     comments: 'New early voting site! Opens Tuesday, October 27!',

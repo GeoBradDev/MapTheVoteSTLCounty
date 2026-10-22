@@ -788,7 +788,7 @@ describe('wait times (#103)', () => {
   it('getCityWaits returns the sites open now with a report from today', async () => {
     routeLayers({ [CITY]: rows(cityFresh) });
     const entries = await client.getCityWaits();
-    expect(entries.map((e) => e.siteId)).toEqual(['St._Louis_City_Election_Board']);
+    expect(entries.map((e) => e.siteId)).toEqual(['St. Louis City Board of Elections']);
     expect(entries[0]).toMatchObject({ jurisdiction: 'city', unit: city.unit, value: 0 });
   });
 

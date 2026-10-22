@@ -57,7 +57,7 @@ afterEach(() => {
 describe('useWaitTimes', () => {
   it('makes one request per jurisdiction per interval, however many components read it', async () => {
     const county = vi.fn(async () => [entry('county', 'abs601boec', 5)]);
-    const city = vi.fn(async () => [entry('city', 'Board_Office', 5, 0)]);
+    const city = vi.fn(async () => [entry('city', 'Board Office', 5, 0)]);
     const store = createWaitTimesStore({ county, city });
     render(
       <>
@@ -69,7 +69,7 @@ describe('useWaitTimes', () => {
     await settle();
     expect(county).toHaveBeenCalledTimes(1);
     expect(city).toHaveBeenCalledTimes(1);
-    expect(screen.getByTestId('c')).toHaveTextContent('ok/ok:abs601boec=3,Board_Office=0');
+    expect(screen.getByTestId('c')).toHaveTextContent('ok/ok:abs601boec=3,Board Office=0');
 
     await act(() => vi.advanceTimersByTimeAsync(REFRESH));
     expect(county).toHaveBeenCalledTimes(2);
@@ -176,6 +176,17 @@ describe('useWaitTimes', () => {
     await settle();
     expect(county).toHaveBeenCalledTimes(1);
     await act(() => vi.advanceTimersByTimeAsync(REFRESH - 10_000));
+    expect(county).toHaveBeenCalledTimes(2);
+  });
+
+  it('asks at once on mount when the clock moved back since the last request', async () => {
+    const county = vi.fn(async () => []);
+    const store = createWaitTimesStore({ county, city: null });
+    render(<Reader name="a" store={store} />).unmount();
+    await settle();
+    vi.setSystemTime(START - 60 * MINUTE);
+    render(<Reader name="b" store={store} />);
+    await settle();
     expect(county).toHaveBeenCalledTimes(2);
   });
 

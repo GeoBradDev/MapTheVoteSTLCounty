@@ -187,9 +187,11 @@ const election = deepFreeze({
       layer: 'VotingLocations_currentwait_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/0',
       // The dashboard's own filter.
       where: "publicview = 'Yes' AND earlyvoting = 'Yes'",
-      siteField: 'facilityid',
-      // Shown by the City's dashboard as "Estimated People in Line", although
-      // its alias says minutes.
+      // The site key in the owner's City query (#103 comment, 2026-10-22).
+      siteField: 'name',
+      // Not settled (owner question on #102): the field alias says minutes,
+      // but the City Board's dashboard shows it as "Estimated People in Line".
+      // `unit` below follows the dashboard until the owner answers.
       valueField: 'waittime',
       // The joined report's time. Never last_edited_date, the site row's own
       // edit time, which does not move with reports.
