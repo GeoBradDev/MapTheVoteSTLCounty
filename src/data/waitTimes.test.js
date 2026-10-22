@@ -81,13 +81,20 @@ describe('selectCountyWaits', () => {
     expect(entries.abs604boec.value).toBe(3);
   });
 
-  it('falls back to the newest valid report when the newest one is unusable', () => {
+  // The latest report is what the site says now: an older count never stands
+  // in for a newer report without one. Only a report dated in the future is
+  // set aside, as a clock error rather than the latest report.
+  it('judges only the newest report per site, never an older one in its place', () => {
     const rows = [
       report('abs602boec', now + 60 * MINUTE, 50),
       report('abs602boec', oct22(8, 59), null),
       report('abs602boec', oct22(8, 40), 7),
+      report('abs604boec', now + 60 * MINUTE, 50),
+      report('abs604boec', oct22(8, 40), 7),
     ];
-    expect(byId(selectCountyWaits(rows, sites, now)).abs602boec.value).toBe(7);
+    const entries = byId(selectCountyWaits(rows, sites, now));
+    expect(entries.abs602boec).toBeUndefined();
+    expect(entries.abs604boec.value).toBe(7);
   });
 
   it('drops a null, negative or fractional linecount', () => {
@@ -242,6 +249,17 @@ describe('selectCityWaits', () => {
     const board = cityFresh[5];
     const older = { ...board, [city.valueField]: 9, [city.timeField]: oct22(8, 0) };
     expect(selectCityWaits([older, board], oct22(9, 0))[0].value).toBe(0);
+  });
+
+  it('never shows an older row when the newest says the poll is closed', () => {
+    const board = cityFresh[5];
+    const closed = {
+      ...board,
+      [city.commentsField]: 'Poll closed',
+      [city.timeField]: oct22(9, 0),
+    };
+    const older = { ...board, [city.valueField]: 12, [city.timeField]: oct22(8, 30) };
+    expect(selectCityWaits([older, closed], oct22(9, 5))).toEqual([]);
   });
 });
 

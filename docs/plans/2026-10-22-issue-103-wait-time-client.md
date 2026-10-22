@@ -24,7 +24,8 @@ From the issue, with the owner's #102 findings (comment on #103, 2026-10-22) app
    `where=1=1`, `outFields=Creator,CreationDate,linecount`, `returnGeometry=false`,
    `orderByFields=CreationDate DESC`, `f=json`, as a cacheable GET with no voter data, and
    joins each report to an absentee site by `Creator` = the site's `absentee` field,
-   newest report per site. A `Creator` matching no site is dropped.
+   newest report per site (criterion 5 then judges that report; an older one never
+   stands in for it). A `Creator` matching no site is dropped.
 2. `absentee` is in `POLL_FIELDS` in `src/data/arcgis.js` and in the polls fields
    `scripts/check-config.mjs` checks.
 3. `getCityWaits()` queries the City layer in config with
@@ -133,6 +134,14 @@ config move (#86).
 - Each jurisdiction in config has its own `serviceRoot` and relative `layer`, like the
   main layers: the hardcoding test treats a full URL ending in `/FeatureServer/N` as a
   layer path and would flag `https:` everywhere.
+- `src/data/arcgis.js` keeps the raw row query private (`waitRows`) instead of exporting
+  `getCountyWaitReports()` and `getCityWaitRows()`: nothing reads raw rows yet. #107 can
+  export it when it needs one.
+- Review (finder 1): each site's newest report is judged, and an older one never stands
+  in for it (a newer report with no count, or a City row saying "poll closed", shows
+  nothing). Only a report dated beyond the skew is set aside as a clock error. And the
+  loop drops aged-out values when a component mounts after the loop stopped, before its
+  first render.
 - Status `ok` with no entries means "no current count" (the view is empty, or kept values
   aged out while the last request succeeded); `unavailable` only follows a failure.
 - `docs/data.md`: no edit here. The #102 branch rewrites its "Wait times" section, and an

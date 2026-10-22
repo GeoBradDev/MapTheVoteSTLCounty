@@ -42,13 +42,19 @@ function closingTime(now, close) {
   return new Date(minuteStart + (toMinutes(close) - minutes) * MINUTE_MS);
 }
 
-// The newest row per site among the rows `usable` accepts. Rows with equal
-// times keep the first seen, which is the layer's own newest-first order.
-function newestPerSite(rows, siteOf, timeOf, usable) {
+// The newest row per site, among rows with a known site and a report time no
+// later than `now` plus the allowed skew. Only then are its value and age
+// judged: an older count never stands in for a newer report that has none or
+// that says the site is closed. A time further in the future is a clock error,
+// not the latest report. Rows with equal times keep the first seen, which is
+// the layer's own newest-first order.
+function newestPerSite(rows, siteOf, timeOf, knownSite, now) {
   const newest = new Map();
   for (const row of rows) {
-    if (!usable(row)) continue;
     const site = siteOf(row);
+    const time = timeOf(row);
+    if (!knownSite(site) || typeof time !== 'number' || !Number.isFinite(time)) continue;
+    if (time - Number(now) > skewMs()) continue;
     const kept = newest.get(site);
     if (!kept || timeOf(row) > timeOf(kept)) newest.set(site, row);
   }
@@ -56,8 +62,8 @@ function newestPerSite(rows, siteOf, timeOf, usable) {
 }
 
 /**
- * The County's current line counts: the newest fresh report per early voting
- * site that is open now by its schedule. A report whose site key matches no
+ * The County's current line counts: each early voting site's newest report,
+ * when it has a count, is fresh and the site is open now by its schedule. A report whose site key matches no
  * site is dropped, never guessed.
  * @param {object[]} reports The County layer's rows (attributes).
  * @param {object[]} sites Absentee site features from getAbsenteeSites, with
@@ -73,15 +79,14 @@ export function selectCountyWaits(reports, sites, now = Date.now()) {
     if (typeof key === 'string' && key) siteKind.set(key, properties.abs_type);
   }
   const timeOf = (row) => row[county.timeField];
-  const usable = (row) =>
-    siteKind.has(row[county.siteField]) &&
-    isCount(row[county.valueField]) &&
-    typeof timeOf(row) === 'number' &&
-    isFresh(timeOf(row), maxAgeMs(), now, skewMs());
+  const siteOf = (row) => row[county.siteField];
+  const knownSite = (site) => siteKind.has(site);
 
   const entries = [];
-  for (const row of newestPerSite(reports, (r) => r[county.siteField], timeOf, usable)) {
-    const siteId = row[county.siteField];
+  for (const row of newestPerSite(reports, siteOf, timeOf, knownSite, now)) {
+    if (!isCount(row[county.valueField])) continue;
+    if (!isFresh(timeOf(row), maxAgeMs(), now, skewMs())) continue;
+    const siteId = siteOf(row);
     const schedule = election.earlyVoting.schedules[siteKind.get(siteId)];
     const status = earlyVotingStatus(schedule, now, election.timeZone);
     if (status.kind !== 'openNow') continue;
@@ -156,11 +161,10 @@ export function selectCityWaits(rows, now = Date.now()) {
   const today = zonedNow(now, election.timeZone);
   const timeOf = (row) => row[city.timeField];
   const closedText = city.closedText.toLowerCase();
+  const siteOf = (row) => row[city.siteField];
+  const knownSite = (site) => typeof site === 'string' && site !== '';
   const usable = (row) =>
-    typeof row[city.siteField] === 'string' &&
-    row[city.siteField] !== '' &&
     isCount(row[city.valueField]) &&
-    typeof timeOf(row) === 'number' &&
     isFresh(timeOf(row), maxAgeMs(), now, skewMs()) &&
     zonedNow(timeOf(row), election.timeZone).date === today.date &&
     !String(row[city.commentsField] ?? '')
@@ -168,7 +172,8 @@ export function selectCityWaits(rows, now = Date.now()) {
       .includes(closedText);
 
   const entries = [];
-  for (const row of newestPerSite(rows, (r) => r[city.siteField], timeOf, usable)) {
+  for (const row of newestPerSite(rows, siteOf, timeOf, knownSite, now)) {
+    if (!usable(row)) continue;
     const hours = parseCityHours(row[city.hoursField])?.[weekdayOf(today.date)];
     if (!hours) continue;
     if (today.minutes < toMinutes(hours.open) || today.minutes >= toMinutes(hours.close)) continue;

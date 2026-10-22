@@ -127,8 +127,18 @@ export function createWaitTimesStore(
         }
       };
     },
-    /** @returns {WaitTimesState} */
-    getSnapshot: () => state,
+    /**
+     * While no component reads it, the loop is stopped and nothing prunes, so a
+     * component mounting later would first render values that aged out. Drop
+     * them here, before that render; with no listeners there is no one to tell.
+     * @returns {WaitTimesState}
+     */
+    getSnapshot() {
+      if (listeners.size === 0) {
+        for (const key of KEYS) if (fetchers[key]) prune(key, state[key].refreshFailed);
+      }
+      return state;
+    },
     /** @returns {WaitTimesState} */
     getServerSnapshot: () => initial,
   };

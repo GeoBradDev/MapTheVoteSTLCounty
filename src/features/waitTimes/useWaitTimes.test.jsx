@@ -142,6 +142,28 @@ describe('useWaitTimes', () => {
     expect(screen.getByTestId('a')).toHaveTextContent('abs601boec=7');
   });
 
+  it('never shows values that aged out while no component read it, even for a frame', async () => {
+    const county = vi
+      .fn()
+      .mockResolvedValueOnce([entry('county', 'abs601boec', 1)])
+      .mockImplementation(() => new Promise(() => {}));
+    const store = createWaitTimesStore({ county, city: null });
+    const { unmount } = render(<Reader name="a" store={store} />);
+    await settle();
+    expect(screen.getByTestId('a')).toHaveTextContent('abs601boec=3');
+    unmount();
+    // The site closes at 5 p.m.; the voter comes back the next morning.
+    vi.setSystemTime(START + 24 * 60 * MINUTE);
+    const seen = [];
+    function Spy() {
+      seen.push(useWaitTimes(store).waits.length);
+      return null;
+    }
+    render(<Spy />);
+    expect(seen.length).toBeGreaterThan(0);
+    expect(seen.every((n) => n === 0)).toBe(true);
+  });
+
   it('stops when no component reads it', async () => {
     const county = vi.fn(async () => []);
     const store = createWaitTimesStore({ county, city: null });
