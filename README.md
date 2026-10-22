@@ -141,6 +141,15 @@ election name, an election-specific URL, a date, a layer or service name, the fi
 filter or the sample ballot pattern from the config there; it does not check hours, so read
 those from the config too. Text under `content/` may repeat them.
 
+Layer data the app keeps in memory has a max age (#84): `layerMaxAge` in the config, shorter
+on Election Day (the date in the config's time zone), so a tab left open for days still shows a
+moved polling place. `isFresh` and `layerMaxAgeMs` in `src/data/freshness.js` are the one rule
+for "too old": a layer read by more than one card, and any later refreshed layer (wait times,
+City layers), uses them rather than its own expiry. The polling places and early voting cards
+fetch again when the tab is shown after the max age; a refresh that fails keeps the rows shown
+and says when they were loaded. The service worker (#25) must not keep serving an answer older
+than this max age.
+
 ## Learn content
 
 Each voter education topic is one Markdown file, `content/<locale>/learn/<id>.md`, with front
