@@ -377,11 +377,14 @@ endpoint, `Counties` layer `NAME`) and Esri (`Subregion`, `RegionAbbr`) geocoder
 return them too, for example `St. Louis city`, `MO`. A place the geocoder names as St.
 Louis City is asked of the City's precinct layer first (#88), and any other place of the
 county's; a point the county layer misses inside the City's outline extent, widened by
-about 500 m (`CITY_EXTENT` in `locate.js`), is then asked of the City's, so a point far
-from the City is never sent to it. A City precinct opens `/p/<City code>`. With no
+about 500 m (`CITY_EXTENT` in `locate.js`), is then asked of the City's, unless the geocoder
+puts it out of state or in another county, so a point far from the City is never sent to
+it. A place named as the City whose point is in a county precinct gets that precinct: the
+point decides, as for every place. A City precinct opens `/p/<City code>`. With no
 precinct at the point, a place in St. Louis City (its precinct layer found nothing or
-failed) is sent to the City's Board of Election Commissioners and its polling place
-lookup, one elsewhere in Missouri to the Secretary of State Voter Outreach Center (the
+failed), or coordinates alone near the City and outside the county when the City's layer
+failed, is sent to the City's Board of Election Commissioners and its polling place lookup,
+one elsewhere in Missouri to the Secretary of State Voter Outreach Center (the
 county apps' own no-results link), and one outside Missouri gets a generic
 message. A point inside the boundary with no precinct goes to the county's
 official lookup, and a place with no state (coordinates alone) gets a message for
@@ -630,8 +633,8 @@ with `cache: no-store`, no cookies (`credentials: 'omit'`; the live server sets 
 only when the county has no match or no county layer answers; it gets it in a GET
 query string, with `cache: 'no-store'`, no cookies and no referrer, because Photon has
 no POST endpoint (`POST /api/` answers 404, checked 2026-10-21, #38). The City check (below) sends the City only the house
-number and street, in a POST body, the same way; as a source (#88) the City gets the typed
-text before its first comma, without a unit, and while the voter types, the same way. Nothing is stored. The
+number and street, in a POST body, the same way; as a source (#88) the City gets the typed house
+number and street (City as a source, below), also while the voter types, the same way. Nothing is stored. The
 Content-Security-Policy allows `https://maps.stlouisco.com`,
 `https://services2.arcgis.com` and `https://maps6.stlouis-mo.gov` in `connect-src`.
 
@@ -664,7 +667,8 @@ answer with the typed text itself:
   63133, 63136, 63120, 63147 and others) or is not listed gets the check. The ZIP in a
   picked suggestion's label is the county record's, not the voter's, so for a pick the
   check ignores it: it neither skips the check nor rules out a City parcel in another ZIP
-  (a City voter typing `6135 Washington` is offered only the county's 63134 address).
+  (a City voter typing `6135 Washington` was offered only the county's 63134 address; since
+  #88 the City's 63112 parcel is suggested after it).
   After a pick, every search goes as a pick (`src/features/lookup/AddressSearch.jsx`)
   until the voter deletes or changes the label's ZIP (owner decision, 2026-10-21): editing
   other parts of the label (adding or pasting a unit, deleting ", MO", a space) keeps it.
@@ -711,15 +715,20 @@ which misses many City house numbers (`6135 Washington Ave 63112`, `5010 Notting
   so `1200 Market St, Philadelphia, PA` is not City Hall. Two parcels that fit, or one whose
   street has a direction the text left out, are no match, without Photon. No parcel goes on
   to Photon.
+- **What is sent:** the house number and street only (`cityStreetOf`: the text before its
+  first comma, without a unit, and without a St. Louis town, the state or a ZIP after it,
+  since the geocoder finds nothing when they follow the street).
 - **Labels:** a City place and suggestion read `<number> <street>, St. Louis City, MO
   <ZIP>`, so a City address reads apart from its county twin, whose label names its own
-  town. A picked City label fails the county's rules (it names the City), so it is found
-  again by the City.
+  town. A picked City label fails the county's strict rules (it names the City), so it is
+  found again by the City, unless the county lists the address in the same ZIP (no match,
+  #58).
 - **Suggestions:** the geocoder has no suggest operation and matches whole words only, so
   it is asked with `findAddressCandidates` once a house number and a word of at least three
   letters are typed, and its parcels whose number and street start with the typed words
   (the last as a prefix) are shown after the county's, at most 5. `5010 Notting` gets no
-  City suggestion; `5010 Nottingham` does. A failed City request adds none.
+  City suggestion; `5010 Nottingham` does. A failed City request adds none, and none are
+  shown while no county source answers, since a pick could not then be found again.
 - **The City geocoder unavailable:** Photon is asked; a Photon place that could get a
   county precinct still needs the City check, which fails too, so never a county
   precinct. With nothing found, `reportUnavailable` (#18) makes it address search not
@@ -746,11 +755,11 @@ the live layer blocked:
 App: 11 right, 0 no match, 0 wrong; the same with the live layer blocked (the
 hosted copy answered). Photon alone: 8 right, 3 no match. The script also checks
 that City Hall (1200 Market St, 63103) and the #58 City addresses (`6135 Washington Ave,
-St. Louis, MO`, `6135 Washington Ave`, `6109 Washington Ave`) get the City referral, typed
-and picked from the county's suggestion (since #88, a City precinct; rerun 2026-10-22: City
-Hall W14P02, the Washington Ave addresses W10P02, `5010 Nottingham Ave` W05P05, `6500
-Chippewa St` W02P01, `8900 Riverview Blvd` W13P11, typed and picked; St. Charles,
-Washington DC and Philadelphia addresses get no precinct), and that addresses both list in one ZIP (`6135
+St. Louis, MO`, `6135 Washington Ave`, `6109 Washington Ave`) open a City precinct (the City
+referral before #88), typed and picked from the county's suggestion and from the City's (rerun
+2026-10-22: City Hall W14P02, the Washington Ave addresses W10P02, `5010 Nottingham Ave`
+W05P05, `6500 Chippewa St` W02P01, `8900 Riverview Blvd` W13P11; St. Charles, Washington DC
+and Philadelphia addresses get no precinct), and that addresses both list in one ZIP (`6135
 Horton Pl, St. Louis, MO 63133`, `1 Brookings Dr`, `1 Brookings Dr, St. Louis, MO 63130`,
 and the `1 Brookings` pick) are no match, with the live layer and with it blocked: all do.
 A random sample of 192 current county address points, each typed both as stored

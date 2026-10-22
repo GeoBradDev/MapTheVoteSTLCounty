@@ -60,6 +60,22 @@ describe('lookup(): the City as an address source', () => {
     expect(params.get('SingleLine')).toBe('6135 Washington Ave');
   });
 
+  // The City geocoder finds nothing when a town or state follows the street,
+  // so only the house number and street are asked for, commas or not.
+  it.each([
+    ['5010 Nottingham Ave St Louis MO', '5010 Nottingham Ave'],
+    ['5010 Nottingham Ave St. Louis, MO 63109', '5010 Nottingham Ave'],
+    ['5010 Nottingham Ave Saint Louis Missouri 63109-1234 USA', '5010 Nottingham Ave'],
+    ['5010 Nottingham Ave St. Louis City MO', '5010 Nottingham Ave'],
+    ['5010 Nottingham Ave 63109', '5010 Nottingham Ave'],
+    ['5010 Nottingham Ave, St. Louis, MO 63109', '5010 Nottingham Ave'],
+    ['5010 Nottingham Ave Apt 2 St Louis MO', '5010 Nottingham Ave'],
+  ])('asks for the street only for %s', async (text, street) => {
+    const fetch = answering(nottingham);
+    await expect(city(fetch).lookup(text)).resolves.toMatchObject({ status: 'city' });
+    expect(fetch.calls[0].params.get('SingleLine')).toBe(street);
+  });
+
   it('City Hall is the City parcel', async () => {
     await expect(
       city(answering(market)).lookup('1200 Market St, St. Louis, MO 63103'),
@@ -173,6 +189,15 @@ describe('suggest(): City parcels as the voter types', () => {
     expect(suggestions.map((s) => s.label)).toEqual([
       '5010 Nottingham Ave, St. Louis City, MO 63109',
     ]);
+  });
+
+  it('keeps suggesting once the town and state are typed', async () => {
+    const fetch = answering(nottinghamPartial);
+    const suggestions = await city(fetch).suggest('5010 Nottingham Ave St Louis MO');
+    expect(suggestions.map((s) => s.label)).toEqual([
+      '5010 Nottingham Ave, St. Louis City, MO 63109',
+    ]);
+    expect(fetch.calls[0].params.get('SingleLine')).toBe('5010 Nottingham Ave');
   });
 
   it('matches the last typed word as a prefix', async () => {

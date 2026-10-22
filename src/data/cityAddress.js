@@ -7,8 +7,10 @@
 // OpenStreetMap misses many City house numbers, so without this a City voter
 // whose house number and street also exist in the county could get a county
 // precinct. Called straight from the browser: no proxy, no server of ours, no
-// key. The check and lookup() send only the house number and street, and
-// suggest() the partly typed street, each in a POST body (never a URL), with
+// key. The check, lookup() and suggest() send only the house number and
+// street (cityStreetOf: the text before its first comma, without a unit or a
+// St. Louis town, state or ZIP after it; for suggest() as typed so far), each
+// in a POST body (never a URL), with
 // no cookies, no referrer and no browser cache. Every failure becomes a
 // GeocoderUnavailableError; src/data/geocoder.js then answers no match (or,
 // with reportUnavailable, rejects as unavailable, #18), never the county place.
@@ -135,11 +137,21 @@ function cityAddressOf(candidate) {
 // 63134 in the county), whose label names its own town.
 const cityLabel = (props) => labelOf({ ...props, city: 'St. Louis City' });
 
-// The house number and street words typed, without a ZIP after them.
-function typedStreetWords(typed) {
-  const all = words(streetOf(typed));
-  const zipAt = all.findIndex((word, i) => i > 0 && /^\d{5}$/.test(word));
-  return zipAt === -1 ? all : all.slice(0, zipAt);
+// A St. Louis town, the state, the country or a ZIP at the end of the text.
+const CITY_TAIL =
+  /(?:[\s,]+(?:\d{5}(?:-\d{4})?|mo|missouri|usa|us|united states|(?:city of )?(?:st\.?|saint) louis(?: city)?))+\s*$/i;
+
+/**
+ * The house number and street of typed text, for the City geocoder, which
+ * finds nothing when a town or state follows the street: the part before the
+ * first comma (streetOf), without a unit, and without a St. Louis town, the
+ * state, the country or a ZIP after it, commas or not. "5010 Nottingham Ave
+ * St. Louis, MO 63109" gives "5010 Nottingham Ave". Another town is left in:
+ * the strict rules turn that text away whatever the City answers.
+ * @param {string} typed
+ */
+export function cityStreetOf(typed) {
+  return streetOf(typed).replace(CITY_TAIL, '').trim();
 }
 
 // Text worth a suggestion request: a house number, then a word of at least
@@ -268,7 +280,7 @@ export function createCityAddressCheck({
      */
     async lookup(typed, { signal } = {}) {
       const input = String(typed ?? '').trim();
-      const query = streetOf(input);
+      const query = cityStreetOf(input);
       if (!/^\d/.test(query) || !/[a-z]/i.test(query)) {
         if (signal?.aborted) throw abortError();
         return { status: 'none' };
@@ -307,10 +319,11 @@ export function createCityAddressCheck({
         if (signal?.aborted) throw abortError();
         return [];
       }
-      const want = typedStreetWords(input);
+      const query = cityStreetOf(input);
+      const want = words(query);
       const last = want.length - 1;
       const suggestions = [];
-      for (const c of (await candidates(streetOf(input), signal)).map(cityAddressOf)) {
+      for (const c of (await candidates(query, signal)).map(cityAddressOf)) {
         if (!c) continue;
         const have = words(`${c.props.housenumber} ${c.props.street}`);
         const fits = want.every((word, i) =>

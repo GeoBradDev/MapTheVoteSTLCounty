@@ -166,6 +166,16 @@ describe('issue #88: suggestions from the county and the City together', () => {
     await expect(geocoder.suggest('6135 Washington')).resolves.toEqual(county);
   });
 
+  it('offers no City suggestion while no county source answers (a pick could not be checked)', async () => {
+    const photon = [{ id: 'p', label: '6135 Washington Ave, Pagedale' }];
+    const { geocoder } = setup({
+      countySuggest: unavailable,
+      citySuggest: async () => city,
+      photonSuggest: async () => photon,
+    });
+    await expect(geocoder.suggest('6135 Washington')).resolves.toEqual(photon);
+  });
+
   it('asks Photon when neither has one', async () => {
     const photon = [{ id: 'p', label: '6135 Washington Ave, Pagedale' }];
     const { geocoder } = setup({ photonSuggest: async () => photon, citySuggest: unavailable });

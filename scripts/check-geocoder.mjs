@@ -47,6 +47,8 @@ const CITY = [
   '6109 Washington Ave',
   '6135 Washington Ave, St. Louis, MO 63112',
   '5010 Nottingham Ave, St. Louis, MO 63109',
+  '5010 Nottingham Ave St Louis MO',
+  '5010 Nottingham Ave St. Louis, MO 63109',
   '6500 Chippewa St, St. Louis, MO 63109',
   '8900 Riverview Blvd, St. Louis, MO 63147',
 ];

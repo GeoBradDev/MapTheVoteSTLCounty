@@ -251,6 +251,31 @@ describe('locate, in St. Louis City (#88)', () => {
     expect(await locate({ lat: CITY.lat, lng: CITY.lng })).toEqual({ kind: 'stl-city' });
   });
 
+  // On the Illinois bank, inside the City's extent box (finder report, #88).
+  const EAST_ST_LOUIS = { lat: 38.6285, lng: -90.172, state: 'IL', county: 'St. Clair County' };
+
+  it('never asks the City layer for a place the geocoder puts out of state', async () => {
+    fetchMock.mockImplementation(
+      recorded({
+        [`${PRECINCTS} ${EAST_ST_LOUIS.lng},${EAST_ST_LOUIS.lat}`]: () => respond(EMPTY),
+        [`${BOUNDARY} ${EAST_ST_LOUIS.lng},${EAST_ST_LOUIS.lat}`]: () => respond(EMPTY),
+      }),
+    );
+    expect(await locate(EAST_ST_LOUIS)).toEqual({ kind: 'out-of-state' });
+    expect(requestedLayers()).not.toContain(CITY_PRECINCTS);
+  });
+
+  it('a place the geocoder puts in another Missouri county is not asked of the City', async () => {
+    fetchMock.mockImplementation(
+      recorded({
+        [`${PRECINCTS} ${CITY.lng},${CITY.lat}`]: () => respond(EMPTY),
+        [`${BOUNDARY} ${CITY.lng},${CITY.lat}`]: () => respond(EMPTY),
+      }),
+    );
+    await locate({ lat: CITY.lat, lng: CITY.lng, state: 'MO', county: 'Jefferson County' });
+    expect(requestedLayers()).not.toContain(CITY_PRECINCTS);
+  });
+
   it('a City place in a county precinct is that county precinct (the point decides)', async () => {
     fetchMock.mockImplementation(
       recorded({ [`${CITY_PRECINCTS} ${INSIDE.lng},${INSIDE.lat}`]: () => respond(EMPTY) }),

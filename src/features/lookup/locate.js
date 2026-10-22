@@ -121,7 +121,10 @@ export async function locate(place) {
     throw error;
   }
   if (precinct) return { kind: 'precinct', jurisdiction: 'county', precinct };
-  if (!cityAsked && nearCity(point)) {
+  // Only a place the geocoder could put in St. Louis (coordinates alone, or
+  // the county): never one it puts out of state or in another county.
+  const couldBeCity = kind === 'unknown' || kind === 'st-louis-county';
+  if (!cityAsked && couldBeCity && nearCity(point)) {
     const city = await cityPrecinct();
     if (city) return city;
   }
@@ -133,8 +136,11 @@ export async function locate(place) {
     // The geocoder's fields are the fallback below.
   }
   if (inCounty === true) return { kind: 'county-unmatched' };
-  // Near the City, outside the county, and the City could not answer.
-  if (cityFailed && inCounty === false && nearCity(point)) return { kind: 'stl-city' };
+  // Coordinates alone near the City, outside the county, and the City could
+  // not answer. (The extent box also takes in some of the Illinois bank.)
+  if (cityFailed && kind === 'unknown' && inCounty === false && nearCity(point)) {
+    return { kind: 'stl-city' };
+  }
   if (inCounty === null && kind === 'st-louis-county') return { kind: 'county-unmatched' };
   // Outside the boundary, a geocoder that still says St. Louis County is wrong
   // about the county, not the state.

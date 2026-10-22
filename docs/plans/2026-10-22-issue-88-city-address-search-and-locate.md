@@ -33,8 +33,9 @@ dataviz, django, fastapi, expo (not applicable because no charts, no backend, no
    from the City never goes to the City's layer). County precincts return
    `jurisdiction: 'county'`.
 6. `stl-city` stays only as the fallback when the City precinct layer finds nothing or
-   fails for a place the geocoder names as the City, and its notice links the City Board and
-   the City's own polling place lookup.
+   fails for a place the geocoder names as the City and the county layer has no precinct
+   there (the point decides, as today), or fails for coordinates alone near the City outside
+   the county; its notice links the City Board and the City's own polling place lookup.
 7. A point in neither precinct layer keeps today's Missouri and out-of-state answers.
 8. Use my location (coordinates only) in the City opens the City precinct, under the #83
    accuracy rule (unchanged).
@@ -107,11 +108,14 @@ error line (#93), the Clayton municipality no match (opened as #143, unrelated).
 - Criteria 1, 2, 4: `src/data/geocoder.city88.test.js` and `src/data/cityAddress.lookup88.test.js`
   (new, from the recorded City geocoder fixtures, including 5010 Nottingham Ave and the partly
   typed `6135 Washington` and `5010 Nottingham`); `scripts/check-geocoder.mjs` live.
-- Criterion 3: geocoder suggest tests and `AddressSearch` pick through the chain.
+- Criterion 3: geocoder suggest and pick tests (`geocoder.city88.test.js`), and picks of
+  county and City suggestions through the live chain in `scripts/check-geocoder.mjs`.
 - Criteria 5 to 8: `locate.test.js` with `city-precinct-at-point.json` and failures;
   `AddressLookup.test.jsx` navigation to `/p/W01P12`.
 - Criterion 9: `OutOfCountyNotice.test.jsx`.
-- Criterion 10: `addressPrivacy.test.jsx`, `PrivacyPage` tests, `no-storage.test.js`.
+- Criterion 10: `cityAddress.lookup88.test.js` (POST body, the street only, no address in
+  the URL), `locate.test.js` (the City point query reads the point from the POST body),
+  `PrivacyPage` tests, and the unchanged `addressPrivacy.test.jsx` and `no-storage.test.js`.
 - Criterion 12: `src/test/build.test.js`.
 - Live drive: build and preview; type City Hall, 6135 Washington Ave 63112, 1 Brookings Dr
   63130, a county address, a St. Charles address and an out-of-state address; pick a City
@@ -128,3 +132,8 @@ error line (#93), the Clayton municipality no match (opened as #143, unrelated).
 - `locate()` also returns `stl-city` for a point near the City, outside the county, when the
   City layer fails (coordinates only, Use my location), so a City voter is never told the
   location is outside both.
+- Review round 1: the City is asked for the house number and street only (`cityStreetOf`),
+  since it finds nothing with a town after the street; `locate()` asks the City layer only for
+  coordinates alone or a place the geocoder puts in St. Louis County, and falls back to
+  `stl-city` on a City failure only for coordinates alone; no City suggestions while no county
+  source answers.

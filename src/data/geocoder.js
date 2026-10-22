@@ -143,8 +143,8 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
   // county's address points leave out almost every City address, and Photon
   // misses many, so an answer that could get a county precinct is checked
   // with the City's own geocoder, unless the text holds a ZIP entirely
-  // outside the City. A City address that fits is the answer (the City
-  // referral, #8), unless it is in the same ZIP as the place found; that, one
+  // outside the City. A City address that fits is the answer (its City
+  // precinct, #88; the City referral before), unless it is in the same ZIP as the place found; that, one
   // the text could mean but not exactly, is no match; a City geocoder that
   // fails or is slow is no match too, or with reportUnavailable a
   // GeocoderUnavailableError (#18). Never the county place then.
@@ -182,12 +182,15 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
       if (!text) return [];
       // The City's parcels (#88) are asked alongside the county; a City
       // request that fails just adds none.
+      // Not while no county source answers: a picked City label could not
+      // then be found again (the City is asked as a source only after a
+      // county no match).
       const cityAsk =
         typeof cityCheck.suggest === 'function'
           ? cityCheck.suggest(text, { signal }).catch(() => [])
           : Promise.resolve([]);
       const county = await firstAnswer((source) => source.suggest(text, { signal }), signal);
-      const city = await cityAsk;
+      const city = county ? await cityAsk : [];
       if (signal?.aborted) throw abortError();
       const official = [
         ...(county ?? []),
@@ -226,7 +229,8 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
         if (!reportUnavailable) return null;
         throw new GeocoderUnavailableError('The county precinct check did not answer');
       }
-      // A county record in the City already gets the City's referral.
+      // A county record in the City is a City place: locate() asks the City's
+      // precinct layer for it (#88).
       if (county?.status === 'match') {
         return checkedForCity(typed, county.place, signal, reportUnavailable);
       }
