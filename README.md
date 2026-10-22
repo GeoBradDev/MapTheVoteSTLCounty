@@ -585,7 +585,9 @@ neither has a match, or no county layer answers, it falls back to the public
 [Photon](https://photon.komoot.io) geocoder (OpenStreetMap data). Every answer that could get
 a county precinct is then checked with the City's geocoder, unless the text
 holds a ZIP entirely outside the City: when the City has the same address in another ZIP, the
-voter gets the City precinct, when both list it in one ZIP the answer is no match, and when the City geocoder fails or is slow, the app says address search is not working,
+voter who typed the City's ZIP gets the City precinct and one who typed no ZIP is asked for it
+(no match; a picked suggestion's ZIP counts as typed, so a pick opens the precinct of the
+jurisdiction its label names), when both list it in one ZIP the answer is no match, and when the City geocoder fails or is slow, the app says address search is not working,
 never a county precinct (#58, #18). `src/data/geocoder.js` builds that chain, `src/data/countyAddress.js`,
 `src/data/photon.js` and `src/data/cityAddress.js` implement the sources and
 `src/data/addressMatch.js` holds the strict matching rules they share; a test fails if any
@@ -607,13 +609,15 @@ node scripts/check-geocoder.mjs [photon-base-url]
 
 It geocodes 10 polling place addresses and 1318 Ross Ave with each source alone, with the
 app's chain and with the chain while the live county layer is blocked, and checks that City
-Hall, the City addresses of #58, whose number and street the county also has, and other City
-addresses (5010 Nottingham Ave 63109, addresses near the City line) open a City precinct, typed
-and picked from the suggestions, that addresses outside both (St. Charles, out of state) get no
+Hall, the City addresses of #58 typed with the City's ZIP or picked from the City's suggestion,
+and other City addresses (5010 Nottingham Ave 63109, addresses near the City line) open a City
+precinct, typed and picked from the suggestions, that those #58 addresses typed with no ZIP are
+no match and picked from the county's suggestion open the county precinct, that addresses outside both (St. Charles, out of state) get no
 precinct, and that addresses the county and the City both list in one ZIP (6135 Horton Pl
 63133, 1 Brookings Dr 63130) are no match. It exits 1 if the chain puts any address in the
 wrong precinct, a City address does not open a City precinct, an address outside both gets a
-precinct, or a shared address is not no match. "No match" is
+precinct, a pick does not open its label's jurisdiction, or a shared address or a twin typed with
+no ZIP is not no match. "No match" is
 allowed: the app then points the voter to "Use my location" and the county's official
 lookup. Results are recorded in `docs/data.md` under Geocoding.
 
@@ -622,7 +626,8 @@ lookup. Results are recorded in `docs/data.md` under Geocoding.
 When a service is slow or down, the app says so and offers a way forward (#18); it never
 guesses a precinct. "We could not find that address" means the sources that answered had
 no single answer: none has the address, two addresses or two precincts fit, the county and
-the City both list it in one ZIP, or the only fit is not exact. A lookup that could not finish says address search is not working instead: every
+the City both list it in one ZIP, the City has it in another ZIP and no ZIP was typed, or the
+only fit is not exact. A lookup that could not finish says address search is not working instead: every
 source down, the City check or the county's precinct check failing or slow, Photon down after a county no
 match, or no county layer answering with Photon finding nothing. (With the live county
 layer down, the 2023 hosted copy's no match counts as an answer.)

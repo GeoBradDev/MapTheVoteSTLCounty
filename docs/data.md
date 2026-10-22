@@ -665,11 +665,13 @@ answer with the typed text itself:
   2020 ZIP Code Tabulation Areas that touch the county and do not come within 500 m of
   the City (`COUNTY_ONLY_ZIPS`, from TIGERweb; since #88 also any ZIP not starting 631, as
   every City ZIP does). A ZIP that crosses the City line (63130,
-  63133, 63136, 63120, 63147 and others) or is not listed gets the check. The ZIP in a
-  picked suggestion's label is the county record's, not the voter's, so for a pick the
-  check ignores it: it neither skips the check nor rules out a City parcel in another ZIP
-  (a City voter typing `6135 Washington` was offered only the county's 63134 address; since
-  #88 the City's 63112 parcel is suggested after it).
+  63133, 63136, 63120, 63147 and others) or is not listed gets the check. Under #58 the
+  ZIP in a picked suggestion's label was ignored, as the county record's and not the
+  voter's. Since the owner's decision of 2026-10-22 (#88) it counts as typed: the City's
+  63112 parcel of `6135 Washington Ave` is suggested after the county's 63134 record, each
+  label names its jurisdiction ("St. Louis City" for the City's), and a pick opens the
+  precinct of the jurisdiction its label names, so a pick of the county's label (a
+  county-only ZIP) skips the check and opens the county precinct.
   After a pick, every search goes as a pick (`src/features/lookup/AddressSearch.jsx`)
   until the voter deletes or changes the label's ZIP (owner decision, 2026-10-21): editing
   other parts of the label (adding or pasting a unit, deleting ", MO", a space) keeps it.
@@ -677,7 +679,8 @@ answer with the typed text itself:
   input type) forgets the pick, since the box cannot tell what it replaced. A digit left
   against the ZIP when the voter searches makes it another number, so that search goes as
   typed text; deleting the digit makes it a pick again. Once the pick is forgotten, a ZIP typed later is the voter's own, so a county
-  voter can still type a county-only ZIP to get the precinct.
+  voter can still type a county-only ZIP to get the precinct. Since the label's ZIP counts
+  as typed (#88), a pick and the same text typed get the same answer.
 - **A City match:** a `PointAddress` (a City parcel; interpolated `StreetAddress` ranges do
   not count) with the typed house number and whole street under the strict rules
   (`matchesStreet` in `addressMatch.js`), and the typed ZIP when one is typed (a parcel
@@ -687,18 +690,26 @@ answer with the typed text itself:
   ZIP of the place found: 6135 Horton Pl 63133, county UNV202; 1 Brookings Dr 63130,
   Washington University, county HAD018): no match, since the lookup cannot tell which one
   the voter means (owner decision, 2026-10-21). The voter is pointed to "Use my location"
-  and the county's official lookup. A City twin in another ZIP (6135 Washington Ave 63112)
-  gets the City precinct.
+  and the county's official lookup.
+- **The county and the City list the address in different ZIPs** (6135 Washington Ave:
+  63134 in the county, FER022; 63112 in the City), owner decision of 2026-10-22 (#88):
+  text with no ZIP (`6135 Washington Ave`, `6135 Washington Ave, St. Louis, MO`) is no
+  match, whose message asks for the ZIP, never either precinct. The City's ZIP typed gets
+  the City precinct, and a county-only ZIP the county precinct. A pick opens the
+  jurisdiction its label names: the county's label the county precinct, the City's label
+  ("St. Louis City", 63112) the City precinct. The locked #58 tests that expected the City
+  place for text with no ZIP and for a pick of the county's label were rewritten with the
+  owner's approval.
 - **A City parcel the text could mean but not exactly** (its street has a direction the
   text left out, like `1200 Market Pl` and the City's 1200 N Market Pl): no match.
 - **The City geocoder unavailable** (network error, non-2xx, error body, malformed body,
   or no answer in 4 s): never the county place. Without `reportUnavailable` it is no
   match; the app passes it (#18), so the voter is told address search is not working,
   with Try again, "Use my location" and the county's official lookup.
-- **Cost:** a county voter whose number and street the City also has in another ZIP, who
-  types no ZIP, a ZIP that crosses the City line, or picks the county's suggestion, gets the
-  City place: the City referral under #58, and since #88 the City twin's precinct. Typing a
-  county-only ZIP gets the county precinct. A City geocoder outage makes every lookup without a county-only ZIP whose
+- **Cost:** a voter whose number and street the county and the City list in different
+  ZIPs and who types no ZIP is asked for one (since #88; under #58 that text got the City
+  referral). Typing a ZIP, or picking the suggestion that names their own jurisdiction, gets
+  their precinct. A City geocoder outage makes every lookup without a county-only ZIP whose
   answer could get a county precinct fail (shown as address search not working, #18), picks
   of a suggestion included. The owner accepted both under #58: neither sends a voter to a wrong county precinct.
 
@@ -722,8 +733,8 @@ which misses many City house numbers (`6135 Washington Ave 63112`, `5010 Notting
   nothing when they follow the street. Another town typed without a comma goes too (the
   strict rules then turn the answer away). Text with a ZIP entirely outside the City (one of
   `COUNTY_ONLY_ZIPS`, or any ZIP not starting 631, as every City ZIP does) typed by the voter
-  is never sent; a picked label's ZIP is the source's, so a pick is sent without it, as for
-  the City check.
+  is never sent, nor is a pick whose label holds one (since #88 a label's ZIP counts as
+  typed).
 - **Labels:** a City place and suggestion read `<number> <street>, St. Louis City, MO
   <ZIP>`, so a City address reads apart from its county twin, whose label names its own
   town. A picked City label fails the county's strict rules (it names the City), so it is
@@ -760,10 +771,12 @@ the live layer blocked:
 
 App: 11 right, 0 no match, 0 wrong; the same with the live layer blocked (the
 hosted copy answered). Photon alone: 8 right, 3 no match. The script also checks
-that City Hall (1200 Market St, 63103) and the #58 City addresses (`6135 Washington Ave,
-St. Louis, MO`, `6135 Washington Ave`, `6109 Washington Ave`) open a City precinct (the City
-referral before #88), typed and picked from the county's suggestion and from the City's (rerun
-2026-10-22: City Hall W14P02, the Washington Ave addresses W10P02, `5010 Nottingham Ave`
+that City Hall (1200 Market St, 63103) and the #58 City address with its ZIP (`6135
+Washington Ave, St. Louis, MO 63112`) open a City precinct (the City referral before #88),
+typed and picked from the City's suggestion, that the #58 twins typed with no ZIP (`6135
+Washington Ave, St. Louis, MO`, `6135 Washington Ave`, `6109 Washington Ave`) are no match
+and picked from the county's suggestion open the county precinct (owner decision,
+2026-10-22) (rerun 2026-10-22: City Hall W14P02, `6135 Washington Ave` 63112 W10P02, `5010 Nottingham Ave`
 W05P05, `6500 Chippewa St` W02P01, `8900 Riverview Blvd` W13P11; St. Charles, Washington DC
 and Philadelphia addresses get no precinct), and that addresses both list in one ZIP (`6135
 Horton Pl, St. Louis, MO 63133`, `1 Brookings Dr`, `1 Brookings Dr, St. Louis, MO 63130`,

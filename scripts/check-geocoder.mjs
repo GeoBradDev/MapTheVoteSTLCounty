@@ -35,16 +35,12 @@ import { locate } from '../src/features/lookup/locate.js';
 // North, south, west, central and unincorporated sites (docs/data.md, Geocoding).
 const LOCS = ['144', '020', '002', '054', '041', '148', '158', '122', '096', '178'];
 const ROSS = { text: '1318 Ross Ave, Saint Louis, MO 63146', want: 'CC007' };
-// St. Louis City Hall, the City addresses of issue #58 whose number and street
-// the county also has in another ZIP (6135 and 6109 Washington Ave 63134,
-// FER022), a City address Photon lacks (6135 Washington Ave 63112), an owner
-// report (5010 Nottingham Ave 63109) and addresses near the City line: a City
-// precinct (#88).
+// St. Louis City Hall, a City address Photon lacks whose number and street the
+// county also has in another ZIP (6135 Washington Ave 63112; the county's
+// 63134, FER022), an owner report (5010 Nottingham Ave 63109) and addresses
+// near the City line: a City precinct (#88).
 const CITY = [
   '1200 Market St, St. Louis, MO 63103',
-  '6135 Washington Ave, St. Louis, MO',
-  '6135 Washington Ave',
-  '6109 Washington Ave',
   '6135 Washington Ave, St. Louis, MO 63112',
   '5010 Nottingham Ave, St. Louis, MO 63109',
   '5010 Nottingham Ave St Louis MO',
@@ -57,6 +53,14 @@ const ELSEWHERE = [
   '200 N 2nd St, St. Charles, MO 63301',
   '1600 Pennsylvania Ave NW, Washington, DC 20500',
   '1200 Market St, Philadelphia, PA 19107',
+];
+// The #58 twins the county and the City list in different ZIPs (6135 and
+// 6109 Washington Ave), typed with no ZIP: no match, so the voter is asked for
+// a ZIP, never either precinct (owner decision, 2026-10-22, #88).
+const TWIN_NO_ZIP = [
+  '6135 Washington Ave, St. Louis, MO',
+  '6135 Washington Ave',
+  '6109 Washington Ave',
 ];
 // Addresses the county and the City both list in one ZIP (6135 Horton Pl
 // 63133, UNV202; 1 Brookings Dr 63130, Washington University, HAD018): no
@@ -177,19 +181,20 @@ for (const [name, geocoder] of [
     console.log(`${name}: ${text}: ${kind} (${place?.label ?? ''})`);
     if (/^(city|county) /.test(kind)) wrong.push(`${name}: ${text}: ${kind}, want no precinct`);
   }
-  for (const text of SHARED) {
+  for (const text of [...SHARED, ...TWIN_NO_ZIP]) {
     const place = await withRetry(() => geocoder.geocode(text));
     const kind = await kindOf(place);
     console.log(`${name}: ${text}: ${kind} (${place?.label ?? ''})`);
     if (kind !== 'no match') wrong.push(`${name}: ${text}: ${kind}, want no match`);
   }
   // A voter who types the start of the address and picks a suggestion: the
-  // first (the county's, labeled with the county record's ZIP, #58), or the
-  // City's own (#88), labeled "St. Louis City".
-  // A City pick must exist: no City suggestion is a failure, not no match.
+  // first, the county's (labeled with its own town and ZIP), or the City's own
+  // (#88), labeled "St. Louis City". A pick opens the jurisdiction its label
+  // names (owner decision, 2026-10-22). A City or county pick must exist: no
+  // such suggestion is a failure, not no match.
   for (const [partial, want, which] of [
-    ['6135 Washington', 'city', 'first'],
-    ['6109 Washington', 'city', 'first'],
+    ['6135 Washington', 'county', 'county'],
+    ['6109 Washington', 'county', 'county'],
     ['1 Brookings', 'no match', 'first'],
     ['6135 Washington', 'city', 'city'],
     ['1 Brookings', 'no match', 'city'],
@@ -199,12 +204,15 @@ for (const [name, geocoder] of [
     ['8900 Riverview', 'city', 'city'],
   ]) {
     const suggestions = await withRetry(() => geocoder.suggest(partial));
+    const isCity = (s) => / St\. Louis City,/.test(s.label);
     const pick =
       which === 'city'
-        ? suggestions.find((s) => / St\. Louis City,/.test(s.label))
-        : suggestions[0];
-    if (which === 'city' && !pick) {
-      wrong.push(`${name}: no City suggestion for ${partial}`);
+        ? suggestions.find(isCity)
+        : which === 'county'
+          ? suggestions.find((s) => !isCity(s))
+          : suggestions[0];
+    if (which !== 'first' && !pick) {
+      wrong.push(`${name}: no ${which} suggestion for ${partial}`);
       continue;
     }
     const place = pick ? await withRetry(() => geocoder.geocode(pick)) : null;

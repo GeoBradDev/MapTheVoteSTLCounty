@@ -22,8 +22,11 @@ dataviz, django, fastapi, expo (not applicable because no charts, no backend, no
 3. Suggestions show City addresses next to county ones. A City suggestion's label names
    "St. Louis City" and its ZIP, so twins read apart (6135 Washington Ave, St. Louis City,
    MO 63112 vs the county's 63134 record).
-4. #58 rules with the City as a destination: a county match whose number and street the
-   City has in another ZIP opens the City precinct; the county and the City listing the
+4. #58 rules with the City as a destination (revised by the owner's decision of
+   2026-10-22, see Revisions): a county match whose number and street the City has in
+   another ZIP is no match ("add your ZIP") when the text holds no ZIP, and opens the City
+   precinct when the City's ZIP is typed; a pick opens the precinct of the jurisdiction its
+   label names (the county's label the county precinct, the City's label the City precinct); the county and the City listing the
    same number, street and ZIP (1 Brookings Dr 63130, 6135 Horton Pl 63133) is still no
    match; the City geocoder unavailable never gives a City address a county precinct, and a
    county address with a county-only ZIP is unaffected.
@@ -106,6 +109,12 @@ error line (#93), the Clayton municipality no match (opened as #143, unrelated).
 
 ## Proof
 
+- Rewritten #58 tests (owner decision, 2026-10-22), applied alone in a scratch worktree at
+  the merge-base 38b419b: 8 of 61 fail for the expected reason, the old rule giving the
+  City place for no-ZIP twins (city58 x2, sharedzip58, geocoderChain x3) and for a pick of
+  the county label (pick58), plus the City-label pick (no City suggestions before #88).
+  On the branch all pass.
+
 - Criteria 1, 2, 4: `src/data/geocoder.city88.test.js` and `src/data/cityAddress.lookup88.test.js`
   (new, from the recorded City geocoder fixtures, including 5010 Nottingham Ave and the partly
   typed `6135 Washington` and `5010 Nottingham`); `scripts/check-geocoder.mjs` live.
@@ -152,3 +161,18 @@ error line (#93), the Clayton municipality no match (opened as #143, unrelated).
   places in the City goes to the City's maps first, and to the county's too only if the City
   has no precinct for it or cannot be reached (coordinates alone still go to the county's
   first).
+- Owner decision (2026-10-22, resume run): when the county and the City list the same
+  number and street in different ZIPs (6135 Washington Ave: 63112 City, 63134 Pagedale),
+  text with no ZIP is no match (the message asks for a ZIP), and a pick opens the
+  jurisdiction its label names. `src/data/geocoder.js`: `checkedForCity` answers no match
+  for a City twin when the text holds no ZIP, and a pick's label ZIP now counts as typed
+  (`withoutZip` removed). The owner explicitly approved rewriting the locked #58 tests that
+  asserted the old rule: `geocoder.city58.test.js` (no-ZIP Washington Ave cases),
+  `geocoder.sharedzip58.test.js` (twin in another ZIP), `geocoder.pick58.test.js` (pick of
+  the county label), and the City-place cases of `geocoderChain.test.js` and
+  `geocoder.unavailable18.test.js` (now typed with the City's ZIP, or no match without
+  one). Every other #58 rule is kept. `scripts/check-geocoder.mjs` now expects the no-ZIP
+  twins to be no match and the county-label picks to open FER022; 5010 Nottingham Ave
+  63109 still opens W05P05. The privacy notice says a picked suggestion's county-only ZIP
+  skips the City, as a typed one does. `AddressSearch.jsx` pick tracking is unchanged (its
+  comment updated); it no longer changes the answer.
