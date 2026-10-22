@@ -210,10 +210,16 @@ Translations (#19): put a topic with the same `id` under another locale, such as
 `content/es/learn/voter-id.md`, and add that locale's labels to
 `src/features/learn/learnCopy.js`. A locale shows the English topic until its own exists.
 
-`node scripts/check-content-links.mjs` requests every source and link in every topic, prints
-PASS or FAIL per URL and exits 1 on any failure, including a redirect that lands off the
-official hosts. The data health workflow runs it daily (see
-below), never on pull requests.
+`node scripts/check-content-links.mjs` requests every source and link in every topic, and every
+page `src/config/election.js` links (each `sources` entry and each value whose key ends in `Url`
+or `Source`), and prints PASS, FAIL or SKIP per URL. It fails a URL on an error status, on a
+request that fails or times out after its retries, on a redirect that lands off the official
+hosts, and on an HTML page whose
+`<meta http-equiv="refresh">` sends the browser to a different page (#74). A `403` bot
+challenge, which only a browser gets past, is a SKIP: it does not fail the run, and a person
+must open the URL in a browser. Any other `403` fails. It exits 1 on any failure;
+`--skipped <file>` writes the skipped URLs to a file. The data health workflow runs it daily
+(see below), never on pull requests.
 
 ## Data health check
 
@@ -237,8 +243,9 @@ the script.
 `scripts/check-content-links.mjs` every day at 12:00 UTC until Election Day is over in the
 config's time zone, and on demand from the Actions tab (**Data health**, **Run workflow**). On
 a failure it opens an issue labeled `data health`, or comments on the one already open; close
-that issue once it is fixed. The workflow never runs on pull requests, so a live outage cannot
-block a merge. For the next election, nothing in the workflow changes: it reads the new `electionDate`. GitHub turns off
+that issue once it is fixed. Links the content check skipped behind a bot challenge are listed
+on every run's summary page and in that issue; open each in a browser before Election Day.
+The workflow never runs on pull requests, so a live outage cannot block a merge. For the next election, nothing in the workflow changes: it reads the new `electionDate`. GitHub turns off
 scheduled workflows in a public repository after 60 days with no activity; if the daily runs stop,
 turn the workflow back on in the Actions tab.
 

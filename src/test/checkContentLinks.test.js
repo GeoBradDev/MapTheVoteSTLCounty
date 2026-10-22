@@ -1,10 +1,17 @@
 // The content link checker (scripts/check-content-links.mjs), against a temp
 // content folder and a stubbed fetch.
 // @vitest-environment node
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { checkLinks, collectLinks, topicFiles } from '../../scripts/check-content-links.mjs';
+import {
+  checkLinks,
+  collectLinks,
+  configLinks,
+  metaRefreshTarget,
+  topicFiles,
+  writeSkipped,
+} from '../../scripts/check-content-links.mjs';
 
 // Dates here do not matter: the link checker skips the date checks.
 const topic = (sourceUrl, body = 'Text.[^a]') =>
@@ -128,5 +135,389 @@ describe('checkLinks', () => {
       attempts: 1,
     });
     expect(result).toMatchObject({ status: 'fail', detail: 'request failed: no answer in 10 ms' });
+  });
+});
+
+// A page the fake fetch answers with, at its final URL.
+const page = (body, { status = 200, url, headers = {} } = {}) => {
+  const res = new Response(body, {
+    status,
+    headers: { 'content-type': 'text/html; charset=UTF-8', ...headers },
+  });
+  if (url) Object.defineProperty(res, 'url', { value: url });
+  return res;
+};
+
+const html = (head) =>
+  `<!DOCTYPE html><html><head>${head}<title>x</title></head><body></body></html>`;
+
+describe('metaRefreshTarget', () => {
+  const base = 'https://a.gov/page/';
+  it('reads the target in any attribute order, letter case and quoting', () => {
+    expect(
+      metaRefreshTarget(
+        html('<meta http-equiv="refresh" content="0; URL=https://b.gov/x/" />'),
+        base,
+      ),
+    ).toBe('https://b.gov/x/');
+    expect(
+      metaRefreshTarget(html("<META CONTENT='5;url=/other' HTTP-EQUIV='Refresh'>"), base),
+    ).toBe('https://a.gov/other');
+    expect(
+      metaRefreshTarget(html('<meta http-equiv=refresh content="0;url=\'next\'">'), base),
+    ).toBe('https://a.gov/page/next');
+  });
+
+  it('finds nothing in a page without a refresh, or one that only reloads', () => {
+    expect(metaRefreshTarget(html('<meta charset="utf-8">'), base)).toBeNull();
+    expect(metaRefreshTarget(html('<meta http-equiv="refresh" content="30">'), base)).toBeNull();
+  });
+});
+
+describe('checkLinks with page bodies', () => {
+  const one = [{ url: 'https://a.gov/page/', files: ['f'] }];
+  const run = (res, links = one) =>
+    checkLinks(links, { fetch: async () => res, attempts: 1, retryDelayMs: 0 });
+
+  it('fails a 200 page with a meta refresh to another host', async () => {
+    const [result] = await run(
+      page(html('<meta http-equiv="refresh" content="0; URL=https://board.gov/elections/" />'), {
+        url: 'https://a.gov/page/',
+      }),
+    );
+    expect(result).toMatchObject({
+      status: 'fail',
+      detail: 'meta refresh to https://board.gov/elections/',
+    });
+  });
+
+  it('fails a meta refresh to another path on the same host', async () => {
+    const [result] = await run(
+      page(html('<meta http-equiv="refresh" content="0; url=/home/">'), {
+        url: 'https://a.gov/page/',
+      }),
+    );
+    expect(result).toMatchObject({ status: 'fail', detail: 'meta refresh to https://a.gov/home/' });
+  });
+
+  it('passes a refresh to the same page, or one that only reloads itself', async () => {
+    const same = await run(
+      page(html('<meta http-equiv="refresh" content="60; url=https://a.gov/page/#top">'), {
+        url: 'https://a.gov/page/',
+      }),
+    );
+    expect(same[0]).toMatchObject({ status: 'pass', detail: 'HTTP 200' });
+    const reload = await run(
+      page(html('<meta http-equiv="refresh" content="300">'), { url: 'https://a.gov/page/' }),
+    );
+    expect(reload[0]).toMatchObject({ status: 'pass', detail: 'HTTP 200' });
+  });
+
+  it('does not read a body that is not HTML', async () => {
+    const pdf = new Response('<meta http-equiv="refresh" content="0; url=https://b.gov/">', {
+      status: 200,
+      headers: { 'content-type': 'application/pdf' },
+    });
+    const [result] = await run(pdf);
+    expect(result).toMatchObject({ status: 'pass' });
+  });
+
+  it('reads at most 512 KB of a page', async () => {
+    const late = page(
+      `<html><head>${' '.repeat(600 * 1024)}<meta http-equiv="refresh" content="0; url=https://b.gov/"></head></html>`,
+    );
+    const [result] = await run(late);
+    expect(result).toMatchObject({ status: 'pass' });
+  });
+
+  it('skips a 403 bot challenge without retrying it', async () => {
+    let calls = 0;
+    const challenge = async () => {
+      calls += 1;
+      return page('<!DOCTYPE html><title>Just a moment...</title>', {
+        status: 403,
+        headers: { 'cf-mitigated': 'challenge', server: 'cloudflare' },
+      });
+    };
+    const [result] = await checkLinks(one, { fetch: challenge, attempts: 3, retryDelayMs: 0 });
+    expect(result).toMatchObject({
+      status: 'skip',
+      detail: 'bot challenge, check by hand in a browser (HTTP 403)',
+    });
+    expect(calls).toBe(1);
+  });
+
+  it('skips a 403 challenge page that names the Cloudflare challenge platform', async () => {
+    const [result] = await run(
+      page(
+        '<html><head><title>Just a moment...</title></head><body><script src="/cdn-cgi/challenge-platform/h/b/orchestrate/chl_page/v1"></script></body></html>',
+        { status: 403 },
+      ),
+    );
+    expect(result).toMatchObject({ status: 'skip' });
+  });
+
+  it('fails a plain 403', async () => {
+    const [result] = await run(page('<html><body>Forbidden</body></html>', { status: 403 }));
+    expect(result).toMatchObject({ status: 'fail', detail: 'HTTP 403' });
+  });
+
+  it('fails a config URL that refreshes away', async () => {
+    const config = { countySiteUrl: 'https://board.gov/' };
+    const [result] = await checkLinks(configLinks(config), {
+      fetch: async () =>
+        page(html('<meta http-equiv="refresh" content="0; url=https://elsewhere.gov/">'), {
+          url: 'https://board.gov/',
+        }),
+      attempts: 1,
+    });
+    expect(result).toMatchObject({
+      url: 'https://board.gov/',
+      files: ['src/config/election.js (countySiteUrl)'],
+      status: 'fail',
+      detail: 'meta refresh to https://elsewhere.gov/',
+    });
+  });
+});
+
+describe('configLinks', () => {
+  it('collects every Url, Source and sources entry, but not the service root', () => {
+    const config = {
+      serviceRoot: 'https://services.example.com/rest/services',
+      layers: { precincts: 'x/FeatureServer/1' },
+      sampleBallotUrlPattern: /^https:\/\/x\.gov\//,
+      officialLookupUrl: 'https://lookup.gov/',
+      countySiteUrl: 'https://board.gov/',
+      earlyVoting: { sources: ['https://hours.gov/'], lastVerified: '2026-01-01' },
+      electionDayHours: { sources: ['https://law.gov/a', 'https://board.gov/'] },
+      electionDayPollingPlace: { sources: ['https://law.gov/b'], phoneSource: 'https://app.gov/' },
+    };
+    expect(configLinks(config)).toEqual([
+      { url: 'https://lookup.gov/', files: ['src/config/election.js (officialLookupUrl)'] },
+      {
+        url: 'https://board.gov/',
+        files: [
+          'src/config/election.js (countySiteUrl)',
+          'src/config/election.js (electionDayHours.sources)',
+        ],
+      },
+      { url: 'https://hours.gov/', files: ['src/config/election.js (earlyVoting.sources)'] },
+      { url: 'https://law.gov/a', files: ['src/config/election.js (electionDayHours.sources)'] },
+      {
+        url: 'https://law.gov/b',
+        files: ['src/config/election.js (electionDayPollingPlace.sources)'],
+      },
+      {
+        url: 'https://app.gov/',
+        files: ['src/config/election.js (electionDayPollingPlace.phoneSource)'],
+      },
+    ]);
+  });
+
+  it('finds the county site and the lookup in the real config', async () => {
+    const { default: election } = await import('../config/election.js');
+    const urls = configLinks(election).map((l) => l.url);
+    expect(urls).toContain(election.countySiteUrl);
+    expect(urls).toContain(election.officialLookupUrl);
+    expect(urls).not.toContain(election.serviceRoot);
+  });
+});
+
+describe('writeSkipped', () => {
+  let dir;
+  beforeEach(async () => {
+    dir = await mkdtemp(path.join(tmpdir(), 'skipped-'));
+  });
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it('writes one skipped URL per line, with the files that use it', async () => {
+    const file = path.join(dir, 'skipped.txt');
+    await writeSkipped(file, [
+      { url: 'https://a.gov/', files: ['f1', 'f2'], status: 'skip', detail: 'd' },
+      { url: 'https://b.gov/', files: ['f'], status: 'pass', detail: 'HTTP 200' },
+    ]);
+    expect(await readFile(file, 'utf8')).toBe('https://a.gov/ (f1, f2)\n');
+  });
+
+  it('writes an empty file when nothing was skipped', async () => {
+    const file = path.join(dir, 'skipped.txt');
+    await writeSkipped(file, []);
+    expect(await readFile(file, 'utf8')).toBe('');
+  });
+});
+
+// Review findings on #74: read a refresh as a browser does.
+describe('metaRefreshTarget, as a browser reads it', () => {
+  const base = 'https://a.gov/page/';
+  it('reads a tag with > inside a quoted attribute', () => {
+    expect(
+      metaRefreshTarget('<meta http-equiv="refresh" content="0; url=https://x.gov/?a>b">', base),
+    ).toBe('https://x.gov/?a%3Eb');
+    expect(
+      metaRefreshTarget(
+        '<meta http-equiv="refresh" data-x=">" content="0;url=https://x.gov/">',
+        base,
+      ),
+    ).toBe('https://x.gov/');
+  });
+
+  it('keeps the first of a repeated attribute', () => {
+    expect(
+      metaRefreshTarget(
+        '<meta content="0;url=https://x.gov/" http-equiv="refresh" http-equiv="x">',
+        base,
+      ),
+    ).toBe('https://x.gov/');
+  });
+
+  it('ignores a refresh in a comment, a script or a noscript block', () => {
+    const tag = '<meta http-equiv="refresh" content="0;url=https://x.gov/">';
+    expect(metaRefreshTarget(`<!-- ${tag} -->`, base)).toBeNull();
+    expect(metaRefreshTarget(`<script>document.write('${tag}')</script>`, base)).toBeNull();
+    expect(metaRefreshTarget(`<noscript>${tag}</noscript>`, base)).toBeNull();
+  });
+
+  it('ignores a refresh with no delay', () => {
+    expect(
+      metaRefreshTarget('<meta http-equiv="refresh" content=";url=https://x.gov/">', base),
+    ).toBeNull();
+  });
+});
+
+describe('checkLinks onResult', () => {
+  it('reports each result as soon as it is known', async () => {
+    const seen = [];
+    await checkLinks(
+      [
+        { url: 'https://a.gov/', files: ['f'] },
+        { url: 'https://b.gov/', files: ['f'] },
+      ],
+      {
+        fetch: async () => new Response('', { status: 200 }),
+        attempts: 1,
+        onResult: (r) => seen.push(r.url),
+      },
+    );
+    expect(seen).toEqual(['https://a.gov/', 'https://b.gov/']);
+  });
+});
+
+// Second review round on #74: the page is parsed as HTML, and only the first
+// refresh a browser can parse counts.
+describe('metaRefreshTarget, parsed as HTML', () => {
+  const base = 'https://a.gov/page/';
+  const tag = '<meta http-equiv=refresh content="0;url=https://x.gov/">';
+
+  it('reads a tag after an abruptly closed comment', () => {
+    expect(metaRefreshTarget(`<!-->${tag}`, base)).toBe('https://x.gov/');
+    expect(metaRefreshTarget(`<!--->${tag}`, base)).toBe('https://x.gov/');
+  });
+
+  it('reads a tag after a script that contains <!--', () => {
+    expect(metaRefreshTarget(`<script>var a="<!--";</script>${tag}<p>--></p>`, base)).toBe(
+      'https://x.gov/',
+    );
+  });
+
+  it('acts on the first refresh only, even one that just reloads', () => {
+    expect(metaRefreshTarget(`<meta http-equiv=refresh content="30">${tag}`, base)).toBeNull();
+  });
+
+  it('skips a refresh it cannot parse and acts on the next', () => {
+    expect(metaRefreshTarget(`<meta http-equiv=refresh content="soon">${tag}`, base)).toBe(
+      'https://x.gov/',
+    );
+  });
+
+  it('ignores refresh text in a title, a style, a textarea or a template', () => {
+    for (const wrap of ['title', 'style', 'textarea', 'template']) {
+      expect(metaRefreshTarget(`<${wrap}>${tag}</${wrap}>`, base)).toBeNull();
+    }
+    expect(metaRefreshTarget('<meta-x http-equiv=refresh content="0;url=/y">', base)).toBeNull();
+  });
+
+  it('decodes entities in the content attribute', () => {
+    expect(
+      metaRefreshTarget(
+        '<meta http-equiv="refresh" content="0&#59; url=&quot;https://x.gov/?a=1&amp;b=2&quot;">',
+        base,
+      ),
+    ).toBe('https://x.gov/?a=1&b=2');
+  });
+});
+
+// Third review round on #74.
+describe('metaRefreshTarget, resolved as a browser resolves it', () => {
+  it('resolves the target against the page base URL', () => {
+    expect(
+      metaRefreshTarget(
+        '<head><base href="/"><meta http-equiv=refresh content="0; url=app/"></head>',
+        'https://a.gov/app/',
+      ),
+    ).toBe('https://a.gov/app/');
+  });
+
+  it('matches http-equiv without trimming it', () => {
+    expect(
+      metaRefreshTarget(
+        '<meta http-equiv=" refresh" content="0;url=https://b.gov/">',
+        'https://a.gov/',
+      ),
+    ).toBeNull();
+    expect(
+      metaRefreshTarget(
+        '<meta http-equiv="REFRESH" content="0;url=https://b.gov/">',
+        'https://a.gov/',
+      ),
+    ).toBe('https://b.gov/');
+  });
+
+  it('keeps Unicode spaces that the URL parser keeps', () => {
+    expect(
+      metaRefreshTarget(
+        '<meta http-equiv=refresh content="0; url=&nbsp;">',
+        'https://a.gov/x/page',
+      ),
+    ).toBe('https://a.gov/x/%C2%A0');
+  });
+
+  it('ignores a refresh to a javascript: URL, which browsers refuse', () => {
+    expect(
+      metaRefreshTarget(
+        '<meta http-equiv=refresh content="0;url=javascript:void(0)">',
+        'https://a.gov/',
+      ),
+    ).toBeNull();
+  });
+});
+
+// Fourth review round on #74: Cloudflare injects its detection script and
+// Turnstile into ordinary pages, so those alone are not a challenge.
+describe('a 403 that only loads Cloudflare scripts', () => {
+  const one = [{ url: 'https://a.gov/page/', files: ['f'] }];
+  it('fails, since it is not a challenge page', async () => {
+    for (const body of [
+      '<h1>403 Forbidden</h1><script src="/cdn-cgi/challenge-platform/scripts/jsd/main.js"></script>',
+      '<h1>Sorry, you have been blocked</h1><script src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>',
+    ]) {
+      const [result] = await checkLinks(one, {
+        fetch: async () => page(body, { status: 403 }),
+        attempts: 1,
+      });
+      expect(result).toMatchObject({ status: 'fail', detail: 'HTTP 403' });
+    }
+  });
+
+  it('skips a challenge page that sets the challenge options', async () => {
+    const [result] = await checkLinks(one, {
+      fetch: async () =>
+        page('<title>Just a moment...</title><script>window._cf_chl_opt={cvId:"3"};</script>', {
+          status: 403,
+        }),
+      attempts: 1,
+    });
+    expect(result).toMatchObject({ status: 'skip' });
   });
 });
