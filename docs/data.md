@@ -699,7 +699,8 @@ answer with the typed text itself:
   jurisdiction its label names: the county's label the county precinct, the City's label
   ("St. Louis City", 63112) the City precinct. The locked #58 tests that expected the City
   place for text with no ZIP and for a pick of the county's label were rewritten with the
-  owner's approval.
+  owner's approval. A place found with no ZIP of its own (a Photon answer without a postcode)
+  whose number and street the City has is no match too: the two cannot be told apart.
 - **A City parcel the text could mean but not exactly** (its street has a direction the
   text left out, like `1200 Market Pl` and the City's 1200 N Market Pl): no match.
 - **The City geocoder unavailable** (network error, non-2xx, error body, malformed body,
@@ -739,7 +740,10 @@ which misses many City house numbers (`6135 Washington Ave 63112`, `5010 Notting
   <ZIP>`, so a City address reads apart from its county twin, whose label names its own
   town. A picked City label fails the county's strict rules (it names the City), so it is
   found again by the City, unless the county lists the address in the same ZIP (no match,
-  #58).
+  #58). Typed text with no ZIP that the City finds is asked of the county again by its
+  street alone, since a typed "St. Louis City" rules out every county record: a county
+  record with that number and street, in any ZIP, makes it no match (the twin rule above),
+  and a county that cannot answer then is no match, or address search not working.
 - **Suggestions:** the geocoder has no suggest operation and matches whole words only, so
   it is asked with `findAddressCandidates` once a house number and a street word of two or
   more letters or digits are typed (`12th`, `Oz`; not a lone `W`), and its parcels whose number and street start with the typed words

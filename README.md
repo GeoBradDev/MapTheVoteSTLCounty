@@ -118,8 +118,9 @@ against, and why. In short:
   [live county layer](https://maps.stlouisco.com/hosting/rest/services/Maps/ASR_Address_Points/FeatureServer/0),
   then its
   [hosted copy](https://services2.arcgis.com/w657bnjzrjguNyOy/arcgis/rest/services/Address_Points/FeatureServer/2)),
-  then [Photon](https://photon.komoot.io) (OpenStreetMap data), with a match that could get a
-  county precinct checked against the City of St. Louis's own
+  then [Photon](https://photon.komoot.io) (OpenStreetMap data); the City of St. Louis's own
+  geocoder finds City addresses after a county no match, and a match that could get a
+  county precinct is checked against that
   [geocoder](https://maps6.stlouis-mo.gov/arcgis/rest/services/GEOCODERS/COMPOSITE_GEOCODE/GeocodeServer).
   See [Address search](#address-search).
 - **Map:** [OpenFreeMap](https://openfreemap.org)'s Positron basemap. See [Map](#map).

@@ -159,7 +159,8 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
         // out a City parcel in another ZIP, so a City answer then is the
         // City's own ZIP.
         const zip = typedZip(place.label ?? '');
-        if (!typedZip(text) || (zip && zip === typedZip(city.place?.label ?? ''))) return null;
+        // A place with no ZIP of its own cannot be told apart either.
+        if (!typedZip(text) || !zip || zip === typedZip(city.place?.label ?? '')) return null;
         return city.place;
       }
       if (city?.status === 'none') return place;
@@ -170,6 +171,24 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
       if (error instanceof GeocoderUnavailableError && reportUnavailable) throw error;
       return failed();
     }
+  }
+
+  // A City place found for text with no ZIP, unless the county has the same
+  // number and street. The county answered no match for the text, but a
+  // typed town it lacks ("St. Louis City") rules out every county record, so
+  // it is asked for the street alone: a county twin, in any ZIP, makes the
+  // text one that could mean either, so no match and the voter adds a ZIP
+  // (owner decision, 2026-10-22, #58 and #88). A county that cannot answer
+  // is no match too, or with reportUnavailable a rejection.
+  async function twinFree(cityPlace, signal, reportUnavailable) {
+    const street = streetOf(cityPlace.label);
+    const county = await firstAnswer((source) => source.find(street, { signal }), signal);
+    if (signal?.aborted) throw abortError();
+    if (!county) {
+      if (reportUnavailable) throw new GeocoderUnavailableError('No county source answered');
+      return null;
+    }
+    return county.status === 'none' ? cityPlace : null;
   }
 
   return Object.freeze({
@@ -238,15 +257,18 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
       // whose county answer still needs the City check.
       let cityFailed = false;
       if (county && typeof cityCheck.lookup === 'function' && needsCityCheck(text)) {
+        let city;
         try {
-          const city = await cityCheck.lookup(text, { signal });
-          if (signal?.aborted) throw abortError();
-          if (city?.status === 'city') return city.place;
-          if (city?.status === 'ambiguous') return null;
+          city = await cityCheck.lookup(text, { signal });
         } catch {
           if (signal?.aborted) throw abortError();
           cityFailed = true;
         }
+        if (signal?.aborted) throw abortError();
+        if (city?.status === 'city') {
+          return typedZip(text) ? city.place : twinFree(city.place, signal, reportUnavailable);
+        }
+        if (city?.status === 'ambiguous') return null;
       }
       let place;
       try {

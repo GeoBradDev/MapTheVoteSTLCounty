@@ -185,3 +185,70 @@ describe('issue #88: suggestions from the county and the City together', () => {
     await expect(geocoder.suggest('6135 Washington')).resolves.toEqual(photon);
   });
 });
+
+// Review finding (owner decision, 2026-10-22): a typed "St. Louis City" rules
+// out every county record, so the county answers no match; with no ZIP typed,
+// a City twin of a county address is still no match (add your ZIP), and
+// one the county lists in the same ZIP never opens the City precinct.
+describe('a City twin typed with "St. Louis City" and no ZIP (#88)', () => {
+  const WASHINGTON_CITY = Object.freeze({
+    ...CITY_HALL,
+    label: '6135 Washington Ave, St. Louis City, MO 63112',
+  });
+  // The county has 6135 Washington Ave (in 63134) but not with a City town.
+  const county = async (text) =>
+    /city/i.test(text) ? { status: 'none' } : { status: 'match', place: COUNTY_PLACE };
+
+  it.each(['6135 Washington Ave, St. Louis City', '6135 Washington Ave, St. Louis City, MO'])(
+    '%s is no match',
+    async (text) => {
+      const { geocoder, source } = setup({
+        county,
+        lookup: async () => ({ status: 'city', place: WASHINGTON_CITY }),
+      });
+      await expect(geocoder.geocode(text)).resolves.toBeNull();
+      expect(source.find).toHaveBeenLastCalledWith('6135 Washington Ave', { signal: undefined });
+    },
+  );
+
+  it('the City place when the county does not have the number and street', async () => {
+    const { geocoder } = setup({ lookup: async () => ({ status: 'city', place: CITY_HALL }) });
+    await expect(geocoder.geocode('1200 Market St, St. Louis City')).resolves.toEqual(CITY_HALL);
+  });
+
+  it('with a ZIP typed, the City place without asking the county again', async () => {
+    const { geocoder, source } = setup({
+      county,
+      lookup: async () => ({ status: 'city', place: WASHINGTON_CITY }),
+    });
+    await expect(
+      geocoder.geocode('6135 Washington Ave, St. Louis City, MO 63112'),
+    ).resolves.toEqual(WASHINGTON_CITY);
+    expect(source.find).toHaveBeenCalledTimes(1);
+  });
+
+  it('the county failing on the second ask is never the City place', async () => {
+    let calls = 0;
+    const { geocoder } = setup({
+      county: async () =>
+        calls++ ? Promise.reject(new GeocoderUnavailableError('down')) : { status: 'none' },
+      lookup: async () => ({ status: 'city', place: WASHINGTON_CITY }),
+    });
+    await expect(geocoder.geocode('6135 Washington Ave, St. Louis City')).resolves.toBeNull();
+    calls = 0;
+    await expect(
+      geocoder.geocode('6135 Washington Ave, St. Louis City', { reportUnavailable: true }),
+    ).rejects.toBeInstanceOf(GeocoderUnavailableError);
+  });
+});
+
+// Review finding: a place found with no ZIP of its own cannot be told apart
+// from a City parcel in the typed ZIP, so it is no match, never the City place.
+it('a City answer for a place with no ZIP of its own is no match', async () => {
+  const { geocoder } = setup({
+    county: unavailable,
+    find: async () => ({ status: 'city', place: CITY_HALL }),
+    photon: async () => ({ ...COUNTY_PLACE, label: '1 Brookings Dr, Saint Louis' }),
+  });
+  await expect(geocoder.geocode('1 Brookings Dr, St. Louis, MO 63130')).resolves.toBeNull();
+});

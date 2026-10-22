@@ -176,3 +176,12 @@ error line (#93), the Clayton municipality no match (opened as #143, unrelated).
   63109 still opens W05P05. The privacy notice says a picked suggestion's county-only ZIP
   skips the City, as a typed one does. `AddressSearch.jsx` pick tracking is unchanged (its
   comment updated); it no longer changes the answer.
+- Resume review round 1: a typed "St. Louis City" with no ZIP rules out every county
+  record, so the county answered no match and the City lookup opened a City precinct for
+  twins (`1 Brookings Dr, St. Louis City`, `6135 Washington Ave, St. Louis City`). A City
+  lookup answer for text with no ZIP now asks the county again by the street alone
+  (`twinFree` in `src/data/geocoder.js`): a county record makes it no match, a county
+  failure no match or unavailable. A place with no ZIP of its own (a Photon answer without
+  a postcode) whose number and street the City has is no match. `scripts/check-geocoder.mjs`
+  pins W05P05, W10P02 and FER022 exactly and adds the "St. Louis City" no-ZIP cases. Tests
+  in `geocoder.city88.test.js` and `geocoderChain.test.js`.
