@@ -55,7 +55,6 @@ export const copy = translated((t) => ({
     },
   },
   listLabel: t('waitTimes.listLabel'),
-  loading: t('waitTimes.loading'),
   failed: t('waitTimes.failed'),
   none: t('waitTimes.none'),
   map: {
@@ -70,9 +69,11 @@ export const copy = translated((t) => ({
     noCount: t('waitTimes.map.noCount'),
   },
   city: t('waitTimes.city'),
-  cityLink: t('waitTimes.cityLink'),
+  /** @param {string} board From the config. */
+  cityLink: (board) => t('waitTimes.cityLink', { board }),
   disclaimer: t('waitTimes.disclaimer'),
   sources: t('waitTimes.sources'),
-  countyLink: t('waitTimes.countyLink'),
+  /** @param {string} board From the config. */
+  countyLink: (board) => t('waitTimes.countyLink', { board }),
   backHome: t('waitTimes.backHome'),
 }));

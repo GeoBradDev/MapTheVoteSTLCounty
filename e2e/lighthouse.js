@@ -69,13 +69,16 @@ const ROUTES = [
   },
   {
     // The wait times page (#104): its heading and every site's name. The live
-    // counts depend on the clock, so they are not checked here.
+    // counts depend on the clock, so they are not checked here, and once early
+    // voting has ended (the real date, past the config's last day) the page
+    // says so instead of listing sites.
     path: '/early-voting',
     shows: () => {
       const rows = [...document.querySelectorAll('ol[aria-labelledby="wait-sites-heading"] > li')];
+      const ended = document.querySelector('main')?.textContent.includes('Early voting has ended.');
       return (
         document.querySelector('h1')?.textContent === 'Early voting wait times' &&
-        rows.length > 0 &&
+        (ended || rows.length > 0) &&
         rows.every((li) => {
           const name = li.querySelector('h3')?.textContent ?? '';
           return name !== '' && !/^Polling place\b/.test(name);

@@ -281,7 +281,7 @@
       "checked": "Line counts checked at {time}",
       "unavailable": "Line counts could not be loaded right now. Each site's hours are still shown."
     },
-    "refresh": "Counts are checked again every {seconds} seconds while this page is open.",
+    "refresh": "Counts are checked again every {seconds} seconds while this page is open on your screen.",
     "count": "{count, plural, =0 {No one in line} one {About # person in line} other {About # people in line}}, reported {time}",
     "noCount": "No current line count",
     "reportedBy": "Reported by {board}",
@@ -307,7 +307,6 @@
       }
     },
     "listLabel": "Early voting sites",
-    "loading": "Loading early voting sites...",
     "failed": "We could not load early voting sites right now. Find them with the",
     "none": "We could not find early voting sites. Find them with the",
     "map": {
@@ -321,10 +320,10 @@
       "noCount": "No current count"
     },
     "city": "St. Louis City early voting sites are not listed here yet. See the",
-    "cityLink": "St. Louis City Board of Election Commissioners wait times dashboard",
+    "cityLink": "{board} wait times dashboard",
     "disclaimer": "Each board's staff report these counts, and lines change quickly. A count is a guide, not a promise of how long you will wait.",
     "sources": "Official sources:",
-    "countyLink": "St. Louis County Board of Elections absentee voting lookup",
+    "countyLink": "{board} absentee voting lookup",
     "backHome": "Back to home"
   },
   "learn": {
@@ -371,11 +370,11 @@
       },
       "useMyLocation": {
         "heading": "Use my location",
-        "text": "Your browser asks for your permission before it shares your location with this site, unless you allowed it before. The site uses it only to find your precinct, mark it on the map and list the nearest places to vote."
+        "text": "Your browser asks for your permission before it shares your location with this site, unless you allowed it before. The site uses it only to find your precinct, mark it on the map and list the nearest places to vote. On the early voting wait times page, it is used only on your device, to sort the sites by distance: it is not sent anywhere."
       },
       "map": {
         "heading": "The map",
-        "text": "The map's streets and labels come from OpenFreeMap ({basemap}). Those requests show which area is on screen: your precinct and the polling places near it."
+        "text": "The map's streets and labels come from OpenFreeMap ({basemap}). Those requests show which area is on screen: your precinct and the polling places near it, or, on the early voting wait times page, the early voting sites."
       },
       "website": {
         "heading": "This website",

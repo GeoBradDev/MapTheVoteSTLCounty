@@ -11,6 +11,18 @@ const SWATCH = 'inline-block size-4 shrink-0 rounded-full border-2';
 // How long the map may take to first render before it is dropped.
 const LOAD_TIMEOUT_MS = 15_000;
 
+// One import of the map module, shared by every mount (StrictMode mounts
+// twice), so each gets the same module. A failed import is tried again on the
+// next mount.
+let viewModule = null;
+function loadView() {
+  viewModule ??= import('./waitTimesMapView.js').catch((error) => {
+    viewModule = null;
+    throw error;
+  });
+  return viewModule;
+}
+
 function Legend() {
   return (
     <div className="mt-2 text-sm">
@@ -40,17 +52,29 @@ function Legend() {
  * The wait times map (#104), shown when the voter asks for it. Extra help
  * only: everything on it is in the list, so it is removed whenever anything
  * fails. The legend shows only when some site has a count.
- * @param {{ sites: { lat: number, lng: number, bin: number | null }[] }} props
- *   In list order; markers are numbered to match.
+ * @param {{ sites: { lat: number, lng: number, bin: number | null }[],
+ *   onFail?: () => void }} props `sites` in list order; markers are numbered
+ *   to match. `onFail` is called once if the map fails.
  */
-export default function WaitTimesMap({ sites }) {
+export default function WaitTimesMap({ sites, onFail }) {
   const [state, setState] = useState('loading');
   const containerRef = useRef(null);
   const viewRef = useRef(null);
   const sitesRef = useRef(sites);
+  const onFailRef = useRef(onFail);
+  // The markers drawn last, so a new list with the same order and bins (every
+  // minute, every refresh) redraws nothing.
+  const drawnRef = useRef(JSON.stringify(sites));
+
+  useEffect(() => {
+    onFailRef.current = onFail;
+  }, [onFail]);
 
   useEffect(() => {
     sitesRef.current = sites;
+    const key = JSON.stringify(sites);
+    if (key === drawnRef.current) return;
+    drawnRef.current = key;
     viewRef.current?.setSites(sites);
   }, [sites]);
 
@@ -70,11 +94,13 @@ export default function WaitTimesMap({ sites }) {
       viewRef.current?.remove();
       viewRef.current = null;
       setState('failed');
+      onFailRef.current?.();
     }
     const timer = setTimeout(fail, LOAD_TIMEOUT_MS);
-    import('./waitTimesMapView.js')
+    loadView()
       .then(({ createWaitTimesMap }) => {
         if (!current || !loading) return;
+        drawnRef.current = JSON.stringify(sitesRef.current);
         viewRef.current = createWaitTimesMap(containerRef.current, {
           sites: sitesRef.current,
           onReady: ready,

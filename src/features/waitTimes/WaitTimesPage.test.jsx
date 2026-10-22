@@ -14,6 +14,7 @@ import election from '../../config/election.js';
 import { reportedTimeParts, selectCityWaits, selectCountyWaits } from '../../data/waitTimes.js';
 import { titleCase } from '../lookup/nearbyPolls.js';
 import { createWaitTimesStore } from './useWaitTimes.js';
+import { createWaitTimesMap } from './waitTimesMapView.js';
 import WaitTimesPage from './WaitTimesPage.jsx';
 import { copy } from './waitTimesCopy.js';
 
@@ -213,6 +214,50 @@ describe('WaitTimesPage', () => {
     expect(list().closest('[aria-live]')).toBeNull();
   });
 
+  it('does not flip between checked and unavailable on every refresh', async () => {
+    let state;
+    const listeners = new Set();
+    const set = (part) => {
+      state = {
+        waits: [],
+        county: part,
+        city: { status: 'off', refreshFailed: false, checkedAt: null, waits: [] },
+      };
+      listeners.forEach((l) => l());
+    };
+    set({ status: 'ok', refreshFailed: false, checkedAt: Date.now(), waits: [] });
+    const source = {
+      subscribe: (l) => {
+        listeners.add(l);
+        return () => listeners.delete(l);
+      },
+      getSnapshot: () => state,
+      getServerSnapshot: () => state,
+    };
+    renderPage({ waitSource: source });
+    await screen.findByRole('list', { name: copy.listLabel });
+    // A failure 30 s after a success keeps the last check shown.
+    vi.setSystemTime(START + MINUTE / 2);
+    act(() => set({ status: 'unavailable', refreshFailed: true, checkedAt: START, waits: [] }));
+    expect(statusLine()).toHaveTextContent(copy.status.checked('09:00'));
+    expect(statusLine()).not.toHaveTextContent(copy.status.unavailable);
+  });
+
+  it('hides the map button when the map fails', async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal('WebGL2RenderingContext', function WebGL2RenderingContext() {});
+    createWaitTimesMap.mockImplementation(() => {
+      throw new Error('no WebGL context');
+    });
+    renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
+    await screen.findByRole('list', { name: copy.listLabel });
+    await user.click(screen.getByRole('button', { name: copy.map.show }));
+    await waitFor(() => expect(screen.queryByRole('button', { name: copy.map.hide })).toBeNull());
+    expect(screen.queryByRole('button', { name: copy.map.show })).toBeNull();
+    expect(screen.queryByRole('region', { name: copy.map.label })).toBeNull();
+    createWaitTimesMap.mockReset();
+  });
+
   it('says when early voting runs before it starts', async () => {
     vi.setSystemTime(Date.UTC(2026, 8, 1, 17, 0));
     renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
@@ -258,19 +303,19 @@ describe('WaitTimesPage', () => {
     renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
     await screen.findByRole('list', { name: copy.listLabel });
     expect(screen.getByText(copy.disclaimer)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: copy.countyLink })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: copy.countyLink(county.source) })).toHaveAttribute(
       'href',
       county.sourceUrl,
     );
-    expect(screen.getByRole('link', { name: copy.cityLink })).toHaveAttribute(
-      'href',
-      election.waitTimes.city.sourceUrl,
-    );
+    expect(
+      screen.getByRole('link', { name: copy.cityLink(election.waitTimes.city.source) }),
+    ).toHaveAttribute('href', election.waitTimes.city.sourceUrl);
   });
 
   it('shows the map on request, with a legend only when a site has a count', async () => {
     const user = userEvent.setup();
     vi.stubGlobal('WebGL2RenderingContext', function WebGL2RenderingContext() {});
+    createWaitTimesMap.mockReturnValue({ setSites: vi.fn(), remove: vi.fn() });
     const { unmount } = renderPage({
       waitSource: createWaitTimesStore({ county: countyFresh, city: null }),
     });
@@ -279,6 +324,7 @@ describe('WaitTimesPage', () => {
     expect(show).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByRole('region', { name: copy.map.label })).toBeNull();
     await user.click(show);
+    await waitFor(() => expect(createWaitTimesMap).toHaveBeenCalled());
     const region = screen.getByRole('region', { name: copy.map.label });
     expect(within(region).getByRole('list', { name: copy.map.legend })).toBeInTheDocument();
     unmount();

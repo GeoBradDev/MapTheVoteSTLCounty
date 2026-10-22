@@ -249,7 +249,7 @@ function Sources() {
       <p id="wait-sources" className="mt-2">
         {copy.sources}{' '}
         <a href={county.sourceUrl} rel="noreferrer" className={linkClass}>
-          {copy.countyLink}
+          {copy.countyLink(county.source)}
         </a>
         .
       </p>
@@ -282,6 +282,9 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
   const [sort, setSort] = useState('line');
   const [showMap, setShowMap] = useState(false);
   const [mapSupported] = useState(canDrawMap);
+  // Set when the map fails: the page then offers no map, as without WebGL.
+  const [mapFailed, setMapFailed] = useState(false);
+  const canShowMap = mapSupported && !mapFailed;
 
   const rows = result?.rows;
   const shown = useMemo(() => {
@@ -302,8 +305,14 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
   }, [rows, waits.county.waits, now, origin, sort]);
 
   const apple = isAppleMobile(globalThis.navigator);
+  // "Unavailable" only once no check has succeeded for ANNOUNCE_MS, so one
+  // failed refresh between successes does not flip the line every 30 s.
+  const lastSuccess = waits.county.checkedAt;
+  const unavailable =
+    waits.county.status === 'unavailable' &&
+    (lastSuccess === null || now - lastSuccess >= ANNOUNCE_MS);
   let statusText = '';
-  if (waits.county.status === 'unavailable') statusText = copy.status.unavailable;
+  if (unavailable) statusText = copy.status.unavailable;
   else if (checkedAt !== null) statusText = copy.status.checked(clockTime(checkedAt));
 
   const mapSites = useMemo(
@@ -373,7 +382,7 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
             )}
             {shown && shown.length > 0 && (
               <>
-                {mapSupported && (
+                {canShowMap && (
                   <button
                     type="button"
                     aria-expanded={showMap}
@@ -383,7 +392,9 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
                     {showMap ? copy.map.hide : copy.map.show}
                   </button>
                 )}
-                {mapSupported && showMap && <WaitTimesMap sites={mapSites} />}
+                {canShowMap && showMap && (
+                  <WaitTimesMap sites={mapSites} onFail={() => setMapFailed(true)} />
+                )}
                 <ol
                   aria-labelledby="wait-sites-heading"
                   className="mt-4 list-decimal space-y-3 pl-6"
@@ -395,16 +406,16 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
               </>
             )}
           </div>
+
+          <p className="mt-6">
+            {copy.city}{' '}
+            <a href={city.sourceUrl} rel="noreferrer" className={linkClass}>
+              {copy.cityLink(city.source)}
+            </a>
+            .
+          </p>
         </>
       )}
-
-      <p className="mt-6">
-        {copy.city}{' '}
-        <a href={city.sourceUrl} rel="noreferrer" className={linkClass}>
-          {copy.cityLink}
-        </a>
-        .
-      </p>
 
       <Sources />
 

@@ -146,3 +146,30 @@ Chosen not to do: City rows (#91), the results page origin (#105), Election Day 
 - Criterion 12: `src/test/election-hardcoding.test.js`, i18n tests.
 - Live drive: the dev server at `/early-voting` against the live layers during open hours
   (screenshots at 360 x 640, keyboard through the sort, the map shown).
+
+## Revisions during implementation
+
+- The page is a lazy route (`React.lazy` in `src/App.jsx`): with it in the entry, the
+  first-load JavaScript went from 116.2 KB to 121.7 KB gzipped, over the 120 KB budget. Its
+  Suspense fallback holds the page's height so the footer does not jump (Lighthouse CLS).
+- MapLibre now sits in one chunk shared by both map views; `src/test/build.test.js` checks
+  that chunk, its two importers and the lazy page chunk instead of `precinctMapView` alone.
+  The basemap label recolor moved to `src/features/lookup/mapStyle.js` for both views.
+- New small files beyond the list above: `src/features/waitTimes/canDrawMap.js` (the WebGL
+  check, out of the component file for fast refresh), `waitColors.js` (the bin tokens and
+  classes, with `mapColors.test.js`).
+- The #103 store gains `checkedAt` per jurisdiction (when a request last succeeded), which
+  the status line reads; it is shown at most every 5 minutes, and "unavailable" shows only
+  after 5 minutes with no success, so the line never flips on every refresh.
+- The list sits under a visible `h2` "Early voting sites" (axe heading order).
+- The privacy notice (`privacy.sent.useMyLocation`, `privacy.sent.map`) says how the wait
+  times page uses the location and what the map's tile requests show, as the README requires
+  for any change to what is used or sent.
+- The board names in the source links come from `waitTimes.county.source` and
+  `waitTimes.city.source`.
+- Live drive found the location button stuck under StrictMode (its mounted flag was never
+  set again after StrictMode's extra cleanup); the page tests now render in StrictMode.
+- Review (finder 1): a failed map hides the "Show map" button; the map module is imported
+  once and shared by every mount; an unchanged marker list is not redrawn; the Lighthouse
+  check accepts the "has ended" page after the config's last day; the City note shows only
+  while early voting has not ended.

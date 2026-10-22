@@ -266,7 +266,9 @@ Every build writes `robots.txt`, and a production build writes `sitemap.xml`, bo
   other pages have none.
 - **Not in the sitemap:** precinct pages (`/p/<code>`). `robots.txt` does not disallow them:
   a disallowed URL can still be indexed from links, without its content, and a crawler cannot
-  see a `noindex` on a page it may not fetch. Whether they carry `noindex` is #98.
+  see a `noindex` on a page it may not fetch. Whether they carry `noindex` is #98. The early
+  voting wait times page (`/early-voting`, #104) is not in the sitemap or pre-rendered either:
+  its content is live, so it is rendered in the browser from the shell.
 - **Pre-rendered pages:** the indexed pages above are static HTML too, so crawlers and link preview
   bots that do not run JavaScript get each page's content and its own title, description,
   canonical (`siteUrl` plus the path) and Open Graph tags (`og:type`, `og:site_name`,
@@ -311,9 +313,10 @@ against the production build (`vite preview`), at 360 px and 1280 px. On each ke
 runs axe-core (WCAG 2.1 A and AA plus best practice, contrast included) and checks for
 horizontal scroll (also with the WCAG text spacing override), one `h1`, the page language and
 the skip link; it also checks focus after an in-app link and reduced motion. The county's
-layers are answered from `docs/raw/fixtures/` and every other outside request is blocked, so
+layers, and the County and City wait time layers, are answered from `docs/raw/fixtures/`
+(the wait times route at the time those were recorded, so counts show) and every other outside request is blocked, so
 it needs no network. The first run needs `npx playwright install chromium`. Add a route there
-when the app gets a new one. In jsdom, without layout, `src/test/a11yPages.test.jsx` runs axe on home, privacy and
+when the app gets a new one. In jsdom, without layout, `src/test/a11yPages.test.jsx` runs axe on home, the wait times page, privacy and
 the two not-found pages, and `src/features/learn/learnA11y.test.jsx` on `/learn` with fixture
 topics.
 
@@ -330,11 +333,12 @@ zoom on a desktop; and Windows High Contrast (forced colors).
 
 The target is a mid-range phone on a weak signal (#27). `npm run test:perf` runs
 `e2e/lighthouse.js`: Lighthouse's mobile emulation at 360 x 640 px on simulated slow 4G with a
-4x CPU slowdown, three runs each of `/`, `/p/CC007` and `/learn` against the production build
+4x CPU slowdown, three runs each of `/`, `/p/CC007`, `/early-voting` and `/learn` against the production build
 (`vite preview`). It fails when a page's median performance score is under 90, its median LCP
 is 2.5 s or more, or any run reports no LCP or ends without the page's own content (its
 heading, and on the results page the municipality, districts, sample ballot link and each
-polling place's name and ZIP). It writes the report of the run with the median score to
+polling place's name and ZIP; on the wait times page each site's name, or the note that early
+voting has ended). It writes the report of the run with the median score to
 `lighthouse-reports/` (CI keeps it as the `lighthouse-reports` artifact). No live service is
 called: Chromium resolves the county's ArcGIS host and the basemap host to a local HTTPS
 server, and every other host except `localhost` to nothing. That server answers the layers
@@ -603,6 +607,9 @@ that the URL is `/p/<code>` only. In the Network panel, confirm that the request
 address or the coordinates go only to the hosts the notice names, that the point queries are
 POSTs with no coordinates in their URL, and that none of those requests comes back from the
 HTTP cache.
+The wait times page's "Sort by distance from my location" keeps the device's position in
+component state only, to measure distances on the device: it is not sent in any request, and
+never reaches the URL or storage.
 Use my location turns away a fix with an accuracy radius over 100 m before any query (#83), so
 for this check use a phone with precise location on, or an emulated location whose accuracy is
 set to 100 m or less. If it says the location is only a rough estimate, press it again.
@@ -623,10 +630,19 @@ and it is removed when anything fails before it first renders, when it takes lon
 seconds of visible time, or when the browser lacks WebGL 2. It comes after the list and loads
 only once it scrolls into view (#27), since MapLibre is a large download and slow to start on
 a phone; the 15 seconds count from then. MapLibre GL JS is loaded with `import()` only then
-(`src/features/lookup/precinctMapView.js` is the only file that imports it), and its worker
+(`src/features/lookup/precinctMapView.js` and the wait times map's
+`src/features/waitTimes/waitTimesMapView.js` are the only files that import it), and its worker
 ships as a same-origin file, so the Content-Security-Policy needs no `blob:` source. The app
 ships its own few MapLibre layout rules (`src/features/lookup/precinctMap.css`) instead of
 `maplibre-gl.css`, which embeds `data:` icons and party blue.
+
+The early voting wait times page (`/early-voting`, #104) has its own map, loaded only when
+the voter presses "Show map", on the same terms: the list holds everything on it, and it goes
+away on any failure. Its numbered markers match the list. A site with a current line count is
+filled by its bin on a one-hue light-to-dark scale (`--color-wait-*` in `src/index.css`, used
+only for markers and the legend, each at least 3:1 against the basemap,
+`src/features/waitTimes/mapColors.test.js`), and the legend names the unit and is hidden when
+no site has a count.
 
 The basemap is [OpenFreeMap](https://openfreemap.org)'s Positron style: free, with no API key
 or account, and its terms allow embedding it. Its attribution (OpenFreeMap, OpenMapTiles,
