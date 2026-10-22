@@ -370,7 +370,9 @@ labels around a topic are in that locale's messages (see [Languages](#languages)
 `node scripts/check-content-links.mjs` requests every source and link in every topic, and every
 page `src/config/election.js` links (each `sources` entry and each value whose key ends in `Url`
 or `Source`), and prints PASS, FAIL or SKIP per URL. It fails a URL on an error status, on a
-request that fails or times out after its retries, on a redirect that lands off the official
+request that fails or times out after its retries (a request whose second try timed out gets 75 s
+on its last try instead of 15 s, for up to 3 URLs a run, because www.sos.mo.gov sometimes
+stalls about a minute on a healthy page, #116), on a redirect that lands off the official
 hosts, and on an HTML page whose
 `<meta http-equiv="refresh">` sends the browser to a different page (#74). A `403` bot
 challenge, which only a browser gets past, is a SKIP: it does not fail the run, and a person

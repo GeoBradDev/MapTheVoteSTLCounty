@@ -136,6 +136,121 @@ describe('checkLinks', () => {
     });
     expect(result).toMatchObject({ status: 'fail', detail: 'request failed: no answer in 10 ms' });
   });
+
+  // A fetch that never answers until its signal aborts, recording each try's URL.
+  const hanging =
+    (calls) =>
+    (url, { signal }) => {
+      calls.push(url);
+      return new Promise((_resolve, reject) => {
+        signal.addEventListener('abort', () => reject(new Error('aborted')));
+      });
+    };
+
+  it('gives a request that timed out a longer last try (#116)', async () => {
+    let tries = 0;
+    // Stalls past the normal timeout on every try, but answers within the long one.
+    const stall = (_url, { signal }) =>
+      new Promise((resolve, reject) => {
+        tries += 1;
+        const timer = setTimeout(() => resolve(new Response('ok', { status: 200 })), 40);
+        signal.addEventListener('abort', () => {
+          clearTimeout(timer);
+          reject(new Error('aborted'));
+        });
+      });
+    const [result] = await checkLinks([links[0]], {
+      fetch: stall,
+      timeoutMs: 10,
+      lastTimeoutMs: 1000,
+      attempts: 3,
+      retryDelayMs: 0,
+    });
+    expect(result).toMatchObject({ status: 'pass', detail: 'HTTP 200' });
+    expect(tries).toBe(3);
+  });
+
+  it('names the long timeout when the last try also times out', async () => {
+    const [result] = await checkLinks([links[0]], {
+      fetch: hanging([]),
+      timeoutMs: 10,
+      lastTimeoutMs: 30,
+      attempts: 2,
+      retryDelayMs: 0,
+    });
+    expect(result).toMatchObject({ status: 'fail', detail: 'request failed: no answer in 30 ms' });
+  });
+
+  it('keeps the normal timeout when the try before failed some other way', async () => {
+    let tries = 0;
+    const errorThenHang = (url, init) => {
+      tries += 1;
+      if (tries === 1) return Promise.reject(new TypeError('fetch failed'));
+      return hanging([])(url, init);
+    };
+    const [result] = await checkLinks([links[0]], {
+      fetch: errorThenHang,
+      timeoutMs: 10,
+      lastTimeoutMs: 5000,
+      attempts: 2,
+      retryDelayMs: 0,
+    });
+    expect(result).toMatchObject({ status: 'fail', detail: 'request failed: no answer in 10 ms' });
+  });
+
+  it('gives at most maxLongTries URLs a long last try in one run', async () => {
+    const calls = [];
+    const results = await checkLinks(
+      [
+        { url: 'https://a.gov/', files: ['f'] },
+        { url: 'https://b.gov/', files: ['f'] },
+        { url: 'https://c.gov/', files: ['f'] },
+      ],
+      {
+        fetch: hanging(calls),
+        timeoutMs: 10,
+        lastTimeoutMs: 30,
+        maxLongTries: 2,
+        attempts: 2,
+        retryDelayMs: 0,
+      },
+    );
+    expect(results.map((r) => r.detail)).toEqual([
+      'request failed: no answer in 30 ms',
+      'request failed: no answer in 30 ms',
+      'request failed: no answer in 10 ms',
+    ]);
+    expect(calls).toHaveLength(6);
+  });
+
+  it('keeps the normal timeout after a 5xx or 429 answer', async () => {
+    for (const status of [503, 429]) {
+      let tries = 0;
+      const answerThenHang = (url, init) => {
+        tries += 1;
+        if (tries === 1) return Promise.resolve(new Response('', { status }));
+        return hanging([])(url, init);
+      };
+      const [result] = await checkLinks([links[0]], {
+        fetch: answerThenHang,
+        timeoutMs: 10,
+        lastTimeoutMs: 5000,
+        attempts: 2,
+        retryDelayMs: 0,
+      });
+      expect(result).toMatchObject({ detail: 'request failed: no answer in 10 ms' });
+    }
+  });
+
+  it('uses the normal timeout for a single try', async () => {
+    const [result] = await checkLinks([links[0]], {
+      fetch: hanging([]),
+      timeoutMs: 10,
+      lastTimeoutMs: 5000,
+      attempts: 1,
+    });
+    expect(result).toMatchObject({ detail: 'request failed: no answer in 10 ms' });
+  });
 });
 
 // A page the fake fetch answers with, at its final URL.

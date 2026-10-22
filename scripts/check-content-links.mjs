@@ -325,8 +325,9 @@ async function requestOnce(fetchImpl, url, timeoutMs) {
     }
     return { ok: true, detail: `HTTP ${res.status}` };
   } catch (error) {
-    const why = controller.signal.aborted ? `no answer in ${timeoutMs} ms` : error.message;
-    return { ok: false, transient: true, detail: `request failed: ${why}` };
+    const timedOut = controller.signal.aborted;
+    const why = timedOut ? `no answer in ${timeoutMs} ms` : error.message;
+    return { ok: false, transient: true, timedOut, detail: `request failed: ${why}` };
   } finally {
     clearTimeout(timer);
   }
@@ -334,11 +335,18 @@ async function requestOnce(fetchImpl, url, timeoutMs) {
 
 /**
  * Requests each URL, retrying network errors, 429 and 5xx answers. A bot
- * challenge is a skip: neither a pass nor a failure.
+ * challenge is a skip: neither a pass nor a failure. A request that timed out
+ * gets `lastTimeoutMs` on its last try, since www.sos.mo.gov sometimes waits
+ * about 60 s before it answers a healthy page (#116). At most `maxLongTries`
+ * URLs in a run get that long try, so a site that stalls on every page cannot
+ * push the run past its step limit; later ones get only `timeoutMs`.
  * @param {{ url: string, files: string[] }[]} links
  * @param {object} [options]
  * @param {typeof fetch} [options.fetch]
  * @param {number} [options.timeoutMs] How long one request may take.
+ * @param {number} [options.lastTimeoutMs] How long the last try may take when
+ *   the try before it timed out.
+ * @param {number} [options.maxLongTries] How many long last tries a run may make.
  * @param {number} [options.attempts] Tries per URL.
  * @param {number} [options.retryDelayMs] The wait before a retry, times the attempt.
  * @param {(result: object) => unknown} [options.onResult] Called with each result as soon
@@ -350,16 +358,22 @@ export async function checkLinks(
   {
     fetch: fetchImpl = fetch,
     timeoutMs = 15000,
+    lastTimeoutMs = 75000,
+    maxLongTries = 3,
     attempts = 3,
     retryDelayMs = 2000,
     onResult = () => {},
   } = {},
 ) {
   const results = [];
+  let longTries = 0;
   for (const { url, files } of links) {
     let outcome;
     for (let attempt = 1; attempt <= attempts; attempt += 1) {
-      outcome = await requestOnce(fetchImpl, url, timeoutMs);
+      const longTry =
+        attempt > 1 && attempt === attempts && outcome.timedOut && longTries < maxLongTries;
+      if (longTry) longTries += 1;
+      outcome = await requestOnce(fetchImpl, url, longTry ? lastTimeoutMs : timeoutMs);
       if (outcome.ok || !outcome.transient || attempt === attempts) break;
       await new Promise((resolve) => setTimeout(resolve, retryDelayMs * attempt));
     }
