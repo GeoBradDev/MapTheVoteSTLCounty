@@ -53,6 +53,10 @@ the election; noted in the PR as a possible follow-up.
   number in `[0, MAX_ACCURACY_M]`. Add `'coarse'` to the `LocationReason` typedef. Update the
   module comment (accuracy is read, still never leaves the module).
 - `src/features/lookup/useMyLocationCopy.js`: `errors.coarse`.
+  Revised after review: the message also offers Try again, like the timeout and unavailable
+  messages, since an Android phone can return a rough network fix before GPS settles.
+- `docs/data.md` (the Use my location paragraph) and `README.md` (the manual privacy check,
+  which needs a fix accurate to 100 m or less) mention the limit.
 - `src/features/lookup/deviceLocation.test.js`, `src/features/lookup/UseMyLocation.test.jsx`:
   new tests; the "copy for every failure reason" list gains `coarse`.
 - `UseMyLocation.jsx` needs no change: it already maps any reason in `copy.errors` to its

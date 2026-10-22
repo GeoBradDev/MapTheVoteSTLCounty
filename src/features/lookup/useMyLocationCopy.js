@@ -13,6 +13,6 @@ export const copy = {
     insecure: 'Location works only on a secure (HTTPS) page. Type your address instead.',
     unsupported: 'This browser cannot share your location. Type your address instead.',
     coarse:
-      'Your device could only estimate your location roughly, so it might show the wrong precinct. Type your address instead.',
+      'Your device could only estimate your location roughly, so it might show the wrong precinct. Try again, or type your address instead.',
   },
 };
