@@ -1,23 +1,29 @@
 // The early voting wait fixtures (#102) are live responses recorded by hand
 // during open hours, for the wait time client (#103). These checks keep them
 // honest: the fields #103 reads are there, and the join and freshness facts
-// docs/data.md states hold for them.
+// docs/data.md states hold for them. They join to absentee-sites.json, so
+// re-record them by hand with it each election (README, Updating for a new
+// election).
 import countyEmpty from '../../docs/raw/fixtures/county-waits-empty.json';
 import countyFresh from '../../docs/raw/fixtures/county-waits-fresh.json';
 import cityFresh from '../../docs/raw/fixtures/city-waits-fresh.json';
 import cityStale from '../../docs/raw/fixtures/city-waits-stale.json';
 import absenteeSites from '../../docs/raw/fixtures/absentee-sites.json';
 import election from '../config/election.js';
-import { hoursOn, zonedNow } from '../features/lookup/earlyVoting.js';
+import { zonedNow } from '../features/lookup/earlyVoting.js';
 
 const RECORDED_ON = '2026-10-22';
+// Every County site's hours on the recording day, a weekday (the county's
+// Absentee Voting Lookup app, as recorded in docs/data.md). Pinned here rather
+// than read from the election config, which the next election rewrites.
+const RECORDED_DAY_HOURS = { open: '08:00', close: '16:30' };
 const { timeZone } = election;
 const dayOf = (ms) => zonedNow(ms, timeZone).date;
 const minutesOf = (time) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3));
 const rows = (body) => body.features.map((f) => f.attributes);
 
 describe('County wait fixtures (Voters_in_Line_View)', () => {
-  const sites = new Map(absenteeSites.features.map((f) => [f.properties.absentee, f.properties]));
+  const sites = new Set(absenteeSites.features.map((f) => f.properties.absentee));
 
   it('fresh: real reports with the fields the client reads', () => {
     expect(countyFresh.error).toBeUndefined();
@@ -41,14 +47,12 @@ describe('County wait fixtures (Voters_in_Line_View)', () => {
 
   // Staff report from a few minutes before the doors open (07:59 on
   // 2026-10-22), so the window starts 15 minutes before opening.
-  it("fresh: every report was made on the recording day during its site's hours", () => {
-    for (const { Creator, CreationDate } of rows(countyFresh)) {
+  it('fresh: every report was made on the recording day during open hours', () => {
+    for (const { CreationDate } of rows(countyFresh)) {
       expect(dayOf(CreationDate)).toBe(RECORDED_ON);
-      const schedule = election.earlyVoting.schedules[sites.get(Creator).abs_type];
-      const hours = hoursOn(schedule, RECORDED_ON);
       const { minutes } = zonedNow(CreationDate, timeZone);
-      expect(minutes).toBeGreaterThanOrEqual(minutesOf(hours.open) - 15);
-      expect(minutes).toBeLessThan(minutesOf(hours.close));
+      expect(minutes).toBeGreaterThanOrEqual(minutesOf(RECORDED_DAY_HOURS.open) - 15);
+      expect(minutes).toBeLessThan(minutesOf(RECORDED_DAY_HOURS.close));
     }
   });
 
@@ -64,14 +68,10 @@ describe('County wait fixtures (Voters_in_Line_View)', () => {
 });
 
 describe('City wait fixtures (VotingLocations_currentwait)', () => {
+  // The owner's query (docs/data.md, Wait times). The stale fixture was
+  // recorded earlier with more fields, so it need only include these.
   const FIELDS = [
-    'comments',
     'created_date_1740505041182',
-    'earlyvotingenddate',
-    'earlyvotingoperhours',
-    'earlyvotingstartdate',
-    'facilityid',
-    'last_edited_date',
     'last_edited_date_1740505041182',
     'name',
     'waittime',
@@ -84,8 +84,26 @@ describe('City wait fixtures (VotingLocations_currentwait)', () => {
     expect(body.error).toBeUndefined();
     expect(body.features.length).toBeGreaterThan(0);
     for (const row of rows(body)) {
-      expect(Object.keys(row).sort()).toEqual(FIELDS);
-      expect(typeof row.facilityid).toBe('string');
+      expect(Object.keys(row)).toEqual(expect.arrayContaining(FIELDS));
+      expect(typeof row.name).toBe('string');
+    }
+  });
+
+  it('fresh: exactly the fields the query asks for', () => {
+    for (const row of rows(cityFresh)) expect(Object.keys(row).sort()).toEqual(FIELDS);
+  });
+
+  it('fresh: newest report first, as orderByFields asks, with unreported sites last', () => {
+    const times = rows(cityFresh).map((r) => r.last_edited_date_1740505041182 ?? -Infinity);
+    expect(times).toEqual([...times].sort((a, b) => b - a));
+  });
+
+  it('a site with no report has a null wait and null report dates', () => {
+    const unreported = rows(cityFresh).filter((r) => r.waittime === null);
+    expect(unreported.length).toBeGreaterThan(0);
+    for (const r of unreported) {
+      expect(r.created_date_1740505041182).toBeNull();
+      expect(r.last_edited_date_1740505041182).toBeNull();
     }
   });
 

@@ -253,11 +253,14 @@ Polygon, 1213 features. Unofficial turnout per precinct (`RV_Count`,
 
 ### Wait times
 
-Traced on 2026-10-21 and sampled during open hours on 2026-10-22 (#102). Both
-jurisdictions report **people in line**, not minutes. Keep the unit with the value and
-never turn a count into a time. With no report in the last 2 hours, a site shows a quiet
+Traced on 2026-10-21 and sampled during open hours on 2026-10-22 (#102). The County
+reports **people in line**. The City's unit is not settled: its field alias says minutes,
+but the City Board's own dashboard shows the same value as people in line (see City below;
+asked on #102). Keep the unit with the value and never turn one into the other. With no report in the last 2 hours, a site shows a quiet
 "No current line count" with its hours and open status still shown; it is never hidden
-(owner decision on #102, 2026-10-22, option 1).
+(owner decision on #102, 2026-10-22, option 1). That 2-hour rule applies to both
+jurisdictions; the City dashboard's own 1-hour "may be out of date" mark (below) is the City's
+display, not this app's cutoff.
 
 The real responses are in `docs/raw/fixtures/` (`county-waits-*.json`,
 `city-waits-*.json`), and `src/data/waitFixtures.test.js` checks the join and freshness
@@ -282,16 +285,18 @@ in a different ArcGIS org from the polls layer. Keyless, CORS `*`,
   office). Take the newest row per site. On 2026-10-22 every `Creator` matched one of the
   21 absentee sites.
 - **Freshness:** the view's own filter is
-  `CreationDate BETWEEN CURRENT_TIMESTAMP - 2 hours AND CURRENT_TIMESTAMP AND username LIKE 'abs%'`,
-  so it holds only early voting reports from the last 2 hours and is empty when the sites
+  `CreationDate BETWEEN CURRENT_TIMESTAMP - 0.08333333333333333 AND CURRENT_TIMESTAMP AND username LIKE 'abs%'`
+  (0.0833 days is 2 hours), so it holds only early voting reports from the last 2 hours and is empty when the sites
   are closed (0 rows at 6:47 p.m. on 2026-10-21 and at 7:44 a.m. on 2026-10-22). A row's
   age is `CreationDate`; apply the app's own max age with `isFresh` in
   `src/data/freshness.js` as well.
-- **What the samples showed (2026-10-22, 7:59 to 9:00 a.m.):** 43 reports from 19 of the 21
-  sites; JFK Community Center (`abs610boec`) and STLCC Meramec (`abs618boec`) sent none in
-  that hour. Most sites report every 20 to 35 minutes, some only once an hour, and some send
-  several reports within a minute (the Board office sent 5 between 8:29 and 8:30). The
-  first reports come a minute or so before the 8 a.m. opening. Values ran from 0 to 29.
+- **What the samples showed (2026-10-22):** by 9:30 a.m. the view held 61 reports, made
+  from 7:59 to 9:30 a.m., from 19 of the 21 sites; JFK Community Center (`abs610boec`) and
+  STLCC Meramec (`abs618boec`) sent none. Sites report about every 30 minutes (median gap 29
+  minutes, longest 55), one site only once in that span, and some send several reports
+  within a minute (the Board office sent 5 between 8:29:05 and 8:30:00). The first reports
+  come a minute or so before the 8 a.m. opening. Values ran from 0 to 29. The fresh fixture
+  is the 9:00 a.m. response (43 reports).
 - **Election Day:** the official Polling Place Lookup app (web map
   `5e98818fdb354d719193ec562d359050`) joins `Creator` = `polls_2026_11_view.username`
   (for example `loc019boec`), but today's view filter keeps only `abs%` reports, so Election
@@ -302,34 +307,46 @@ in a different ArcGIS org from the polls layer. Keyless, CORS `*`,
 
 #### City: `VotingLocations_currentwait_*/FeatureServer/0`
 
-`https://services6.arcgis.com/HZXbCkpCSqbGd0vK/ArcGIS/rest/services/VotingLocations_currentwait_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/0`,
+`https://services6.arcgis.com/HZXbCkpCSqbGd0vK/arcgis/rest/services/VotingLocations_currentwait_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/0`,
 owned by `ESRI_BOE` in the City's ArcGIS org (the org of the web map the City Board's
-polling places page embeds). Keyless, CORS `*`, `cache-control: max-age=30`. It is a join view: the site row
-(`facilityid`, `name`, `earlyvoting*`) plus the latest wait report, whose fields carry a
-numeric suffix (`created_date_1740505041182`). A republish could rename them, so keep the
-names in config.
+polling places page embeds). The owner confirmed it as the City wait time source on
+2026-10-22. Keyless, CORS `*`, `cache-control: max-age=30`. It is a join view: the site row
+plus the latest wait report, whose fields carry a numeric suffix
+(`created_date_1740505041182`). A republish could rename them, so keep the names in
+config.
 
-- **Official display:** the public "Election Wait Times Dashboard" owned by `ESRI_BOE`
-  (dashboard `8548fe3a065a455182181399909102ef`, web map
-  `2ded49cc432d4631a8e76e6584f0a3ac`, edited 2026-10-22) reads this layer with
-  `publicview = 'Yes' AND earlyvoting = 'Yes'` and shows `waittime` as
-  "**N** Estimated People in Line". So `waittime` is **people**, even though its alias
-  says "Wait Time (Minutes)". No City Board `.gov` page linked the dashboard on 2026-10-22.
-- **Query:** `where=earlyvoting='Yes'` (8 sites, all `publicview = 'Yes'`; add
-  `publicview = 'Yes'` to match the dashboard), `outFields` for `facilityid`, `name`,
-  `waittime`, `created_date_1740505041182` and `comments`, `returnGeometry=false`.
-- **Join:** `facilityid` (for example `St._Louis_City_Election_Board`) is the site key.
-- **Freshness:** `created_date_1740505041182` is the report time. The dashboard shows a
-  report only when it is from today (Central) and marks it "may be out of date" after 1
-  hour. `last_edited_date` (the site row's own edit time, 2026-10-09 on every site) does
-  not move with reports, so never use it. A site with no report has `waittime` and the
-  report time null (St. Joan of Arc on 2026-10-22, whose `comments` say it opens Tuesday,
-  October 27).
-- **Closed:** the dashboard treats `comments` containing "poll closed" as a closed site.
-- **What the samples showed (2026-10-22):** at 7:44 a.m. every report was from the
-  afternoon of 2026-10-21 (values 0 to 4); at 9:00 a.m. the Board office had reported (0
-  at 8:10 a.m.). The libraries open later (11 a.m. on Thursdays, per
-  `earlyvotingoperhours`).
+- **Query (the owner's):** `where=publicview = 'Yes' AND earlyvoting = 'Yes'`,
+  `outFields=name,waittime,last_edited_date_1740505041182,created_date_1740505041182`,
+  `orderByFields=last_edited_date_1740505041182 DESC`, `returnGeometry=false`. 8 sites: the
+  City Board of Elections, Buder, Schlafly, Julia Davis, Walnut Park, Carpenter and
+  Kingshighway libraries, and St. Joan of Arc. Sites with no report sort last. Never ask for
+  `outFields=*`: the layer also holds staff contact fields (`pocname`, `pocemail`,
+  `pocphone`, `created_user`).
+- **Join:** `name` (for example `St. Louis City Board of Elections`) is the site key in this
+  query.
+- **Freshness:** `created_date_1740505041182` is the report time (on 2026-10-22,
+  `last_edited_date_1740505041182` matched it on every reported site). The site row's own
+  `last_edited_date` (2026-10-09 on every site) does not move with reports, so never use
+  it. A site with no report has `waittime` and both report dates null (St. Joan of Arc on
+  2026-10-22, whose `comments` say it opens Tuesday, October 27).
+- **Unit, not settled:** the field alias is "Wait Time (Minutes)" and the values seen (0, 3,
+  4) fit either unit. The City Board's public "Election Wait Times Dashboard", owned by
+  `ESRI_BOE` (dashboard `8548fe3a065a455182181399909102ef`, edited 2026-10-22; web map
+  `2ded49cc432d4631a8e76e6584f0a3ac`, edited 2026-10-21), reads this layer with the same
+  filter, titles it "People In Line", and shows `waittime` as "**N** Estimated People in
+  Line". No City Board `.gov` page linked the dashboard on 2026-10-22. The owner decides
+  which unit the app shows (#102).
+- **The dashboard's other rules:** it shows a report only while the site is open by its
+  `earlyvotingoperhours` and only when the report is from today (Central), marks it "may be
+  out of date" after 1 hour, and treats `comments` containing "poll closed" as a closed
+  site.
+- **What the samples showed (2026-10-22):** at 7:44 a.m. every report was from 4:19 to 6:32
+  p.m. on 2026-10-21 (values 0 to 4); at 9:26 a.m. only the Board office had reported (0 at
+  8:10 a.m.). The libraries open at 11 a.m. on Thursdays, per `earlyvotingoperhours`.
+- **Fixtures:** `city-waits-fresh.json` is the owner's query at 9:26 a.m.
+  `city-waits-stale.json` is the 7:44 a.m. response, recorded with a wider `outFields` list
+  (it adds `facilityid`, `comments`, the `earlyvoting*` fields and both `last_edited_date`
+  fields) before the owner named the query.
 - **Not the source:** `Live_Election_Wait_Time_View` (last edited 2024-11-06) and
   `Polling_Centers_WFL1/FeatureServer/1` `Wait_Time__Minutes_` are not read by the
   dashboard.

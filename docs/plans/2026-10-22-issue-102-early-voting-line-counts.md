@@ -75,3 +75,17 @@ app code changes.
   carries it.
 - Samples: one full set at 9:00 a.m. became the fresh fixtures; three more at 15-minute
   intervals were taken for the cadence notes and stay in the scratchpad.
+- Criterion 4's open-hours check allows reports from 15 minutes before opening: staff sent
+  the first one at 7:59 a.m., before the 8 a.m. opening. The test pins the recording day's
+  hours (8 a.m. to 4:30 p.m.) instead of reading the election config, so the next
+  election's config cannot break it. README step 6 now says to re-record the wait fixtures
+  by hand.
+- The owner named the City source and query on 2026-10-22 (via the coordinator):
+  `where=publicview = 'Yes' AND earlyvoting = 'Yes'`, four `outFields`, ordered by
+  `last_edited_date_1740505041182 DESC`. `city-waits-fresh.json` was re-recorded with it at
+  9:26 a.m.; `city-waits-stale.json` stays the 7:44 a.m. response with wider `outFields`, so
+  the test checks it holds the four fields rather than exactly them.
+- City unit: the coordinator reported it as minutes (the field alias); the City Board's
+  dashboard shows it as people in line. `docs/data.md` records both and leaves the choice to
+  the owner, asked on #102, instead of asserting either. This replaces the first revision's
+  "the City unit is people".

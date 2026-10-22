@@ -153,6 +153,10 @@ may need new values too. Work on a branch and merge through the usual pull reque
    See [Learn content](#learn-content).
 6. **Re-record the fixtures** with `node scripts/record-fixtures.mjs`, so the tests and the
    address search check below use the new layers. Pick new sample precincts in it if the old ones are gone.
+   The early voting wait fixtures (`county-waits-*.json`, `city-waits-*.json`) hold reports
+   only while sites are open, so that script skips them: record them by hand during open hours
+   with the queries in `docs/data.md` (Wait times), and update the recording day and hours in
+   `src/data/waitFixtures.test.js`.
 7. **Run the health check** and fix what it reports:
 
    ```sh
