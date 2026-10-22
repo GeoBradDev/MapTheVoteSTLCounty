@@ -2,6 +2,9 @@
 // tests in src/data/arcgis.test.js. Layer paths come from the election config,
 // so this works again next election. Pick new sample precincts and points if
 // these no longer exist.
+// The early voting wait fixtures (county-waits-*.json, city-waits-*.json) are
+// not recorded here: the layers hold reports only while sites are open, so they
+// are recorded by hand during open hours (docs/data.md, Wait times).
 // Usage: node scripts/record-fixtures.mjs
 
 import { mkdir, writeFile } from 'node:fs/promises';

@@ -1,0 +1,9 @@
+{
+  "objectIdFieldName": "objectid",
+  "uniqueIdField": {
+    "name": "objectid",
+    "isSystemMaintained": true
+  },
+  "globalIdFieldName": "globalid",
+  "features": []
+}

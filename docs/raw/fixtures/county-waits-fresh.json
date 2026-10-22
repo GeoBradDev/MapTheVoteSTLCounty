@@ -1,0 +1,344 @@
+{
+  "objectIdFieldName": "objectid",
+  "uniqueIdField": {
+    "name": "objectid",
+    "isSystemMaintained": true
+  },
+  "globalIdFieldName": "globalid",
+  "geometryType": "esriGeometryPoint",
+  "spatialReference": {
+    "wkid": 4326,
+    "latestWkid": 4326
+  },
+  "fields": [
+    {
+      "name": "Creator",
+      "type": "esriFieldTypeString",
+      "alias": "Creator",
+      "sqlType": "sqlTypeOther",
+      "length": 128,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "CreationDate",
+      "type": "esriFieldTypeDate",
+      "alias": "CreationDate",
+      "sqlType": "sqlTypeOther",
+      "length": 8,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "linecount",
+      "type": "esriFieldTypeInteger",
+      "alias": "How many voters are waiting in line to check in right now?",
+      "sqlType": "sqlTypeOther",
+      "domain": null,
+      "defaultValue": null
+    }
+  ],
+  "features": [
+    {
+      "attributes": {
+        "Creator": "abs602boec",
+        "CreationDate": 1792677610370,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs604boec",
+        "CreationDate": 1792677595176,
+        "linecount": 2
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs616boec",
+        "CreationDate": 1792677511456,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs614boec",
+        "CreationDate": 1792677496619,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs608boec",
+        "CreationDate": 1792677022692,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs601boec",
+        "CreationDate": 1792676889402,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs604boec",
+        "CreationDate": 1792676384976,
+        "linecount": 2
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs619boec",
+        "CreationDate": 1792676302676,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs613boec",
+        "CreationDate": 1792676153809,
+        "linecount": 1
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs621boec",
+        "CreationDate": 1792675961620,
+        "linecount": 8
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs612boec",
+        "CreationDate": 1792675926565,
+        "linecount": 2
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs609boec",
+        "CreationDate": 1792675903260,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs616boec",
+        "CreationDate": 1792675895525,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs603boec",
+        "CreationDate": 1792675868876,
+        "linecount": 1
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs602boec",
+        "CreationDate": 1792675858028,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs601boec",
+        "CreationDate": 1792675855292,
+        "linecount": 2
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs608boec",
+        "CreationDate": 1792675841609,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs620boec",
+        "CreationDate": 1792675820678,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs607boec",
+        "CreationDate": 1792675819962,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs606boec",
+        "CreationDate": 1792675819104,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs601boec",
+        "CreationDate": 1792675800826,
+        "linecount": 1
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs601boec",
+        "CreationDate": 1792675778060,
+        "linecount": 2
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs601boec",
+        "CreationDate": 1792675746570,
+        "linecount": 2
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs601boec",
+        "CreationDate": 1792675746177,
+        "linecount": 4
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs601boec",
+        "CreationDate": 1792675745694,
+        "linecount": 3
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs614boec",
+        "CreationDate": 1792675698639,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs615boec",
+        "CreationDate": 1792675557528,
+        "linecount": 3
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs607boec",
+        "CreationDate": 1792675078472,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs615boec",
+        "CreationDate": 1792674938064,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs611boec",
+        "CreationDate": 1792674727499,
+        "linecount": 2
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs612boec",
+        "CreationDate": 1792674723991,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs605boec",
+        "CreationDate": 1792674596933,
+        "linecount": 3
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs616boec",
+        "CreationDate": 1792674578426,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs605boec",
+        "CreationDate": 1792674260512,
+        "linecount": 18
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs619boec",
+        "CreationDate": 1792674183716,
+        "linecount": 7
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs609boec",
+        "CreationDate": 1792674173297,
+        "linecount": 29
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs604boec",
+        "CreationDate": 1792674148952,
+        "linecount": 16
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs602boec",
+        "CreationDate": 1792674086476,
+        "linecount": 2
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs617boec",
+        "CreationDate": 1792674064717,
+        "linecount": 1
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs621boec",
+        "CreationDate": 1792674045128,
+        "linecount": 6
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs614boec",
+        "CreationDate": 1792674035887,
+        "linecount": 1
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs620boec",
+        "CreationDate": 1792674030215,
+        "linecount": 0
+      }
+    },
+    {
+      "attributes": {
+        "Creator": "abs608boec",
+        "CreationDate": 1792673954824,
+        "linecount": 6
+      }
+    }
+  ]
+}
