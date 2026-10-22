@@ -325,20 +325,36 @@ async function requestOnce(fetchImpl, url, timeoutMs) {
     }
     return { ok: true, detail: `HTTP ${res.status}` };
   } catch (error) {
-    const why = controller.signal.aborted ? `no answer in ${timeoutMs} ms` : error.message;
-    return { ok: false, transient: true, detail: `request failed: ${why}` };
+    const timedOut = controller.signal.aborted;
+    const why = timedOut ? `no answer in ${timeoutMs} ms` : error.message;
+    return { ok: false, transient: true, timedOut, detail: `request failed: ${why}` };
   } finally {
     clearTimeout(timer);
   }
 }
 
+/** The host part of a URL, or the URL itself when it does not parse. */
+function hostOf(url) {
+  try {
+    return new URL(url).host;
+  } catch {
+    return url;
+  }
+}
+
 /**
  * Requests each URL, retrying network errors, 429 and 5xx answers. A bot
- * challenge is a skip: neither a pass nor a failure.
+ * challenge is a skip: neither a pass nor a failure. A request that timed out
+ * gets `lastTimeoutMs` on its last try, since www.sos.mo.gov sometimes waits
+ * about 60 s before it answers a healthy page (#116). Once a URL fails even
+ * that long try, its host is taken as down, and its later URLs get only
+ * `timeoutMs`.
  * @param {{ url: string, files: string[] }[]} links
  * @param {object} [options]
  * @param {typeof fetch} [options.fetch]
  * @param {number} [options.timeoutMs] How long one request may take.
+ * @param {number} [options.lastTimeoutMs] How long the last try may take when
+ *   the try before it timed out.
  * @param {number} [options.attempts] Tries per URL.
  * @param {number} [options.retryDelayMs] The wait before a retry, times the attempt.
  * @param {(result: object) => unknown} [options.onResult] Called with each result as soon
@@ -350,16 +366,22 @@ export async function checkLinks(
   {
     fetch: fetchImpl = fetch,
     timeoutMs = 15000,
+    lastTimeoutMs = 75000,
     attempts = 3,
     retryDelayMs = 2000,
     onResult = () => {},
   } = {},
 ) {
   const results = [];
+  const downHosts = new Set();
   for (const { url, files } of links) {
+    const host = hostOf(url);
     let outcome;
     for (let attempt = 1; attempt <= attempts; attempt += 1) {
-      outcome = await requestOnce(fetchImpl, url, timeoutMs);
+      const longTry =
+        attempt > 1 && attempt === attempts && outcome.timedOut && !downHosts.has(host);
+      outcome = await requestOnce(fetchImpl, url, longTry ? lastTimeoutMs : timeoutMs);
+      if (longTry && outcome.timedOut) downHosts.add(host);
       if (outcome.ok || !outcome.transient || attempt === attempts) break;
       await new Promise((resolve) => setTimeout(resolve, retryDelayMs * attempt));
     }

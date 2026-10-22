@@ -79,8 +79,12 @@ jobs:
 
       # Every source and link in content/<locale>/learn/ (#21) and every page
       # the election config links (#74). Each dead URL can take about 51 s
-      # (3 tries of 15 s plus waits). A page behind a bot challenge is skipped,
-      # not failed, and listed for a person to open in a browser.
+      # (3 tries of 15 s plus waits). A URL that keeps timing out gets 75 s on
+      # its last try, since www.sos.mo.gov sometimes stalls about 60 s on a
+      # healthy page (#116), so it can take about 111 s; after one URL fails
+      # that long try, its host's other URLs get 15 s tries only. A page behind
+      # a bot challenge is skipped, not failed, and listed for a person to open
+      # in a browser.
       - name: Content link check
         id: links
         if: ${{ !cancelled() && steps.window.outputs.active == 'true' }}
