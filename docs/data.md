@@ -102,8 +102,9 @@ its sources and how to confirm the assigned place: the county board's number, 31
 from the county's Polling Place Lookup app (`13fb36e7...`, whose live config says "call
 314.615.1800", read 2026-10-21; the Contact Us page that listed it was retired, see Official
 website domain), or the Secretary of State's Voter Outreach Center, which voters "may be able" to use for it.
-The layer has only 200 points, so load it once (about 85 KB GeoJSON with all
-fields), cache it, and sort on the client. No extra query per lookup.
+The layer has only 200 points, so load it whole (about 85 KB GeoJSON with all
+fields), keep it in memory up to its max age (README, Election config), and sort on the client.
+No extra query per lookup.
 
 ## Layers
 

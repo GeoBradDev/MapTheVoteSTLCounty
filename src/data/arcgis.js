@@ -309,8 +309,8 @@ export async function getPrecinctGeometry(code) {
 }
 
 // A whole-layer GeoJSON query, shared by all callers while it is younger than
-// the max age (#84), so a tab left open for days still sees a moved polling
-// place. A request in flight is shared too; a failed fetch is not kept, so the
+// the max age (#84), so a call after that sees a moved polling place. A
+// request in flight is shared too; a failed fetch is not kept, so the
 // next call tries again. The answer carries `loadedAt`, when it arrived (ms).
 // Only the fields the app reads, with coordinates to 6 decimals (about 0.1 m).
 function sharedLayer(layer, where, fields) {
