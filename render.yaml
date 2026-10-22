@@ -8,7 +8,7 @@
 services:
   - type: web
     runtime: static
-    name: mapthevote-stl-county
+    name: mapthevote-stl
     branch: main
     # Node comes from .node-version (no NODE_VERSION env var), same as CI.
     buildCommand: npm ci && npm run build
