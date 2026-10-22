@@ -595,8 +595,16 @@ export async function runHealthCheck(
           const { date, minutes } = zonedNow(now, config.timeZone);
           const weekday = new Date(`${date}T00:00:00Z`).getUTCDay();
           const closedText = String(source.closedText ?? '').toLowerCase();
+          // As in the app, a "poll closed" comment closes a site only on a
+          // report from today; one left from an earlier day does not.
           const open = rows.filter((row) => {
+            const time = row[source.timeField];
+            const reportedToday =
+              typeof time === 'number' &&
+              !Number.isNaN(new Date(time).getTime()) &&
+              zonedNow(time, config.timeZone).date === date;
             if (
+              reportedToday &&
               closedText &&
               String(row[source.commentsField] ?? '')
                 .toLowerCase()

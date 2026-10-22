@@ -841,6 +841,28 @@ describe('wait time checks', () => {
     });
   });
 
+  // As in the app, "poll closed" counts only on a report from today: the
+  // comment left from the evening before must not hide a quiet open site.
+  it('ignores a closed comment on a report from an earlier day', async () => {
+    const world = healthyWorld();
+    const board = cityFresh.find((r) => r.name === 'St. Louis City Board of Elections');
+    world.waits[city].rows = [
+      {
+        ...board,
+        [cityWait.commentsField]: cityWait.closedText,
+        [cityWait.timeField]: Date.UTC(2026, 9, 21, 22, 5),
+      },
+    ];
+    const result = (await run(world))['wait reports city'];
+    expect(result.status).toBe('warn');
+    expect(result.detail).toContain('1 open now, 0 with a current count');
+
+    world.waits[city].rows = [{ ...board, [cityWait.commentsField]: cityWait.closedText }];
+    const today = (await run(world))['wait reports city'];
+    expect(today.status).toBe('pass');
+    expect(today.detail).toContain('closed. No site is open now');
+  });
+
   it('warns when the City filter finds no early voting rows at all', async () => {
     const world = healthyWorld();
     world.waits[city].rows = [];

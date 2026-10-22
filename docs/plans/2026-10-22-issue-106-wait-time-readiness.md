@@ -23,7 +23,8 @@ are tasks 1 and 2 below. The PR says `Closes #132`.
      problem, by `pollsField`), and the newest report time in Central time. An empty view is
      normal while sites are closed.
    - City: how many early voting rows have a `waittime`, how many are open now by their
-     hours field, how many the app would show now, and the newest report time from
+     hours field (less any marked closed by a "poll closed" comment on today's report, as the
+     app does; revised after review finder 5), how many the app would show now, and the newest report time from
      `timeField` (`created_date_*`, never `last_edited_date`).
    "Would show now" uses the app's own `selectCountyWaits` and `selectCityWaits`.
 3. Sites open with nothing fresh, County reports that match no site, or City rows whose hours
