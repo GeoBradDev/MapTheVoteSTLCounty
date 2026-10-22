@@ -1,6 +1,7 @@
 import { Link } from 'wouter';
 import election from '../../config/election.js';
 import AddressLookup from './AddressLookup.jsx';
+import AssignedPollingPlace from './AssignedPollingPlace.jsx';
 import { copy } from './homeCopy.js';
 
 const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
@@ -27,12 +28,10 @@ export default function HomePage() {
         <AddressLookup />
       </div>
 
-      <p className="mt-8 rounded-md bg-surface-raised p-4">
-        <span>{copy.voteAnywhere}</span>{' '}
-        <a href={election.voteAnywhere.sources[0]} rel="noreferrer" className={linkClass}>
-          {copy.voteAnywhereSource}
-        </a>
-      </p>
+      <div className="mt-8 rounded-md bg-surface-raised p-4">
+        {/* Its links sit inside sentences, so they keep the plain link style. */}
+        <AssignedPollingPlace />
+      </div>
 
       <nav aria-label={copy.moreInfo} className="mt-6">
         <ul className="flex flex-col gap-1">

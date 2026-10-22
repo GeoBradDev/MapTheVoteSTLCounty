@@ -5,6 +5,7 @@ import geometry from '../../../docs/raw/fixtures/precinct-geometry.json';
 import election from '../../config/election.js';
 import { getPolls, getPrecinctGeometry } from '../../data/arcgis.js';
 import { fixtureTopics } from '../../test/learnFixtures.js';
+import { copy as ruleCopy } from './assignedPollingPlaceCopy.js';
 import { nearestPolls, polygonCenter } from './nearbyPolls.js';
 import PollsCard from './PollsCard.jsx';
 import { createPrecinctMap } from './precinctMapView.js';
@@ -153,14 +154,64 @@ describe('PollsCard', () => {
     }
   });
 
-  it('says any polling place in the county works, with its source', () => {
+  it('says Election Day voters must use their assigned polling place, with sources (#72)', () => {
+    getPolls.mockReturnValue(new Promise(() => {}));
+    const { container } = render(<PollsCard code="CC007" origin={ORIGIN} />);
+    expect(screen.getByText(ruleCopy.rule)).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: election.electionDayPollingPlace.phone }),
+    ).toBeInTheDocument();
+    for (const url of election.electionDayPollingPlace.sources) {
+      expect(
+        screen.getByRole('link', { name: ruleCopy.sourceNames[new URL(url).host] }),
+      ).toHaveAttribute('href', url);
+    }
+    expect(container).not.toHaveTextContent(/any polling place/i);
+  });
+
+  it('says the nearest places may not include the assigned one, before the list (#72)', async () => {
+    render(<PollsCard code="CC007" origin={ORIGIN} />);
+    const note = screen.getByText(copy.polls.nearestNote);
+    const list = await screen.findByRole('list', { name: copy.polls.listLabel });
+    // The note comes first in reading order.
+    expect(note.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('keeps the nearest-places note when there is no looked-up point', () => {
+    getPolls.mockReturnValue(new Promise(() => {}));
+    render(<PollsCard code="CC007" origin={null} />);
+    expect(screen.getByText(copy.polls.nearestNote)).toBeInTheDocument();
+  });
+
+  it('drops the nearest-places note, but keeps the rule, when no places are listed', async () => {
+    getPolls.mockRejectedValue(new Error('down'));
+    const { unmount } = render(<PollsCard code="CC007" origin={ORIGIN} />);
+    await screen.findByText(copy.polls.failed, { exact: false });
+    expect(screen.queryByText(copy.polls.nearestNote)).toBeNull();
+    expect(screen.getByText(ruleCopy.rule)).toBeInTheDocument();
+    unmount();
+    getPolls.mockResolvedValue({ ...polls, features: [] });
+    render(<PollsCard code="CC007" origin={ORIGIN} />);
+    await screen.findByText(copy.polls.none, { exact: false });
+    expect(screen.queryByText(copy.polls.nearestNote)).toBeNull();
+    expect(screen.getByText(ruleCopy.rule)).toBeInTheDocument();
+  });
+
+  it('gives links to different pages different names (#72)', () => {
     getPolls.mockReturnValue(new Promise(() => {}));
     render(<PollsCard code="CC007" origin={ORIGIN} />);
-    const note = screen.getByText(copy.polls.voteAnywhere).closest('p');
-    expect(within(note).getByRole('link')).toHaveAttribute(
-      'href',
-      election.voteAnywhere.sources[0],
-    );
+    const hrefByName = new Map();
+    for (const link of screen.getAllByRole('link')) {
+      const name = link.textContent;
+      if (hrefByName.has(name)) expect(link.getAttribute('href')).toBe(hrefByName.get(name));
+      hrefByName.set(name, link.getAttribute('href'));
+    }
+  });
+
+  it('points to early voting for voting in person before Election Day (#72)', () => {
+    getPolls.mockReturnValue(new Promise(() => {}));
+    render(<PollsCard code="CC007" origin={ORIGIN} />);
+    expect(screen.getByText(copy.polls.earlyVotingPointer)).toBeInTheDocument();
   });
 
   it('links to the voter ID topic by its title once that topic exists (#23)', () => {

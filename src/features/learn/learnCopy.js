@@ -24,7 +24,7 @@ export const learnCopy = {
       countySite: 'St. Louis County Board of Elections website',
     },
     moreHelp: 'More help',
-    lookup: 'Look up your polling place, sample ballot and districts',
+    lookup: 'Look up your precinct, nearby polling places, sample ballot and districts',
     countySite: 'St. Louis County Board of Elections website',
     allTopics: 'All voting guides',
     sourcesHeading: 'Sources',

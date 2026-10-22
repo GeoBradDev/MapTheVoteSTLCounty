@@ -33,8 +33,10 @@ const REQUIRED_KEYS = [
   'electionDayHours.inLineAtCloseMayVote',
   'electionDayHours.sources',
   'electionDayHours.lastVerified',
-  'voteAnywhere.sources',
-  'voteAnywhere.lastVerified',
+  'electionDayPollingPlace.sources',
+  'electionDayPollingPlace.lastVerified',
+  'electionDayPollingPlace.phone',
+  'electionDayPollingPlace.phoneSource',
 ];
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -250,10 +252,24 @@ describe('Election Day hours', () => {
   });
 });
 
-describe('vote anywhere in the county', () => {
-  it('cites the county FAQ and a verified date', () => {
-    expectSources(election.voteAnywhere.sources);
-    expect(election.voteAnywhere.sources[0]).toMatch(/^https:\/\/stlouiscovotes\.info\//);
-    expect(election.voteAnywhere.lastVerified).toMatch(ISO_DATE);
+describe('the Election Day polling place rule', () => {
+  const rule = election.electionDayPollingPlace;
+
+  // Owner decision on #72: the rule follows RSMo 115.430 and the Secretary of
+  // State, not the county's old "vote at any polling place" FAQ line.
+  it('cites RSMo 115.430 and the Secretary of State, and a verified date', () => {
+    expectSources(rule.sources);
+    expect(rule.sources).toContain('https://revisor.mo.gov/main/OneSection.aspx?section=115.430');
+    expect(rule.sources.some((url) => new URL(url).host === 'www.sos.mo.gov')).toBe(true);
+    expect(rule.lastVerified).toMatch(ISO_DATE);
+  });
+
+  it('never cites the county FAQ that said any polling place works', () => {
+    expect(rule.sources.some((url) => new URL(url).host === 'stlouiscovotes.info')).toBe(false);
+  });
+
+  it("has the county board's phone number", () => {
+    expect(rule.phone).toMatch(/^\d{3}-\d{3}-\d{4}$/);
+    expectSources([rule.phoneSource]);
   });
 });
