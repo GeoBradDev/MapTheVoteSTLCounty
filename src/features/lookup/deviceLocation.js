@@ -1,13 +1,23 @@
 // The device's current position for "Use my location", as the coordinates-only
-// place locate() takes. Nothing else from the position (accuracy, altitude,
-// time) leaves this module, and nothing is stored.
+// place locate() takes. The accuracy is read only to turn away a rough fix;
+// nothing else from the position (accuracy, altitude, time) leaves this module,
+// and nothing is stored.
 
 /** How long the browser may take to find the position once allowed, in ms. */
 export const LOCATION_TIMEOUT_MS = 15_000;
 
 /**
+ * The largest accuracy radius, in meters, that may pick a precinct (#83). A
+ * laptop's Wi-Fi or IP estimate, or a phone with precise location off, can be
+ * kilometers off and land in another precinct or municipality, so a fix less
+ * certain than this is turned away instead of shown as the voter's precinct.
+ * 100 m keeps typical phone fixes (GPS, or Wi-Fi indoors) working.
+ */
+export const MAX_ACCURACY_M = 100;
+
+/**
  * Why the position could not be had.
- * @typedef {'insecure' | 'unsupported' | 'denied' | 'unavailable' | 'timeout'} LocationReason
+ * @typedef {'insecure' | 'unsupported' | 'denied' | 'unavailable' | 'timeout' | 'coarse'} LocationReason
  */
 export class LocationError extends Error {
   /**
@@ -46,8 +56,15 @@ export function getDeviceLocation() {
     const onSuccess = ({ coords } = {}) => {
       const lat = coords?.latitude;
       const lng = coords?.longitude;
-      if (Number.isFinite(lat) && Number.isFinite(lng)) resolve({ lat, lng });
-      else reject(new LocationError('unavailable'));
+      const accuracy = coords?.accuracy;
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        reject(new LocationError('unavailable'));
+      } else if (!Number.isFinite(accuracy) || accuracy < 0 || accuracy > MAX_ACCURACY_M) {
+        // A missing or nonsense accuracy is no promise the fix is close.
+        reject(new LocationError('coarse'));
+      } else {
+        resolve({ lat, lng });
+      }
     };
     const onError = (error) => {
       reject(new LocationError(REASONS[error?.code] ?? 'unavailable', error?.message));
