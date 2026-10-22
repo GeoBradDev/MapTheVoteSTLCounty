@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 import { Router } from 'wouter';
 import App from './App.jsx';
-import { shouldHydrate } from './hydrate.js';
+import { shouldHydrate, startHydration } from './hydrate.js';
 import './index.css';
 
 // The same tree src/entry-server.jsx renders at build time (#99), so a
@@ -25,6 +25,7 @@ const root = document.getElementById('root');
 // other page (a precinct, an unknown path) arrives as the empty shell, and
 // markup rendered for another path is replaced, not hydrated.
 if (shouldHydrate(root, window.location.pathname)) {
+  startHydration();
   hydrateRoot(root, app, options);
 } else {
   root.replaceChildren();

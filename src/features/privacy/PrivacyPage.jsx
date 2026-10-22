@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Link } from 'wouter';
 import { usePageTitle } from '../../components/usePageTitle.js';
 import { copy } from './privacyCopy.js';
+import { focusHeadingOnArrival } from '../../hydrate.js';
 
 const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
 
@@ -13,7 +14,7 @@ export default function PrivacyPage() {
   // The footer link stays mounted and sits at the bottom of the page, so move
   // focus (and with it the scroll position) to the notice's heading on arrival.
   useEffect(() => {
-    headingRef.current?.focus();
+    focusHeadingOnArrival(headingRef.current);
   }, []);
 
   return (

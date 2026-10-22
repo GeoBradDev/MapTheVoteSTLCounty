@@ -5,6 +5,7 @@ import { getLocale, useLocale } from '../../i18n/index.js';
 import { copy } from './learnCopy.js';
 import TopicArticle from './TopicArticle.jsx';
 import { getTopic } from './topics.js';
+import { focusHeadingOnArrival } from '../../hydrate.js';
 
 const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
 
@@ -22,7 +23,7 @@ export default function LearnTopicPage() {
   // Focus moves to the heading on arrival only, not when the language changes
   // (#19), so it stays on the language switcher.
   useEffect(() => {
-    if (found) headingRef.current?.focus();
+    if (found) focusHeadingOnArrival(headingRef.current);
   }, [found]);
 
   useEffect(() => {

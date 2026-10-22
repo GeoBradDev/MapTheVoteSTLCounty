@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { Route, Switch, useLocation } from 'wouter';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import NotFoundPage from './components/NotFoundPage.jsx';
@@ -10,6 +10,7 @@ import PrecinctPage from './features/lookup/PrecinctPage.jsx';
 import PrivacyPage from './features/privacy/PrivacyPage.jsx';
 import { t, useLocale } from './i18n/index.js';
 import LanguageSwitcher from './i18n/LanguageSwitcher.jsx';
+import { endHydration } from './hydrate.js';
 import { applyHead, pageHead } from './pageHead.js';
 
 // The path as wouter reports it: decoded with decodeURI, or as is when that fails.
@@ -49,6 +50,14 @@ if (typeof window !== 'undefined') {
 function usePageArrival() {
   const [location] = useLocation();
   const previous = useRef(location);
+  const first = useRef(location);
+
+  // From the first in-app navigation on, pages focus their heading as usual
+  // (src/hydrate.js). A layout effect, so it runs before the new page's own
+  // (passive) focus effect.
+  useLayoutEffect(() => {
+    if (location !== first.current) endHydration();
+  }, [location]);
 
   useEffect(() => {
     if (previous.current === location) return;

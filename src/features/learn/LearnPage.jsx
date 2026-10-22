@@ -5,6 +5,7 @@ import { TOPIC_GROUPS } from './groups.js';
 import { getLocale, useLocale } from '../../i18n/index.js';
 import { copy } from './learnCopy.js';
 import { getTopics } from './topics.js';
+import { focusHeadingOnArrival } from '../../hydrate.js';
 
 const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
 
@@ -19,7 +20,7 @@ export default function LearnPage() {
   // Links to this page sit low on other pages, so move focus (and the scroll
   // position) to the heading on arrival, not when the language changes (#19).
   useEffect(() => {
-    headingRef.current?.focus();
+    focusHeadingOnArrival(headingRef.current);
   }, []);
 
   useEffect(() => {
