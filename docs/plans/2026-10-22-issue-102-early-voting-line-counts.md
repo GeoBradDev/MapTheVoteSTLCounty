@@ -38,6 +38,8 @@ app code changes.
 - `docs/raw/fixtures/county-waits-fresh.json`, `county-waits-empty.json`,
   `city-waits-fresh.json`, `city-waits-stale.json`: new, real.
 - `src/data/waitFixtures.test.js`: new.
+- `docs/progress.md`: a new `## Batch 4 (2026-10-22)` heading at the end (coordinator's
+  request for this batch; the coordinator adds the lines under it).
 - `scripts/record-fixtures.mjs`: a comment that the wait fixtures are recorded by hand
   during open hours, not by this script (a night run would record empty layers).
 
@@ -64,3 +66,12 @@ app code changes.
 - Criteria 1, 2, 5, 6: read the doc and the issue comments; the finder checks them against
   the samples.
 - Live drive: not applicable, no app behavior changes; the samples are the live evidence.
+
+## Revisions during implementation
+
+- The City Board's own public "Election Wait Times Dashboard" (found on 2026-10-22) shows
+  `waittime` as "Estimated People in Line", so the City unit is people, not minutes as the
+  field alias and #103 say. `docs/data.md` records this, and criterion 6's comment on #103
+  carries it.
+- Samples: one full set at 9:00 a.m. became the fresh fixtures; three more at 15-minute
+  intervals were taken for the cadence notes and stay in the scratchpad.

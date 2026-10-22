@@ -41,7 +41,7 @@ describe('County wait fixtures (Voters_in_Line_View)', () => {
 
   // Staff report from a few minutes before the doors open (07:59 on
   // 2026-10-22), so the window starts 15 minutes before opening.
-  it('fresh: every report was made on the recording day during its site\'s hours', () => {
+  it("fresh: every report was made on the recording day during its site's hours", () => {
     for (const { Creator, CreationDate } of rows(countyFresh)) {
       expect(dayOf(CreationDate)).toBe(RECORDED_ON);
       const schedule = election.earlyVoting.schedules[sites.get(Creator).abs_type];
