@@ -5,6 +5,11 @@
 import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import {
+  readSitemapTopics,
+  robotsTxt,
+  sitemapXml,
+} from '../features/learn/content/searchEngines.js';
 import election from '../config/election.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
@@ -101,6 +106,26 @@ describe('election-specific values', () => {
         if (text.includes(value)) found.push(`${path.relative(ROOT, file)}: ${value}`);
       }
     }
+    expect(found).toEqual([]);
+  });
+
+  // A topic's lastmod is its lastVerified date, which is not the election's
+  // (see electionValues), so it is left out of the check.
+  it('appear in neither the generated robots.txt nor the sitemap', async () => {
+    const sitemap = sitemapXml(await readSitemapTopics(ROOT)).replace(
+      /<lastmod>[^<]*<\/lastmod>/g,
+      '',
+    );
+    const files = {
+      'robots.txt': robotsTxt({ preview: false }),
+      'robots.txt (preview)': robotsTxt({ preview: true }),
+      'sitemap.xml': sitemap,
+    };
+    const found = Object.entries(files).flatMap(([name, text]) =>
+      electionValues()
+        .filter((value) => text.includes(value))
+        .map((value) => `${name}: ${value}`),
+    );
     expect(found).toEqual([]);
   });
 });

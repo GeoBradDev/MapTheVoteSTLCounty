@@ -19,6 +19,14 @@ const SHELL =
   '<script type="module" crossorigin src="/assets/index-abc123.js"></script>' +
   '</head><body><div id="root"></div></body></html>';
 
+const PREVIEW_SHELL = SHELL.replace('</head>', '<meta name="robots" content="noindex"></head>');
+const ROBOTS = 'User-agent: *\nAllow: /\nSitemap: https://mapthevotestl.com/sitemap.xml\n';
+const PREVIEW_ROBOTS = 'User-agent: *\nDisallow: /\n';
+const SITEMAP =
+  '<?xml version="1.0" encoding="UTF-8"?>\n' +
+  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' +
+  '<url><loc>https://mapthevotestl.com/</loc></url></urlset>\n';
+
 const GOOD_HEADERS = {
   'referrer-policy': 'no-referrer',
   'x-content-type-options': 'nosniff',
@@ -27,9 +35,28 @@ const GOOD_HEADERS = {
 };
 
 // A host that behaves like the Render Blueprint (render.yaml), with overrides per test.
-function stubHost({ deepLink = 'shell', asset = 'js', headers = true } = {}) {
+// `preview` serves what a pull request preview build ships; `robots` and
+// `sitemap` set to 'missing' leave those files out, so the rewrite answers
+// them with the shell, as Render does.
+function stubHost({
+  deepLink = 'shell',
+  asset = 'js',
+  headers = true,
+  preview = false,
+  robots = preview ? 'preview' : 'production',
+  sitemap = preview ? 'missing' : 'xml',
+} = {}) {
+  const shell = preview ? PREVIEW_SHELL : SHELL;
   return createServer((req, res) => {
     const common = headers ? GOOD_HEADERS : {};
+    if (req.url === '/robots.txt' && robots !== 'missing') {
+      res.writeHead(200, { ...common, 'content-type': 'text/plain; charset=utf-8' });
+      return res.end(robots === 'preview' ? PREVIEW_ROBOTS : ROBOTS);
+    }
+    if (req.url === '/sitemap.xml' && sitemap !== 'missing') {
+      res.writeHead(200, { ...common, 'content-type': 'application/xml' });
+      return res.end(SITEMAP);
+    }
     if (req.url === '/assets/index-abc123.js') {
       if (asset === 'html') {
         res.writeHead(200, { ...common, 'content-type': 'text/html' });
@@ -52,7 +79,7 @@ function stubHost({ deepLink = 'shell', asset = 'js', headers = true } = {}) {
         'content-type': 'text/html; charset=utf-8',
         ...(headers && { 'cache-control': 'no-cache' }),
       });
-      return res.end(SHELL);
+      return res.end(shell);
     }
     res.writeHead(404, { 'content-type': 'text/html' });
     res.end('Not Found');
@@ -89,8 +116,57 @@ describe('smoke test against stub hosts', () => {
       'GET / returns the app shell',
       'hard load of /p/CC007 returns the app shell',
       'hashed asset returns JavaScript',
+      '/robots.txt is text naming the sitemap',
+      '/sitemap.xml is XML, not the app shell',
       'headers on /',
       'headers on the hashed asset',
+    ]);
+  });
+
+  it('fails when robots.txt is missing and the shell answers it', async () => {
+    server = stubHost({ robots: 'missing' });
+    const results = await runSmoke(await listen(server));
+
+    expect(failedChecks(results)).toEqual(['/robots.txt is text naming the sitemap']);
+  });
+
+  it('fails when robots.txt names no sitemap', async () => {
+    server = stubHost({ robots: 'preview' });
+    const results = await runSmoke(await listen(server));
+
+    expect(failedChecks(results)).toEqual(['/robots.txt is text naming the sitemap']);
+  });
+
+  it('fails when the sitemap is missing and the shell answers it', async () => {
+    server = stubHost({ sitemap: 'missing' });
+    const results = await runSmoke(await listen(server));
+
+    expect(failedChecks(results)).toEqual(['/sitemap.xml is XML, not the app shell']);
+  });
+
+  it('checks a pull request preview for disallow-all and noindex with preview: true', async () => {
+    server = stubHost({ preview: true });
+    const results = await runSmoke(await listen(server), { preview: true });
+
+    expect(failedChecks(results)).toEqual([]);
+    expect(results.map((r) => r.name)).toEqual([
+      'GET / returns the app shell',
+      'hard load of /p/CC007 returns the app shell',
+      'hashed asset returns JavaScript',
+      '/robots.txt keeps every crawler out',
+      'the app shell is marked noindex',
+      'headers on /',
+      'headers on the hashed asset',
+    ]);
+  });
+
+  it('fails a preview check against a production host', async () => {
+    server = stubHost();
+    const results = await runSmoke(await listen(server), { preview: true });
+
+    expect(failedChecks(results)).toEqual([
+      '/robots.txt keeps every crawler out',
+      'the app shell is marked noindex',
     ]);
   });
 
@@ -137,7 +213,7 @@ describe('smoke test against stub hosts', () => {
     const results = await runSmoke(await listen(server), { checkHeaders: false });
 
     expect(failedChecks(results)).toEqual([]);
-    expect(results).toHaveLength(3);
+    expect(results).toHaveLength(5);
   });
 
   it('fails instead of throwing when the host is unreachable', async () => {
@@ -165,7 +241,19 @@ describe('smoke test CLI', () => {
     server = stubHost();
     const { stdout } = await promisify(execFile)('node', [SCRIPT, await listen(server)]);
 
-    expect(stdout).toContain('5 of 5 checks passed');
+    expect(stdout).toContain('7 of 7 checks passed');
+  });
+
+  it('runs the preview checks with --preview', async () => {
+    server = stubHost({ preview: true });
+    const { stdout } = await promisify(execFile)('node', [
+      SCRIPT,
+      await listen(server),
+      '--preview',
+    ]);
+
+    expect(stdout).toContain('PASS /robots.txt keeps every crawler out');
+    expect(stdout).toContain('7 of 7 checks passed');
   });
 
   it('exits 1 and prints the failure when a check fails', async () => {
@@ -193,12 +281,18 @@ describe('smoke test CLI', () => {
   });
 });
 
-describe('smoke test against a preview of the real build', () => {
+describe.each([
+  ['production', false],
+  ['pull request preview', true],
+])('smoke test against a vite preview of the real %s build', (_, isPreview) => {
   let outDir;
   let server;
+  const before = process.env.IS_PULL_REQUEST;
 
   beforeAll(async () => {
     outDir = await mkdtemp(path.join(os.tmpdir(), 'mapthevote-smoke-'));
+    if (isPreview) process.env.IS_PULL_REQUEST = 'true';
+    else delete process.env.IS_PULL_REQUEST;
     const config = {
       root: ROOT,
       configFile: path.join(ROOT, 'vite.config.js'),
@@ -210,14 +304,23 @@ describe('smoke test against a preview of the real build', () => {
   }, 60_000);
 
   afterAll(async () => {
+    if (before === undefined) delete process.env.IS_PULL_REQUEST;
+    else process.env.IS_PULL_REQUEST = before;
     await server?.close();
     if (outDir) await rm(outDir, { recursive: true, force: true });
   });
 
-  it('passes the shell, deep link and asset checks', async () => {
+  it('passes every check for that kind of build', async () => {
     const url = server.resolvedUrls.local[0];
-    const results = await runSmoke(url, { checkHeaders: false });
+    const results = await runSmoke(url, { checkHeaders: false, preview: isPreview });
 
     expect(failedChecks(results)).toEqual([]);
+  });
+
+  it('fails the checks for the other kind of build', async () => {
+    const url = server.resolvedUrls.local[0];
+    const results = await runSmoke(url, { checkHeaders: false, preview: !isPreview });
+
+    expect(failedChecks(results)).toHaveLength(2);
   });
 });

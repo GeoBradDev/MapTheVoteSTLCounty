@@ -34,6 +34,8 @@ const PROBE_PATHS = [
   ASSET_PATH,
   '/assets/index-abc123.css',
   '/sw.js',
+  '/robots.txt',
+  '/sitemap.xml',
   '/manifest.webmanifest',
   '/favicon.ico',
   '/no-such-page',
@@ -186,6 +188,12 @@ describe('render.yaml headers', () => {
 
   it('always revalidates the service worker', () => {
     expect(headersFor(site.headers, '/sw.js').get('cache-control')).toBe('no-cache');
+  });
+
+  // Short enough that a fix reaches crawlers within the hour; not no-cache,
+  // which would send every crawler's request to Render's origin.
+  it.each(['/robots.txt', '/sitemap.xml'])('caches %s for an hour', (requestPath) => {
+    expect(headersFor(site.headers, requestPath).get('cache-control')).toBe('public, max-age=3600');
   });
 
   it('allows geolocation for the page itself only', () => {

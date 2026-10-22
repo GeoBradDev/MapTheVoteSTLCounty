@@ -15,7 +15,7 @@ Contents: [Nonpartisan statement](#nonpartisan-statement) ·
 [Privacy statement](#privacy-statement) · [Disclaimer](#disclaimer) ·
 [Development](#development) · [Data sources](#data-sources) ·
 [Updating for a new election](#updating-for-a-new-election) · [Deploy](#deploy) ·
-[Contributing](#contributing) · [License](#license)
+[Search engines](#search-engines) · [Contributing](#contributing) · [License](#license)
 
 ## Nonpartisan statement
 
@@ -187,7 +187,8 @@ headers and the cache rules. `src/test/render.test.js` checks it.
   A change only under `docs/` or to `README.md` does not build. Markdown under `content/`
   still builds, because the learn topics are built from it.
 - **Previews:** every pull request gets its own preview URL. A Blueprint cannot set headers
-  per preview, so previews send the production headers and no `X-Robots-Tag: noindex`.
+  per preview, so previews send the production headers and no `X-Robots-Tag: noindex`. The
+  build keeps crawlers out of them instead (see [Search engines](#search-engines)).
 - **Change config in `render.yaml`, not the Dashboard.** A Blueprint sync overwrites header
   and route rules that `render.yaml` defines and fully replaces `buildFilter`. Rules that
   exist only in the Dashboard are kept, so deleting a rule from `render.yaml` does not
@@ -218,11 +219,46 @@ npm run smoke -- https://<site-or-preview-url>
 ```
 
 It checks that `/` and a hard load of `/p/CC007` return the app shell, that a hashed asset is
-served as JavaScript, and that the expected security and cache headers are present. It exits 1
-and lists what failed. Against a host that sets no headers, such as `npm run preview`, add
-`--skip-headers`. The expected headers are a table at the top of `scripts/smoke.mjs`; change it
+served as JavaScript, that `/robots.txt` is a text file with a `Sitemap:` line and
+`/sitemap.xml` is XML (not the app shell), and that the expected security and cache headers are
+present. It exits 1 and lists what failed. Against a host that sets no headers, such as
+`npm run preview`, add `--skip-headers`. Against a PR preview, add `--preview`: it then checks
+that `/robots.txt` says `Disallow: /` and the shell carries `noindex`, instead of the sitemap. The expected headers are a table at the top of `scripts/smoke.mjs`; change it
 when the host's header config changes. `src/test/render.test.js` checks `render.yaml` against
 that table, so change both together.
+
+## Search engines
+
+Every build writes `robots.txt`, and a production build writes `sitemap.xml`, both from
+`src/features/learn/content/searchEngines.js` (a Vite plugin), so neither file is kept by hand.
+
+- **Indexed:** the home page, `/learn`, each topic at `/learn/<id>` and `/privacy`. These are
+  the sitemap's entries, as absolute `https://mapthevotestl.com` URLs from `siteUrl` in
+  `src/config/site.js`. The topics come from the topic files under `content/en/learn/`, so a
+  new topic is listed on the next build. A topic's `<lastmod>` is its `lastVerified` date; the
+  other pages have none.
+- **Not in the sitemap:** precinct pages (`/p/<code>`). `robots.txt` does not disallow them:
+  a disallowed URL can still be indexed from links, without its content, and a crawler cannot
+  see a `noindex` on a page it may not fetch. Whether they carry `noindex` is #98.
+- **PR previews:** Render sets `IS_PULL_REQUEST=true` in a preview build. The build then
+  writes a `robots.txt` of `User-agent: *` / `Disallow: /`, adds
+  `<meta name="robots" content="noindex">` to `index.html` and writes no sitemap. A local
+  build and CI build as production.
+- **The `onrender.com` copy:** the service also answers at its default `onrender.com`
+  address. Render can turn that address off once a service has a custom domain (it then
+  answers 404): the **Render Subdomain** toggle under **Custom Domains** in the service's
+  Settings, or `renderSubdomainPolicy: disabled` in the Blueprint. Render does not offer a
+  redirect, and its docs do not say whether turning it off affects PR previews, whose only
+  address is an `onrender.com` one, so `render.yaml` leaves it on. Try it in the Dashboard,
+  check that a new PR preview still loads, and then set it in `render.yaml`.
+- **Search Console and Bing (owner):** verify `mapthevotestl.com` with a DNS TXT record, not a
+  file or a meta tag in this repo. In [Google Search Console](https://search.google.com/search-console),
+  add a **Domain** property for `mapthevotestl.com`, add the TXT record it shows at the
+  domain registrar, then click **Verify**. In
+  [Bing Webmaster Tools](https://www.bing.com/webmasters), import the site from Search Console
+  or add it and verify it the same way with Bing's TXT record. In each, submit
+  `https://mapthevotestl.com/sitemap.xml` (Search Console: **Sitemaps**; Bing: **Sitemaps**,
+  **Submit sitemap**) and check that it is read without errors.
 
 ## Accessibility
 

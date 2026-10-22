@@ -45,18 +45,23 @@ do not say is safe for PR previews, whose only address is an `onrender.com` one.
 
 ## Files that change
 
-- `src/build/searchEngines.js` (new): `robotsTxt({ preview })`, `sitemapXml(topics)`,
+- `src/features/learn/content/searchEngines.js` (new): `robotsTxt({ preview })`, `sitemapXml(topics)`,
   `readSitemapTopics(root)` (English topic files parsed with `parseTopic`), and the Vite
   plugin `searchEngines({ preview })` that emits the files in `generateBundle` and adds the
   meta tag in `transformIndexHtml`. `preview` defaults to
   `process.env.IS_PULL_REQUEST === 'true'`.
-- `src/build/searchEngines.test.js` (new): unit tests plus real builds in both modes.
+- `src/features/learn/content/searchEngines.test.js` (new): unit tests plus real builds in both modes.
 - `src/features/learn/content/vitePlugin.js`: export `topicFiles` for reuse.
 - `vite.config.js`: register the plugin.
 - `render.yaml`, `src/test/render.test.js`: the two Cache-Control rules.
 - `scripts/smoke.mjs`, `src/test/smoke.test.js`: the robots and sitemap checks, `--preview`.
 - `src/test/election-hardcoding.test.js`: check the generated files.
 - `README.md`: Search engines section; Deploy (previews) and Smoke test lines.
+
+Revision during implementation: the plugin first lived in `src/build/`, but
+`src/features/learn/topics.test.js` fails any app file outside `src/features/learn/content/`
+that imports the build-time topic parsers, so it moved next to the learn content plugin, as
+the issue suggests.
 
 ## Order of work
 
@@ -80,7 +85,7 @@ do not say is safe for PR previews, whose only address is an `onrender.com` one.
 
 ## Proof
 
-- Criteria 1 to 4: `src/build/searchEngines.test.js` (unit and real builds in both modes).
+- Criteria 1 to 4: `src/features/learn/content/searchEngines.test.js` (unit and real builds in both modes).
 - Criterion 5: `src/test/render.test.js`.
 - Criterion 6: `src/test/smoke.test.js` (stub hosts and the real build preview).
 - Criterion 7: `src/test/election-hardcoding.test.js`.
