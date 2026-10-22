@@ -60,7 +60,7 @@ Domain skills:
    (`phoneSource`, cited next to the rule's sources), and no election-specific value is
    written elsewhere in `src/`.
 6. Nonpartisan wording; links only to official hosts (`revisor.mo.gov`, `sos.mo.gov`,
-   `voteroutreach.sos.mo.gov`); lint, format, tests, build, e2e and perf all pass.
+   `voteroutreach.sos.mo.gov`, and the county board's `stlouiscovotes.info` for the phone number); lint, format, tests, build, e2e and perf all pass.
 
 ## Files that change
 
