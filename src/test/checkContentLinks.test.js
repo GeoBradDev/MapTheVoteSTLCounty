@@ -1,10 +1,17 @@
 // The content link checker (scripts/check-content-links.mjs), against a temp
 // content folder and a stubbed fetch.
 // @vitest-environment node
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { checkLinks, collectLinks, topicFiles } from '../../scripts/check-content-links.mjs';
+import {
+  checkLinks,
+  collectLinks,
+  configLinks,
+  metaRefreshTarget,
+  topicFiles,
+  writeSkipped,
+} from '../../scripts/check-content-links.mjs';
 
 // Dates here do not matter: the link checker skips the date checks.
 const topic = (sourceUrl, body = 'Text.[^a]') =>
@@ -128,5 +135,219 @@ describe('checkLinks', () => {
       attempts: 1,
     });
     expect(result).toMatchObject({ status: 'fail', detail: 'request failed: no answer in 10 ms' });
+  });
+});
+
+// A page the fake fetch answers with, at its final URL.
+const page = (body, { status = 200, url, headers = {} } = {}) => {
+  const res = new Response(body, {
+    status,
+    headers: { 'content-type': 'text/html; charset=UTF-8', ...headers },
+  });
+  if (url) Object.defineProperty(res, 'url', { value: url });
+  return res;
+};
+
+const html = (head) =>
+  `<!DOCTYPE html><html><head>${head}<title>x</title></head><body></body></html>`;
+
+describe('metaRefreshTarget', () => {
+  const base = 'https://a.gov/page/';
+  it('reads the target in any attribute order, letter case and quoting', () => {
+    expect(
+      metaRefreshTarget(
+        html('<meta http-equiv="refresh" content="0; URL=https://b.gov/x/" />'),
+        base,
+      ),
+    ).toBe('https://b.gov/x/');
+    expect(
+      metaRefreshTarget(html("<META CONTENT='5;url=/other' HTTP-EQUIV='Refresh'>"), base),
+    ).toBe('https://a.gov/other');
+    expect(
+      metaRefreshTarget(html('<meta http-equiv=refresh content="0;url=\'next\'">'), base),
+    ).toBe('https://a.gov/page/next');
+  });
+
+  it('finds nothing in a page without a refresh, or one that only reloads', () => {
+    expect(metaRefreshTarget(html('<meta charset="utf-8">'), base)).toBeNull();
+    expect(metaRefreshTarget(html('<meta http-equiv="refresh" content="30">'), base)).toBeNull();
+  });
+});
+
+describe('checkLinks with page bodies', () => {
+  const one = [{ url: 'https://a.gov/page/', files: ['f'] }];
+  const run = (res, links = one) =>
+    checkLinks(links, { fetch: async () => res, attempts: 1, retryDelayMs: 0 });
+
+  it('fails a 200 page with a meta refresh to another host', async () => {
+    const [result] = await run(
+      page(
+        html(
+          '<meta http-equiv="refresh" content="0; URL=https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/" />',
+        ),
+        { url: 'https://a.gov/page/' },
+      ),
+    );
+    expect(result).toMatchObject({
+      status: 'fail',
+      detail:
+        'meta refresh to https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/',
+    });
+  });
+
+  it('fails a meta refresh to another path on the same host', async () => {
+    const [result] = await run(
+      page(html('<meta http-equiv="refresh" content="0; url=/home/">'), {
+        url: 'https://a.gov/page/',
+      }),
+    );
+    expect(result).toMatchObject({ status: 'fail', detail: 'meta refresh to https://a.gov/home/' });
+  });
+
+  it('passes a refresh to the same page, or one that only reloads itself', async () => {
+    const same = await run(
+      page(html('<meta http-equiv="refresh" content="60; url=https://a.gov/page/#top">'), {
+        url: 'https://a.gov/page/',
+      }),
+    );
+    expect(same[0]).toMatchObject({ status: 'pass', detail: 'HTTP 200' });
+    const reload = await run(
+      page(html('<meta http-equiv="refresh" content="300">'), { url: 'https://a.gov/page/' }),
+    );
+    expect(reload[0]).toMatchObject({ status: 'pass', detail: 'HTTP 200' });
+  });
+
+  it('does not read a body that is not HTML', async () => {
+    const pdf = new Response('<meta http-equiv="refresh" content="0; url=https://b.gov/">', {
+      status: 200,
+      headers: { 'content-type': 'application/pdf' },
+    });
+    const [result] = await run(pdf);
+    expect(result).toMatchObject({ status: 'pass' });
+  });
+
+  it('reads at most 512 KB of a page', async () => {
+    const late = page(
+      `<html><head>${' '.repeat(600 * 1024)}<meta http-equiv="refresh" content="0; url=https://b.gov/"></head></html>`,
+    );
+    const [result] = await run(late);
+    expect(result).toMatchObject({ status: 'pass' });
+  });
+
+  it('skips a 403 bot challenge without retrying it', async () => {
+    let calls = 0;
+    const challenge = async () => {
+      calls += 1;
+      return page('<!DOCTYPE html><title>Just a moment...</title>', {
+        status: 403,
+        headers: { 'cf-mitigated': 'challenge', server: 'cloudflare' },
+      });
+    };
+    const [result] = await checkLinks(one, { fetch: challenge, attempts: 3, retryDelayMs: 0 });
+    expect(result).toMatchObject({
+      status: 'skip',
+      detail: 'bot challenge, check by hand in a browser (HTTP 403)',
+    });
+    expect(calls).toBe(1);
+  });
+
+  it('skips a 403 challenge page that names the Cloudflare challenge platform', async () => {
+    const [result] = await run(
+      page(
+        '<html><head><title>Just a moment...</title></head><body><script src="/cdn-cgi/challenge-platform/h/b/orchestrate/chl_page/v1"></script></body></html>',
+        { status: 403 },
+      ),
+    );
+    expect(result).toMatchObject({ status: 'skip' });
+  });
+
+  it('fails a plain 403', async () => {
+    const [result] = await run(page('<html><body>Forbidden</body></html>', { status: 403 }));
+    expect(result).toMatchObject({ status: 'fail', detail: 'HTTP 403' });
+  });
+
+  it('fails a config URL that refreshes away', async () => {
+    const config = { countySiteUrl: 'https://board.gov/' };
+    const [result] = await checkLinks(configLinks(config), {
+      fetch: async () =>
+        page(html('<meta http-equiv="refresh" content="0; url=https://elsewhere.gov/">'), {
+          url: 'https://board.gov/',
+        }),
+      attempts: 1,
+    });
+    expect(result).toMatchObject({
+      url: 'https://board.gov/',
+      files: ['src/config/election.js (countySiteUrl)'],
+      status: 'fail',
+      detail: 'meta refresh to https://elsewhere.gov/',
+    });
+  });
+});
+
+describe('configLinks', () => {
+  it('collects every Url, Source and sources entry, but not the service root', () => {
+    const config = {
+      serviceRoot: 'https://services.example.com/rest/services',
+      layers: { precincts: 'x/FeatureServer/1' },
+      sampleBallotUrlPattern: /^https:\/\/x\.gov\//,
+      officialLookupUrl: 'https://lookup.gov/',
+      countySiteUrl: 'https://board.gov/',
+      earlyVoting: { sources: ['https://hours.gov/'], lastVerified: '2026-01-01' },
+      electionDayHours: { sources: ['https://law.gov/a', 'https://board.gov/'] },
+      electionDayPollingPlace: { sources: ['https://law.gov/b'], phoneSource: 'https://app.gov/' },
+    };
+    expect(configLinks(config)).toEqual([
+      { url: 'https://lookup.gov/', files: ['src/config/election.js (officialLookupUrl)'] },
+      {
+        url: 'https://board.gov/',
+        files: [
+          'src/config/election.js (countySiteUrl)',
+          'src/config/election.js (electionDayHours.sources)',
+        ],
+      },
+      { url: 'https://hours.gov/', files: ['src/config/election.js (earlyVoting.sources)'] },
+      { url: 'https://law.gov/a', files: ['src/config/election.js (electionDayHours.sources)'] },
+      {
+        url: 'https://law.gov/b',
+        files: ['src/config/election.js (electionDayPollingPlace.sources)'],
+      },
+      {
+        url: 'https://app.gov/',
+        files: ['src/config/election.js (electionDayPollingPlace.phoneSource)'],
+      },
+    ]);
+  });
+
+  it('finds the county site and the lookup in the real config', async () => {
+    const { default: election } = await import('../config/election.js');
+    const urls = configLinks(election).map((l) => l.url);
+    expect(urls).toContain(election.countySiteUrl);
+    expect(urls).toContain(election.officialLookupUrl);
+    expect(urls).not.toContain(election.serviceRoot);
+  });
+});
+
+describe('writeSkipped', () => {
+  let dir;
+  beforeEach(async () => {
+    dir = await mkdtemp(path.join(tmpdir(), 'skipped-'));
+  });
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it('writes one skipped URL per line, with the files that use it', async () => {
+    const file = path.join(dir, 'skipped.txt');
+    await writeSkipped(file, [
+      { url: 'https://a.gov/', files: ['f1', 'f2'], status: 'skip', detail: 'd' },
+      { url: 'https://b.gov/', files: ['f'], status: 'pass', detail: 'HTTP 200' },
+    ]);
+    expect(await readFile(file, 'utf8')).toBe('https://a.gov/ (f1, f2)\n');
+  });
+
+  it('writes an empty file when nothing was skipped', async () => {
+    const file = path.join(dir, 'skipped.txt');
+    await writeSkipped(file, []);
+    expect(await readFile(file, 'utf8')).toBe('');
   });
 });
