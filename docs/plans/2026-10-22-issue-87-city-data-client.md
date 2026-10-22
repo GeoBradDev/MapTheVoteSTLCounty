@@ -18,7 +18,8 @@ style changes. dataviz, django and the rest: not applicable because no charts or
   'St._Louis_City_Election_Board'`): 56 sites, the same 56 by name and address as the City
   Board page's "Total 56 polling places" list. ElectionGeography layer 0 is a view of the
   same rows (`publicview = 'Yes'`, 57) without the ZIP fields. The Board office is the 57th
-  row: an early voting site, not on the page's Election Day list.
+  row: an early voting site, not on the page's Election Day list. Owner decision
+  (2026-10-22): leave it off the Election Day list.
 - **Early voting sites:** the same layer, `publicview = 'Yes' AND earlyvoting = 'Yes'`: 8
   sites, the page's 8 No Excuse Absentee sites (the owner's wait time filter).
 - **City boundary:** ElectionGeography layer 2, `districtid = 'City of St. Louis'`: the
@@ -66,7 +67,10 @@ style changes. dataviz, django and the rest: not applicable because no charts or
    (`PrecinctPage.test.jsx` guards this). Revised during implementation: the plan first
    wired the polls, early voting sites and outline.
 10. `docs/data.md` "St. Louis City" section records every layer, field, filter and the
-    evidence above, so #57 can close by pointing at it.
+    evidence above, so #57's layer questions for this client can close by pointing at it.
+    Revised in the docs review: two #57 questions outside this client stay open and the
+    section names them (what the Assigned Polling Place Lookup calls, and whether the U.S.
+    House "First District" polygon follows the 2025 map, for #90).
 11. `docs/progress.md` gets the coordinator's #86 line under Batch 4.
 
 ## Files that change

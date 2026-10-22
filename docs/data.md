@@ -787,7 +787,7 @@ the code:
   The County shape never matches it (a County code ends in 3 digits after its letters).
 
 The City's precincts are layer 1 of `ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a`
-in the City Board's ArcGIS org (`HZXbCkpCSqbGd0vK`). Its `precinctid` reads
+in the City's ArcGIS org (`HZXbCkpCSqbGd0vK`). Its `precinctid` reads
 `W <ward> P <precinct>` with no zero padding, like `W 1 P 12`. Checked on 2026-10-22: 207
 precincts, every one in that form, wards 1 to 14, precincts 1 to 21 within a ward, no
 duplicates. So `W01P12` is `W 1 P 12`. Two digits each leaves room for a ward or precinct
@@ -892,8 +892,9 @@ fields (`pocname`, `pocemail`, `pocphone`).
   public row is the Board office, 300 N Tucker Blvd: an early voting site the page lists only
   under No Excuse Absentee, with weekday and last-Saturday hours, not on the Election Day
   list. The row's `operhours` reads `6:00 AM - 7:00 PM` like every other row, and the page's
-  map (below) shows it, so ask the City Board before Election Day if the page changes;
-  `pollsListed` (56) in the config makes the health check warn when the filter's count moves.
+  map (below) shows it. Owner decision (2026-10-22): leave the Board office off the Election
+  Day list, matching the page. `pollsListed` (56) in the config makes the health check warn
+  when the filter's count moves.
   7 of the 56 have no `pollingPlaceZipCode` (Srebrenica Genocide association, Busch Student
   Center, Julia Davis Library, Machacek Library, McDonnell Medical Sciences Building, St. Joan of
   Arc, West Side MB Church): the page lists ZIPs for them, the layer does not, so the cards show
