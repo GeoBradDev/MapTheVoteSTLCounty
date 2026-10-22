@@ -34,7 +34,9 @@ html     = "Sample Ballot: <a href=https://stlouiscovotes.maps.arcgis.com/sharin
 - Precinct codes are a 2 or 3 letter township prefix plus 3 digits
   (`/^[A-Z]{2,3}\d{3}$/`, for example `CC007`, `BON001`), checked against all 1213.
 - File name pattern: a dash after the prefix (`CC007` becomes `CC-007.pdf`,
-  `BON001` becomes `BON-001.pdf`). All 974 match. Useful for display only.
+  `BON001` becomes `BON-001.pdf`). All 974 match. The app relies on it (#82): the card
+  shows a link only when its file name names the precinct, ignoring case, hyphens and
+  `.pdf`, and otherwise links the county's official lookup.
 - Coverage: all 974 `In Election` precincts have a `.pdf` link in `html`.
 - For the 239 `Nonresidential Precinct` rows, `html` holds plain text instead of
   a link: "This precinct has no recognized residential addresses for voting.
@@ -55,7 +57,7 @@ comments, a few formatting tags, and the attributes `href`, `target`, `title` an
 HTML; a test fails on `dangerouslySetInnerHTML` anywhere under `src/`.
 The data health check (`node scripts/check-config.mjs`, see the README) runs the parser
 over every precinct on the live layer and fails unless each `In Election` precinct has its
-own valid link and every other precinct a message. It also sends a `HEAD` request to 5
+own valid link whose file name names that precinct, and every other precinct a message. It also sends a `HEAD` request to 5
 random links and expects `application/pdf`.
 
 Do not use `lookup_view_sample_ballot`. Despite its name, it is a stale view of

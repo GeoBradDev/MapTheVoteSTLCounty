@@ -44,6 +44,9 @@ of scope here.
 - `src/test/checkConfig.test.js`: the healthy world's file names use the real form
   (`AB-001.pdf`, zero padded, as live data does); a new mismatch case; the shared-link case
   now also counts the precinct holding another precinct's file.
+- `README.md` (data health check) and `docs/data.md` (file name pattern, health check):
+  say the file name now decides whether the link shows, and that the check fails on a
+  mismatch. Added after review finder 1.
 
 ## Order of work
 1. Red tests for the matcher, the card and the health check. Commit them alone, freeze in
