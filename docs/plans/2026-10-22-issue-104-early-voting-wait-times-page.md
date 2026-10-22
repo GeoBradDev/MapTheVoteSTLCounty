@@ -60,8 +60,9 @@ Domain skills:
 5. A "Show map" button loads the MapLibre map on demand (never in the first load); each
    marker shows the row's list number; markers of sites with a count are filled by bin,
    the rest are plain; a legend names the unit and the bins and is hidden when no site has
-   a count. The bin colors are `--color-*` tokens, not red or blue, and each passes 3:1
-   against the basemap background (a test computes it).
+   a count. The bin colors are `--color-*` tokens, not red or blue, and each marker passes
+   3:1 against the basemap background through its fill or its ink outline (a test computes
+   it).
 6. A single `aria-live="polite"` status line says when the counts were last checked
    ("Line counts checked at 10:42 a.m."), changing at most every 5 minutes, or that they
    could not be loaded. The list itself is not a live region.
