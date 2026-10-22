@@ -208,12 +208,6 @@ export default function EarlyVotingCard({ code, origin, waitSource }) {
   // focused row; the current order applies once focus leaves (#27).
   const [held, setHeld] = useState(null);
   const listRef = useRef(null);
-  // Focus can leave the list with no blur reaching it (the focused row was
-  // removed, #84): let go of the held order once focus is elsewhere.
-  useEffect(() => {
-    if (held && !listRef.current?.contains(document.activeElement)) setHeld(null);
-  });
-
   useEffect(() => {
     if (showAll) focusRef.current?.focus();
   }, [showAll]);
@@ -237,6 +231,12 @@ export default function EarlyVotingCard({ code, origin, waitSource }) {
     });
   }, [loaded, countyWaits, waitsOn, sort, now]);
   const rows = held && ordered ? inHeldOrder(ordered, held) : ordered;
+  // Focus can leave the list with no blur reaching it (the focused row was
+  // removed, #84): when the rows change, let go of the held order if focus is
+  // elsewhere.
+  useEffect(() => {
+    if (held && !listRef.current?.contains(document.activeElement)) setHeld(null);
+  }, [held, ordered]);
   const first = election.nearbyPollCount;
   const shownRows = showAll ? rows : rows?.slice(0, first);
   const noCounts =
