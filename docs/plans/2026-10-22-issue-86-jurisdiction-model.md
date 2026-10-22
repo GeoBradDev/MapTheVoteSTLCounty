@@ -101,3 +101,19 @@ PR).
 - Live drive: `npm run build && npm run preview`, open `/p/CC007` (renders results with
   fixtures or live data), `/p/W01P12` (not found, City lookup link, no County precinct
   query), `/p/w01p12` (redirects), `/p/XYZ` (not found).
+
+## Revisions during implementation
+
+- The City board's site and lookup URLs are in `src/config/referrals.js`, not the City
+  block: `election.js` must load with no imports (the election window check copies it
+  alone), the referral test keeps each referral URL in `referrals.js` only, and the City
+  lookup page's URL starts with the board's. `src/data/jurisdictions.js` gives both
+  adapters `officialLookupUrl` and `boardSiteUrl`. The plan's `referrals.js` change is
+  an added `stlCityLookup` entry instead.
+- The County adapter calls through to `arcgis.js` when called, so the cards' tests that
+  replace part of `arcgis.js` keep working unchanged.
+- The results cards read the adapter from a React context (`jurisdictionContext.js`)
+  rather than props, so cards rendered alone default to the County.
+- A well-formed City code that is not found keeps "Precinct W01P12" as its heading, as an
+  unknown County code does; the title says not found.
+- First-load JS grew 579 bytes gzipped (119,956 to 120,535 of 122,880).
