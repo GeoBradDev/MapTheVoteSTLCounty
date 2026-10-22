@@ -14,6 +14,9 @@ import { DEFAULT_BASE_URL as PHOTON } from '../data/photon.js';
 import { BASEMAP_STYLE_URL } from '../features/lookup/basemap.js';
 import { ASSET_HEADERS, SHELL_HEADERS } from '../../scripts/smoke.mjs';
 import { SHELL_FILE } from '../prerender/plugin.js';
+import { outputFile } from '../prerender/outputFile.js';
+import { publicPaths } from '../config/publicPages.js';
+import { readSitemapTopics } from '../features/learn/content/searchEngines.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 const BASEMAP = new URL(BASEMAP_STYLE_URL).origin;
@@ -150,11 +153,22 @@ describe('render.yaml service', () => {
 });
 
 describe('render.yaml routes', () => {
-  // dist/index.html is the pre-rendered home page (#99); every path with no
-  // file (a precinct, an unknown path) gets the client-rendered shell.
-  it('rewrites every path to the app shell for client routing', () => {
-    expect(site.routes).toEqual([{ type: 'rewrite', source: '/*', destination: '/shell.html' }]);
-    expect(site.routes[0].destination).toBe(`/${SHELL_FILE}`);
+  // Render serves a directory's index.html only for the path with a trailing
+  // slash (the #99 spike on PR #127's preview), so each pre-rendered page but
+  // the home page needs its own rewrite, before the catch-all. One rule per
+  // page, not /learn/:topic, so an unknown topic still gets the shell and the
+  // app's not-found page. A new topic fails here until it has its rule.
+  it('rewrites each pre-rendered page to its file, then every other path to the shell', async () => {
+    const topics = await readSitemapTopics(ROOT);
+    const pages = publicPaths(topics.map((t) => t.id)).filter((p) => p !== '/');
+    expect(site.routes).toEqual([
+      ...pages.map((page) => ({
+        type: 'rewrite',
+        source: page,
+        destination: `/${outputFile(page)}`,
+      })),
+      { type: 'rewrite', source: '/*', destination: `/${SHELL_FILE}` },
+    ]);
   });
 });
 
