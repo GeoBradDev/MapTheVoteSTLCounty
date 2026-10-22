@@ -139,3 +139,8 @@ issue), City sites (#91), analytics (#70).
   miles" is a live sort, which reorders as `/early-voting` does (#104), and holds while focus
   is in the list. A count line arriving after the rows grows a row (content, not a load
   shift: Lighthouse CLS on `/p/CC007` is 0.000).
+- Review (finder 4): the wait loop, the sort and `WaitReport` now ship in the first load
+  (the card is not lazy): first-load JavaScript goes from about 117.6 KB to 120.0 KB gzipped
+  bytes of the 122,880-byte budget (`src/test/build.test.js` passes). The `src/App.jsx`
+  comment that said the loop stays out of the first load, and the `siteOrder.js` header, now
+  say so.

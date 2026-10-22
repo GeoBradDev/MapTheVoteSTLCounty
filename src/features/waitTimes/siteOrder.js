@@ -1,5 +1,6 @@
-// The wait times page's sort orders (#104) and the map's line count bins. A
-// sort is a sort, not advice: no order is named or shown as a recommendation.
+// The sort orders of the wait times page (#104) and the early voting card's
+// nearby sort (#105), and the map's line count bins. A sort is a sort, not
+// advice: no order is named or shown as a recommendation.
 
 /** How far "Shortest line within N miles" reaches, in miles. */
 export const NEARBY_MILES = 5;

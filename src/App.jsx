@@ -13,8 +13,10 @@ import LanguageSwitcher from './i18n/LanguageSwitcher.jsx';
 import { endHydration } from './hydrate.js';
 import { applyHead, pageHead } from './pageHead.js';
 
-// The wait times page (#104) loads on demand, so its code (and the wait time
-// loop) stays out of the first load's JavaScript budget (#27).
+// The wait times page (#104) loads on demand, so its code (the list, sorts
+// and map) stays out of the first load's JavaScript budget (#27). The wait
+// time loop itself is in the first load: the results page's early voting card
+// reads it (#105).
 const WaitTimesPage = lazy(() => import('./features/waitTimes/WaitTimesPage.jsx'));
 
 // The path as wouter reports it: decoded with decodeURI, or as is when that fails.
