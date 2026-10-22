@@ -20,6 +20,7 @@ import {
   isPastElection,
   parseArgs,
   randomSample,
+  report,
   runHealthCheck,
   warningLines,
 } from '../../scripts/check-config.mjs';
@@ -865,6 +866,47 @@ describe('wait time checks', () => {
     const off = healthyWorld();
     await run(off, { ...election, waitTimes: { ...election.waitTimes, enabled: false } });
     expect(off.calls.some((c) => c.url.startsWith(county) || c.url.startsWith(city))).toBe(false);
+  });
+});
+
+describe('report', () => {
+  const r = (name, status) => ({ name, status, detail: `${name} detail` });
+  const quiet = { log: () => {}, error: () => {} };
+  let dir;
+  beforeEach(async () => {
+    dir = await mkdtemp(path.join(tmpdir(), 'check-config-'));
+  });
+  afterEach(() => rm(dir, { recursive: true, force: true }));
+
+  it('writes the warnings file on a failing run too, so the issue gets them', async () => {
+    const file = path.join(dir, 'warnings.txt');
+    const code = report([r('a', 'fail'), r('b', 'warn'), r('c', 'warn')], {
+      warnings: file,
+      ...quiet,
+    });
+    expect(code).toBe(1);
+    expect(await readFile(file, 'utf8')).toBe('b: b detail\nc: c detail\n');
+  });
+
+  // The workflow lists the file only when it is not empty (`[ -s ]`).
+  it('leaves an empty file when nothing warned', async () => {
+    const file = path.join(dir, 'warnings.txt');
+    expect(report([r('a', 'pass')], { warnings: file, ...quiet })).toBe(0);
+    expect(await readFile(file, 'utf8')).toBe('');
+  });
+
+  it('prints one line per check and says how many warned', () => {
+    const lines = [];
+    const code = report([r('a', 'pass'), r('b', 'warn')], {
+      log: (line) => lines.push(line),
+      error: (line) => lines.push(line),
+    });
+    expect(code).toBe(0);
+    expect(lines).toEqual([
+      'PASS a: a detail',
+      'WARN b: b detail',
+      '\nAll 2 checks passed, 1 with a warning.',
+    ]);
   });
 });
 

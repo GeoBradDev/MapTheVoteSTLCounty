@@ -88,9 +88,9 @@ jobs:
         timeout-minutes: 30
         run: node scripts/check-config.mjs --warnings "$RUNNER_TEMP/wait-warnings.txt"
 
-      # A warning (early voting sites open with no fresh line count, or County
-      # reports that match no site) never fails the run, so list it on the
-      # run's summary.
+      # A warning (a wait time source that looks quiet or broken, such as
+      # early voting sites open with no fresh line count) never fails the run,
+      # so list it on the run's summary.
       - name: List warnings
         if: ${{ !cancelled() && steps.window.outputs.active == 'true' }}
         run: |

@@ -776,18 +776,30 @@ async function main(args) {
   const config = { ...election, layers: { ...election.layers, ...layers } };
   console.log(`Checking ${config.electionName} layers under ${config.serviceRoot}`);
   const results = await runHealthCheck(config, { ballotSample });
+  return report(results, { warnings });
+}
+
+/**
+ * Prints the results, writes the warnings file when asked (before deciding
+ * the exit code, so a failing run's issue still gets its warnings; empty when
+ * nothing warned) and returns the exit code.
+ * @param {{ name: string, status: string, detail: string }[]} results
+ * @param {{ warnings?: string, log?: (line: string) => void, error?: (line: string) => void }} [options]
+ * @returns {number}
+ */
+export function report(results, { warnings, log = console.log, error = console.error } = {}) {
   for (const { name, status, detail } of results) {
-    console.log(`${status.toUpperCase().padEnd(4)} ${name}: ${detail}`);
+    log(`${status.toUpperCase().padEnd(4)} ${name}: ${detail}`);
   }
   const warned = warningLines(results);
   if (warnings) writeFileSync(warnings, warned.map((line) => `${line}\n`).join(''));
   const failed = results.filter((r) => r.status === 'fail' || r.status === 'skip');
   if (exitCodeFor(results)) {
-    console.error(`\n${failed.length} of ${results.length} checks did not pass.`);
+    error(`\n${failed.length} of ${results.length} checks did not pass.`);
     return 1;
   }
   const note = warned.length ? `, ${warned.length} with a warning` : '';
-  console.log(`\nAll ${results.length} checks passed${note}.`);
+  log(`\nAll ${results.length} checks passed${note}.`);
   return 0;
 }
 

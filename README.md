@@ -511,7 +511,7 @@ in it, keeping focus and what the page has loaded. The site always starts in Eng
 Before each election, after editing `src/config/election.js`, check the live layers it names:
 
 ```sh
-node scripts/check-config.mjs [--layer <key>=<path>] [--ballot-sample <n|all>]
+node scripts/check-config.mjs [--layer <key>=<path>] [--ballot-sample <n|all>] [--warnings <file>]
 ```
 
 It checks that each configured layer answers with the geometry and every field the app reads,
