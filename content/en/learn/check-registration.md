@@ -29,7 +29,7 @@ You must be registered to vote.[^sos-voting-rights] Here is how to check your re
 - Go to the Secretary of State's
   [Register to Vote page](https://www.sos.mo.gov/elections/goVoteMissouri/register) and choose
   "Check Your Voter Registration."[^sos-register]
-- Or call the St. Louis County Board of Elections at 314-615-1800.[^county-polls-app]
+- Questions? Call the St. Louis County Board of Elections at 314-615-1800.[^county-polls-app]
 
 ## Who can register in Missouri
 
