@@ -183,13 +183,20 @@ The site is a Render static site defined by the Blueprint in `render.yaml`: the 
 publish directory, the custom domain (`mapthevotestl.com`), the SPA rewrite, the security
 headers and the cache rules. `src/test/render.test.js` checks it.
 
-- **Files and the rewrite:** the build pre-renders the public pages (see
+- **Files and the rewrites:** the build pre-renders the public pages (see
   [Search engines](#search-engines)): `dist/index.html` is the home page, and `learn/`,
-  `learn/<id>/` and `privacy/` each hold an `index.html`, which Render serves at the path
-  with or without the trailing slash. `dist/shell.html` is the empty client-rendered app
-  shell. Render never rewrites a path where a file exists, and rewrites every other path,
-  precinct pages included, to `/shell.html`. `npm run preview` answers paths the same way
-  (`src/prerender/plugin.js`).
+  `learn/<id>/` and `privacy/` each hold an `index.html`. `dist/shell.html` is the empty
+  client-rendered app shell. Render never rewrites a path where a file exists, but it serves
+  a directory's `index.html` only for the path with a trailing slash (`/learn/`, not
+  `/learn`), so `render.yaml` rewrites each pre-rendered page's path to its file, one rule per
+  page, and then every other path, precinct pages included, to `/shell.html`. A new topic needs
+  its own rule; `src/test/render.test.js` fails until it has one. `npm run preview` answers
+  paths the same way (`src/prerender/plugin.js`).
+- **Route changes show only on production.** A PR preview keeps the service's existing
+  route rules, so a change to `routes` in `render.yaml` cannot be checked before merge. Merge
+  it outside election weeks, then run `npm run smoke -- https://mapthevotestl.com` once the
+  deploy finishes; if a check fails, revert the merge commit on `main` (a Dashboard rollback
+  does not roll back routes, below).
 
 - **Deploys:** a push to `main` deploys after CI passes (`autoDeployTrigger: checksPass`).
   A change only under `docs/` or to `README.md` does not build. Markdown under `content/`
@@ -415,6 +422,9 @@ any `.gov` site (the county board's website is on the county's `.gov` site) and 
 ArcGIS portal, listed in
 `src/features/learn/content/officialSources.js`; add a host there in a reviewed change, never
 per topic.
+
+A new topic also needs its rewrite in `render.yaml` (see [Deploy](#deploy)); the tests fail
+until it has one.
 
 For each new election, re-read every topic's sources, then update its `election` and
 `lastVerified`; the build fails until you do. `src/features/learn/topics.js` loads the topics
