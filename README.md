@@ -158,7 +158,7 @@ may need new values too. Work on a branch and merge through the usual pull reque
    a `lastVerified` more than 60 days before Election Day, so do this step within that window.
    See [Learn content](#learn-content).
 6. **Re-record the fixtures** with `node scripts/record-fixtures.mjs` (or
-   `node scripts/record-fixtures.mjs city-` for the City layers alone), so the tests and the
+   `node scripts/record-fixtures.mjs city-` for the City layer and City geocoder fixtures alone), so the tests and the
    address search check below use the new layers. Pick new sample precincts in it if the old ones are gone.
    That script skips the early voting wait fixtures (`county-waits-*.json`,
    `city-waits-*.json`): a useful fresh fixture needs reports made during open hours, so once
@@ -551,7 +551,7 @@ no site (counted, never named: the senders are user names), City hours text the 
 read, or a City filter that matches no row are a WARN: printed, written to `--warnings <file>` if given, and never a failure. It
 prints PASS, FAIL, SKIP or WARN per check and exits 1 on any failure or skip; a wrong
 layer path fails with the config key, the path and the service's error. `--layer` tries another
-path for one layer without editing the config. `--ballot-sample` checks that many random sample
+path for one County layer without editing the config. `--ballot-sample` checks that many random sample
 ballot links instead of 5, or every link with `all` (one request each to the county's portal, so
 run it by hand, for example once before Election Day, not on the schedule). The thresholds and known points are at the top of
 the script.

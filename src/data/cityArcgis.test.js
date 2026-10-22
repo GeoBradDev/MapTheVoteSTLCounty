@@ -173,6 +173,17 @@ describe('getCityPrecinctAtPoint', () => {
     expect(await client.getCityPrecinctAtPoint(COUNTY_POINT)).toBeNull();
   });
 
+  it.each(['Ward one', 'W 1 P 12 ', 'W1P12'])(
+    'rejects the precinct ID %j, whose code would find no precinct, with ServiceError',
+    async (id) => {
+      const odd = { features: [{ attributes: { [city.precinctField]: id } }] };
+      fetchMock.mockResolvedValue(respond(odd));
+      await expect(client.getCityPrecinctAtPoint(CITY_HALL)).rejects.toBeInstanceOf(
+        base.ServiceError,
+      );
+    },
+  );
+
   it('rejects a precinct ID that is not in the City form with ServiceError', async () => {
     const odd = { features: [{ attributes: { [city.precinctField]: 'Ward one' } }] };
     fetchMock.mockResolvedValue(respond(odd));

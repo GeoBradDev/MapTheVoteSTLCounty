@@ -810,7 +810,9 @@ City client is `src/data/cityArcgis.js`, with the same request rules as the Coun
 (plain fetch, one retry, coordinates only in a POST body). The layers, fields and filters are
 in the City block of `src/config/election.js`; `node scripts/check-config.mjs` checks them
 (Data health check in the README), and `node scripts/record-fixtures.mjs city-` re-records
-their fixtures (`docs/raw/fixtures/city-*.json`).
+their fixtures (`docs/raw/fixtures/city-precinct-*`, `city-districts-*`, `city-polls`,
+`city-early-voting-sites` and `city-boundary-*`) along with the City geocoder's
+(`city-geocode-*`, #58); the City wait fixtures are recorded by hand (Wait times above).
 
 **Official source.** The City Board of Election Commissioners' polling places page,
 `https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/polling-places/index.cfm`,

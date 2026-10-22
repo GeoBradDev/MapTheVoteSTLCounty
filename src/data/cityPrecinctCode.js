@@ -8,8 +8,9 @@ import { NotFound } from './arcgis.js';
  */
 export const CITY_PRECINCT_CODE = /^W\d{2}P\d{2}$/;
 
-// The layer's form, spaces optional, numbers 1 to 99 without padding.
-const CITY_PRECINCT_ID = /^W\s*([1-9]\d?)\s*P\s*([1-9]\d?)$/;
+// The layer's form exactly, numbers 1 to 99 without padding: the form
+// cityPrecinctId writes, so a code made from an ID always finds it again.
+const CITY_PRECINCT_ID = /^W ([1-9]\d?) P ([1-9]\d?)$/;
 
 /**
  * The City precincts layer's ID for a City code: W01P12 is `W 1 P 12`.
@@ -25,13 +26,13 @@ export function cityPrecinctId(code) {
 
 /**
  * The URL code for a City precincts layer ID: `W 1 P 12` is W01P12. Null for
- * anything else.
+ * anything else, spacing included: the lookup by code asks for the exact ID.
  * @param {unknown} id
  * @returns {string | null}
  */
 export function cityPrecinctCode(id) {
   if (typeof id !== 'string') return null;
-  const match = CITY_PRECINCT_ID.exec(id.trim());
+  const match = CITY_PRECINCT_ID.exec(id);
   if (!match) return null;
   const [, ward, precinct] = match;
   return `W${ward.padStart(2, '0')}P${precinct.padStart(2, '0')}`;

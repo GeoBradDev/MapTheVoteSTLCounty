@@ -44,16 +44,15 @@ export const CITY_DISTRICT_FIELDS = Object.freeze([
  * The layer's code field (`precinctField`, like `W 1 P 12`) is kept as well.
  */
 
-// A precinct row with its URL code. A row whose ID is not in the City's form
-// is a broken layer, not a missing precinct.
+// A precinct row with its URL code. A row whose ID is not in the exact form
+// cityPrecinctId writes is a broken layer, not a missing precinct: its code
+// would open no precinct.
 function toPrecinct(attributes) {
+  // The ID as stored, before trimming: the lookup by code asks for it exactly.
+  const id = attributes[city.precinctField];
+  const code = cityPrecinctCode(id);
+  if (!code) throw new ServiceError(`Not a City precinct ID: ${JSON.stringify(id)}`);
   const precinct = normalize(attributes);
-  const code = cityPrecinctCode(precinct[city.precinctField]);
-  if (!code) {
-    throw new ServiceError(
-      `Not a City precinct ID: ${JSON.stringify(precinct[city.precinctField])}`,
-    );
-  }
   return { ...precinct, code };
 }
 
