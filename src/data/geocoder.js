@@ -66,8 +66,10 @@ export { GeocoderUnavailableError };
  *   hears "try again", not "no such address": the City check failing, the
  *   county's precinct check failing (find() answers `unavailable`), the
  *   fallback down after a county no match, no county source answering and
- *   the fallback finding nothing, or the City source failing and the
- *   fallback finding nothing. It never turns a failure into a place.
+ *   the fallback finding nothing, the City source failing and the
+ *   fallback finding nothing, or no county source answering the twin
+ *   check for a City place (`twinFree`). It never turns a failure into a
+ *   place.
  */
 
 /** Who to credit for address search, shown next to the address box. */

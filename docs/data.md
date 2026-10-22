@@ -685,8 +685,9 @@ answer with the typed text itself:
 - **A City match:** a `PointAddress` (a City parcel; interpolated `StreetAddress` ranges do
   not count) with the typed house number and whole street under the strict rules
   (`matchesStreet` in `addressMatch.js`), and the typed ZIP when one is typed (a parcel
-  with no ZIP is not ruled out). The answer is that City place, so the voter gets the City
-  precinct (#88; the City referral before it), never the county precinct. A typed town does not rule a City parcel out.
+  with no ZIP is found, but gives no match, as the twin rules below say). The answer is
+  that City place, so the voter gets the City precinct (#88; the City referral before it),
+  never the county precinct. A typed town does not rule a City parcel out.
 - **The county and the City list the address in one ZIP** (the City parcel's ZIP is the
   ZIP of the place found: 6135 Horton Pl 63133, county UNV202; 1 Brookings Dr 63130,
   Washington University, county HAD018): no match, since the lookup cannot tell which one
