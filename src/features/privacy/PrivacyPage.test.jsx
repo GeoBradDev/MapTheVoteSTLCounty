@@ -67,6 +67,8 @@ describe('PrivacyPage', () => {
       new URL(city.serviceRoot).host,
       `every ${refreshSeconds} seconds`,
       'carry nothing about you',
+      // The results page's early voting card asks them too (#105).
+      "the early voting part of a precinct's results while early voting is running",
     ]) {
       expect(item).toHaveTextContent(text);
     }

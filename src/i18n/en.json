@@ -226,7 +226,12 @@
       "or": "or the",
       "countySite": "St. Louis County Board of Elections website",
       "failed": "We could not load early voting sites right now. Find them with the",
-      "none": "We could not find early voting sites. Find them with the"
+      "none": "We could not find early voting sites. Find them with the",
+      "waits": {
+        "nearest": "Nearest first",
+        "none": "No current line count for these sites.",
+        "seeAll": "See wait times at every early voting site"
+      }
     },
     "districts": {
       "labels": {
@@ -378,7 +383,7 @@
       },
       "waitTimes": {
         "heading": "Early voting wait times",
-        "text": "The early voting wait times page asks the line count layers of the {countyBoard} ({countyLayers}) and the {cityBoard} ({cityLayers}), both on Esri's ArcGIS Online, for the current counts every {seconds} seconds while it is open on your screen. These requests carry nothing about you: no address, location or precinct."
+        "text": "The early voting wait times page, and the early voting part of a precinct's results while early voting is running, ask the line count layers of the {countyBoard} ({countyLayers}) and the {cityBoard} ({cityLayers}), both on Esri's ArcGIS Online, for the current counts every {seconds} seconds while they are open on your screen. These requests carry nothing about you: no address, location or precinct."
       },
       "website": {
         "heading": "This website",

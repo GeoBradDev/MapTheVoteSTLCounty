@@ -219,6 +219,13 @@ export const copy = translated((t) => ({
     countySite: t('results.earlyVoting.countySite'),
     failed: t('results.earlyVoting.failed'),
     none: t('results.earlyVoting.none'),
+    // The line counts on the card (#105); the count lines and the sort's
+    // nearby option share the wait times page's text (waitTimesCopy.js).
+    waits: {
+      nearest: t('results.earlyVoting.waits.nearest'),
+      none: t('results.earlyVoting.waits.none'),
+      seeAll: t('results.earlyVoting.waits.seeAll'),
+    },
   },
   districts: {
     // Row labels, keyed like `districtFields` in the election config. Values

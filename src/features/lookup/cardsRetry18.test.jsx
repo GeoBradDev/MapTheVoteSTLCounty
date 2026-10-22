@@ -16,6 +16,9 @@ vi.mock('../../data/arcgis.js', () => ({
   getPolls: vi.fn(),
   getAbsenteeSites: vi.fn(),
   getPrecinctGeometry: vi.fn(),
+  // The early voting card's line counts (#105): none.
+  getCountyWaits: vi.fn(async () => []),
+  getCityWaits: vi.fn(async () => []),
 }));
 vi.mock('./precinctMapView.js', () => ({ createPrecinctMap: vi.fn() }));
 

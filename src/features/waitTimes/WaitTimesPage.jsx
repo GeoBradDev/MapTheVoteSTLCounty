@@ -4,7 +4,6 @@ import { usePageTitle } from '../../components/usePageTitle.js';
 import election from '../../config/election.js';
 import { getAbsenteeSites } from '../../data/arcgis.js';
 import { isFresh, layerMaxAgeMs } from '../../data/freshness.js';
-import { reportedTimeParts } from '../../data/waitTimes.js';
 import { focusHeadingOnArrival } from '../../hydrate.js';
 import { getDeviceLocation } from '../lookup/deviceLocation.js';
 import { earlyVotingStatus, formatLongDate, hoursOn, zonedNow } from '../lookup/earlyVoting.js';
@@ -17,6 +16,7 @@ import { earlyVotingSeason } from './earlyVotingSeason.js';
 import { NEARBY_MILES, orderSites, waitBin } from './siteOrder.js';
 import { useWaitTimes } from './useWaitTimes.js';
 import { canDrawMap } from './canDrawMap.js';
+import WaitReport from './WaitReport.jsx';
 import WaitTimesMap from './WaitTimesMap.jsx';
 import { copy } from './waitTimesCopy.js';
 
@@ -121,12 +121,7 @@ function SiteRow({ site, now, apple }) {
   return (
     <li className="border-t border-border pt-3 first:border-t-0 first:pt-0">
       <h3 className="font-semibold">{name}</h3>
-      <p className={site.wait ? 'font-semibold' : 'text-muted'}>
-        {site.wait
-          ? copy.count(site.wait.value, reportedTimeParts(site.wait, now).time)
-          : copy.noCount}
-      </p>
-      {site.wait && <p className="text-sm text-muted">{copy.reportedBy(site.wait.source)}</p>}
+      <WaitReport wait={site.wait} now={now} showNone />
       <p>
         {kind && `${kind}. `}
         {schedule && resultsCopy.earlyVoting.status(site.status, formatLongDate)}
