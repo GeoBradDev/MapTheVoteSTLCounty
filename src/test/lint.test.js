@@ -31,6 +31,20 @@ describe('eslint config', () => {
     expect(messages).toEqual([]);
   });
 
+  it('reports words written straight into JSX, which belong in en.json (#19)', async () => {
+    const messages = await lint(
+      'export default function LintProbe() {\n  return <p>Find my precinct</p>;\n}\n',
+    );
+    expect(errorRules(messages)).toContain('react/jsx-no-literals');
+  });
+
+  it('allows punctuation in JSX between a sentence and its link', async () => {
+    const messages = await lint(
+      'export default function LintProbe({ a }) {\n  return (\n    <p>\n      {a}.\n    </p>\n  );\n}\n',
+    );
+    expect(messages).toEqual([]);
+  });
+
   it('reports a missing alt attribute as a jsx-a11y error', async () => {
     const messages = await lint(
       'export default function LintProbe() {\n  return <img src="/a.png" />;\n}\n',

@@ -48,6 +48,18 @@ export default defineConfig([
     },
   },
   {
+    // Words the app shows come from src/i18n/en.json through t() (#19), never
+    // from JSX text. Punctuation between a sentence and its link is allowed.
+    files: ['src/**/*.jsx'],
+    ignores: ['src/**/*.test.jsx', 'src/test/**'],
+    rules: {
+      'react/jsx-no-literals': [
+        'error',
+        { noStrings: false, allowedStrings: ['.', ',', ':', '(', ')', '),', '[', ']'] },
+      ],
+    },
+  },
+  {
     files: ['src/**/*.test.{js,jsx}', 'src/test/**/*.{js,jsx}'],
     languageOptions: {
       globals: { ...globals.vitest, ...globals.node },

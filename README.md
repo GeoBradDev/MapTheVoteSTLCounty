@@ -1,5 +1,53 @@
 # MapTheVoteSTLCounty
 
+A nonpartisan voter guide for St. Louis County, Missouri, live at
+[mapthevotestl.com](https://mapthevotestl.com). A voter types an address or uses their
+location and gets their precinct, the nearest polling places, their sample ballot, their
+districts and the in-person absentee voting sites and hours, plus short "How to vote" guides
+built from official sources. A voter with a St. Louis City address is referred to the City's
+own Board of Election Commissioners.
+
+It is for St. Louis County voters, on a phone first, and for whoever runs it for the next
+election: the sections below say how to set it up, where its data comes from and how to
+point it at a new election.
+
+Contents: [Nonpartisan statement](#nonpartisan-statement) ·
+[Privacy statement](#privacy-statement) · [Disclaimer](#disclaimer) ·
+[Development](#development) · [Data sources](#data-sources) ·
+[Updating for a new election](#updating-for-a-new-election) · [Deploy](#deploy) ·
+[Contributing](#contributing) · [License](#license)
+
+## Nonpartisan statement
+
+A nonpartisan, unofficial guide. Not affiliated with the St. Louis County Board of Elections
+or the St. Louis City Board of Election Commissioners. (The site's footer shows this statement
+on every page, from `footer.statement` in `src/i18n/en.json`; keep the two the same.)
+
+- **Reference tool only.** It says where, when and how to vote. It makes no endorsements and
+  no comment on any candidate, party or ballot measure, and it never ranks or orders
+  candidates or measures.
+- **Official sources only.** Voter information comes from the St. Louis County Board of
+  Elections, the Missouri Secretary of State, Missouri statutes and other official sources.
+  Ballots are the board's own sample ballot PDFs, linked as published, never retyped or
+  summarized.
+- **Neutral design.** No red or blue anywhere (see [Colors](#colors)).
+
+## Privacy statement
+
+The site has no accounts, no analytics, no cookies and no server of its own: the browser talks
+straight to the public services that look up the address and the precinct. It never saves a
+typed address or a device location, in the URL, browser storage, cookies or the browser's
+cache, and a share link holds only the precinct code, like `/p/CC007`. The plain-language
+notice at [`/privacy`](https://mapthevotestl.com/privacy) says what each service gets; the
+[Privacy](#privacy) section below has the rules and the tests that hold the code to them.
+
+## Disclaimer
+
+This is not an official St. Louis County app. For official information, contact the
+[St. Louis County Board of Elections](https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/)
+(314-615-1800). St. Louis City voters should contact the
+[St. Louis City Board of Election Commissioners](https://www.stlouis-mo.gov/government/departments/board-election-commissioners/).
+
 ## Development
 
 `.node-version` pins Node for CI and Render; use the same version locally.
@@ -19,6 +67,113 @@ npm run format        # format with Prettier (npm run format:check to check only
 CI runs lint, format check, tests, build, the accessibility checks and the performance
 budgets on every pull request
 and on push to `main`.
+
+The scripts that talk to live services are run by hand (and some by the daily data health
+workflow), never in CI:
+
+```sh
+node scripts/inspect-data.mjs         # dump the county layers' schemas and samples to docs/raw/
+node scripts/record-fixtures.mjs      # re-record the live responses the tests use (docs/raw/fixtures/)
+node scripts/check-config.mjs         # check the layers src/config/election.js names (Data health check)
+node scripts/check-geocoder.mjs       # check address search end to end (Address search)
+node scripts/check-content-links.mjs  # request every source and link (Learn content)
+npm run smoke -- <url>                # check a deploy (Smoke test)
+```
+
+## Data sources
+
+[`docs/data.md`](docs/data.md) is the full record: every layer and field, what each was checked
+against, and why. In short:
+
+- **Precincts, polling places and early voting sites:** the St. Louis County Board of
+  Elections' public ArcGIS layers under
+  [its service root](https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services), named
+  per election (for November 3, 2026,
+  [`precincts_2026_11_view`](https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/precincts_2026_11_view/FeatureServer/1)
+  and
+  [`polls_2026_11_view`](https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/polls_2026_11_view/FeatureServer/1)),
+  plus
+  the
+  [county boundary layer](https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/St_Louis_County_Boundary/FeatureServer/0).
+  The polls layer holds both Election Day and in-person absentee sites; no layer assigns a
+  polling place to a precinct, so the app lists the nearest and says how to confirm the
+  assigned one.
+- **Sample ballots:** each precinct's `html` field links its PDF on the board's
+  [ArcGIS portal](https://stlouiscovotes.maps.arcgis.com). The app shows the link only when it
+  matches the config's pattern and names the precinct.
+- **Dates, hours and rules:** not in any layer. They come from the board's own Instant Apps,
+  the [Missouri Secretary of State](https://www.sos.mo.gov) and the
+  [Revised Statutes of Missouri](https://revisor.mo.gov), and live in `src/config/election.js`
+  with their sources and the date each was last checked.
+- **Address search:** St. Louis County's address points (the
+  [live county layer](https://maps.stlouisco.com/hosting/rest/services/Maps/ASR_Address_Points/FeatureServer/0),
+  then its
+  [hosted copy](https://services2.arcgis.com/w657bnjzrjguNyOy/arcgis/rest/services/Address_Points/FeatureServer/2)),
+  then [Photon](https://photon.komoot.io) (OpenStreetMap data), with a match that could get a
+  county precinct checked against the City of St. Louis's own
+  [geocoder](https://maps6.stlouis-mo.gov/arcgis/rest/services/GEOCODERS/COMPOSITE_GEOCODE/GeocodeServer).
+  See [Address search](#address-search).
+- **Map:** [OpenFreeMap](https://openfreemap.org)'s Positron basemap. See [Map](#map).
+- **How to vote guides:** Markdown under `content/`, each citing official sources only. See
+  [Learn content](#learn-content).
+- **Referrals:** the City board and the Secretary of State's Voter Outreach Center, in
+  `src/config/referrals.js`.
+
+## Updating for a new election
+
+The next election is mostly an edit to config and content; the scripts' own sample lists
+may need new values too. Work on a branch and merge through the usual pull request.
+
+1. **Find the new layers.** The board publishes a new view per election, named like
+   `precincts_YYYY_MM_view` and `polls_YYYY_MM_view`. List the services at the service root
+   (append `?f=json`), or open the board's current lookup Instant App on its ArcGIS portal and
+   read which layers its web map uses. Do not use the `lookup_view_*` services: their names
+   look current but they point at old data (`docs/data.md`).
+2. **Inspect them.** Put the new service names in the `SERVICES` list at the top of
+   `scripts/inspect-data.mjs` (and the new lookup app's id in `INSTANT_APP_ID` if it changed),
+   then run `node scripts/inspect-data.mjs`. It writes each layer's fields, counts and sample
+   rows to `docs/raw/`. Compare them with `docs/data.md`: the field names, the congressional
+   district field and the sample ballot link format. The script saves only 3 sample rows per
+   layer, so query the layer for the distinct `in_election` and `abs_type` values.
+3. **Update `src/config/election.js`.** Every value that changes between elections is there,
+   including every link to that election's own Instant Apps, each with its `sources` and
+   `lastVerified` where it has them. Re-read every source; do not copy a value forward
+   unchecked. If a field the app reads was renamed, search `src/` and `scripts/` for the old
+   name and change every use, including `PRECINCT_FIELDS` and `POLL_FIELDS` in
+   `src/data/arcgis.js` and the field lists in `scripts/check-config.mjs`. See
+   [Election config](#election-config).
+4. **Update `docs/data.md`** with what the inspection found, and why for anything that
+   changed.
+5. **Re-verify every content topic.** For each file under `content/*/learn/`, re-read every
+   source, fix any text that changed, then set `election` to the new date and `lastVerified`
+   to the day you checked. The build fails until every topic is updated, and it also fails on
+   a `lastVerified` more than 60 days before Election Day, so do this step within that window.
+   See [Learn content](#learn-content).
+6. **Re-record the fixtures** with `node scripts/record-fixtures.mjs`, so the tests and the
+   address search check below use the new layers. Pick new sample precincts in it if the old ones are gone.
+7. **Run the health check** and fix what it reports:
+
+   ```sh
+   node scripts/check-config.mjs
+   node scripts/check-geocoder.mjs
+   node scripts/check-content-links.mjs
+   ```
+
+   `check-geocoder.mjs` looks up the polling places named in its `LOCS` list in the new
+   fixtures, and expects its sample address in a named precinct: when either is gone, change
+   the list at the top of the script. `check-config.mjs` has fixed points, one per County
+   Council district, which change only when the districts are redrawn, and a sane range for
+   the precinct count. Open any link the content check skipped in a browser. See
+   [Data health check](#data-health-check) and [Address search](#address-search).
+8. **Run the full gate** locally (`npm run lint`, `npm run format:check`, `npm test`,
+   `npm run build`, `npm run test:e2e`, `npm run test:perf`). Tests that name a precinct,
+   polling place or count from the old fixtures may need the new values.
+9. **Deploy.** Merge the pull request; `main` deploys once CI passes. Run
+   `npm run smoke -- https://mapthevotestl.com`, then the hand checks in
+   [Accessibility](#accessibility), [Performance](#performance) and [Privacy](#privacy).
+   The daily data health workflow reads the new `electionDate` without changes; confirm in
+   the Actions tab that it is still turned on and that a run passes (**Data health**,
+   **Run workflow**).
 
 ## Deploy
 
@@ -207,13 +362,38 @@ the early voting card to the `absentee` topic, each only once that topic exists
 `src/features/learn/learnA11y.test.jsx` runs axe on the pages with fixture topics.
 
 Translations (#19): put a topic with the same `id` under another locale, such as
-`content/es/learn/voter-id.md`, and add that locale's labels to
-`src/features/learn/learnCopy.js`. A locale shows the English topic until its own exists.
+`content/es/learn/voter-id.md`. A locale shows the English topic until its own exists. The
+labels around a topic are in that locale's messages (see [Languages](#languages)).
 
-`node scripts/check-content-links.mjs` requests every source and link in every topic, prints
-PASS or FAIL per URL and exits 1 on any failure, including a redirect that lands off the
-official hosts. The data health workflow runs it daily (see
-below), never on pull requests.
+`node scripts/check-content-links.mjs` requests every source and link in every topic, and every
+page `src/config/election.js` links (each `sources` entry and each value whose key ends in `Url`
+or `Source`), and prints PASS, FAIL or SKIP per URL. It fails a URL on an error status, on a
+request that fails or times out after its retries, on a redirect that lands off the official
+hosts, and on an HTML page whose
+`<meta http-equiv="refresh">` sends the browser to a different page (#74). A `403` bot
+challenge, which only a browser gets past, is a SKIP: it does not fail the run, and a person
+must open the URL in a browser. Any other `403` fails. It exits 1 on any failure;
+`--skipped <file>` writes the skipped URLs to a file. The data health workflow runs it daily
+(see below), never on pull requests.
+
+## Languages
+
+Every word the app shows is in `src/i18n/en.json` and reaches the page through `t()`
+(`src/i18n/index.js`), mostly by way of the copy module next to each feature, such as
+`src/features/lookup/resultsCopy.js`. Messages fill in `{name}` values and pick plurals with
+`{count, plural, one {...} other {...}}`. Values from the county's data, such as district
+names, election values from `src/config/election.js`, and the names of the address search
+services and their data (from the geocoder modules, as the privacy notice requires) are shown as
+they are. So are the home page's tab title, which is `index.html`'s, the map's credit line
+and MapLibre's own built-in text (its gesture hints and the map's label). ESLint's
+`react/jsx-no-literals` fails on words typed straight into JSX.
+
+To add a language, such as Spanish: copy `en.json` to `src/i18n/es.json`, translate the
+values (keep the keys and the `{...}` names), and add its line to `LOCALES` in
+`src/i18n/config.js`. A key it lacks falls back to English. The language switcher appears once
+there are two languages; choosing one loads its file, sets `<html lang>` and redraws the page
+in it, keeping focus and what the page has loaded. The site always starts in English. Dates are formatted for the language in the election's time zone,
+`America/Chicago`.
 
 ## Data health check
 
@@ -237,8 +417,9 @@ the script.
 `scripts/check-content-links.mjs` every day at 12:00 UTC until Election Day is over in the
 config's time zone, and on demand from the Actions tab (**Data health**, **Run workflow**). On
 a failure it opens an issue labeled `data health`, or comments on the one already open; close
-that issue once it is fixed. The workflow never runs on pull requests, so a live outage cannot
-block a merge. For the next election, nothing in the workflow changes: it reads the new `electionDate`. GitHub turns off
+that issue once it is fixed. Links the content check skipped behind a bot challenge are listed
+on every run's summary page and in that issue; open each in a browser before Election Day.
+The workflow never runs on pull requests, so a live outage cannot block a merge. For the next election, nothing in the workflow changes: it reads the new `electionDate`. GitHub turns off
 scheduled workflows in a public repository after 60 days with no activity; if the daily runs stop,
 turn the workflow back on in the Actions tab.
 
@@ -315,7 +496,8 @@ accepts one (#38): the county's address layers, the City geocoder and the precin
 point queries. Photon has no POST endpoint, so it gets the typed text in a GET query string;
 the notice says so. A new request that carries either must do the same, and a service worker
 (#25) must not put those requests in Cache Storage, which `no-store` does not cover. The plain-language
-notice at `/privacy` (`src/features/privacy/privacyCopy.js`) says what each third party gets;
+notice at `/privacy` (`src/features/privacy/privacyCopy.js`, its text under `privacy` in
+`src/i18n/en.json` and every other language's file) says what each third party gets;
 change it in the same change as any new service or any change to what is sent. `src/test/no-storage.test.js` fails
 when app code under `src` uses browser storage, cookies or the console, and
 `src/test/addressPrivacy.test.jsx` runs a lookup and checks storage, cookies, Cache Storage
@@ -365,3 +547,29 @@ which depend a little on the searched point within the precinct. The `no-referre
 keeps the page URL out of them. `src/features/lookup/basemap.js` holds the style URL and the
 credits; to change the basemap, change that file and the origin in `render.yaml`'s
 `connect-src` together, and check the new style's colors and sprite icons for red or blue.
+
+## Contributing
+
+Open a pull request against `main`. Every pull request runs the CI gate above and needs it
+green; run it locally first.
+
+- **Voter information needs an official source.** Any fact a voter acts on (dates, hours,
+  places, ID rules, deadlines, phone numbers) comes from an official source: the county
+  board, the Missouri Secretary of State, Missouri statutes or another government site.
+  Cite it next to the value (`sources` and `lastVerified` in `src/config/election.js`, or a
+  topic's front matter under `content/`). The build rejects a topic link outside the official
+  hosts (`src/features/learn/content/officialSources.js`). News sites, advocacy groups,
+  campaigns and parties are not sources.
+- **Stay nonpartisan.** Follow the [Nonpartisan statement](#nonpartisan-statement): no
+  endorsements, candidate or measure commentary, or rankings, and no red or blue.
+- **Election values go in config.** Anything that changes between elections goes in
+  `src/config/election.js`, never in the code that reads it (see
+  [Election config](#election-config)).
+- **A change to what is sent to a service** also changes the privacy notice in the same pull
+  request (see [Privacy](#privacy)).
+
+## License
+
+No license has been chosen yet (#118), so the code is not yet open for reuse. Until a
+`LICENSE` file is added, ask the owner before reusing it. Voter information and sample ballots belong to
+their official publishers.

@@ -528,6 +528,21 @@ describe('data health workflow', () => {
     expect(report.run).toContain('gh issue create');
     expect(report.run).toContain('gh issue comment');
   });
+
+  // A bot challenge is a skip, which never fails the run (#74): it must still
+  // reach a person, on every run's summary and in any issue the run opens.
+  it('lists the links the content check skipped on the summary and in the issue', () => {
+    const steps = Object.values(workflow.jobs)[0].steps;
+    const file = '$RUNNER_TEMP/skipped-links.txt';
+    const links = steps.find((s) => s.id === 'links');
+    expect(links.run).toContain(`--skipped "${file}"`);
+    const summary = steps.find((s) => s.run?.includes('$GITHUB_STEP_SUMMARY'));
+    expect(summary.run).toContain(file);
+    expect(summary.if).toContain('!cancelled()');
+    expect(steps.indexOf(summary)).toBeGreaterThan(steps.indexOf(links));
+    const report = steps.find((s) => s.if === 'failure()');
+    expect(report.run).toContain(file);
+  });
 });
 
 // The app asks ArcGIS for named fields (#27), and a query naming a field the

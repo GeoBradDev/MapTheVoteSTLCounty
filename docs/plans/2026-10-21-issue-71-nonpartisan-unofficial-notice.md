@@ -79,3 +79,18 @@ Domain skills:
   and both boards; whether it agrees in wording is part of criterion 8.
 - Criterion 6: `build.test.js` on the built `index.html`.
 - Live drive: build, preview, view `/` at 360px and a results page in print emulation.
+
+## Revision 2026-10-22: after the i18n foundation (#19) and the README (#29)
+
+The owner approved the wording as is and chose to stay anonymous (comment on #71,
+2026-10-22). Main gained the i18n foundation (#19, PR #121), so on merging main:
+
+- The new strings move into `src/i18n/en.json`: `footer.statement`,
+  `footer.officialSites`, `footer.countySite`, `footer.citySite`, `home.unofficial`, and the
+  longer `privacy.intro`. `siteFooterCopy.js` and `homeCopy.js` read them through
+  `translated()`; `privacyCopy.js` takes main's version unchanged. The English text is
+  identical to the approved wording.
+- `README.md`'s Nonpartisan statement (#29) already has the approved wording; its note that
+  the wording is "being settled in #71" is replaced by a pointer to `footer.statement`.
+- Proof: the gate, plus a string comparison of every new en.json value against the strings
+  in 7b8c75f.
