@@ -33,7 +33,7 @@
  * @property {string} officialLookupUrl The county's own lookup app, the
  *   fallback when ours fails.
  * @property {string} countySiteUrl The county election board's website: the
- *   County block's `boardSiteUrl`.
+ *   County block's `boardSiteUrl`, which is here too under that name.
  * @property {number} nearbyPollCount How many nearby polling places to show at
  *   first, and how many more each "Show more" adds.
  * @property {{ sources: string[], lastVerified: string,
@@ -69,6 +69,7 @@
  *   City's is in referrals.js.
  * @property {string} [boardSiteUrl] The board's website (the County's; the
  *   City's is in referrals.js).
+ * @property {string[]} [sources] Where the block's values were checked.
  */
 
 /**
@@ -219,15 +220,20 @@ const county = {
 // lookup, polling places and districts, #91 the early voting sites. The
 // precincts layer's `precinctid` reads `W <ward> P <precinct>`, like `W 1 P 12`:
 // 207 precincts in wards 1 to 14, checked on 2026-10-22 (docs/data.md).
+const cityServiceRoot = 'https://services6.arcgis.com/HZXbCkpCSqbGd0vK/ArcGIS/rest/services';
 const city = {
   id: 'city',
   name: 'City of St. Louis',
   board: 'St. Louis City Board of Election Commissioners',
-  serviceRoot: 'https://services6.arcgis.com/HZXbCkpCSqbGd0vK/ArcGIS/rest/services',
+  serviceRoot: cityServiceRoot,
   layers: {
     precincts: 'ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/1',
   },
   precinctField: 'precinctid',
+  // Where the code shape was checked: the precincts layer's own description.
+  sources: [
+    `${cityServiceRoot}/ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/1?f=pjson`,
+  ],
   // The City board's site and lookup page do not change between elections, so
   // they are in referrals.js (src/data/jurisdictions.js pairs them with this
   // block). This file holds only what a new election changes.
