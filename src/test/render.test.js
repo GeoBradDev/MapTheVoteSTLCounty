@@ -13,15 +13,19 @@ import { HOSTED_URL, LIVE_URL } from '../data/countyAddress.js';
 import { DEFAULT_BASE_URL as PHOTON } from '../data/photon.js';
 import { BASEMAP_STYLE_URL } from '../features/lookup/basemap.js';
 import { ASSET_HEADERS, SHELL_HEADERS } from '../../scripts/smoke.mjs';
+import { SHELL_FILE } from '../prerender/plugin.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 const BASEMAP = new URL(BASEMAP_STYLE_URL).origin;
 const SHELL_PATHS = [
   '/',
   '/index.html',
+  '/shell.html',
   '/p/CC007',
   '/learn',
   '/learn/voter-id',
+  '/learn/voter-id/',
+  '/learn/',
   '/privacy',
   '/privacy/',
 ];
@@ -146,8 +150,11 @@ describe('render.yaml service', () => {
 });
 
 describe('render.yaml routes', () => {
+  // dist/index.html is the pre-rendered home page (#99); every path with no
+  // file (a precinct, an unknown path) gets the client-rendered shell.
   it('rewrites every path to the app shell for client routing', () => {
-    expect(site.routes).toEqual([{ type: 'rewrite', source: '/*', destination: '/index.html' }]);
+    expect(site.routes).toEqual([{ type: 'rewrite', source: '/*', destination: '/shell.html' }]);
+    expect(site.routes[0].destination).toBe(`/${SHELL_FILE}`);
   });
 });
 

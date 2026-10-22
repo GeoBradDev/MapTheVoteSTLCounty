@@ -80,8 +80,12 @@ build its head hook on the `pageHead()` function added here.
   `pageHead(path)` returning `{ title, description, canonical, url }` for public pages or
   `null`, `shellHead()`, `describe(text)` (the 155 character cut), `topicDescription(topic)`.
 - `src/pageHead.test.js` (new).
-- `src/usePageHead.js` (new, or inside `src/components/`): the App-level effect that writes
-  the head tags for the current location.
+- `src/App.jsx` holds the App-level effect (`usePageHead`) that writes the head tags for the
+  current location, and sets a public page's title too: each page puts back the title it
+  found when it goes, and on a pre-rendered page that chain starts from the pre-rendered
+  title, so without it the home page (which sets no title) would keep a topic's title.
+- `src/pageHeadApp.test.jsx` (new): the head on navigation.
+- `src/hydrate.js`, `src/hydrate.test.js` (new): the hydrate-or-render decision.
 - `src/entry-server.jsx` (new): `render(path)` with `renderToString` inside
   `<Router ssrPath>`, and `routes()` listing the paths and their head.
 - `src/prerender/html.js` (new): pure functions that put the head tags and the markup into
@@ -89,9 +93,15 @@ build its head hook on the `pageHead()` function added here.
   template does not have the expected title, description or root).
 - `src/prerender/html.test.js` (new).
 - `src/prerender/plugin.js` (new): the Vite plugin. In `closeBundle` of a client build it
-  copies the built `index.html` to `shell.html`, starts a Vite server in middleware mode,
-  `ssrLoadModule`s the server entry, writes each route's file, then closes the server. A
-  second plugin, preview only, serves directory indexes and falls back to `shell.html`.
+  copies the built `index.html` to `shell.html` and runs `src/prerender/worker.js` in a
+  worker thread, which starts a Vite server in middleware mode, `ssrLoadModule`s the server
+  entry, writes each route's file (`src/prerender/outputFile.js` names it), then closes the
+  server. A worker, because the build test builds from inside Vitest, whose process already
+  loaded React in another mode (a mismatched React and react-dom/server). A second plugin,
+  preview only, serves directory indexes and falls back to `shell.html` for page requests
+  (the same Accept and `/favicon.ico` test Vite's own fallback uses, so the Lighthouse run
+  loads no extra file).
+- `src/prerender/plugin.test.js` (new).
 - `vite.config.js`: add both plugins.
 - `src/main.jsx`: hydrate or render.
 - `src/App.jsx`: guard the `popstate` listener; call the head effect.

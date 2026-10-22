@@ -1,6 +1,7 @@
 // Post-deploy smoke test: checks that a deployed copy of the app serves the
 // shell, survives a hard load of a deep link, serves its hashed assets, serves
-// robots.txt and sitemap.xml as real files (#97), and sends the expected headers.
+// robots.txt and sitemap.xml as real files (#97), serves the public pages
+// pre-rendered (#99), and sends the expected headers.
 // Usage: node scripts/smoke.mjs <base-url> [--skip-headers] [--preview]
 // Use --skip-headers against hosts that set none, such as `npm run preview`.
 // Use --preview against a pull request preview, whose build keeps crawlers
@@ -8,8 +9,12 @@
 
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { siteUrl } from '../src/config/site.js';
 
 const DEEP_LINK = '/p/CC007';
+// Pre-rendered pages (#99) to hard load: the learn index and one topic. Change
+// the topic if content/en/learn/voter-id.md is ever renamed.
+const PRERENDERED = ['/learn', '/learn/voter-id'];
 const TIMEOUT_MS = 10_000;
 
 // The headers the Render Blueprint (render.yaml) sets. Each entry passes when
@@ -58,6 +63,15 @@ async function shellScript(res, pathname) {
   return { src, body };
 }
 
+// Throws unless `body` is the page pre-rendered for `pathname`: its markup in
+// the root, a heading, and its canonical (always the production address).
+function checkPrerendered(body, pathname) {
+  if (!body.includes(`data-prerendered="${pathname}"`)) throw new Error('not pre-rendered');
+  if (!/<div id="root"[^>]*>[\s\S]*<h1\b/.test(body)) throw new Error('no h1 in #root');
+  const canonical = `<link rel="canonical" href="${siteUrl}${pathname}">`;
+  if (!body.includes(canonical)) throw new Error(`no ${canonical}`);
+}
+
 // Returns the body of a real file at `pathname` whose content type includes
 // `type`, or throws. The SPA rewrite answers a missing file with the shell.
 async function fileBody(baseUrl, pathname, type) {
@@ -104,8 +118,11 @@ export async function runSmoke(baseUrl, { checkHeaders = true, preview = false }
       return script;
     }),
     await check(`hard load of ${DEEP_LINK} returns the app shell`, async () => {
-      const { src } = await shellScript(await get(baseUrl, DEEP_LINK), DEEP_LINK);
+      const { src, body } = await shellScript(await get(baseUrl, DEEP_LINK), DEEP_LINK);
       if (script && src !== script) throw new Error(`script ${src}, but / has ${script}`);
+      // Precinct pages are client-rendered from the empty shell, never a
+      // pre-rendered page (#99).
+      if (body.includes('data-prerendered')) throw new Error('got a pre-rendered page');
     }),
     await check('hashed asset returns JavaScript', async () => {
       if (!script) throw new Error('no asset path: the / check failed');
@@ -117,6 +134,15 @@ export async function runSmoke(baseUrl, { checkHeaders = true, preview = false }
       return script;
     }),
   ];
+
+  for (const pathname of PRERENDERED) {
+    results.push(
+      await check(`hard load of ${pathname} returns the pre-rendered page`, async () => {
+        const { body } = await shellScript(await get(baseUrl, pathname), pathname);
+        checkPrerendered(body, pathname);
+      }),
+    );
+  }
 
   if (preview) {
     results.push(

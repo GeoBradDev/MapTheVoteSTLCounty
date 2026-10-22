@@ -10,6 +10,7 @@ import PrecinctPage from './features/lookup/PrecinctPage.jsx';
 import PrivacyPage from './features/privacy/PrivacyPage.jsx';
 import { t, useLocale } from './i18n/index.js';
 import LanguageSwitcher from './i18n/LanguageSwitcher.jsx';
+import { applyHead, pageHead } from './pageHead.js';
 
 // The path as wouter reports it: decoded with decodeURI, or as is when that fails.
 function decodedPath() {
@@ -26,11 +27,14 @@ function decodedPath() {
 // The listener is added when this module loads, before wouter adds its own:
 // the browser runs microtasks between popstate listeners, so wouter's update
 // renders the new page and runs the effect below before any listener added
-// after wouter's would run.
+// after wouter's would run. The build's server render (#99) loads this module
+// in Node, where there is no window and no history.
 let poppedPath = null;
-window.addEventListener('popstate', () => {
-  poppedPath = decodedPath();
-});
+if (typeof window !== 'undefined') {
+  window.addEventListener('popstate', () => {
+    poppedPath = decodedPath();
+  });
+}
 
 /**
  * After an in-app navigation (not the first load), starts the new page at the
@@ -58,12 +62,29 @@ function usePageArrival() {
   }, [location]);
 }
 
+/**
+ * Keeps the head describing the page shown (#99): a public page's title,
+ * description, canonical and Open Graph tags, or the shell's description with
+ * no canonical on any other page. A pre-rendered page arrives with its own
+ * head, and the title each page puts back when it goes is the one it found,
+ * so a public page's title is set here too (the home page sets none itself).
+ * Other pages set their own titles. This runs after the page's own effects.
+ */
+function usePageHead(location, locale) {
+  useEffect(() => {
+    const head = pageHead(location);
+    if (head) document.title = head.title;
+    applyHead(document, head);
+  }, [location, locale]);
+}
+
 export default function App() {
   usePageArrival();
   const [location] = useLocation();
   // A new language re-renders every page in it (#19). The page is not
   // remounted, so focus stays on the language switcher and nothing reloads.
-  useLocale();
+  const locale = useLocale();
+  usePageHead(location, locale);
   return (
     <div className="flex min-h-screen flex-col bg-surface text-ink">
       <a

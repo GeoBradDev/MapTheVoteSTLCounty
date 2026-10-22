@@ -47,6 +47,11 @@ const ROUTES = [
     ready: (page) => expect(page.getByRole('heading', { level: 1 })).toBeVisible(),
   },
   {
+    // Pre-rendered (#99), like /, /learn and /privacy: checked after hydration.
+    path: '/learn/voter-id',
+    ready: (page) => expect(page.getByRole('heading', { level: 1 })).toBeVisible(),
+  },
+  {
     path: '/privacy',
     ready: (page) => expect(page.getByRole('heading', { level: 1 })).toBeVisible(),
   },
