@@ -541,14 +541,15 @@ neither. For the City block (#87), it checks each City layer has the fields the 
 precincts are a sane count and every ID reads as a City code, that the Election Day and early
 voting filters find sites with an id, name and address (a WARN when the Election Day count is
 not the config's `pollsListed`, the count the City Board's page gives), and that City Hall lands
-in a City precinct, a ward and the City outline while a County point lands in none. For each
+in a City precinct, a ward and the City outline while a County point lands in neither a City
+precinct nor the outline. A site filter that finds no site fails. For each
 wait time source in `waitTimes` that is turned on (County and City early voting
 line counts), it checks the layer has every field the config names, then prints one line naming
 the board and whether its counts are fresh: open sites, how many have a count the app would show
 now, County reports that match no early voting site, and the newest report time. An empty County
 view while sites are closed passes. Sites open with no fresh count, County reports that match
 no site (counted, never named: the senders are user names), City hours text the app cannot
-read, or a City filter that matches no row are a WARN: printed, written to `--warnings <file>` if given, and never a failure. It
+read, or a City wait filter that matches no row are a WARN: printed, written to `--warnings <file>` if given, and never a failure. It
 prints PASS, FAIL, SKIP or WARN per check and exits 1 on any failure or skip; a wrong
 layer path fails with the config key, the path and the service's error. `--layer` tries another
 path for one County layer without editing the config. `--ballot-sample` checks that many random sample
