@@ -1,5 +1,5 @@
 import election from '../../config/election.js';
-import { parseSampleBallot } from '../../data/sampleBallot.js';
+import { fileNameMatchesPrecinct, parseSampleBallot } from '../../data/sampleBallot.js';
 import { copy } from './resultsCopy.js';
 
 const linkClass = 'text-primary underline';
@@ -9,14 +9,16 @@ const buttonClass =
 /**
  * The sample ballot card body. The precinct's `html` field is read only through
  * `parseSampleBallot`, never rendered: a link is shown only when the parser
- * returns a URL that matched the election config's pattern. Anything else
- * points to the county's official lookup.
- * @param {{ html: unknown }} props The precinct's `html` field.
+ * returns a URL that matched the election config's pattern and a file name
+ * that names this precinct (#82). Anything else points to the county's
+ * official lookup, so a swapped link never shows another precinct's ballot.
+ * @param {{ html: unknown, code?: string }} props The precinct's `html` field
+ *   and its code, like `CC007`.
  */
-export default function SampleBallotCard({ html }) {
+export default function SampleBallotCard({ html, code }) {
   const ballot = parseSampleBallot(html);
 
-  if (!('url' in ballot)) {
+  if (!('url' in ballot) || !fileNameMatchesPrecinct(ballot.fileName, code)) {
     return (
       <p className="mt-2">
         {copy.ballot.missing}{' '}
@@ -34,7 +36,7 @@ export default function SampleBallotCard({ html }) {
       <a href={ballot.url} target="_blank" rel="noopener noreferrer" className={buttonClass}>
         {/* The spaces keep the parts apart in the accessible name. */}
         <span className="font-semibold">{copy.ballot.open}</span>{' '}
-        {ballot.fileName && <span className="text-sm">{ballot.fileName}</span>}{' '}
+        <span className="text-sm">{ballot.fileName}</span>{' '}
         <span className="sr-only">{copy.ballot.newTab}</span>
       </a>
     </>

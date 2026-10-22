@@ -12,7 +12,7 @@ import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import election from '../src/config/election.js';
 import { PRECINCT_CODE } from '../src/data/arcgis.js';
-import { parseSampleBallot } from '../src/data/sampleBallot.js';
+import { fileNameMatchesPrecinct, parseSampleBallot } from '../src/data/sampleBallot.js';
 
 /** A sane number of precincts. 1213 for November 2026. */
 export const PRECINCT_RANGE = { min: 900, max: 1600 };
@@ -284,6 +284,11 @@ export async function runHealthCheck(
               failures.push(`${precinct}: link shared with another precinct`);
             } else {
               ballotUrls.push(result.url);
+              // The app shows a link only when its file name names the
+              // precinct (#82), so a swapped link reaches no voter: report it.
+              if (!fileNameMatchesPrecinct(result.fileName, precinct)) {
+                failures.push(`${precinct}: link names ${result.fileName}, not this precinct`);
+              }
             }
           } else if ('url' in result || !result.message) {
             failures.push(

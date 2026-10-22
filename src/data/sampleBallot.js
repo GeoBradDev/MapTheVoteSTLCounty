@@ -166,3 +166,23 @@ export function parseSampleBallot(html) {
   const end = rest.findIndex(isAnchor);
   return { url, fileName: plainText(end === -1 ? rest : rest.slice(0, end)) };
 }
+
+/**
+ * Whether a sample ballot link's file name names this precinct (#82). The
+ * county names each PDF after its precinct with a hyphen after the letters
+ * (`CC007` -> `CC-007.pdf`), so the two are compared ignoring case, hyphens
+ * and a trailing `.pdf`. A swapped link (CC007's row pointing at `CC-008.pdf`)
+ * fails, as does a missing file name: neither can be shown as this precinct's
+ * ballot.
+ * @param {string | null | undefined} fileName The link text from `parseSampleBallot`.
+ * @param {string | null | undefined} code The precinct code, like `CC007`.
+ * @returns {boolean}
+ */
+export function fileNameMatchesPrecinct(fileName, code) {
+  if (typeof fileName !== 'string' || typeof code !== 'string' || !code) return false;
+  const named = fileName
+    .trim()
+    .replace(/\.pdf$/i, '')
+    .replaceAll('-', '');
+  return named.toUpperCase() === code.toUpperCase();
+}

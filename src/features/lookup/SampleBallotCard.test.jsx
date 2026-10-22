@@ -30,9 +30,9 @@ describe('SampleBallotCard', () => {
     ['CC007', cc007, 'CC-007.pdf'],
     ['MER013', mer013, 'MER-013.pdf'],
     ['FLO030', flo030, 'FLO-030.pdf'],
-  ])('links the sample ballot PDF for %s', (_, fixture, fileName) => {
+  ])('links the sample ballot PDF for %s', (code, fixture, fileName) => {
     const html = htmlOf(fixture);
-    render(<SampleBallotCard html={html} />);
+    render(<SampleBallotCard html={html} code={code} />);
     const link = ballotLink();
     expect(link).toHaveAttribute('href', hrefIn(html));
     expect(link).toHaveTextContent(copy.ballot.open);
@@ -40,7 +40,7 @@ describe('SampleBallotCard', () => {
   });
 
   it('opens in a new tab without an opener, and says so to screen readers', () => {
-    render(<SampleBallotCard html={htmlOf(cc007)} />);
+    render(<SampleBallotCard html={htmlOf(cc007)} code="CC007" />);
     const link = ballotLink();
     expect(link).toHaveAttribute('target', '_blank');
     expect(link.getAttribute('rel').split(' ')).toEqual(
@@ -51,16 +51,28 @@ describe('SampleBallotCard', () => {
   });
 
   it('shows one neutral line about what the sample ballot holds', () => {
-    render(<SampleBallotCard html={htmlOf(cc007)} />);
+    render(<SampleBallotCard html={htmlOf(cc007)} code="CC007" />);
     expect(screen.getByText(copy.ballot.intro)).toBeInTheDocument();
     expect(copy.ballot.intro).not.toMatch(/candidate|party|democrat|republican/i);
   });
 
-  it('leaves out the file name line when the link has no text', () => {
+  // #82: a link is shown only when its file name names this precinct, so a
+  // swapped link never shows another precinct's contests as the voter's own.
+  it('links the official lookup instead when the file names another precinct', () => {
+    render(<SampleBallotCard html={htmlOf(mer013)} code="CC007" />);
+    expectFallback();
+    expect(screen.queryByText(/MER-013/)).toBeNull();
+  });
+
+  it('links the official lookup instead when the link has no file name', () => {
     const html = htmlOf(cc007).replace('CC-007.pdf', '');
-    render(<SampleBallotCard html={html} />);
-    expect(ballotLink()).toHaveAttribute('href', hrefIn(htmlOf(cc007)));
-    expect(ballotLink()).not.toHaveTextContent('.pdf');
+    render(<SampleBallotCard html={html} code="CC007" />);
+    expectFallback();
+  });
+
+  it('links the official lookup instead when no precinct code is given', () => {
+    render(<SampleBallotCard html={htmlOf(cc007)} />);
+    expectFallback();
   });
 
   it.each([
@@ -72,7 +84,7 @@ describe('SampleBallotCard', () => {
     ],
     ['the field cannot be read', '<script>alert(1)</script>'],
   ])('links the official lookup instead when %s', (_, html) => {
-    render(<SampleBallotCard html={html} />);
+    render(<SampleBallotCard html={html} code="CC007" />);
     expectFallback();
     expect(screen.queryByText('alert(1)')).toBeNull();
     expect(document.querySelector('script')).toBeNull();
