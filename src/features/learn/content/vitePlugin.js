@@ -17,7 +17,7 @@ import { parseTopic } from './topic.js';
 const TOPIC_FILE = /\/content\/[^/]+\/learn\/[^/]+\.md$/;
 
 /** Every content/<locale>/learn/*.md file under `root`, as absolute paths. */
-async function topicFiles(root) {
+export async function topicFiles(root) {
   const contentDir = path.join(root, 'content');
   let locales;
   try {

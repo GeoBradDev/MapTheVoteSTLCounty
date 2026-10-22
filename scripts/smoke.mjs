@@ -1,8 +1,10 @@
 // Post-deploy smoke test: checks that a deployed copy of the app serves the
-// shell, survives a hard load of a deep link, serves its hashed assets, and
-// sends the expected headers.
-// Usage: node scripts/smoke.mjs <base-url> [--skip-headers]
+// shell, survives a hard load of a deep link, serves its hashed assets, serves
+// robots.txt and sitemap.xml as real files (#97), and sends the expected headers.
+// Usage: node scripts/smoke.mjs <base-url> [--skip-headers] [--preview]
 // Use --skip-headers against hosts that set none, such as `npm run preview`.
+// Use --preview against a pull request preview, whose build keeps crawlers
+// out: it checks for a disallow-all robots.txt and a noindex shell instead.
 
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -28,6 +30,9 @@ export const ASSET_HEADERS = [
 ];
 
 const SCRIPT_SRC = /<script\b[^>]*\btype="module"[^>]*\bsrc="(\/assets\/[^"]+\.js)"/;
+const SITEMAP_LINE = /^Sitemap: https:\/\/\S+\/sitemap\.xml$/m;
+const DISALLOW_ALL = /^Disallow: \/$/m;
+const NOINDEX = /<meta\b[^>]*\bname="robots"[^>]*\bcontent="noindex"/;
 
 async function get(baseUrl, pathname) {
   return fetch(new URL(pathname, baseUrl), {
@@ -36,9 +41,10 @@ async function get(baseUrl, pathname) {
   });
 }
 
-// Returns the shell's module script path, or throws with what was wrong. The
-// shell must be served at the requested path: a redirect to /index.html would
-// drop the route, so only scheme or host redirects (http to https) may happen.
+// Returns the shell's module script path and its HTML, or throws with what
+// was wrong. The shell must be served at the requested path: a redirect to
+// /index.html would drop the route, so only scheme or host redirects (http to
+// https) may happen.
 async function shellScript(res, pathname) {
   if (res.status !== 200) throw new Error(`status ${res.status}`);
   const finalPath = new URL(res.url).pathname;
@@ -49,7 +55,19 @@ async function shellScript(res, pathname) {
   if (!body.includes('id="root"')) throw new Error('no #root element');
   const src = body.match(SCRIPT_SRC)?.[1];
   if (!src) throw new Error('no module script under /assets/');
-  return src;
+  return { src, body };
+}
+
+// Returns the body of a real file at `pathname` whose content type includes
+// `type`, or throws. The SPA rewrite answers a missing file with the shell.
+async function fileBody(baseUrl, pathname, type) {
+  const res = await get(baseUrl, pathname);
+  if (res.status !== 200) throw new Error(`status ${res.status}`);
+  const actual = res.headers.get('content-type') ?? '';
+  const body = await res.text();
+  if (body.includes('id="root"')) throw new Error('got the app shell');
+  if (!actual.includes(type)) throw new Error(`content-type ${actual || 'missing'}`);
+  return body;
 }
 
 function missingHeaders(headers, expected) {
@@ -70,20 +88,23 @@ async function check(name, fn) {
 /**
  * Runs every check against `baseUrl` and returns one result per check:
  * `{ name, ok, detail }`. Never throws; a network error fails its check.
+ * `preview: true` checks a pull request preview's crawler rules instead of
+ * production's robots.txt and sitemap.
  */
-export async function runSmoke(baseUrl, { checkHeaders = true } = {}) {
+export async function runSmoke(baseUrl, { checkHeaders = true, preview = false } = {}) {
   let root;
+  let rootHtml;
   let script;
   let asset;
 
   const results = [
     await check('GET / returns the app shell', async () => {
       root = await get(baseUrl, '/');
-      script = await shellScript(root, '/');
+      ({ src: script, body: rootHtml } = await shellScript(root, '/'));
       return script;
     }),
     await check(`hard load of ${DEEP_LINK} returns the app shell`, async () => {
-      const src = await shellScript(await get(baseUrl, DEEP_LINK), DEEP_LINK);
+      const { src } = await shellScript(await get(baseUrl, DEEP_LINK), DEEP_LINK);
       if (script && src !== script) throw new Error(`script ${src}, but / has ${script}`);
     }),
     await check('hashed asset returns JavaScript', async () => {
@@ -96,6 +117,30 @@ export async function runSmoke(baseUrl, { checkHeaders = true } = {}) {
       return script;
     }),
   ];
+
+  if (preview) {
+    results.push(
+      await check('/robots.txt keeps every crawler out', async () => {
+        const body = await fileBody(baseUrl, '/robots.txt', 'text/plain');
+        if (!DISALLOW_ALL.test(body)) throw new Error('no "Disallow: /" line');
+      }),
+      await check('the app shell is marked noindex', async () => {
+        if (rootHtml === undefined) throw new Error('no shell: the / check failed');
+        if (!NOINDEX.test(rootHtml)) throw new Error('no <meta name="robots" content="noindex">');
+      }),
+    );
+  } else {
+    results.push(
+      await check('/robots.txt is text naming the sitemap', async () => {
+        const body = await fileBody(baseUrl, '/robots.txt', 'text/plain');
+        if (!SITEMAP_LINE.test(body)) throw new Error('no "Sitemap: https://.../sitemap.xml" line');
+      }),
+      await check('/sitemap.xml is XML, not the app shell', async () => {
+        const body = await fileBody(baseUrl, '/sitemap.xml', 'xml');
+        if (!body.includes('<urlset')) throw new Error('no <urlset> element');
+      }),
+    );
+  }
 
   if (checkHeaders) {
     for (const [name, res, expected] of [
@@ -118,10 +163,13 @@ export async function runSmoke(baseUrl, { checkHeaders = true } = {}) {
 async function main(args) {
   const baseUrl = args.find((a) => !a.startsWith('--'));
   if (!baseUrl) {
-    console.error('Usage: node scripts/smoke.mjs <base-url> [--skip-headers]');
+    console.error('Usage: node scripts/smoke.mjs <base-url> [--skip-headers] [--preview]');
     return 2;
   }
-  const results = await runSmoke(baseUrl, { checkHeaders: !args.includes('--skip-headers') });
+  const results = await runSmoke(baseUrl, {
+    checkHeaders: !args.includes('--skip-headers'),
+    preview: args.includes('--preview'),
+  });
   for (const { name, ok, detail } of results) {
     console.log(`${ok ? 'PASS' : 'FAIL'} ${name}${detail ? `: ${detail}` : ''}`);
   }
