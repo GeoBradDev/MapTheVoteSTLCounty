@@ -71,8 +71,9 @@ dataviz, django, fastapi, expo (not applicable because no charts, no backend, no
 - `src/features/lookup/GeocoderAttribution.jsx` copy: the City is a source, not only a check.
 - `scripts/check-geocoder.mjs`: City expectations become a City precinct; more City cases.
 - Tests: new `cityAddress.lookup88.test.js` and `geocoder.city88.test.js` (the existing
-  `geocoderChain`, `geocoder.city58`, `geocoder.sharedzip58` and `geocoder.pick58` tests needed no
-  change and pass unchanged), `locate.test.js`, `AddressLookup.test.jsx`,
+  `geocoderChain`, `geocoder.city58`, `geocoder.sharedzip58` and `geocoder.pick58` tests
+  needed no change until the owner's 2026-10-22 decision; see Revisions for the approved
+  rewrites), `locate.test.js`, `AddressLookup.test.jsx`,
   `OutOfCountyNotice.test.jsx`, privacy tests as needed.
 - Docs: README (Address search, Privacy, Election config), `docs/data.md` (Geocoding, City
   check), `docs/progress.md` (the #87 line the coordinator gave).
@@ -185,3 +186,11 @@ error line (#93), the Clayton municipality no match (opened as #143, unrelated).
   a postcode) whose number and street the City has is no match. `scripts/check-geocoder.mjs`
   pins W05P05, W10P02 and FER022 exactly and adds the "St. Louis City" no-ZIP cases. Tests
   in `geocoder.city88.test.js` and `geocoderChain.test.js`.
+- Resume review round 2: with the City geocoder down, Photon named `1 Brookings Dr, St.
+  Louis City` as the City and `locate()` then gave the county precinct at its point. A
+  Photon place named as the City, for text with no ZIP, now goes through `twinFree` too.
+  The header comments of the frozen `AddressSearch.editpick58`, `repick58` and `pickzip58`
+  tests say the label ZIP now counts as typed (comments only, under the owner's approval);
+  the README Errors list names the City lookup failing with Photon finding nothing.
+  `scripts/check-geocoder.mjs` adds an "app, City down" pass: shared addresses and no-ZIP
+  twins must get no precinct with the City geocoder blocked.

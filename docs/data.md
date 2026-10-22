@@ -752,7 +752,9 @@ which misses many City house numbers (`6135 Washington Ave 63112`, `5010 Notting
   shown while no county source answers, since a pick could not then be found again.
 - **The City geocoder unavailable:** Photon is asked; a Photon place that could get a
   county precinct still needs the City check, which fails too, so never a county
-  precinct. With nothing found, `reportUnavailable` (#18) makes it address search not
+  precinct. A Photon place named as the City, for text with no ZIP, is asked of the county
+  by its street, as a City lookup answer is (`1 Brookings Dr, St. Louis City`: the county
+  has it, so no match, not the precinct at its point). With nothing found, `reportUnavailable` (#18) makes it address search not
   working.
 
 `node scripts/check-geocoder.mjs`, 2026-10-21, rerun with the City check (#58): the 10 polling place addresses

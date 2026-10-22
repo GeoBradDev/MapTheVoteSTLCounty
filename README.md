@@ -617,8 +617,8 @@ no match and picked from the county's suggestion open the county precinct, that 
 precinct, and that addresses the county and the City both list in one ZIP (6135 Horton Pl
 63133, 1 Brookings Dr 63130) are no match. It exits 1 if the chain puts any address in the
 wrong precinct, a City address does not open a City precinct, an address outside both gets a
-precinct, a pick does not open its label's jurisdiction, or a shared address or a twin typed with
-no ZIP is not no match. "No match" is
+precinct, a pick does not open its label's jurisdiction, a shared address or a twin typed with
+no ZIP is not no match, or one of those gets a precinct with the City geocoder blocked. "No match" is
 allowed: the app then points the voter to "Use my location" and the county's official
 lookup. Results are recorded in `docs/data.md` under Geocoding.
 
@@ -630,7 +630,8 @@ no single answer: none has the address, two addresses or two precincts fit, the 
 the City both list it in one ZIP, the City has it in another ZIP and no ZIP was typed, or the
 only fit is not exact. A lookup that could not finish says address search is not working instead: every
 source down, the City check or the county's precinct check failing or slow, Photon down after a county no
-match, or no county layer answering with Photon finding nothing. (With the live county
+match, the City lookup failing with Photon finding nothing, or no county layer answering with
+Photon finding nothing. (With the live county
 layer down, the 2023 hosted copy's no match counts as an answer.)
 Every source down was already a `GeocoderUnavailableError`; `createGeocoder` reports the
 other cases that way only when the caller passes `reportUnavailable`, which the app does;

@@ -173,8 +173,8 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
     }
   }
 
-  // A City place found for text with no ZIP, unless the county has the same
-  // number and street. The county answered no match for the text, but a
+  // A City place found for text with no ZIP (by the City lookup, or named as
+  // the City by Photon), unless the county has the same number and street. The county answered no match for the text, but a
   // typed town it lacks ("St. Louis City") rules out every county record, so
   // it is asked for the street alone: a county twin, in any ZIP, makes the
   // text one that could mean either, so no match and the voter adds a ZIP
@@ -290,6 +290,13 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
       // could not answer: the search could not finish.
       if (!place && cityFailed && reportUnavailable) {
         throw new GeocoderUnavailableError('The City did not answer');
+      }
+      // A place Photon names as the City, for text with no ZIP, could be a
+      // county twin that a typed town the county lacks ("St. Louis City")
+      // hid from the county, with the City geocoder down or finding nothing:
+      // the county is asked by its street, as for a City lookup answer.
+      if (place?.county === CITY_COUNTY && !typedZip(text)) {
+        return twinFree(place, signal, reportUnavailable);
       }
       return checkedForCity(text, place, signal, reportUnavailable);
     },

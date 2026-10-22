@@ -19,7 +19,7 @@
 // or the blocked chain, a City address does not open its City precinct, an
 // address outside both is put in a precinct, a pick does not open its label's
 // jurisdiction, or an address both list in one ZIP or a twin typed with no
-// ZIP is not no match.
+// ZIP is not no match, or gets a precinct while the City geocoder is down.
 
 import { readFile } from 'node:fs/promises';
 import { getPrecinctAtPoint } from '../src/data/arcgis.js';
@@ -235,6 +235,21 @@ for (const [name, geocoder] of [
     console.log(`${name}: pick "${pick?.label}" for ${partial}: ${kind} (${place?.label ?? ''})`);
     if (!kind.startsWith(want)) wrong.push(`${name}: pick for ${partial}: ${kind}, want ${want}`);
   }
+}
+
+// The City geocoder down: an address both list, or a twin typed with no ZIP,
+// must never get a precinct (#58, #88).
+const cityDown = createGeocoder({
+  sources: [live, hosted],
+  fallback: photon,
+  cityCheck: createCityAddressCheck({ fetch: () => Promise.reject(new TypeError('blocked')) }),
+});
+for (const text of [...SHARED, ...TWIN_NO_ZIP]) {
+  const place = await withRetry(() => cityDown.geocode(text));
+  const kind = await kindOf(place);
+  console.log(`app, City down: ${text}: ${kind} (${place?.label ?? ''})`);
+  if (/^(city|county) /.test(kind))
+    wrong.push(`app, City down: ${text}: ${kind}, want no precinct`);
 }
 
 if (wrong.length) {

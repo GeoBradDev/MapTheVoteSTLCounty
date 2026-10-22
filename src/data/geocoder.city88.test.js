@@ -252,3 +252,39 @@ it('a City answer for a place with no ZIP of its own is no match', async () => {
   });
   await expect(geocoder.geocode('1 Brookings Dr, St. Louis, MO 63130')).resolves.toBeNull();
 });
+
+// Review finding: with the City geocoder down, Photon can name a county twin
+// as the City (1 Brookings Dr, St. Louis City); the county is asked by its
+// street, so it is never a precinct then.
+describe('a Photon place named as the City, for text with no ZIP', () => {
+  const PHOTON_CITY = Object.freeze({
+    lat: 38.648,
+    lng: -90.305,
+    state: 'Missouri',
+    county: 'St. Louis city',
+    label: '1 Brookings Drive, Saint Louis, MO 63130',
+  });
+  const county = async (text) =>
+    /city/i.test(text) ? { status: 'none' } : { status: 'match', place: COUNTY_PLACE };
+
+  it('is no match when the county has the number and street', async () => {
+    const { geocoder, source } = setup({
+      county,
+      lookup: unavailable,
+      photon: async () => PHOTON_CITY,
+    });
+    await expect(geocoder.geocode('1 Brookings Dr, St. Louis City')).resolves.toBeNull();
+    expect(source.find).toHaveBeenLastCalledWith('1 Brookings Drive', { signal: undefined });
+  });
+
+  it('is the place when the county does not have it', async () => {
+    const { geocoder } = setup({ lookup: unavailable, photon: async () => PHOTON_CITY });
+    await expect(geocoder.geocode('1 Brookings Dr, St. Louis City')).resolves.toEqual(PHOTON_CITY);
+  });
+
+  it('with a ZIP typed, is the place without asking the county again', async () => {
+    const { geocoder, source } = setup({ lookup: unavailable, photon: async () => PHOTON_CITY });
+    await expect(geocoder.geocode('1 Brookings Dr 63130')).resolves.toEqual(PHOTON_CITY);
+    expect(source.find).toHaveBeenCalledTimes(1);
+  });
+});
