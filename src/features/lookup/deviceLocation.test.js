@@ -1,4 +1,9 @@
-import { getDeviceLocation, LOCATION_TIMEOUT_MS, LocationError } from './deviceLocation.js';
+import {
+  getDeviceLocation,
+  LOCATION_TIMEOUT_MS,
+  LocationError,
+  MAX_ACCURACY_M,
+} from './deviceLocation.js';
 
 const POSITION = {
   coords: { latitude: 38.62, longitude: -90.33, accuracy: 12, altitude: null, speed: null },
@@ -78,5 +83,31 @@ describe('getDeviceLocation', () => {
       throw new Error('blocked');
     });
     await expect(getDeviceLocation()).rejects.toMatchObject({ reason: 'unavailable' });
+  });
+
+  it('uses a 100 m accuracy limit', () => {
+    expect(MAX_ACCURACY_M).toBe(100);
+  });
+
+  it.each([0, 12, 100])('accepts a fix accurate to %s m', async (accuracy) => {
+    mockGeolocation((ok) => ok({ coords: { ...POSITION.coords, accuracy } }));
+    await expect(getDeviceLocation()).resolves.toEqual({ lat: 38.62, lng: -90.33 });
+  });
+
+  it.each([
+    ['above the limit', 100.5],
+    ['a Wi-Fi or IP estimate', 5000],
+    ['missing', undefined],
+    ['null', null],
+    ['not a number', NaN],
+    ['infinite', Infinity],
+    ['negative', -1],
+    ['a string', '10'],
+  ])('rejects as coarse when the accuracy is %s', async (_label, accuracy) => {
+    mockGeolocation((ok) => ok({ coords: { ...POSITION.coords, accuracy } }));
+    const error = await getDeviceLocation().catch((e) => e);
+    expect(error).toBeInstanceOf(LocationError);
+    expect(error.reason).toBe('coarse');
+    expect(error.message).not.toMatch(/38\.62|90\.33/);
   });
 });

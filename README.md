@@ -320,6 +320,9 @@ that the URL is `/p/<code>` only. In the Network panel, confirm that the request
 address or the coordinates go only to the hosts the notice names, that the point queries are
 POSTs with no coordinates in their URL, and that none of those requests comes back from the
 HTTP cache.
+Use my location turns away a fix with an accuracy radius over 100 m before any query (#83), so
+for this check use a phone with precise location on, or an emulated location whose accuracy is
+set to 100 m or less. If it says the location is only a rough estimate, press it again.
 
 ## Share links
 

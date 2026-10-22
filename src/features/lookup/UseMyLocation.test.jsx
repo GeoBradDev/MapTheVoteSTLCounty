@@ -102,6 +102,21 @@ describe('UseMyLocation', () => {
     expect(button()).toHaveTextContent(copy.button);
   });
 
+  it('says a rough fix is only an estimate and focuses the address box', async () => {
+    const onLocate = vi.fn();
+    render(<Harness onLocate={onLocate} />);
+    await userEvent.click(button());
+    await answer(({ ok }) =>
+      ok({ coords: { latitude: 38.62, longitude: -90.33, accuracy: 3000 } }),
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent(copy.errors.coarse);
+    expect(copy.errors.coarse).toMatch(/roughly/);
+    expect(copy.errors.coarse).toMatch(/type your address/i);
+    expect(address()).toHaveFocus();
+    expect(onLocate).not.toHaveBeenCalled();
+    expect(button()).toHaveTextContent(copy.button);
+  });
+
   it('names HTTPS when the page is not a secure context, without asking', async () => {
     vi.stubGlobal('isSecureContext', false);
     render(<Harness />);
@@ -255,7 +270,7 @@ describe('UseMyLocation', () => {
 
   it('has copy for every failure reason and names no party or candidate', () => {
     expect(Object.keys(copy.errors).sort()).toEqual(
-      ['denied', 'insecure', 'timeout', 'unavailable', 'unsupported'].sort(),
+      ['coarse', 'denied', 'insecure', 'timeout', 'unavailable', 'unsupported'].sort(),
     );
     expect(JSON.stringify(copy)).not.toMatch(
       /democrat|republican|libertarian|green party|candidate/i,
