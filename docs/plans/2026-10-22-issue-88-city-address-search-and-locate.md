@@ -95,7 +95,7 @@ dataviz, django, fastapi, expo (not applicable because no charts, no backend, no
   Photon answers already do for the county; never a county precinct.
 - The City results page is a stub until #89: a City voter reaches a "not found" page that
   links the City's own lookup. Accepted by the coordinator for this batch.
-- Bundle: the new geocoder code is in the first load (about 2.1 KB room); the City
+- Bundle: the new geocoder code is in the first load (about 2.1 KB room before, about 1 KB after this change); the City
   precinct client stays behind `loadCityClient()`.
 - The City getting typed text as suggestions are typed: only text that starts with a house
   number and a street word of two or more letters or digits, debounced like today, in a POST
@@ -132,7 +132,7 @@ error line (#93), the Clayton municipality no match (opened as #143, unrelated).
   is typed, not for `5010 Notting`.
 - `locate()` also returns `stl-city` for a point near the City, outside the county, when the
   City layer fails (coordinates only, Use my location), so a City voter is never told the
-  location is outside both.
+  location is outside both (also when the county boundary query fails too).
 - Review round 1: the City is asked for the house number and street only (`cityStreetOf`),
   since it finds nothing with a town after the street; `locate()` asks the City layer only for
   coordinates alone or a place the geocoder puts in St. Louis County, and falls back to

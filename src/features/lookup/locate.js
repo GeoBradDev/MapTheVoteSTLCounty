@@ -136,9 +136,10 @@ export async function locate(place) {
     // The geocoder's fields are the fallback below.
   }
   if (inCounty === true) return { kind: 'county-unmatched' };
-  // Coordinates alone near the City, outside the county, and the City could
-  // not answer. (The extent box also takes in some of the Illinois bank.)
-  if (cityFailed && kind === 'unknown' && inCounty === false && nearCity(point)) {
+  // Coordinates alone near the City, not known to be in the county, and the
+  // City could not answer. (The extent box also takes in some of the Illinois
+  // bank.)
+  if (cityFailed && kind === 'unknown' && inCounty !== true && nearCity(point)) {
     return { kind: 'stl-city' };
   }
   if (inCounty === null && kind === 'st-louis-county') return { kind: 'county-unmatched' };

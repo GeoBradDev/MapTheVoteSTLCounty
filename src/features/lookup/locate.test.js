@@ -246,6 +246,13 @@ describe('locate, in St. Louis City (#88)', () => {
     expect(await locate(CITY)).toEqual({ kind: 'stl-city' });
   });
 
+  it('a point near the City gets the City referral when the City layer and the boundary both fail', async () => {
+    fetchMock.mockImplementation(
+      recorded({ ...cityFails, [`${BOUNDARY} ${CITY.lng},${CITY.lat}`]: () => respond({}, 500) }),
+    );
+    expect(await locate({ lat: CITY.lat, lng: CITY.lng })).toEqual({ kind: 'stl-city' });
+  });
+
   it('a point near the City, outside the county, gets the City referral when the City layer fails', async () => {
     fetchMock.mockImplementation(recorded(cityFails));
     expect(await locate({ lat: CITY.lat, lng: CITY.lng })).toEqual({ kind: 'stl-city' });

@@ -182,9 +182,10 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
       if (!text) return [];
       // The City's parcels (#88) are asked alongside the county; a City
       // request that fails just adds none.
-      // Not while no county source answers: a picked City label could not
-      // then be found again (the City is asked as a source only after a
-      // county no match).
+      // Its answer is dropped while no county source answers: a picked City
+      // label could not then be found again (the City is asked as a source
+      // only after a county no match). The request starts alongside the
+      // county's, so suggestions do not wait for one after the other.
       const cityAsk =
         typeof cityCheck.suggest === 'function'
           ? cityCheck.suggest(text, { signal }).catch(() => [])

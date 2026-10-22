@@ -721,7 +721,9 @@ which misses many City house numbers (`6135 Washington Ave 63112`, `5010 Notting
   a unit, and without a St. Louis town, the state or a ZIP after it, since the geocoder finds
   nothing when they follow the street. Another town typed without a comma goes too (the
   strict rules then turn the answer away). Text with a ZIP entirely outside the City (one of
-  `COUNTY_ONLY_ZIPS`, or any ZIP not starting 631, as every City ZIP does) is never sent.
+  `COUNTY_ONLY_ZIPS`, or any ZIP not starting 631, as every City ZIP does) typed by the voter
+  is never sent; a picked label's ZIP is the source's, so a pick is sent without it, as for
+  the City check.
 - **Labels:** a City place and suggestion read `<number> <street>, St. Louis City, MO
   <ZIP>`, so a City address reads apart from its county twin, whose label names its own
   town. A picked City label fails the county's strict rules (it names the City), so it is

@@ -117,7 +117,7 @@ describe('PrivacyPage', () => {
       'Your browser does not keep these requests or their answers in its cache.',
     );
     expect(item).toHaveTextContent(
-      'the points of all of them go there first, the same way, to check that they are in one precinct',
+      "the points of all of them go to the county's election maps first, the same way, to check that they are in one precinct",
     );
     expect(item).toHaveTextContent('Opening a shared link sends only the precinct code.');
     expect(item).not.toHaveTextContent("part of the request's web address");
