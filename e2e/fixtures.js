@@ -36,9 +36,10 @@ const STALE_SHIFT_MS = (election.waitTimes.maxAgeMinutes + 60) * 60_000;
  * The early voting line counts (#102, #104, #106) for each board, by state.
  * Recorded on 2026-10-22: the County at 9:00 a.m. Central (fresh) and while
  * closed (empty); the City at 9:26 a.m. (fresh) and 7:44 a.m. (stale: every
- * report from the day before). Neither City recording names its sites' hours,
- * and the page lists no City sites yet (#91), so no City count shows in any
- * state; the City states prove the page does not depend on them.
+ * report from the day before). The fresh City recording has no hours field,
+ * the stale one's reports are a day old, and the page lists no City sites yet
+ * (#91), so no City count shows in any state; the City states prove the page
+ * does not depend on them.
  */
 const WAIT_FIXTURES = {
   county: {
@@ -122,7 +123,9 @@ function shape(body, params) {
 export function fixtureBody(href, form = null, { waits = {} } = {}) {
   const url = new URL(href);
   const params = new URLSearchParams([...url.searchParams, ...new URLSearchParams(form ?? '')]);
-  const states = { ...DEFAULT_WAITS, ...waits };
+  // A board left out, or given as undefined, keeps its default.
+  const states = { ...DEFAULT_WAITS };
+  for (const [key, state] of Object.entries(waits)) if (state !== undefined) states[key] = state;
   for (const key of ['county', 'city']) {
     if (!href.startsWith(waitLayer(election.waitTimes[key]))) continue;
     const body = WAIT_FIXTURES[key][states[key]];

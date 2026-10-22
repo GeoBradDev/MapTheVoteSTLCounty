@@ -399,11 +399,14 @@ the first day a board's counts appear, and again after either board changes its 
 
 1. Run `node scripts/check-config.mjs` while sites are open. Each wait source's line must say
    fresh, and the County line must say 0 reports match no site.
-2. Open `/early-voting` next to the board's own page (the links under Official sources). Pick
-   three sites and check the count and the report time match, and that the times read as
-   Central time (the board's page and this site should agree to the minute).
-3. Check the unit: both boards report people in line, not minutes (docs/data.md). If a board's
-   page starts showing minutes, change that source's `unit` before anything else.
+2. County: open `/early-voting` next to the County board's own page (the link under Official
+   sources). Pick three sites and check the count and the report time match, and that the times
+   read as Central time (the two pages should agree to the minute). The page does not list City
+   sites yet (#91): for the City, compare the newest report time on the check's City line with
+   the City board's dashboard instead.
+3. Check the unit: both boards report people in line, not minutes (docs/data.md), and the page
+   always says "people in line". If a board's page starts showing minutes, turn that source off
+   (step 4) and open an issue: changing its `unit` alone does not change what the page says.
 4. If a check fails or counts are wrong, set that source's `enabled` to `false` and deploy. The
    page then shows the sites and the official links without counts.
 

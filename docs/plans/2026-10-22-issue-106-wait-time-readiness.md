@@ -50,7 +50,10 @@ are tasks 1 and 2 below. The PR says `Closes #132`.
    shown. No test reaches the network; axe runs on the failure state.
 8. README: the Data health check section describes the wait checks, WARN and the open-hours
    runs; the Election config section gets a short runbook for the first day wait data
-   appears (values match the board's own map, times are Central, units are people).
+   appears (values match the board's own map, times are Central, units are people). The page
+   lists County sites only until #91, so for the City the runbook compares the check's newest
+   report time with the City dashboard; a unit change means turning the source off, since the
+   page always says "people in line" (revised after review finder 2).
 
 Revised after review finder 1: the wait checks read the clock when they run, not at the start
 of the run (retries can take minutes); the County join trims site keys as the app does;
