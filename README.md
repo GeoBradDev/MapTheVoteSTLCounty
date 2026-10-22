@@ -102,6 +102,10 @@ against, and why. In short:
   The polls layer holds both Election Day and in-person absentee sites; no layer assigns a
   polling place to a precinct, so the app lists the nearest and says how to confirm the
   assigned one.
+- **St. Louis City:** the City Board of Election Commissioners' layers in its ArcGIS org (the
+  one its polling places page's map comes from): precincts, districts (names and numbers only),
+  the 56 Election Day sites and 8 early voting sites, and the City outline. See the St. Louis
+  City section of `docs/data.md`.
 - **Sample ballots:** each precinct's `html` field links its PDF on the board's
   [ArcGIS portal](https://stlouiscovotes.maps.arcgis.com). The app shows the link only when it
   matches the config's pattern and names the precinct.
@@ -153,7 +157,8 @@ may need new values too. Work on a branch and merge through the usual pull reque
    to the day you checked. The build fails until every topic is updated, and it also fails on
    a `lastVerified` more than 60 days before Election Day, so do this step within that window.
    See [Learn content](#learn-content).
-6. **Re-record the fixtures** with `node scripts/record-fixtures.mjs`, so the tests and the
+6. **Re-record the fixtures** with `node scripts/record-fixtures.mjs` (or
+   `node scripts/record-fixtures.mjs city-` for the City layers alone), so the tests and the
    address search check below use the new layers. Pick new sample precincts in it if the old ones are gone.
    That script skips the early voting wait fixtures (`county-waits-*.json`,
    `city-waits-*.json`): a useful fresh fixture needs reports made during open hours, so once
@@ -389,8 +394,10 @@ The config holds the shared election values and one block per jurisdiction, `cou
 County voters. The results page gets its jurisdiction's data adapter and official lookup link
 from `src/data/jurisdictions.js`, picked from the precinct code's shape (`/p/CC007` is the County,
 `/p/W01P12` the City; [docs/data.md](docs/data.md#jurisdictions-and-precinct-codes)); its
-other links still read the County values until the City results land (#87, #93). The
-test also fails on a City block's layer, service or field name written outside the config.
+other links still read the County values until the City results land (#89, #93). The City's
+data client, `src/data/cityArcgis.js` (#87), is loaded on demand. The
+test also fails on a City block's layer, service, field name or filter written outside the
+config.
 
 The polling places layer the app keeps in memory (`getPolls` and `getAbsenteeSites`) has a max
 age (#84): `layerMaxAge` in the config, shorter on Election Day (the date in the config's time
@@ -517,9 +524,8 @@ in it, keeping focus and what the page has loaded. The site always starts in Eng
 
 ## Data health check
 
-Before each election, after editing `src/config/election.js`, check the live layers it names
-(all but the City block's precincts layer, which joins the check once the City results use it,
-#87):
+Before each election, after editing `src/config/election.js`, check the live layers it names,
+County and City:
 
 ```sh
 node scripts/check-config.mjs [--layer <key>=<path>] [--ballot-sample <n|all>] [--warnings <file>]
@@ -531,7 +537,12 @@ link parses and its file name names that precinct (and that 5 random links serve
 `Content-Disposition` file name names the same precinct), that the absentee filter finds sites with
 hours in the config, and that one known point per County Council district lands in a precinct
 in that district and inside the county boundary layer, while a point in St. Louis City lands in
-neither. For each wait time source in `waitTimes` that is turned on (County and City early voting
+neither. For the City block (#87), it checks each City layer has the fields the app reads, that the
+precincts are a sane count and every ID reads as a City code, that the Election Day and early
+voting filters find sites with an id, name and address (a WARN when the Election Day count is
+not the config's `pollsListed`, the count the City Board's page gives), and that City Hall lands
+in a City precinct, a ward and the City outline while a County point lands in none. For each
+wait time source in `waitTimes` that is turned on (County and City early voting
 line counts), it checks the layer has every field the config names, then prints one line naming
 the board and whether its counts are fresh: open sites, how many have a count the app would show
 now, County reports that match no early voting site, and the newest report time. An empty County

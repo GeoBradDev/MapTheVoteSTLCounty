@@ -790,8 +790,8 @@ in the City Board's ArcGIS org (`HZXbCkpCSqbGd0vK`). Its `precinctid` reads
 `W <ward> P <precinct>` with no zero padding, like `W 1 P 12`. Checked on 2026-10-22: 207
 precincts, every one in that form, wards 1 to 14, precincts 1 to 21 within a ward, no
 duplicates. So `W01P12` is `W 1 P 12` (`cityPrecinctId` in `src/data/jurisdictions.js`).
-Two digits each leaves room for a ward or precinct number up to 99. The rest of the City
-layers (#57) are for #87.
+Two digits each leaves room for a ward or precinct number up to 99. The conversion both ways
+is `src/data/cityPrecinctCode.js`. The rest of the City layers are under St. Louis City below.
 
 `src/config/election.js` holds the shared election values and one block per jurisdiction
 (`county`, `city`), each with its `id`, display name, board, service root, layers and
@@ -799,4 +799,109 @@ layers (#57) are for #87.
 City block holds only what is confirmed. The City board's site and lookup page (its polling
 places page, with the Assigned Polling Place Lookup) do not change between elections, so they
 are in `src/config/referrals.js`. `src/data/jurisdictions.js` pairs each block with its data:
-the County's is `src/data/arcgis.js`; the City's answers "not found" until #87.
+the County's is `src/data/arcgis.js`. The City's data client is `src/data/cityArcgis.js`
+(#87), loaded on demand through `loadCityClient()`; the City adapter still answers "not
+found" until the City results page (#89), because the results cards still carry County text
+and the County's Election Day rule.
+
+## St. Louis City
+
+Checked live on 2026-10-22 for #87, which settles the layer questions #57 left open. The
+City client is `src/data/cityArcgis.js`, with the same request rules as the County client
+(plain fetch, one retry, coordinates only in a POST body). The layers, fields and filters are
+in the City block of `src/config/election.js`; `node scripts/check-config.mjs` checks them
+(Data health check in the README), and `node scripts/record-fixtures.mjs city-` re-records
+their fixtures (`docs/raw/fixtures/city-*.json`).
+
+**Official source.** The City Board of Election Commissioners' polling places page,
+`https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/polling-places/index.cfm`,
+embeds web map `e5fdb4148a5e4134b6defe4e59f4366e` (owner `zakibem_stlcity`, in ArcGIS org
+`HZXbCkpCSqbGd0vK`). Every layer below is in that org on
+`https://services6.arcgis.com/HZXbCkpCSqbGd0vK/ArcGIS/rest/services`: keyless, CORS `*`,
+`cache-control: max-age=30`. The page lists "City-Wide Polling Places": "The locations listed
+below are the designated polling places for the November 3, 2026 General Election. Any voter
+who is registered to vote at an address within the boundaries of St. Louis City can vote at any
+of the listed locations on November 3, 2026. Total 56 polling places", then 8 "No Excuse
+Absentee Polling Places" with their hours.
+
+### Precincts: `ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/1`
+
+207 polygons, `precinctid` like `W 1 P 12` (see Jurisdictions and precinct codes). The app
+reads `precinctid` only. `pollingid` and `facilityid` are empty on every row, so no layer
+assigns a polling place to a City precinct; on November 3, 2026 any City voter may vote at any
+of the 56. A point query (`getCityPrecinctAtPoint`) returns no row outside the City (the county
+point -90.33, 38.62 returns none; City Hall returns `W 14 P 2`).
+
+### Districts: `ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/2`
+
+46 polygons, one per office: wards 1 to 14, Missouri House 76 to 82 and 84, Missouri Senate 4
+and 5, U.S. House "First District", Community College Trustee Subdistricts 2 and 3, the Board
+of Education, and the citywide and statewide offices (which share a `districtid` such as `City
+of St. Louis` or `State of Missouri`). The app reads `electedoffice`, `district` and
+`districtid` only. The layer also holds each officeholder's name, photo, party and contact
+details (`repname1` to `repname7`, `repimageurl*`, `party*`, `districturl*`, `phone*`,
+`email*`, `facebook*`, `twitter*`, `fulladdr*`); the app never asks for them (a test fails if
+it does), and never asks for `*`. `electedoffice` names the office as its holder is styled
+(`Alderman`, `Alderwoman`), so a districts card should label the district, not the office
+(#90).
+
+**Districts for a precinct with no point** (a share link): `BOE/PRECINCTS_2023` on
+`maps6.stlouis-mo.gov`, which has `Ward`, `Senate`, `Rep` and `NewCC` on each precinct, still
+fails every query on 2026-10-22 (`400 Unable to perform query operation` on the FeatureServer,
+`Failed to execute query` on the MapServer), so it is not used. Instead,
+`getCityDistrictsForPrecinct` asks the districts layer at a point inside the precinct's shared
+outline (`interiorPoint` in `src/data/interiorPoint.js`: the middle of the widest stretch inside
+the polygon along 9 horizontal lines). It holds because every City precinct lies inside exactly
+one district per office: for all 207 precincts, the districts at the interior points along 9
+lines across the full-resolution polygon were the same set every time (8 districts each), and the
+ward always matched the precinct's ward. Two other ways fail: a polygon intersect also returns
+the districts a precinct only touches (`W 14 P 8` got Missouri House 76, 78 and 79), and the
+centroid falls outside `W 14 P 8` and `W 14 P 18`, landing in House 78 and 79 instead of 76.
+The interior point of the simplified outline (`maxAllowableOffset` 0.0001, about 10 m) was
+inside the full polygon for all 207.
+
+### Voting locations: `VotingLocations_currentwait_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/0`
+
+76 points, owner `ESRI_BOE`, every row `municipality = 'City of St. Louis'`, `type = 'Voting
+Center'`, `nextelectdate` 2026-11-03. The same layer is the City wait time source (Wait times
+above). The app reads `facilityid` (unique, the site's id, `loc` in the cards), `name`,
+`fulladdr` (no ZIP in it) and `pollingPlaceZipCode`. Never `*`: it also holds staff contact
+fields (`pocname`, `pocemail`, `pocphone`).
+
+- **Election Day list (`pollsWhere`):** `publicview = 'Yes' AND facilityid <>
+  'St._Louis_City_Election_Board'`, 56 sites. Diffed with the page's 56 by name and address:
+  the same 56 (spelling only differs: `2501 N 11 St` for 2501 N 11th St, `2524 S Eleventh St`,
+  "New Sunny Mount Hunter's Hall" for New Sunny Mount Church at the same address). The 57th
+  public row is the Board office, 300 N Tucker Blvd: an early voting site the page lists only
+  under No Excuse Absentee, with weekday and last-Saturday hours, not on the Election Day
+  list. The row's `operhours` reads `6:00 AM - 7:00 PM` like every other row, and the page's
+  map (below) shows it, so ask the City Board before Election Day if the page changes;
+  `pollsListed` (56) in the config makes the health check warn when the filter's count moves.
+  7 of the 56 have no `pollingPlaceZipCode` (Srebrenica Genocide association, Busch Student
+  Center, Julia Davis Library, Machacek Library, McDonnell Medical Sciences Building, St. Joan of
+  Arc, West Side MB Church): the page lists ZIPs for them, the layer does not, so the cards show
+  no ZIP there. `accessible` is empty on every row; `disabledentry` and `entrydetails` are
+  filled on all 57 (#89 decides whether to show them).
+- **Early voting sites (`earlyVotingWhere`):** `publicview = 'Yes' AND earlyvoting = 'Yes'`,
+  the owner-confirmed wait time filter: 8 sites, the page's 8 No Excuse Absentee sites (Buder,
+  Carpenter, Julia Davis, Kingshighway, Schlafly and Walnut Park libraries, St. Joan of Arc, and
+  the Board office). Their `earlyvotingoperhours` match the page's hours, except that the Board
+  office's `Mo-Fr (08:00-17:00)` leaves out the page's "Last Saturday Before Election Day: 9
+  AM-1 PM" (#91 decides how hours are shown).
+- **Not the Election Day list:** `ElectionGeography_public_*` layer 0 has the same 57 public
+  rows (it is a view, `publicview = 'Yes'`, of the same data) without the ZIP fields.
+  `Polling_Centers_WFL1/FeatureServer/1` is the page's own embedded map ("Active Polling
+  Places", filter `status = 1`): 57 rows, the page's 56 plus the Board office, but it gives
+  McDonnell Medical Sciences Building as 320 S. Euclid Ave where the page says 4565 McKinley
+  Ave, and it carries a `Phone` field. `BOE/Polling_Place_Precincts/MapServer/2` on
+  `maps6.stlouis-mo.gov` has 55: the page's list less Machacek Library.
+
+### City boundary: `ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/2`, `districtid = 'City of St. Louis'`
+
+Neither official server has a separate City boundary layer (the org's service list and the
+`maps6` folders were searched on 2026-10-22). The citywide offices' polygons in the districts
+layer are the City outline: 9 rows (mayor, comptroller and the other citywide offices), each
+about 281.41 million m² in Web Mercator (within 60 m² of each other), within 300 m² of
+the 207 precincts' total area (about 66 square miles on the ground). `isInCityBoundary` asks with `boundaryWhere`; any row
+means inside. A backup to the precinct point query, as the county boundary is for the County.
+
