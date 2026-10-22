@@ -7,7 +7,20 @@ import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import App from './App.jsx';
 import { siteUrl } from './config/site.js';
+import { copy as errorCopy } from './components/errorBoundaryCopy.js';
 import { pageHead, shellHead } from './pageHead.js';
+
+// The privacy page throws when `privacyThrows` is set, to show the error screen.
+let privacyThrows = false;
+vi.mock('./features/privacy/PrivacyPage.jsx', async (importOriginal) => {
+  const { default: PrivacyPage } = await importOriginal();
+  return {
+    default: function MaybeBroken() {
+      if (privacyThrows) throw new Error('broken');
+      return <PrivacyPage />;
+    },
+  };
+});
 
 beforeEach(() => {
   vi.stubGlobal(
@@ -19,6 +32,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  privacyThrows = false;
 });
 
 // The head as the pre-rendered file for `route` sends it.
@@ -84,5 +98,23 @@ describe('head on navigation', () => {
     act(() => location.navigate('/privacy?address=1318+Ross+Ave#main'));
     expect(canonical()).toBe(`${siteUrl}/privacy`);
     expect(document.head.innerHTML).not.toMatch(/Ross|address=/);
+  });
+
+  // The error screen (#18) is not the page that failed: it keeps its own
+  // title and the shell's head, never the failed page's canonical.
+  it('gives the error screen on a public path its own title and the shell head', () => {
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const location = arriveAt('/learn');
+      privacyThrows = true;
+      act(() => location.navigate('/privacy'));
+      expect(document.querySelector('h1')).toHaveTextContent(errorCopy.heading);
+      expect(document.title).toBe(`${errorCopy.heading} | St. Louis County Voter Guide`);
+      expect(canonical()).toBeNull();
+      expect(ogUrl()).toBeNull();
+      expect(description()).toBe(shellHead().description);
+    } finally {
+      errors.mockRestore();
+    }
   });
 });
