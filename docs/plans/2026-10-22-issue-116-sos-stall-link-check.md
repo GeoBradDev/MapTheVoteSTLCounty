@@ -13,8 +13,9 @@ dataviz, Django, FastAPI, Expo: not applicable because no UI, API or data layer 
 1. When a request times out and a retry remains, the last try waits longer
    (`lastTimeoutMs`, default 75000 ms) than the normal per-try timeout (15000 ms), so a page
    that stalls about 60 s before its first byte passes.
-2. A failure that is not a timeout (connection error, 5xx, 429) keeps the normal timeout on
-   every try; the long last try is only for a request that timed out on the try before.
+2. The long last try is only for a request whose try before the last timed out; when that
+   try failed some other way (connection error, 5xx, 429), the last try keeps the normal
+   timeout.
 3. At most `maxLongTries` (default 3) URLs in one run get the long last try; later ones
    get only the normal timeout, so a site that stalls on every page adds at most about
    3 minutes. (Revised after review: the first version marked a host down only when its long

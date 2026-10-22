@@ -80,8 +80,8 @@ jobs:
       # Every source and link in content/<locale>/learn/ (#21) and every page
       # the election config links (#74). A dead URL takes about 51 s (3 tries
       # of 15 s plus waits). www.sos.mo.gov sometimes stalls about 60 s on a
-      # healthy page (#116), so up to 3 URLs a run that time out twice get 75 s
-      # on their last try: about 111 s each, 3 minutes more in all. A page
+      # healthy page (#116), so up to 3 URLs a run whose second try timed out
+      # get 75 s on their last try: about 111 s each, 3 minutes more in all. A page
       # behind a bot challenge is skipped, not failed, and listed for a person
       # to open in a browser.
       - name: Content link check
