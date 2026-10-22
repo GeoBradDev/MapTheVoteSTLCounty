@@ -149,8 +149,8 @@ const election = deepFreeze({
   layerMaxAge: { minutes: 10, electionDayMinutes: 2 },
 
   // Early voting line counts (#103), traced in #102 (docs/data.md, "Wait
-  // times"). Both boards report people in line, not minutes. Both layers send
-  // max-age=30, so a 30 second refresh adds no load. 120 minutes matches the
+  // times"). The County reports people in line; the City unit is an open
+  // owner question (see `city.valueField`). Both layers send max-age=30, so a 30 second refresh adds no load. 120 minutes matches the
   // County view's own 2 hour window, so the app never shows a count the
   // official app would not.
   waitTimes: {
