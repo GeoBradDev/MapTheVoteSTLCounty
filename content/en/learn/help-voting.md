@@ -26,9 +26,9 @@ sources:
   - id: rsmo-115-291
     label: Missouri Revised Statutes, Section 115.291 (help with an absentee ballot)
     url: https://revisor.mo.gov/main/OneSection.aspx?section=115.291
-  - id: county-contact
-    label: St. Louis County Board of Elections, Contact Us
-    url: https://stlouiscovotes.info/about-us/
+  - id: county-polls-app
+    label: St. Louis County Board of Elections, Polling Place Lookup (November 3, 2026)
+    url: https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=13fb36e785c84dbdbcc5219f999652ba
 ---
 
 ## Bring someone to help you
@@ -87,4 +87,4 @@ This applies if, after the request deadline, you:[^rsmo-115-287]
 - will be in a nursing or care facility in St. Louis County on Election Day.[^rsmo-115-287]
 
 The county board sends a team to help you apply and vote.[^rsmo-115-287] The team is two registered voters,
-one from each major party.[^rsmo-115-287] Call 314-615-1800.[^county-contact]
+one from each major party.[^rsmo-115-287] Call 314-615-1800.[^county-polls-app]

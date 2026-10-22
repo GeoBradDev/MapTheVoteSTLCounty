@@ -20,13 +20,13 @@ sources:
   - id: sos-calendar
     label: Missouri Secretary of State, 2026 Election Calendar
     url: https://www.sos.mo.gov/elections/calendar
-  - id: county-registration
-    label: St. Louis County Board of Elections, Registration
-    url: https://stlouiscovotes.info/registration/
+  - id: county-polls-app
+    label: St. Louis County Board of Elections, Polling Place Lookup (November 3, 2026)
+    url: https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=13fb36e785c84dbdbcc5219f999652ba
 ---
 
 Tell the county board when you move or change your name.[^sos-other-questions] It is best to do this before
-Election Day.[^sos-other-questions] Call 314-615-1800 with questions.[^county-registration]
+Election Day.[^sos-other-questions] Call 314-615-1800 with questions.[^county-polls-app]
 
 ## You moved within St. Louis County
 

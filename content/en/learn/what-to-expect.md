@@ -23,9 +23,6 @@ sources:
   - id: sos-election-day
     label: Missouri Secretary of State, On Election Day questions
     url: https://www.sos.mo.gov/elections/goVoteMissouri/electionday
-  - id: county-contact
-    label: St. Louis County Board of Elections, Contact Us
-    url: https://stlouiscovotes.info/about-us/
   - id: sos-other-questions
     label: Missouri Secretary of State, Other Voting Questions
     url: https://www.sos.mo.gov/elections/goVoteMissouri/votingquestions
@@ -40,7 +37,7 @@ the polls close, you cannot vote.[^sos-election-day]
 ## Where
 
 Check where to vote before Election Day.[^sos-election-day] The county board can tell you your polling place;
-checking ahead helps you avoid problems.[^sos-election-day] Call 314-615-1800.[^county-contact]
+checking ahead helps you avoid problems.[^sos-election-day] Call 314-615-1800.[^county-polls-app]
 
 To find polling places near you, look up your address on the [home page](/) or use the
 county's

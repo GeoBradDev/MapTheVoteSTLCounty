@@ -8,9 +8,9 @@ sources:
   - id: sos-register
     label: Missouri Secretary of State, Register to Vote
     url: https://www.sos.mo.gov/elections/goVoteMissouri/register
-  - id: county-registration
-    label: St. Louis County Board of Elections, Registration
-    url: https://stlouiscovotes.info/registration/
+  - id: county-polls-app
+    label: St. Louis County Board of Elections, Polling Place Lookup (November 3, 2026)
+    url: https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=13fb36e785c84dbdbcc5219f999652ba
   - id: sos-voting-rights
     label: Missouri Secretary of State, Voting Rights questions
     url: https://www.sos.mo.gov/elections/goVoteMissouri/votingrights
@@ -29,7 +29,7 @@ You must be registered to vote.[^sos-voting-rights] Here is how to check your re
 - Go to the Secretary of State's
   [Register to Vote page](https://www.sos.mo.gov/elections/goVoteMissouri/register) and choose
   "Check Your Voter Registration."[^sos-register]
-- Or call the St. Louis County Board of Elections at 314-615-1800.[^county-registration]
+- Questions? Call the St. Louis County Board of Elections at 314-615-1800.[^county-polls-app]
 
 ## Who can register in Missouri
 

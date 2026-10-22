@@ -179,7 +179,8 @@ more than 60 days before Election Day or after it; was written for another `elec
 contains `TODO`; has an `id` that differs from its file name, or a front matter key it does
 not know; cites a source it does not list; uses Markdown outside the list above; or links
 anywhere but an `https` URL on an official host or a path on this site. The official hosts are
-any `.gov` site and the county board's own sites, listed in
+any `.gov` site (the county board's website is on the county's `.gov` site) and the board's
+ArcGIS portal, listed in
 `src/features/learn/content/officialSources.js`; add a host there in a reviewed change, never
 per topic.
 

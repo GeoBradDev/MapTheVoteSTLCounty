@@ -20,6 +20,7 @@ export const copy = {
   sourceNames: {
     'revisor.mo.gov': 'Missouri law (section 115.430)',
     'www.sos.mo.gov': 'Missouri Secretary of State',
-    'stlouiscovotes.info': 'St. Louis County Board of Elections contact page',
+    // The county's Polling Place Lookup app, which lists the board's number.
+    'stlouiscovotes.maps.arcgis.com': 'St. Louis County Board of Elections Polling Place Lookup',
   },
 };
