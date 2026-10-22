@@ -45,7 +45,7 @@ changes (the switcher renders nothing with one locale).
   `src/components/errorBoundaryCopy.js`, `src/features/learn/learnCopy.js`,
   `src/features/lookup/{addressSearch,assignedPollingPlace,error,home,lookup,outOfCounty,results,useMyLocation}Copy.js`,
   `src/features/privacy/privacyCopy.js`.
-- JSX literals moved: `src/App.jsx` (skip link, locale key, switcher),
+- JSX literals moved: `src/App.jsx` (skip link, re-render on a language change, switcher),
   `src/components/NotFoundPage.jsx`, `src/components/SiteFooter.jsx` (one word),
   `src/components/usePageTitle.js` (site name).
 - Dates: `src/features/lookup/earlyVoting.js` (`formatLongDate`),
@@ -53,6 +53,12 @@ changes (the switcher renders nothing with one locale).
 - Learn pages use the active locale's labels and topics: `LearnPage.jsx`,
   `LearnTopicPage.jsx`.
 - `eslint.config.js`: `react/jsx-no-literals` for app JSX, punctuation allowed.
+- The cards that link a topic ask for it in the active locale, and EarlyVotingCard reads its
+  text through `translated()` rather than a module-load capture: `PollsCard.jsx`,
+  `EarlyVotingCard.jsx`.
+- Comments and docs that named the old copy files: `src/features/learn/groups.js`,
+  `.github/pull_request_template.md`.
+- Tests: `src/test/lint.test.js` (the new rule), `src/i18n/*.test.js(x)`.
 - `README.md`: how to add a language.
 
 ## Order of work
@@ -84,7 +90,8 @@ restores a translated base title yet); remembering the chosen language across re
 are follow-ups for when Spanish is added.
 
 Revisions during review: `setLocale` keeps only the last pick when a file is still loading,
-and the switcher ignores a failed load; `src/i18n/addLocale.test.js` proves the real loader
+and the switcher ignores a failed load; a language change re-renders the page instead of
+remounting it, so focus stays on the switcher (`src/i18n/switchApp.test.jsx`); `src/i18n/addLocale.test.js` proves the real loader
 with a copy of `src/i18n` plus an `es.json` and one config line; docs that named the old copy
 files as the place for the privacy notice and the learn group labels now name `en.json`.
 

@@ -35,6 +35,10 @@ beforeAll(async () => {
   server = await createServer({
     root: dir,
     configFile: false,
+    // Its own cache, so it never clears the dev server's optimized deps in
+    // node_modules/.vite.
+    cacheDir: path.join(dir, '.vite'),
+    optimizeDeps: { noDiscovery: true },
     logLevel: 'silent',
     server: { middlewareMode: true, hmr: false, watch: null },
   });

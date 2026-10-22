@@ -61,8 +61,9 @@ function usePageArrival() {
 export default function App() {
   usePageArrival();
   const [location] = useLocation();
-  // A new language re-renders every page in it (#19).
-  const locale = useLocale();
+  // A new language re-renders every page in it (#19). The page is not
+  // remounted, so focus stays on the language switcher and nothing reloads.
+  useLocale();
   return (
     <div className="flex min-h-screen flex-col bg-surface text-ink">
       <a
@@ -73,8 +74,8 @@ export default function App() {
       </a>
       <main id="main" tabIndex={-1} className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
         {/* A page that throws shows a way forward, not a blank screen (#18);
-            a new location, or a new language, starts fresh. */}
-        <ErrorBoundary key={`${locale} ${location}`}>
+            a new location starts fresh. */}
+        <ErrorBoundary key={location}>
           <Switch>
             <Route path="/" component={HomePage} />
             <Route path="/p/:precinct" component={PrecinctPage} />

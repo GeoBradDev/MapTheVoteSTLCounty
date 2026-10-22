@@ -391,7 +391,7 @@ To add a language, such as Spanish: copy `en.json` to `src/i18n/es.json`, transl
 values (keep the keys and the `{...}` names), and add its line to `LOCALES` in
 `src/i18n/config.js`. A key it lacks falls back to English. The language switcher appears once
 there are two languages; choosing one loads its file, sets `<html lang>` and redraws the page
-in it (the page starts over, as on a new visit). The site always starts in English. Dates are formatted for the language in the election's time zone,
+in it, keeping focus and what the page has loaded. The site always starts in English. Dates are formatted for the language in the election's time zone,
 `America/Chicago`.
 
 ## Data health check
