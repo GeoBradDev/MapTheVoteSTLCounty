@@ -178,3 +178,11 @@ Chosen not to do: City rows (#91), the results page origin (#105), Election Day 
   are linked under "Official sources" in every season (the City note names the link there);
   `/early-voting/*` gets its own `no-cache` rule; comments that said `precinctMapView.js`
   alone imports MapLibre or recolors the basemap now say otherwise.
+- Review (finder 3): the live region (screen reader only) keeps the 5 minute throttle, and
+  a visible line, hidden from screen readers, shows the latest check, so a sighted reader
+  never sees a check time older than a row's report time. A recovery may announce at once;
+  "unavailable" still waits 5 minutes after the last success. The "unavailable" text no
+  longer claims hours are shown (the sites layer can be down too). On a hard load the page
+  leaves focus where the voter put it while its code loaded; when early voting ends with
+  the page open and focus goes with the list, focus moves to the heading. A test checks the
+  location is never sent, stored or logged.

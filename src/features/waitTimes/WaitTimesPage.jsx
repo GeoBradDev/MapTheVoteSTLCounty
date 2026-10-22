@@ -273,11 +273,23 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
   const headingRef = useRef(null);
   usePageTitle(copy.heading);
   useEffect(() => {
+    // The page's code loads on demand (a lazy route), so on a hard load the
+    // voter may already have moved focus (to the skip link, the language
+    // switcher): leave it there. After an in-app link, focus is on the page.
+    const focused = document.activeElement;
+    if (focused && focused !== document.body && focused.id !== 'main') return;
     focusHeadingOnArrival(headingRef.current);
   }, []);
 
   const now = useNow();
   const season = earlyVotingSeason(schedules, now, election.timeZone);
+  // When early voting ends with the page open, the list and its controls go:
+  // if focus went with them, put it on the heading, which reads the news next.
+  useLayoutEffect(() => {
+    if (season.kind !== 'ended') return;
+    const focused = document.activeElement;
+    if (!focused || focused === document.body) headingRef.current?.focus();
+  }, [season.kind]);
   const waits = useWaitTimes(waitSource);
   const checkedAt = useShownCheck(waits.county.checkedAt);
   const { result, loading, retry, targetRef } = useSites(loadSites);
@@ -321,9 +333,14 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
   const unavailable =
     waits.county.status === 'unavailable' &&
     (lastSuccess === null || now - lastSuccess >= ANNOUNCE_MS);
-  let statusText = '';
-  if (unavailable) statusText = copy.status.unavailable;
-  else if (checkedAt !== null) statusText = copy.status.checked(clockTime(checkedAt));
+  // The live region gets the throttled time; the visible line, hidden from
+  // screen readers so they do not hear it twice, has the latest.
+  const statusFor = (at) => {
+    if (unavailable) return copy.status.unavailable;
+    return at === null ? '' : copy.status.checked(clockTime(at));
+  };
+  const statusText = statusFor(checkedAt);
+  const shownStatusText = statusFor(lastSuccess);
 
   const mapSites = useMemo(
     () =>
@@ -358,8 +375,11 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
           <h2 id="wait-sites-heading" className="mt-6 text-xl font-semibold">
             {copy.listLabel}
           </h2>
-          <p data-testid="wait-status" aria-live="polite" className="mt-2">
+          <p data-testid="wait-status" aria-live="polite" className="sr-only">
             {statusText}
+          </p>
+          <p data-testid="wait-status-shown" aria-hidden="true" className="mt-2">
+            {shownStatusText}
           </p>
           <p className="text-sm text-muted">{copy.refresh(refreshSeconds)}</p>
 

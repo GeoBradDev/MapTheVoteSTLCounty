@@ -49,7 +49,9 @@ const names = () => items().map((li) => within(li).getByRole('heading').textCont
 const itemFor = (name) => items().find((li) => within(li).queryByRole('heading', { name }));
 const siteName = (key) =>
   titleCase(sites.features.find((f) => f.properties[county.pollsField] === key).properties.name);
+// The live region, and the visible line sighted readers see.
 const statusLine = () => screen.getByTestId('wait-status');
+const shownStatus = () => screen.getByTestId('wait-status-shown');
 // Any line count number shown: "About 3 people in line", "No one in line".
 const COUNT_TEXT = /in line, reported/;
 
@@ -208,6 +210,10 @@ describe('WaitTimesPage', () => {
     vi.setSystemTime(START + 2 * MINUTE);
     act(() => set([]));
     expect(statusLine()).toHaveTextContent(copy.status.checked('09:00'));
+    // The visible line always has the latest check, outside the live region.
+    expect(shownStatus()).toHaveTextContent(copy.status.checked('09:02'));
+    expect(shownStatus()).toHaveAttribute('aria-hidden', 'true');
+    expect(shownStatus().closest('[aria-live]')).toBeNull();
     vi.setSystemTime(START + 5 * MINUTE);
     act(() => set([]));
     expect(statusLine()).toHaveTextContent(copy.status.checked('09:05'));
@@ -260,6 +266,51 @@ describe('WaitTimesPage', () => {
     expect(document.activeElement).toContainElement(list());
     expect(screen.queryByRole('region', { name: copy.map.label })).toBeNull();
     createWaitTimesMap.mockReset();
+  });
+
+  it('leaves focus where the voter put it while the page code loaded', async () => {
+    const elsewhere = document.createElement('button');
+    document.body.append(elsewhere);
+    elsewhere.focus();
+    renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
+    await screen.findByRole('list', { name: copy.listLabel });
+    expect(elsewhere).toHaveFocus();
+    elsewhere.remove();
+  });
+
+  it('moves focus to the heading when early voting ends under it', async () => {
+    vi.useRealTimers();
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+    // 4:59 p.m. Central on the last day.
+    vi.setSystemTime(Date.UTC(2026, 10, 2, 22, 59));
+    renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
+    await screen.findByRole('list', { name: copy.listLabel });
+    screen.getByRole('radio', { name: copy.sort.name }).focus();
+    act(() => vi.advanceTimersByTime(2 * MINUTE));
+    expect(screen.getByText(copy.season.ended, { exact: false })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveFocus();
+  });
+
+  it('never sends, stores or logs the device location', async () => {
+    const user = userEvent.setup();
+    const fetch = vi.fn(() => new Promise(() => {}));
+    vi.stubGlobal('fetch', fetch);
+    const log = vi.spyOn(console, 'log');
+    const getCurrentPosition = vi.fn((ok) =>
+      ok({ coords: { latitude: 38.7313, longitude: -90.4002, accuracy: 20 } }),
+    );
+    vi.stubGlobal('navigator', { ...navigator, geolocation: { getCurrentPosition } });
+    renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
+    await screen.findByRole('list', { name: copy.listLabel });
+    await user.click(screen.getByRole('button', { name: copy.location.button }));
+    await screen.findByRole('radio', { name: copy.sort.nearest });
+    const sent = JSON.stringify(fetch.mock.calls);
+    expect(sent).not.toMatch(/38\.73|90\.40/);
+    expect(localStorage.length + sessionStorage.length).toBe(0);
+    expect(document.cookie).toBe('');
+    expect(log).not.toHaveBeenCalled();
+    expect(window.location.href).not.toMatch(/38\.73|90\.40/);
+    log.mockRestore();
   });
 
   it('says when early voting runs before it starts', async () => {

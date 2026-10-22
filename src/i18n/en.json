@@ -279,7 +279,7 @@
     },
     "status": {
       "checked": "Line counts checked at {time}",
-      "unavailable": "Line counts could not be loaded right now. Each site's hours are still shown."
+      "unavailable": "Line counts could not be loaded right now. The official sources below have them."
     },
     "refresh": "Counts are checked again every {seconds} seconds while this page is open on your screen.",
     "count": "{count, plural, =0 {No one in line} one {About # person in line} other {About # people in line}}, reported {time}",
