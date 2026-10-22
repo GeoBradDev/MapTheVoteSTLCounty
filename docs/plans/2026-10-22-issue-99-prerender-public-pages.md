@@ -177,6 +177,10 @@ build its head hook on the `pageHead()` function added here.
 - `normalizePath()` strips one trailing slash only, as wouter's routes match, so `/learn//`
   is neither hydrated as `/learn` nor given its head (review finding).
 
+- Criterion 7's 155 character cut applies to the descriptions taken from page text (`/learn`,
+  `/privacy`, topics). The home page and shell keep `index.html`'s description as written
+  (158 characters, #71's wording), not cut (review finding; the README says so).
+
 ## Proof
 
 - Criterion 1, 2, 3: `src/test/build.test.js` against a real build (files, head tags, root

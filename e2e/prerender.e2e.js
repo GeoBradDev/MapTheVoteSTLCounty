@@ -42,6 +42,13 @@ async function holdScript(page) {
   return release;
 }
 
+// Waits until React has taken over the root (hydrated or rendered).
+async function waitForHydration(page) {
+  await page.waitForFunction(() =>
+    Object.keys(document.getElementById('root')).some((key) => key.startsWith('__reactContainer')),
+  );
+}
+
 // Every console error or warning and every uncaught error (React reports a
 // hydration mismatch as one) while the page loads and settles.
 function collectProblems(page) {
@@ -141,6 +148,12 @@ test.describe('hydration', () => {
     const problems = collectProblems(page);
     await answerFromFixtures(page);
     await page.goto('/');
+    await waitForHydration(page);
+    // Only the app answers an empty search this way; without it the form
+    // would just submit.
+    await page.getByRole('button', { name: 'Find my precinct' }).click();
+    await expect(page.getByText('Type your address first.')).toBeVisible();
+    await expect(page).toHaveURL(/\/$/);
     const box = page.getByRole('combobox', { name: 'Enter your address' });
     await box.fill('1318 Ross');
     await expect(box).toHaveValue('1318 Ross');
@@ -171,6 +184,7 @@ test.describe('reading before the script arrives', () => {
     const scrolled = await page.evaluate(() => window.scrollY);
     expect(scrolled).toBeGreaterThan(0);
     release();
+    await waitForHydration(page);
     await page.waitForLoadState('networkidle');
     expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
     await expect(page.locator('h1')).not.toBeFocused();
@@ -187,6 +201,7 @@ test.describe('reading before the script arrives', () => {
     const before = await page.evaluate(() => document.activeElement?.outerHTML);
     expect(before).not.toMatch(/^<body/);
     release();
+    await waitForHydration(page);
     await page.waitForLoadState('networkidle');
     expect(await page.evaluate(() => document.activeElement?.outerHTML)).toBe(before);
   });

@@ -261,8 +261,8 @@ Every build writes `robots.txt`, and a production build writes `sitemap.xml`, bo
   lists (the sitemap's own list, `publicPaths()` in `src/config/publicPages.js`), and the browser hydrates the markup (`src/main.jsx`). The head values come from
   `pageHead()`, which the app also applies on every in-app navigation. A description is the
   page's own text, never new wording: `site.description` in `src/i18n/en.json` for the home
-  page (a test keeps `index.html`'s the same), the intro of `/learn` and `/privacy`, and a
-  topic's first paragraph, each cut to 155 characters. Code that runs at module load or while
+  page, as written (a test keeps `index.html`'s the same), and the intro of `/learn` and
+  `/privacy` and a topic's first paragraph, each cut to 155 characters. Code that runs at module load or while
   rendering must work without `window`, `document` or `navigator`; `npm test` renders every
   pre-rendered path in Node. Precinct pages are never pre-rendered (their data is live) and
   keep the shell's head; what they and the not-found page carry is #98.
