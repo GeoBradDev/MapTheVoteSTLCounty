@@ -88,7 +88,11 @@ against, and why. In short:
 - **Precincts, polling places and early voting sites:** the St. Louis County Board of
   Elections' public ArcGIS layers under
   [its service root](https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services), named
-  per election (`precincts_2026_11_view` and `polls_2026_11_view` for November 3, 2026), plus
+  per election (for November 3, 2026,
+  [`precincts_2026_11_view`](https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/precincts_2026_11_view/FeatureServer/1)
+  and
+  [`polls_2026_11_view`](https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/polls_2026_11_view/FeatureServer/1)),
+  plus
   the
   [county boundary layer](https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/St_Louis_County_Boundary/FeatureServer/0).
   The polls layer holds both Election Day and in-person absentee sites; no layer assigns a
@@ -105,8 +109,8 @@ against, and why. In short:
   [live county layer](https://maps.stlouisco.com/hosting/rest/services/Maps/ASR_Address_Points/FeatureServer/0),
   then its
   [hosted copy](https://services2.arcgis.com/w657bnjzrjguNyOy/arcgis/rest/services/Address_Points/FeatureServer/2)),
-  then [Photon](https://photon.komoot.io) (OpenStreetMap data), with every match checked
-  against the City of St. Louis's own
+  then [Photon](https://photon.komoot.io) (OpenStreetMap data), with a match that could get a
+  county precinct checked against the City of St. Louis's own
   [geocoder](https://maps6.stlouis-mo.gov/arcgis/rest/services/GEOCODERS/COMPOSITE_GEOCODE/GeocodeServer).
   See [Address search](#address-search).
 - **Map:** [OpenFreeMap](https://openfreemap.org)'s Positron basemap. See [Map](#map).
@@ -128,9 +132,9 @@ may need new values too. Work on a branch and merge through the usual pull reque
 2. **Inspect them.** Put the new service names in the `SERVICES` list at the top of
    `scripts/inspect-data.mjs` (and the new lookup app's id in `INSTANT_APP_ID` if it changed),
    then run `node scripts/inspect-data.mjs`. It writes each layer's fields, counts and sample
-   rows to `docs/raw/`. Compare them with `docs/data.md`: field names, the `in_election`
-   values, the congressional district field, the `abs_type` values and the sample ballot link
-   format.
+   rows to `docs/raw/`. Compare them with `docs/data.md`: the field names, the congressional
+   district field and the sample ballot link format. The script saves only 3 sample rows per
+   layer, so query the layer for the distinct `in_election` and `abs_type` values.
 3. **Update `src/config/election.js`.** Every value that changes between elections is there,
    including every link to that election's own Instant Apps, each with its `sources` and
    `lastVerified` where it has them. Re-read every source; do not copy a value forward
@@ -146,7 +150,7 @@ may need new values too. Work on a branch and merge through the usual pull reque
    a `lastVerified` more than 60 days before Election Day, so do this step within that window.
    See [Learn content](#learn-content).
 6. **Re-record the fixtures** with `node scripts/record-fixtures.mjs`, so the tests and the
-   checks below use the new layers. Pick new sample precincts in it if the old ones are gone.
+   address search check below use the new layers. Pick new sample precincts in it if the old ones are gone.
 7. **Run the health check** and fix what it reports:
 
    ```sh
@@ -155,10 +159,11 @@ may need new values too. Work on a branch and merge through the usual pull reque
    node scripts/check-content-links.mjs
    ```
 
-   The first two take their sample points from the new fixtures: when a polling place or
-   precinct they name is gone, change the lists at the top of each script (the known points,
-   the polling place IDs and the sample address with its precinct) and the thresholds if the
-   new data needs it. Open any link the content check skipped in a browser. See
+   `check-geocoder.mjs` looks up the polling places named in its `LOCS` list in the new
+   fixtures, and expects its sample address in a named precinct: when either is gone, change
+   the list at the top of the script. `check-config.mjs` has fixed points, one per County
+   Council district, which change only when the districts are redrawn, and a sane range for
+   the precinct count. Open any link the content check skipped in a browser. See
    [Data health check](#data-health-check) and [Address search](#address-search).
 8. **Run the full gate** locally (`npm run lint`, `npm run format:check`, `npm test`,
    `npm run build`, `npm run test:e2e`, `npm run test:perf`). Tests that name a precinct,
@@ -525,8 +530,8 @@ credits; to change the basemap, change that file and the origin in `render.yaml`
 
 ## Contributing
 
-Open an issue first, then a pull request that references it. Every pull request runs the CI
-gate above and needs it green; run it locally first. Keep each pull request to one issue.
+Open a pull request against `main`. Every pull request runs the CI gate above and needs it
+green; run it locally first.
 
 - **Voter information needs an official source.** Any fact a voter acts on (dates, hours,
   places, ID rules, deadlines, phone numbers) comes from an official source: the county
@@ -540,13 +545,11 @@ gate above and needs it green; run it locally first. Keep each pull request to o
 - **Election values go in config.** Anything that changes between elections goes in
   `src/config/election.js`, never in the code that reads it (see
   [Election config](#election-config)).
-- **Keep the docs true.** When a change makes a line in this README or `docs/data.md` wrong,
-  fix it in the same pull request. A change to what is sent to a service also changes the
-  privacy notice (see [Privacy](#privacy)).
-- JavaScript only, no TypeScript. Run `npm run lint` and `npm run format` before pushing.
+- **A change to what is sent to a service** also changes the privacy notice in the same pull
+  request (see [Privacy](#privacy)).
 
 ## License
 
-No license has been chosen yet (#118), so the code is not yet open for reuse. Until a `LICENSE` file
-is added, ask the owner before reusing it. Voter information and sample ballots belong to
+No license has been chosen yet (#118), so the code is not yet open for reuse. Until a
+`LICENSE` file is added, ask the owner before reusing it. Voter information and sample ballots belong to
 their official publishers.

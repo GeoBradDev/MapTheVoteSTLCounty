@@ -29,14 +29,15 @@ and email skill, not applicable because no code changes.
 6. An "Updating for a new election" section, step by step: run `inspect-data.mjs`
    (editing its service list), find the new `precincts_YYYY_MM_view` and
    `polls_YYYY_MM_view`, update `src/config/election.js` (every election-specific value),
-   update `docs/data.md`, re-record fixtures if needed, re-verify every content topic and
+   update `docs/data.md`, re-record fixtures (before the checks that read them), re-verify every content topic and
    bump `election` and `lastVerified`, run the health check (`check-config.mjs`, plus the
    geocoder and link checks), run the gate, deploy and smoke test, and do the hand checks.
 7. "Deploying" stays as the existing Deploy section (renamed in the contents only if
    needed).
 8. A "Contributing" section, including the rule that voter information needs an official
-   source, the nonpartisan rules, the CI gate, and that config changes go in
-   `election.js`.
+   source, the nonpartisan rules, the CI gate, that config changes go in
+   `election.js`, and the existing Privacy rule that a change to what is sent changes the
+   privacy notice. No new project rules.
 9. A "Disclaimer": not an official county app; for official information, contact the
    St. Louis County Board of Elections (its page and 314-615-1800), and City voters the
    City board.
