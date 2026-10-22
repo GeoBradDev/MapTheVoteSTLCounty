@@ -259,13 +259,13 @@ describe('readTopicFile', () => {
   it('reads the links and front matter without the date checks, for the link checker', () => {
     const text = topicText({
       front: { lastVerified: addDays(ELECTION, -400) },
-      body: 'See [the board](https://www.stlouiscovotes.info/faq/).[^sos-id]',
+      body: 'See [the state](https://www.sos.mo.gov/elections/goVoteMissouri/register).[^sos-id]',
     });
     const { sources, links } = readTopicFile(text);
     expect(sources.map((s) => s.url)).toEqual([
       'https://www.sos.mo.gov/elections/goVoteMissouri/howtovote',
     ]);
-    expect(links).toEqual(['https://www.stlouiscovotes.info/faq/']);
+    expect(links).toEqual(['https://www.sos.mo.gov/elections/goVoteMissouri/register']);
   });
 });
 
@@ -275,7 +275,7 @@ describe('isOfficialUrl', () => {
     'https://revisor.mo.gov/main/OneSection.aspx?section=115.407',
     'https://www.eac.gov/voters',
     // Not the bare county site URL: src/ may not repeat config URLs.
-    'https://www.stlouiscovotes.info/faq/',
+    'https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/faq/',
     'https://stlouiscovotes.maps.arcgis.com/apps/instant/lookup/index.html',
   ])('accepts %s', (url) => {
     expect(isOfficialUrl(url)).toBe(true);
@@ -285,7 +285,10 @@ describe('isOfficialUrl', () => {
     'http://www.sos.mo.gov/elections',
     'https://example.com/',
     'https://sos.mo.gov.example.com/',
-    'https://evil-stlouiscovotes.info/',
+    'https://evil-stlouiscovotes.maps.arcgis.com/',
+    // The board's old site, retired when every page began redirecting (#73).
+    'https://stlouiscovotes.info/faq/',
+    'https://www.stlouiscovotes.info/about-us/',
     'https:www.sos.mo.gov/elections',
     'https://www.sos.mo.gov/\tpath',
     'https://evil.com\t.gov/',
