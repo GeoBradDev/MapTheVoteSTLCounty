@@ -1,5 +1,5 @@
 // Post-deploy smoke test: checks that a deployed copy of the app serves the
-// shell, survives a hard load of a deep link, serves its hashed assets, serves
+// home page and the shell, survives a hard load of a deep link, serves its hashed assets, serves
 // robots.txt and sitemap.xml as real files (#97), serves the public pages
 // pre-rendered (#99), and sends the expected headers.
 // Usage: node scripts/smoke.mjs <base-url> [--skip-headers] [--preview]

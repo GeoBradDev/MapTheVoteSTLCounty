@@ -23,7 +23,13 @@ try {
   for (const route of prerenderPaths()) {
     const file = path.join(outDir, outputFile(route));
     await mkdir(path.dirname(file), { recursive: true });
-    await writeFile(file, renderRoute(route, template));
+    let html;
+    try {
+      html = renderRoute(route, template);
+    } catch (error) {
+      throw new Error(`Pre-rendering ${route} failed: ${error.message}`, { cause: error });
+    }
+    await writeFile(file, html);
   }
 } finally {
   await server.close();

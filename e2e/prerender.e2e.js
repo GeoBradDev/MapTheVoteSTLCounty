@@ -29,6 +29,19 @@ async function answerFromFixtures(page) {
   });
 }
 
+// Holds the app's script back until `release()`.
+async function holdScript(page) {
+  let release;
+  const released = new Promise((resolve) => {
+    release = resolve;
+  });
+  await page.route(/\/assets\/index-[\w-]+\.js$/, async (route) => {
+    await released;
+    await route.continue();
+  });
+  return release;
+}
+
 // Every console error or warning and every uncaught error (React reports a
 // hydration mismatch as one) while the page loads and settles.
 function collectProblems(page) {
@@ -85,15 +98,26 @@ test.describe('hydration', () => {
     page,
   }) => {
     await answerFromFixtures(page);
-    // Tag the server's heading before any script runs; hydration keeps it.
-    await page.addInitScript(() => {
-      document.addEventListener('DOMContentLoaded', () => {
-        document.querySelector('h1')?.setAttribute('data-from-server', '');
-      });
-    });
-    await page.goto('/learn/voter-id');
+    // Tag the server's heading while the script is held back; hydration keeps it.
+    const release = await holdScript(page);
+    await page.goto('/learn/voter-id', { waitUntil: 'commit' });
+    await expect(page.locator('footer')).toBeAttached();
+    await page.evaluate(() => document.querySelector('h1').setAttribute('data-from-server', ''));
+    release();
     await expect(page.locator('h1')).toBeFocused();
     await expect(page.locator('h1[data-from-server]')).toHaveCount(1);
+  });
+
+  test("a topic's folded sections open after hydration", async ({ page }) => {
+    const problems = collectProblems(page);
+    await answerFromFixtures(page);
+    await page.goto('/learn/voter-id');
+    await expect(page.locator('h1')).toBeFocused();
+    const section = page.locator('details').first();
+    await expect(section).not.toHaveAttribute('open', '');
+    await section.locator('summary').click();
+    await expect(section).toHaveAttribute('open', '');
+    expect(problems).toEqual([]);
   });
 
   test('a topic stays interactive: in-app links, focus and the head follow', async ({ page }) => {
@@ -137,19 +161,6 @@ test.describe('hydration', () => {
 // A pre-rendered page can be read, scrolled and tabbed through before its
 // script arrives. Hydrating it must not pull the voter back to the heading.
 test.describe('reading before the script arrives', () => {
-  // Holds the app's script back until `release()`.
-  async function holdScript(page) {
-    let release;
-    const released = new Promise((resolve) => {
-      release = resolve;
-    });
-    await page.route(/\/assets\/index-[\w-]+\.js$/, async (route) => {
-      await released;
-      await route.continue();
-    });
-    return release;
-  }
-
   test('keeps the scroll position the voter moved to', async ({ page }) => {
     await answerFromFixtures(page);
     const release = await holdScript(page);
@@ -181,15 +192,21 @@ test.describe('reading before the script arrives', () => {
   });
 });
 
-test('a path with two trailing slashes is the not-found page, with no error', async ({ page }) => {
-  const problems = collectProblems(page);
-  await answerFromFixtures(page);
-  await page.goto('/learn/voter-id//');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Page not found');
-  await expect(page).toHaveTitle('Page not found | St. Louis County Voter Guide');
-  await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
-  expect(problems).toEqual([]);
-});
+for (const path of ['//', '/learn/voter-id//']) {
+  test(`${path} (two trailing slashes) is the not-found page, with no error`, async ({
+    page,
+    baseURL,
+  }) => {
+    const problems = collectProblems(page);
+    await answerFromFixtures(page);
+    // A full URL: a bare // would be read as a host.
+    await page.goto(`${baseURL}${path}`);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Page not found');
+    await expect(page).toHaveTitle('Page not found | St. Louis County Voter Guide');
+    await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
+    expect(problems).toEqual([]);
+  });
+}
 
 test.describe('precinct pages', () => {
   test('are served the empty shell, with no page baked in', async ({ request }) => {
