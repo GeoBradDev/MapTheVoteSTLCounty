@@ -78,7 +78,7 @@ workflow), never in CI:
 ```sh
 node scripts/inspect-data.mjs         # dump the county layers' schemas and samples to docs/raw/
 node scripts/record-fixtures.mjs      # re-record the live responses the tests use (docs/raw/fixtures/)
-node scripts/check-config.mjs         # check the County layers src/config/election.js names (Data health check)
+node scripts/check-config.mjs         # check the layers src/config/election.js names (Data health check)
 node scripts/check-geocoder.mjs       # check address search end to end (Address search)
 node scripts/check-content-links.mjs  # request every source and link (Learn content)
 npm run smoke -- <url>                # check a deploy (Smoke test)
@@ -517,8 +517,9 @@ in it, keeping focus and what the page has loaded. The site always starts in Eng
 
 ## Data health check
 
-Before each election, after editing `src/config/election.js`, check the live County layers it
-names (the City block's layers are checked here once the City results use them, #87):
+Before each election, after editing `src/config/election.js`, check the live layers it names
+(all but the City block's precincts layer, which joins the check once the City results use it,
+#87):
 
 ```sh
 node scripts/check-config.mjs [--layer <key>=<path>] [--ballot-sample <n|all>] [--warnings <file>]
