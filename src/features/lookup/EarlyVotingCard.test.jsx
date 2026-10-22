@@ -139,6 +139,69 @@ describe('EarlyVotingCard', () => {
     expect(screen.getByTestId('early-voting-skeleton')).toBeInTheDocument();
   });
 
+  // A tab left open past the max age refreshes when the voter returns (#84).
+  describe('refresh on return to the tab', () => {
+    const MINUTE = 60_000;
+    const start = cdt(10, 21, 10);
+    const stale = new Date(start.getTime() + election.layerMaxAge.minutes * MINUTE + 1);
+    const nearest = nearestPolls(sites, ORIGIN)[0];
+    const moved = {
+      ...sites,
+      features: sites.features.filter((f) => f.properties.name !== nearest.name),
+    };
+    let visibility;
+
+    beforeEach(() => {
+      visibility = 'visible';
+      vi.spyOn(document, 'visibilityState', 'get').mockImplementation(() => visibility);
+      getAbsenteeSites.mockResolvedValue({ ...sites, loadedAt: start.getTime() });
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    const leaveAndReturn = async (at) => {
+      visibility = 'hidden';
+      act(() => document.dispatchEvent(new Event('visibilitychange')));
+      vi.setSystemTime(at);
+      visibility = 'visible';
+      await act(async () => document.dispatchEvent(new Event('visibilitychange')));
+    };
+
+    it('shows the current sites after the voter returns past the max age', async () => {
+      render(<EarlyVotingCard code="CC007" origin={ORIGIN} />);
+      expect(rowNames(await list())).toContain(nearest.name);
+      getAbsenteeSites.mockResolvedValue({ ...moved, loadedAt: stale.getTime() });
+      await leaveAndReturn(stale);
+      await waitFor(() =>
+        expect(rowNames(screen.getByRole('list', { name: t.listLabel }))).not.toContain(
+          nearest.name,
+        ),
+      );
+      expect(getAbsenteeSites).toHaveBeenCalledTimes(2);
+      expect(screen.queryByTestId('early-voting-skeleton')).toBeNull();
+    });
+
+    it('does not fetch again when the sites are still fresh', async () => {
+      render(<EarlyVotingCard code="CC007" origin={ORIGIN} />);
+      await list();
+      await leaveAndReturn(new Date(start.getTime() + MINUTE));
+      expect(getAbsenteeSites).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps the sites shown when the refresh fails, and says when they loaded', async () => {
+      render(<EarlyVotingCard code="CC007" origin={ORIGIN} />);
+      const before = rowNames(await list());
+      getAbsenteeSites.mockRejectedValue(new Error('down'));
+      await leaveAndReturn(stale);
+      const note = await screen.findByRole('status');
+      expect(note).toHaveTextContent(copy.polls.staleNote('10:00', null));
+      expect(rowNames(await list())).toEqual(before);
+      expect(screen.queryByRole('alert')).toBeNull();
+    });
+  });
+
   it("shows each group's dates and hours from the config, with the source and date checked", async () => {
     render(<EarlyVotingCard code="CC007" origin={ORIGIN} />);
     await list();

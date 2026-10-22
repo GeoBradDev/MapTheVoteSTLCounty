@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import polls from '../../../docs/raw/fixtures/polls.json';
 import geometry from '../../../docs/raw/fixtures/precinct-geometry.json';
@@ -352,6 +352,105 @@ describe('PollsCard', () => {
       await waitFor(() => expect(mapRegion()).toBeNull());
       expect(ol).toBeInTheDocument();
       expect(within(ol).getAllByRole('listitem')).toHaveLength(COUNT);
+    });
+  });
+
+  // A tab left open past the max age refreshes when the voter returns (#84).
+  describe('refresh on return to the tab', () => {
+    const MINUTE = 60_000;
+    // Ten days before Election Day, at 10 a.m. in Chicago (UTC-5 before
+    // November 1), built from the config so no date is written here.
+    const [year, month, day] = election.electionDate.split('-').map(Number);
+    const start = Date.UTC(year, month - 1, day - 10, 15);
+    const stale = start + election.layerMaxAge.minutes * MINUTE + 1;
+    // The same layer with the nearest place gone, as after a relocation.
+    const nearest = nearestPolls(polls, ORIGIN)[0];
+    const moved = {
+      ...polls,
+      features: polls.features.filter((f) => f.properties.name !== nearest.name),
+    };
+    let visibility;
+
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(start);
+      visibility = 'visible';
+      vi.spyOn(document, 'visibilityState', 'get').mockImplementation(() => visibility);
+      getPolls.mockResolvedValue({ ...polls, loadedAt: start });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+      vi.restoreAllMocks();
+    });
+
+    const leaveAndReturn = async (at) => {
+      visibility = 'hidden';
+      act(() => document.dispatchEvent(new Event('visibilitychange')));
+      vi.setSystemTime(at);
+      visibility = 'visible';
+      await act(async () => document.dispatchEvent(new Event('visibilitychange')));
+    };
+
+    it('shows the current list after the voter returns past the max age', async () => {
+      render(<PollsCard code="CC007" origin={ORIGIN} />);
+      expect(rowNames(await list())).toContain(nearest.name);
+      getPolls.mockResolvedValue({ ...moved, loadedAt: stale });
+      await leaveAndReturn(stale);
+      await waitFor(() =>
+        expect(rowNames(screen.getByRole('list', { name: copy.polls.listLabel }))).not.toContain(
+          nearest.name,
+        ),
+      );
+      expect(getPolls).toHaveBeenCalledTimes(2);
+      expect(screen.queryByTestId('polls-skeleton')).toBeNull();
+      expect(screen.queryByRole('status')).toBeNull();
+    });
+
+    it('does not fetch again when the list is still fresh', async () => {
+      render(<PollsCard code="CC007" origin={ORIGIN} />);
+      await list();
+      await leaveAndReturn(start + MINUTE);
+      expect(getPolls).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps the list and the extra rows shown when the refresh fails, and says when it loaded', async () => {
+      const user = userEvent.setup();
+      render(<PollsCard code="CC007" origin={ORIGIN} />);
+      await list();
+      await user.click(screen.getByRole('button', { name: copy.polls.showMore }));
+      const before = rowNames(await list());
+      expect(before).toHaveLength(2 * COUNT);
+      getPolls.mockRejectedValue(new Error('down'));
+      await leaveAndReturn(stale);
+      const note = await screen.findByRole('status');
+      expect(note).toHaveTextContent(copy.polls.staleNote('10:00', null));
+      expect(rowNames(await list())).toEqual(before);
+      expect(screen.queryByRole('alert')).toBeNull();
+      expect(getPolls).toHaveBeenCalledTimes(2);
+    });
+
+    it('drops the note once a later refresh succeeds', async () => {
+      render(<PollsCard code="CC007" origin={ORIGIN} />);
+      await list();
+      getPolls.mockRejectedValue(new Error('down'));
+      await leaveAndReturn(stale);
+      await screen.findByRole('status');
+      getPolls.mockResolvedValue({ ...moved, loadedAt: stale + MINUTE });
+      await leaveAndReturn(stale + MINUTE);
+      await waitFor(() => expect(screen.queryByRole('status')).toBeNull());
+      expect(rowNames(await list())).not.toContain(nearest.name);
+    });
+
+    it('names the day as well when the list loaded on an earlier day', async () => {
+      render(<PollsCard code="CC007" origin={ORIGIN} />);
+      await list();
+      getPolls.mockRejectedValue(new Error('down'));
+      await leaveAndReturn(start + 24 * 60 * MINUTE);
+      const note = await screen.findByRole('status');
+      // The start time is 15:00 UTC, the same date in Chicago.
+      const loadedOn = new Date(start).toISOString().slice(0, 10);
+      expect(note).toHaveTextContent(copy.polls.staleNote('10:00', loadedOn));
     });
   });
 
