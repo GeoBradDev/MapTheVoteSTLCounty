@@ -1,6 +1,7 @@
 // All the results screen text, kept in one file so the i18n work (#19) can move
 // it to en.json without touching the markup. Facts about the voter's precinct
 // come from the county's data, never from here.
+import { formatLongDate } from './earlyVoting.js';
 
 /**
  * A 24-hour HH:MM time as voters read it: 06:00 is "6 a.m.", 16:30 is "4:30 p.m.".
@@ -109,6 +110,13 @@ export const copy = {
       // The county's own ArcGIS apps, such as its Absentee Voting Lookup.
       'stlouiscovotes.maps.arcgis.com': 'St. Louis County Board of Elections',
     },
+    /**
+     * After a refresh of a list already shown fails (#84).
+     * @param {string} time HH:MM when the list loaded.
+     * @param {string | null} date YYYY-MM-DD when that was not today.
+     */
+    staleNote: (time, date) =>
+      `We could not check this list for changes. It was loaded ${date ? `on ${formatLongDate(date)} at` : 'at'} ${formatTime(time)}.`,
     failed: 'We could not load polling places right now. Find them with the',
     none: 'We could not find polling places near here. Find them with the',
   },

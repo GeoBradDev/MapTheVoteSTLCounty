@@ -147,7 +147,7 @@ describe('EarlyVotingCard', () => {
     const nearest = nearestPolls(sites, ORIGIN)[0];
     const moved = {
       ...sites,
-      features: sites.features.filter((f) => f.properties.name !== nearest.name),
+      features: sites.features.filter((f) => f.properties.loc !== nearest.loc),
     };
     let visibility;
 

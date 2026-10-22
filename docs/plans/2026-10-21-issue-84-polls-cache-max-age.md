@@ -83,3 +83,22 @@ merge for this run, and delegated plan approval for this run.
 - Live drive: on `npm run dev`, open `/p/CC007`, move the clock or use a short max age via
   devtools override, hide and show the tab and see a second polls request and an updated
   list; block the polls request and see the kept rows with the note.
+
+### Correction to the red card tests
+
+The card tests committed red in `470e9e3`'s successor removed "the nearest place" by
+matching the raw layer `name`, but rows carry a title-cased name, so the filter removed
+nothing and the refresh tests could never pass. That was a fault in reproducing the defect
+(Phase 4 step 1), found before any production code made them pass: the tests now match on
+`loc`. Rerun against `origin/main` with only the corrected tests and the config applied, all
+six new card tests fail for the expected reasons: the list still holds the nearest place
+(no refetch), and no `role="status"` note appears after a failed refresh.
+
+## Mid-implementation changes
+
+- New `src/features/lookup/useNearestSites.js` hook (named in Files that change) and a small
+  `src/features/lookup/StaleNote.jsx` component, which both cards render under the list.
+- The hook records when the shown rows loaded in a layout effect, not a passive one: with a
+  passive effect, a visibility change in the same moment the rows appear could read the
+  previous value and skip the refresh (seen as a flaky card test under full-suite load,
+  about 3 runs in 8; 0 in 12 after the change).

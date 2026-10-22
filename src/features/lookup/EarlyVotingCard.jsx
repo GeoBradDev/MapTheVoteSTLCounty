@@ -4,12 +4,12 @@ import election from '../../config/election.js';
 import { getAbsenteeSites } from '../../data/arcgis.js';
 import { CARD_TOPICS } from '../learn/cardTopics.js';
 import { getTopic } from '../learn/topics.js';
-import { distanceOrigin } from './distanceOrigin.js';
 import { earlyVotingStatus, formatLongDate, scheduleLines } from './earlyVoting.js';
-import { directionsLinks, isAppleMobile, nearestPolls } from './nearbyPolls.js';
+import { directionsLinks, isAppleMobile } from './nearbyPolls.js';
 import { copy, sourceName } from './resultsCopy.js';
 import RetryButton from './RetryButton.jsx';
-import { useRetry } from './useRetry.js';
+import StaleNote from './StaleNote.jsx';
+import { useNearestSites } from './useNearestSites.js';
 
 const linkClass = 'text-primary underline';
 const tapLinkClass = `inline-flex min-h-11 items-center ${linkClass}`;
@@ -124,30 +124,13 @@ function Schedules({ now }) {
 export default function EarlyVotingCard({ code, origin }) {
   // The absentee topic, once published (#22, #23); until then, the index.
   const absentee = getTopic(CARD_TOPICS.absentee);
-  // { rows } once loaded, { error: true, attempt } on failure.
-  const [result, setResult] = useState(null);
-  // A failed load can be tried again; it stays shown while it is (#18).
-  const { attempt, loading, retry, done, targetRef } = useRetry();
+  // { rows, loadedAt } once loaded, { error: true, attempt } on failure. A
+  // failed load can be tried again; it stays shown while it is (#18). A list
+  // left open past the max age refreshes when the tab is shown again (#84).
+  const { result, loading, retry, targetRef } = useNearestSites(getAbsenteeSites, code, origin);
   const [showAll, setShowAll] = useState(false);
   const focusRef = useRef(null);
   const now = useNow();
-
-  useEffect(() => {
-    let current = true;
-    Promise.all([getAbsenteeSites(), distanceOrigin(code, origin)])
-      .then(
-        ([sites, point]) => ({ rows: nearestPolls(sites, point) }),
-        () => ({ error: true, attempt }),
-      )
-      .then((next) => {
-        if (!current) return;
-        setResult(next);
-        done();
-      });
-    return () => {
-      current = false;
-    };
-  }, [code, origin, attempt, done]);
 
   useEffect(() => {
     if (showAll) focusRef.current?.focus();
@@ -201,6 +184,7 @@ export default function EarlyVotingCard({ code, origin }) {
               />
             ))}
           </ol>
+          {result.refreshFailed && <StaleNote loadedAt={result.loadedAt} />}
           {!showAll && rows.length > first && (
             <button
               type="button"

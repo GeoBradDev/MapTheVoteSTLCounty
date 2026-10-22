@@ -363,11 +363,12 @@ describe('PollsCard', () => {
     const [year, month, day] = election.electionDate.split('-').map(Number);
     const start = Date.UTC(year, month - 1, day - 10, 15);
     const stale = start + election.layerMaxAge.minutes * MINUTE + 1;
-    // The same layer with the nearest place gone, as after a relocation.
+    // The same layer with the nearest place gone, as after a relocation. Rows
+    // hold a title-cased name, so match on `loc`.
     const nearest = nearestPolls(polls, ORIGIN)[0];
     const moved = {
       ...polls,
-      features: polls.features.filter((f) => f.properties.name !== nearest.name),
+      features: polls.features.filter((f) => f.properties.loc !== nearest.loc),
     };
     let visibility;
 
