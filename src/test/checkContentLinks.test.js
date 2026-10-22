@@ -403,3 +403,47 @@ describe('checkLinks onResult', () => {
     expect(seen).toEqual(['https://a.gov/', 'https://b.gov/']);
   });
 });
+
+// Second review round on #74: the page is parsed as HTML, and only the first
+// refresh a browser can parse counts.
+describe('metaRefreshTarget, parsed as HTML', () => {
+  const base = 'https://a.gov/page/';
+  const tag = '<meta http-equiv=refresh content="0;url=https://x.gov/">';
+
+  it('reads a tag after an abruptly closed comment', () => {
+    expect(metaRefreshTarget(`<!-->${tag}`, base)).toBe('https://x.gov/');
+    expect(metaRefreshTarget(`<!--->${tag}`, base)).toBe('https://x.gov/');
+  });
+
+  it('reads a tag after a script that contains <!--', () => {
+    expect(metaRefreshTarget(`<script>var a="<!--";</script>${tag}<p>--></p>`, base)).toBe(
+      'https://x.gov/',
+    );
+  });
+
+  it('acts on the first refresh only, even one that just reloads', () => {
+    expect(metaRefreshTarget(`<meta http-equiv=refresh content="30">${tag}`, base)).toBeNull();
+  });
+
+  it('skips a refresh it cannot parse and acts on the next', () => {
+    expect(metaRefreshTarget(`<meta http-equiv=refresh content="soon">${tag}`, base)).toBe(
+      'https://x.gov/',
+    );
+  });
+
+  it('ignores refresh text in a title, a style, a textarea or a template', () => {
+    for (const wrap of ['title', 'style', 'textarea', 'template']) {
+      expect(metaRefreshTarget(`<${wrap}>${tag}</${wrap}>`, base)).toBeNull();
+    }
+    expect(metaRefreshTarget('<meta-x http-equiv=refresh content="0;url=/y">', base)).toBeNull();
+  });
+
+  it('decodes entities in the content attribute', () => {
+    expect(
+      metaRefreshTarget(
+        '<meta http-equiv="refresh" content="0&#59; url=&quot;https://x.gov/?a=1&amp;b=2&quot;">',
+        base,
+      ),
+    ).toBe('https://x.gov/?a=1&b=2');
+  });
+});
