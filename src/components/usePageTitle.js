@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { t } from '../i18n/index.js';
+import { t, useLocale } from '../i18n/index.js';
 
 /**
  * Sets the tab title to "<name> | St. Louis County Voter Guide" while the page
@@ -8,11 +8,12 @@ import { t } from '../i18n/index.js';
  * @param {string} name The page's own name, usually its heading.
  */
 export function usePageTitle(name) {
+  const locale = useLocale();
   useEffect(() => {
     const previous = document.title;
     document.title = t('site.pageTitle', { name });
     return () => {
       document.title = previous;
     };
-  }, [name]);
+  }, [name, locale]);
 }

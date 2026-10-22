@@ -47,11 +47,11 @@ changes (the switcher renders nothing with one locale).
   `src/features/privacy/privacyCopy.js`.
 - JSX literals moved: `src/App.jsx` (skip link, re-render on a language change, switcher),
   `src/components/NotFoundPage.jsx`, `src/components/SiteFooter.jsx` (one word),
-  `src/components/usePageTitle.js` (site name).
+  `src/components/usePageTitle.js` (site name; retitles on a language change).
 - Dates: `src/features/lookup/earlyVoting.js` (`formatLongDate`),
   `src/features/learn/TopicArticle.jsx`.
-- Learn pages use the active locale's labels and topics: `LearnPage.jsx`,
-  `LearnTopicPage.jsx`.
+- Learn pages use the active locale's labels and topics, and focus their heading on arrival
+  only: `LearnPage.jsx`, `LearnTopicPage.jsx`.
 - `eslint.config.js`: `react/jsx-no-literals` for app JSX, punctuation allowed.
 - The cards that link a topic ask for it in the active locale, and EarlyVotingCard reads its
   text through `translated()` rather than a module-load capture: `PollsCard.jsx`,
@@ -91,7 +91,8 @@ are follow-ups for when Spanish is added.
 
 Revisions during review: `setLocale` keeps only the last pick when a file is still loading,
 and the switcher ignores a failed load; a language change re-renders the page instead of
-remounting it, so focus stays on the switcher (`src/i18n/switchApp.test.jsx`); `src/i18n/addLocale.test.js` proves the real loader
+remounting it, so focus stays on the switcher, and the pages' tab titles follow the language
+(`usePageTitle`, `LearnPage`, `LearnTopicPage`; `src/i18n/switchApp.test.jsx`); `src/i18n/addLocale.test.js` proves the real loader
 with a copy of `src/i18n` plus an `es.json` and one config line; docs that named the old copy
 files as the place for the privacy notice and the learn group labels now name `en.json`.
 

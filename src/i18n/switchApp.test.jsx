@@ -16,7 +16,11 @@ vi.mock('../features/learn/topics.js', async (importOriginal) => {
 beforeEach(() => {
   vi.stubGlobal('scrollTo', vi.fn());
   LOCALES.xx = { label: 'Stand-in', intl: 'fr' };
-  addMessages('xx', { app: { skipLink: 'XX skip' }, learn: { pageHeading: 'XX how' } });
+  addMessages('xx', {
+    app: { skipLink: 'XX skip' },
+    site: { pageTitle: '{name} | XX guide' },
+    learn: { pageHeading: 'XX how', pageTitle: '{name} | XX guide' },
+  });
 });
 
 afterEach(async () => {
@@ -41,4 +45,21 @@ it('redraws the page in a new language without remounting it or moving focus', a
   expect(screen.getByRole('link', { name: 'XX skip' })).toBeInTheDocument();
   expect(select).toHaveFocus();
   expect(document.documentElement.lang).toBe('xx');
+  expect(document.title).toBe('XX how | XX guide');
+});
+
+it.each([
+  ['/learn/voter-id', 'Fixture ID topic | XX guide'],
+  ['/privacy', 'Privacy | XX guide'],
+])('keeps focus and retitles %s in a new language', async (path, title) => {
+  const location = memoryLocation({ path });
+  render(
+    <Router hook={location.hook}>
+      <App />
+    </Router>,
+  );
+  const select = screen.getByRole('combobox', { name: 'Language' });
+  await userEvent.selectOptions(select, 'xx');
+  expect(select).toHaveFocus();
+  expect(document.title).toBe(title);
 });

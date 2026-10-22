@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Link } from 'wouter';
 import election from '../../config/election.js';
 import { TOPIC_GROUPS } from './groups.js';
-import { getLocale } from '../../i18n/index.js';
+import { getLocale, useLocale } from '../../i18n/index.js';
 import { copy } from './learnCopy.js';
 import { getTopics } from './topics.js';
 
@@ -13,18 +13,22 @@ const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
 // and the address lookup instead.
 export default function LearnPage() {
   const headingRef = useRef(null);
+  const locale = useLocale();
   const topics = getTopics(getLocale());
 
   // Links to this page sit low on other pages, so move focus (and the scroll
-  // position) to the heading on arrival.
+  // position) to the heading on arrival, not when the language changes (#19).
   useEffect(() => {
     headingRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
     const previous = document.title;
     document.title = copy.pageTitle(copy.pageHeading);
     return () => {
       document.title = previous;
     };
-  }, []);
+  }, [locale]);
 
   const groups = TOPIC_GROUPS.map((group) => ({
     group,
