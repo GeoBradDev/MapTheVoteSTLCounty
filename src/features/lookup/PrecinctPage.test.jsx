@@ -12,6 +12,7 @@ import precinctGeometry from '../../../docs/raw/fixtures/precinct-geometry.json'
 import byId from '../../../docs/raw/fixtures/precinct-by-id.json';
 import nonresidential from '../../../docs/raw/fixtures/precinct-nonresidential.json';
 import election from '../../config/election.js';
+import referrals from '../../config/referrals.js';
 import { createFakeGeocoder } from '../../test/fakeGeocoder.js';
 import { nearestPolls, polygonCenter } from './nearbyPolls.js';
 import { copy } from './resultsCopy.js';
@@ -413,6 +414,41 @@ describe('PrecinctPage', () => {
     });
     expect(notice.tagName).toBe('H3');
     expect(cardHeadings()).toEqual([copy.searchInstead]);
+  });
+
+  // City codes (#86): one route, the code's shape picks the City adapter, a
+  // stub until #87.
+  describe('a City precinct code', () => {
+    it('reaches the City adapter, which asks no County layer', async () => {
+      renderAt('W01P12');
+      const alert = await alertSaying(copy.errors.notFound);
+      expect(fetchMock).not.toHaveBeenCalled();
+      // Code-shaped, so the heading names it, as for an unknown County code.
+      expect(heading()).toHaveTextContent(copy.heading('W01P12'));
+      expect(document.title).toBe(copy.notFoundTitle);
+      // The City board's own lookup, never the County's.
+      const link = within(alert).getByRole('link', { name: copy.officialLookupFor('city') });
+      expect(link).toHaveAttribute('href', referrals.stlCityLookup.url);
+      expect(copy.officialLookupFor('city')).not.toBe(copy.officialLookup);
+      expect(screen.getByRole('region', { name: copy.searchInstead })).toBeInTheDocument();
+    });
+
+    it.each(['w01p12', '%20W01p12%20'])(
+      'replaces %s in the URL with the upper case City code',
+      async (typed) => {
+        const location = renderAt(typed);
+        await alertSaying(copy.errors.notFound);
+        expect(location.history).toEqual(['/p/W01P12']);
+        expect(fetchMock).not.toHaveBeenCalled();
+      },
+    );
+
+    it.each(['W1P12', 'W01P123', 'W 1 P 12'])('treats %s as malformed', async (typed) => {
+      const location = renderAt(encodeURIComponent(typed));
+      await alertSaying(copy.errors.notFound);
+      expect(location.history).toEqual([`/p/${encodeURIComponent(typed)}`]);
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
   });
 
   it('says a malformed code is not found, without a request', async () => {

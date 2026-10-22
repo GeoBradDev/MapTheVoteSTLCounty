@@ -1,5 +1,6 @@
-// Official offices a voter outside St. Louis County is sent to. These do not
-// change between elections, so they are not in election.js. Check each link
+// Official offices a voter outside St. Louis County is sent to, and the City
+// board's lookup a City precinct page links (#86). These do not change
+// between elections, so they are not in election.js. Check each link
 // still answers before every election.
 
 /** @typedef {{ url: string, source: string, lastVerified: string }} Referral */
@@ -14,6 +15,17 @@ export default Object.freeze({
     url: 'https://www.stlouis-mo.gov/government/departments/board-election-commissioners/',
     source: 'https://www.stlouis-mo.gov/',
     lastVerified: '2026-10-21',
+  }),
+
+  /**
+   * The City board's polling places page, with its Assigned Polling Place
+   * Lookup: the City's official lookup, the fallback when ours fails (#86).
+   * @type {Referral}
+   */
+  stlCityLookup: Object.freeze({
+    url: 'https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/polling-places/index.cfm',
+    source: 'https://www.stlouis-mo.gov/government/departments/board-election-commissioners/',
+    lastVerified: '2026-10-22',
   }),
 
   /**

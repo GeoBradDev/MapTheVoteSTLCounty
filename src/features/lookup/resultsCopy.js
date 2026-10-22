@@ -67,6 +67,13 @@ export const copy = translated((t) => ({
   /** @param {string} code */
   ready: (code) => t('results.ready', { code }),
   officialLookup: t('results.officialLookup'),
+  /**
+   * The official lookup's link text for a jurisdiction (#86): the County's is
+   * `officialLookup`.
+   * @param {'county' | 'city'} id
+   */
+  officialLookupFor: (id) =>
+    id === 'city' ? t('results.officialLookupCity') : t('results.officialLookup'),
   /** @param {string} code The browser tab's title on a precinct's page. */
   pageTitle: (code) => t('results.pageTitle', { code }),
   // The tab title for a code that is not found, or URL text that is not a code.

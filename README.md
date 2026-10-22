@@ -120,8 +120,8 @@ against, and why. In short:
 - **Map:** [OpenFreeMap](https://openfreemap.org)'s Positron basemap. See [Map](#map).
 - **How to vote guides:** Markdown under `content/`, each citing official sources only. See
   [Learn content](#learn-content).
-- **Referrals:** the City board and the Secretary of State's Voter Outreach Center, in
-  `src/config/referrals.js`.
+- **Referrals:** the City board, its polling places lookup and the Secretary of State's Voter
+  Outreach Center, in `src/config/referrals.js`.
 
 ## Updating for a new election
 
@@ -384,6 +384,14 @@ election name, an election-specific URL, a date, a layer or service name, the fi
 filter or the sample ballot pattern from the config there; it does not check hours, so read
 those from the config too. Text under `content/` may repeat them.
 
+The config holds the shared election values and one block per jurisdiction, `county` and
+`city` (#86). The default export still reads as the County block for code that serves only
+County voters. The results page gets its jurisdiction's data adapter and official lookup link
+from `src/data/jurisdictions.js`, picked from the precinct code's shape (`/p/CC007` is the County,
+`/p/W01P12` the City; [docs/data.md](docs/data.md#jurisdictions-and-precinct-codes)); its
+other links still read the County values until the City results land (#87, #93). The
+test also fails on a City block's layer, service or field name written outside the config.
+
 The polling places layer the app keeps in memory (`getPolls` and `getAbsenteeSites`) has a max
 age (#84): `layerMaxAge` in the config, shorter on Election Day (the date in the config's time
 zone). `isFresh` and `layerMaxAgeMs` in `src/data/freshness.js` are the one rule for "too old":
@@ -509,7 +517,9 @@ in it, keeping focus and what the page has loaded. The site always starts in Eng
 
 ## Data health check
 
-Before each election, after editing `src/config/election.js`, check the live layers it names:
+Before each election, after editing `src/config/election.js`, check the live layers it names
+(all but the City block's precincts layer, which joins the check once the City results use it,
+#87):
 
 ```sh
 node scripts/check-config.mjs [--layer <key>=<path>] [--ballot-sample <n|all>] [--warnings <file>]

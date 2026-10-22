@@ -33,6 +33,8 @@ html     = "Sample Ballot: <a href=https://stlouiscovotes.maps.arcgis.com/sharin
   built from the precinct code**. It has to be read from `html`.
 - Precinct codes are a 2 or 3 letter township prefix plus 3 digits
   (`/^[A-Z]{2,3}\d{3}$/`, for example `CC007`, `BON001`), checked against all 1213.
+- City precinct codes take a different shape so one route serves both (see
+  [Jurisdictions and precinct codes](#jurisdictions-and-precinct-codes)).
 - File name pattern: a dash after the prefix (`CC007` becomes `CC-007.pdf`,
   `BON001` becomes `BON-001.pdf`). All 974 match. The app relies on it (#82): the card
   shows a link only when its file name names the precinct, ignoring case, hyphens and
@@ -377,7 +379,7 @@ one elsewhere in Missouri to the Secretary of State Voter Outreach Center (the
 county apps' own no-results link), and one outside Missouri gets a generic
 message. A point inside the boundary with no precinct goes to the county's
 official lookup, and a place with no state (coordinates alone) gets a message for
-both Missouri and elsewhere. The two referral links are in
+both Missouri and elsewhere. The referral links are in
 `src/config/referrals.js`. The City board's page
 is on `stlouis-mo.gov`; `stlelections.com` is a parked domain for sale (checked
 2026-10-21), so do not link it.
@@ -737,7 +739,7 @@ is extra help only: precincts and polling places still come from the county laye
 
 The county board's website is now a page on the county's own site:
 `https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/`
-(`countySiteUrl` in `src/config/election.js`, #73). Checked 2026-10-21:
+(the County block's `boardSiteUrl` in `src/config/election.js`, read as `countySiteUrl`, #73). Checked 2026-10-21:
 
 - The board's old site, `stlouiscovotes.info`, is retired. Every page tried (`/`, `/faq/`,
   `/voting/absentee-voting/`, `/about-us/`, `/registration/`) answers `200` with
@@ -772,3 +774,29 @@ nearby polling places, the county site URL, moved in #73) and in issue #72 (the 
 rule, its sources and the county board's phone number).
 When the next election's inspection changes them, edit that file; this doc
 records what the inspection found and why.
+
+## Jurisdictions and precinct codes
+
+Owner decision on #86 (2026-10-22): one results route, `/p/:code`, for both St. Louis County
+and St. Louis City. The code's shape picks the jurisdiction, so a share link still holds only
+the code:
+
+- County: a 2 or 3 letter township prefix plus 3 digits, `/^[A-Z]{2,3}\d{3}$/`, like `CC007`.
+- City: `W`, a 2 digit ward, `P`, a 2 digit precinct, `/^W\d{2}P\d{2}$/`, like `W01P12`.
+  The County shape never matches it (a County code ends in 3 digits after its letters).
+
+The City's precincts are layer 1 of `ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a`
+in the City Board's ArcGIS org (`HZXbCkpCSqbGd0vK`). Its `precinctid` reads
+`W <ward> P <precinct>` with no zero padding, like `W 1 P 12`. Checked on 2026-10-22: 207
+precincts, every one in that form, wards 1 to 14, precincts 1 to 21 within a ward, no
+duplicates. So `W01P12` is `W 1 P 12` (`cityPrecinctId` in `src/data/jurisdictions.js`).
+Two digits each leaves room for a ward or precinct number up to 99. The rest of the City
+layers (#57) are for #87.
+
+`src/config/election.js` holds the shared election values and one block per jurisdiction
+(`county`, `city`), each with its `id`, display name, board, service root, layers and
+`sources` (each layer's own description, which the daily link check asks). The
+City block holds only what is confirmed. The City board's site and lookup page (its polling
+places page, with the Assigned Polling Place Lookup) do not change between elections, so they
+are in `src/config/referrals.js`. `src/data/jurisdictions.js` pairs each block with its data:
+the County's is `src/data/arcgis.js`; the City's answers "not found" until #87.

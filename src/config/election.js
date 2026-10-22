@@ -32,7 +32,9 @@
  *   the results copy; `field` is the precinct layer field it reads.
  * @property {string} officialLookupUrl The county's own lookup app, the
  *   fallback when ours fails.
- * @property {string} countySiteUrl The county election board's website.
+ * @property {string} countySiteUrl The county election board's website: the
+ *   County block's `boardSiteUrl`, which is here too under that name, as are
+ *   its `sources`.
  * @property {number} nearbyPollCount How many nearby polling places to show at
  *   first, and how many more each "Show more" adds.
  * @property {{ sources: string[], lastVerified: string,
@@ -49,6 +51,29 @@
  *   long a loaded layer, such as the polling places, is reused before the app
  *   fetches it again, and the shorter limit on Election Day (#84).
  * @property {WaitTimesConfig} waitTimes Early voting line counts (#103).
+ * @property {{ county: JurisdictionConfig, city: JurisdictionConfig }}
+ *   jurisdictions Each jurisdiction's own block (#86).
+ */
+
+/**
+ * One jurisdiction's block (#86). The County's also holds the County-only keys
+ * above (`absenteeWhere`, `districtFields`, `earlyVoting` and the rest); the
+ * City's grows as its features land (#87 to #92).
+ * @typedef {object} JurisdictionConfig
+ * @property {'county' | 'city'} id
+ * @property {string} name Display name, like "St. Louis County".
+ * @property {string} board The election board's name.
+ * @property {string} serviceRoot ArcGIS REST services root, no trailing slash.
+ * @property {Record<string, string>} layers Layer paths relative to `serviceRoot`.
+ * @property {string} [officialLookupUrl] The board's own lookup, the fallback
+ *   when ours fails, when it is made for this election (the County's). The
+ *   City's is in referrals.js.
+ * @property {string} [boardSiteUrl] The board's website (the County's; the
+ *   City's is in referrals.js).
+ * @property {string[]} sources Each named layer's own description.
+ * @property {string} [precinctField] The precincts layer's code field (the
+ *   City's; the County's is `precinct`, read by src/data/arcgis.js).
+ * @property {string} [lastVerified]
  */
 
 /**
@@ -100,20 +125,28 @@ function deepFreeze(value) {
   return Object.freeze(value);
 }
 
-/** @type {ElectionConfig} */
-const election = deepFreeze({
-  electionDate: '2026-11-03',
-  electionName: 'November 3, 2026 General Election',
-  timeZone: 'America/Chicago',
+// Each layer's own description (its field list), the source a block cites for
+// the layers it names, so the daily link check confirms every one answers.
+const layerSources = (root, layers) => Object.values(layers).map((l) => `${root}/${l}?f=pjson`);
 
-  serviceRoot: 'https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services',
-  // Not the lookup_view_* services: their names look current, but they point
-  // at 2024 data.
-  layers: {
-    precincts: 'precincts_2026_11_view/FeatureServer/1',
-    polls: 'polls_2026_11_view/FeatureServer/1',
-    countyBoundary: 'St_Louis_County_Boundary/FeatureServer/0',
-  },
+const countyServiceRoot = 'https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services';
+// Not the lookup_view_* services: their names look current, but they point at
+// 2024 data.
+const countyLayers = {
+  precincts: 'precincts_2026_11_view/FeatureServer/1',
+  polls: 'polls_2026_11_view/FeatureServer/1',
+  countyBoundary: 'St_Louis_County_Boundary/FeatureServer/0',
+};
+
+// St. Louis County. Every value is the one the app has always used.
+const county = {
+  id: 'county',
+  name: 'St. Louis County',
+  board: 'St. Louis County Board of Elections',
+  serviceRoot: countyServiceRoot,
+  layers: countyLayers,
+  // The layers above; docs/data.md has the inspection.
+  sources: layerSources(countyServiceRoot, countyLayers),
   absenteeWhere: "abs_type IN ('abs','boe')",
   sampleBallotUrlPattern:
     /^https:\/\/stlouiscovotes\.maps\.arcgis\.com\/sharing\/rest\/content\/items\/[0-9a-f]{32}\/data$/,
@@ -149,7 +182,90 @@ const election = deepFreeze({
   // Issue #1 chose the county board's own site. Since 2026-10-21 every page of
   // that site, stlouiscovotes.info, sends visitors here, so link this page
   // directly (#73). stlouiscountymovotes.gov reaches it only after two hops.
-  countySiteUrl: 'https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/',
+  boardSiteUrl: 'https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/',
+
+  // From the county's Absentee Voting Lookup app introduction, re-read from the
+  // app's live config on 2026-10-21 (issue #16). The board's old website showed
+  // 2020 hours on its absentee page, so it was never a source; that site was
+  // retired on 2026-10-21 (#73). Re-check before launch.
+  earlyVoting: {
+    sources: [
+      'https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=9301b4594bef4d9c9271778e4648179d',
+    ],
+    lastVerified: '2026-10-21',
+    schedules: {
+      boe: [
+        { from: '2026-09-22', to: '2026-10-30', days: 'weekdays', open: '08:00', close: '16:30' },
+        { from: '2026-10-24', to: '2026-10-24', days: 'daily', open: '09:00', close: '13:00' },
+        { from: '2026-10-31', to: '2026-10-31', days: 'daily', open: '09:00', close: '13:00' },
+        { from: '2026-11-02', to: '2026-11-02', days: 'daily', open: '08:00', close: '17:00' },
+      ],
+      abs: [
+        { from: '2026-10-20', to: '2026-10-30', days: 'weekdays', open: '08:00', close: '16:30' },
+        { from: '2026-10-24', to: '2026-10-24', days: 'daily', open: '09:00', close: '13:00' },
+        { from: '2026-10-31', to: '2026-10-31', days: 'daily', open: '09:00', close: '13:00' },
+        { from: '2026-11-02', to: '2026-11-02', days: 'daily', open: '08:00', close: '17:00' },
+      ],
+    },
+  },
+
+  // Owner decision on issue #72 (2026-10-21), replacing the issue #1 line that
+  // county voters may vote at any polling place: follow RSMo 115.430. A voter
+  // must vote at their assigned polling place on Election Day, and a
+  // provisional ballot cast at the wrong one is not counted. The Secretary of
+  // State says the same. County data assigns no polling place to a precinct
+  // (docs/data.md), so the app says how to confirm it: the phone number is in
+  // the county's November 3, 2026 Polling Place Lookup app, re-read on
+  // 2026-10-21 (its old Contact Us page now redirects, #73).
+  electionDayPollingPlace: {
+    sources: [
+      'https://revisor.mo.gov/main/OneSection.aspx?section=115.430',
+      'https://www.sos.mo.gov/elections/goVoteMissouri/electionday',
+    ],
+    lastVerified: '2026-10-21',
+    phone: '314-615-1800',
+    phoneSource:
+      'https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=13fb36e785c84dbdbcc5219f999652ba',
+  },
+};
+
+// St. Louis City (#85). Only what is confirmed so far: #87 adds the precinct
+// lookup, polling places and districts, #91 the early voting sites. The
+// precincts layer's `precinctid` reads `W <ward> P <precinct>`, like `W 1 P 12`:
+// 207 precincts in wards 1 to 14, checked on 2026-10-22 (docs/data.md).
+const cityServiceRoot = 'https://services6.arcgis.com/HZXbCkpCSqbGd0vK/ArcGIS/rest/services';
+const cityLayers = {
+  precincts: 'ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/1',
+};
+const city = {
+  id: 'city',
+  name: 'City of St. Louis',
+  board: 'St. Louis City Board of Election Commissioners',
+  serviceRoot: cityServiceRoot,
+  layers: cityLayers,
+  precinctField: 'precinctid',
+  // The layers above; docs/data.md has the code shape check.
+  sources: layerSources(cityServiceRoot, cityLayers),
+  // The City board's site and lookup page do not change between elections, so
+  // they are in referrals.js (src/data/jurisdictions.js pairs them with this
+  // block). This file holds only what a new election changes.
+  lastVerified: '2026-10-22',
+};
+
+/**
+ * The jurisdictions the app serves (#86), keyed by `id`. Code that serves
+ * either one reads its block here; src/data/jurisdictions.js pairs each with its
+ * data adapter.
+ * @type {{ county: JurisdictionConfig, city: JurisdictionConfig }}
+ */
+export const jurisdictions = deepFreeze({ county, city });
+
+// Values every jurisdiction shares.
+const shared = {
+  electionDate: '2026-11-03',
+  electionName: 'November 3, 2026 General Election',
+  timeZone: 'America/Chicago',
+
   nearbyPollCount: 3,
   // The county serves the polls layer with max-age=30. Ten minutes keeps a
   // tab left open from showing a moved polling place for long, without asking
@@ -210,31 +326,6 @@ const election = deepFreeze({
     },
   },
 
-  // From the county's Absentee Voting Lookup app introduction, re-read from the
-  // app's live config on 2026-10-21 (issue #16). The board's old website showed
-  // 2020 hours on its absentee page, so it was never a source; that site was
-  // retired on 2026-10-21 (#73). Re-check before launch.
-  earlyVoting: {
-    sources: [
-      'https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=9301b4594bef4d9c9271778e4648179d',
-    ],
-    lastVerified: '2026-10-21',
-    schedules: {
-      boe: [
-        { from: '2026-09-22', to: '2026-10-30', days: 'weekdays', open: '08:00', close: '16:30' },
-        { from: '2026-10-24', to: '2026-10-24', days: 'daily', open: '09:00', close: '13:00' },
-        { from: '2026-10-31', to: '2026-10-31', days: 'daily', open: '09:00', close: '13:00' },
-        { from: '2026-11-02', to: '2026-11-02', days: 'daily', open: '08:00', close: '17:00' },
-      ],
-      abs: [
-        { from: '2026-10-20', to: '2026-10-30', days: 'weekdays', open: '08:00', close: '16:30' },
-        { from: '2026-10-24', to: '2026-10-24', days: 'daily', open: '09:00', close: '13:00' },
-        { from: '2026-10-31', to: '2026-10-31', days: 'daily', open: '09:00', close: '13:00' },
-        { from: '2026-11-02', to: '2026-11-02', days: 'daily', open: '08:00', close: '17:00' },
-      ],
-    },
-  },
-
   // Decided in issue #1.
   electionDayHours: {
     open: '06:00',
@@ -244,25 +335,25 @@ const election = deepFreeze({
     sources: ['https://revisor.mo.gov/main/OneSection.aspx?section=115.407'],
     lastVerified: '2026-10-21',
   },
+};
 
-  // Owner decision on issue #72 (2026-10-21), replacing the issue #1 line that
-  // county voters may vote at any polling place: follow RSMo 115.430. A voter
-  // must vote at their assigned polling place on Election Day, and a
-  // provisional ballot cast at the wrong one is not counted. The Secretary of
-  // State says the same. County data assigns no polling place to a precinct
-  // (docs/data.md), so the app says how to confirm it: the phone number is in
-  // the county's November 3, 2026 Polling Place Lookup app, re-read on
-  // 2026-10-21 (its old Contact Us page now redirects, #73).
-  electionDayPollingPlace: {
-    sources: [
-      'https://revisor.mo.gov/main/OneSection.aspx?section=115.430',
-      'https://www.sos.mo.gov/elections/goVoteMissouri/electionday',
-    ],
-    lastVerified: '2026-10-21',
-    phone: '314-615-1800',
-    phoneSource:
-      'https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=13fb36e785c84dbdbcc5219f999652ba',
-  },
+// The County block's values without its identity, for the default export.
+const countyValues = Object.fromEntries(
+  Object.entries(county).filter(([key]) => !['id', 'name', 'board'].includes(key)),
+);
+
+/**
+ * The shared values plus the County block's, as one object: what the code that
+ * serves only County voters today reads (`election.serviceRoot` and so on).
+ * `countySiteUrl` is the County block's `boardSiteUrl`. Jurisdiction-aware code
+ * reads `jurisdictions` instead.
+ * @type {ElectionConfig}
+ */
+const election = deepFreeze({
+  ...shared,
+  ...countyValues,
+  countySiteUrl: county.boardSiteUrl,
+  jurisdictions,
 });
 
 export default election;

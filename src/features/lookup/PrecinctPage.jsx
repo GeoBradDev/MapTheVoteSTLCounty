@@ -1,16 +1,10 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useLocation, useParams } from 'wouter';
-import election from '../../config/election.js';
-import {
-  getAbsenteeSites,
-  getPolls,
-  getPrecinctById,
-  getPrecinctGeometry,
-  NotFound,
-  PRECINCT_CODE,
-} from '../../data/arcgis.js';
+import { NotFound } from '../../data/arcgis.js';
+import { county, isPrecinctCode, jurisdictionFor } from '../../data/jurisdictions.js';
 import AddressLookup from './AddressLookup.jsx';
 import { copy as errorCopy, isOffline } from './errorCopy.js';
+import { JurisdictionContext } from './jurisdictionContext.js';
 import { lookupPointFor } from './lookupPoint.js';
 import { precinctStatus } from './precinctStatus.js';
 import PrecinctStatusBanner from './PrecinctStatusBanner.jsx';
@@ -47,7 +41,10 @@ function PrecinctResults({ code }) {
   // reload or a shared link has none.
   const [origin] = useState(() => lookupPointFor(code));
   const headingRef = useRef(null);
-  const validCode = PRECINCT_CODE.test(code);
+  // The code's shape picks the jurisdiction (#86). Anything else goes to the
+  // County, whose lookup says "not found" without a request, as it always has.
+  const jurisdiction = jurisdictionFor(code) ?? county;
+  const validCode = isPrecinctCode(code);
   const searchHeadingId = useId();
 
   // The tab and bookmark title: the code only, and only a code-shaped one
@@ -75,16 +72,16 @@ function PrecinctResults({ code }) {
     // the outline only without a looked-up point, since distances are then
     // measured from its center.
     if (validCode) {
-      getPolls().catch(ignore);
-      getAbsenteeSites().catch(ignore);
-      if (!origin) getPrecinctGeometry(code).catch(ignore);
+      jurisdiction.getPolls().catch(ignore);
+      jurisdiction.getEarlyVotingSites().catch(ignore);
+      if (!origin) jurisdiction.getOutline(code).catch(ignore);
     }
     const done = (next) => {
       if (!current) return;
       setResult(next);
       setLoading(false);
     };
-    getPrecinctById(code).then(
+    jurisdiction.getPrecinct(code).then(
       (precinct) => done({ precinct }),
       (error) => {
         let kind = 'failed';
@@ -96,7 +93,7 @@ function PrecinctResults({ code }) {
     return () => {
       current = false;
     };
-  }, [code, validCode, origin, attempt]);
+  }, [code, jurisdiction, validCode, origin, attempt]);
 
   const precinct = result?.precinct;
   useLayoutEffect(() => {
@@ -127,7 +124,7 @@ function PrecinctResults({ code }) {
   const municipality = municipalityName(precinct?.municipality);
 
   return (
-    <>
+    <JurisdictionContext value={jurisdiction}>
       <header>
         <h1 ref={headingRef} tabIndex={-1} className="text-3xl font-semibold">
           {/* Only a code-shaped value goes in the heading: a link could
@@ -160,8 +157,8 @@ function PrecinctResults({ code }) {
             // A new node per attempt, so a repeated failure is announced again.
             <span key={result.attempt ?? 0}>
               {copy.errors[result.error]}{' '}
-              <a href={election.officialLookupUrl} rel="noreferrer" className={linkClass}>
-                {copy.officialLookup}
+              <a href={jurisdiction.officialLookupUrl} rel="noreferrer" className={linkClass}>
+                {copy.officialLookupFor(jurisdiction.id)}
               </a>
               .
             </span>
@@ -199,22 +196,23 @@ function PrecinctResults({ code }) {
           />
         </>
       )}
-    </>
+    </JurisdictionContext>
   );
 }
 
 /**
- * The code a link meant, when it differs from a valid code only by letter
- * case or surrounding spaces, like cc007 for CC007. Null otherwise.
+ * The code a link meant, when it differs from a valid County or City code only
+ * by letter case or surrounding spaces, like cc007 for CC007 or w01p12 for
+ * W01P12. Null otherwise.
  * @param {string} value
  */
 function canonicalCode(value) {
   const trimmed = value.trim();
   // ASCII only: toUpperCase maps some other letters (the German sharp s becomes SS) onto
   // ASCII ones, which would open a different precinct.
-  if (!/^[a-z]{2,3}\d{3}$/i.test(trimmed)) return null;
+  if (!/^[a-z0-9]+$/i.test(trimmed)) return null;
   const code = trimmed.toUpperCase();
-  return code !== value ? code : null;
+  return code !== value && isPrecinctCode(code) ? code : null;
 }
 
 export default function PrecinctPage() {

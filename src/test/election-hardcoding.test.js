@@ -1,6 +1,7 @@
 // The next election should be a config change, not a code change. Fails when a
 // layer, service, date, URL, field or filter from src/config/election.js is
-// written anywhere else in the app source. content/ is allowed to hold them.
+// written anywhere else in the app source, for the County and the City blocks
+// alike (#86). content/ is allowed to hold them.
 // @vitest-environment node
 import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -32,6 +33,13 @@ function electionValues(config = election) {
       config.sampleBallotUrlPattern?.source,
     ].filter(Boolean),
   );
+  // The City block's field names too (#86): City code reads them from the
+  // config, never from a literal. County field names are not collected: many
+  // are common words (`ward`, `precinct`) used across the app.
+  const cityFields = config.jurisdictions?.city ?? {};
+  for (const [key, value] of Object.entries(cityFields)) {
+    if (key.endsWith('Field') && typeof value === 'string') values.add(value);
+  }
   (function walk(value, key) {
     if (key === 'lastVerified') return;
     if (typeof value === 'string') {
@@ -65,6 +73,22 @@ describe('election-specific values', () => {
     expect(values).toContain(election.earlyVoting.schedules.abs[0].from);
     expect(values).toContain(election.earlyVoting.sources[0]);
     expect(values).not.toContain(election.electionDayHours.sources[0]);
+  });
+
+  it("collects the City block's layers and field names (#86)", () => {
+    const { city } = election.jurisdictions;
+    const values = electionValues();
+    expect(values).toContain(city.serviceRoot);
+    expect(values).toContain(city.layers.precincts);
+    expect(values).toContain(city.layers.precincts.split('/')[0]);
+    expect(values).toContain(city.precinctField);
+  });
+
+  it('collects field names from a City block only', () => {
+    const values = electionValues({
+      jurisdictions: { county: { siteField: 'abc' }, city: { precinctField: 'xyz' } },
+    });
+    expect(values).toEqual(['xyz']);
   });
 
   it('ignores generic source links and verification dates, which other pages may share', () => {
