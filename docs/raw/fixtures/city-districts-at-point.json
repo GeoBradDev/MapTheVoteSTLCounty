@@ -1,0 +1,343 @@
+{
+  "objectIdFieldName": "OBJECTID",
+  "uniqueIdField": {
+    "name": "OBJECTID",
+    "isSystemMaintained": true
+  },
+  "globalIdFieldName": "globalid",
+  "geometryType": "esriGeometryPolygon",
+  "spatialReference": {
+    "wkid": 102100,
+    "latestWkid": 3857
+  },
+  "fields": [
+    {
+      "name": "electedoffice",
+      "type": "esriFieldTypeString",
+      "alias": "Elected Office",
+      "sqlType": "sqlTypeOther",
+      "length": 150,
+      "domain": {
+        "type": "codedValue",
+        "name": "ElectedOffice",
+        "codedValues": [
+          {
+            "name": "Alderman",
+            "code": "Alderman"
+          },
+          {
+            "name": "Alderwoman",
+            "code": "Alderwoman"
+          },
+          {
+            "name": "Attorney General",
+            "code": "Attorney General"
+          },
+          {
+            "name": "Circuit Attorney",
+            "code": "Circuit Attorney"
+          },
+          {
+            "name": "Collector of Revenue",
+            "code": "Collector of Revenue"
+          },
+          {
+            "name": "Comptroller",
+            "code": "Comptroller"
+          },
+          {
+            "name": "Governor",
+            "code": "Governor"
+          },
+          {
+            "name": "License Collector",
+            "code": "License Collector"
+          },
+          {
+            "name": "Mayor",
+            "code": "Mayor"
+          },
+          {
+            "name": "President of the Board of Aldermen",
+            "code": "President of the Board of Aldermen"
+          },
+          {
+            "name": "Recorder of Deeds",
+            "code": "Recorder of Deeds"
+          },
+          {
+            "name": "Sheriff",
+            "code": "Sheriff"
+          },
+          {
+            "name": "Community College Trustee",
+            "code": "Community College Trustee"
+          },
+          {
+            "name": "State Auditor",
+            "code": "State Auditor"
+          },
+          {
+            "name": "State House Representative",
+            "code": "State House Representative"
+          },
+          {
+            "name": "State Senate",
+            "code": "State Senate"
+          },
+          {
+            "name": "State Treasurer",
+            "code": "State Treasurer"
+          },
+          {
+            "name": "Treasurer",
+            "code": "Treasurer"
+          },
+          {
+            "name": "United States House of Representatives",
+            "code": "United States House of Representatives"
+          },
+          {
+            "name": "United States Senate",
+            "code": "United States Senate"
+          },
+          {
+            "name": "Lieutenant Governor",
+            "code": "Lieutenant Governor"
+          },
+          {
+            "name": "President of the United States",
+            "code": "President of the United States"
+          },
+          {
+            "name": "Secretary of State",
+            "code": "Secretary of State"
+          },
+          {
+            "name": "Vice-President of the United States",
+            "code": "Vice-President of the United States"
+          },
+          {
+            "name": "Committeeman (R)",
+            "code": "Committeeman (R)"
+          },
+          {
+            "name": "Committeeman (D)",
+            "code": "Committeeman (D)"
+          },
+          {
+            "name": "Committeeman (L)",
+            "code": "Committeeman (L)"
+          },
+          {
+            "name": "Committeeman (C)",
+            "code": "Committeeman (C)"
+          },
+          {
+            "name": "Committeeman (G)",
+            "code": "Committeeman (G)"
+          },
+          {
+            "name": "Committeewoman (R)",
+            "code": "Committeewoman (R)"
+          },
+          {
+            "name": "Committeewoman (D)",
+            "code": "Committeewoman (D)"
+          },
+          {
+            "name": "Committeewoman (L)",
+            "code": "Committeewoman (L)"
+          },
+          {
+            "name": "Committeewoman (C)",
+            "code": "Committeewoman (C)"
+          },
+          {
+            "name": "Committeewoman (G)",
+            "code": "Committeewoman (G)"
+          },
+          {
+            "name": "Board of Education of the City of St. Louis",
+            "code": "Board of Education of the City of St. Louis"
+          }
+        ]
+      },
+      "defaultValue": null
+    },
+    {
+      "name": "district",
+      "type": "esriFieldTypeString",
+      "alias": "District Name",
+      "sqlType": "sqlTypeOther",
+      "length": 150,
+      "domain": null,
+      "defaultValue": null
+    },
+    {
+      "name": "districtid",
+      "type": "esriFieldTypeString",
+      "alias": "District ID",
+      "sqlType": "sqlTypeOther",
+      "length": 50,
+      "domain": null,
+      "defaultValue": null
+    }
+  ],
+  "features": [
+    {
+      "attributes": {
+        "electedoffice": "Governor",
+        "district": "State of Missouri",
+        "districtid": "State of Missouri"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "United States House of Representatives",
+        "district": "First District",
+        "districtid": "First District"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "Mayor",
+        "district": "City of St. Louis",
+        "districtid": "City of St. Louis"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "Collector of Revenue",
+        "district": "City of St. Louis",
+        "districtid": "City of St. Louis"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "Circuit Attorney",
+        "district": "City of St. Louis",
+        "districtid": "City of St. Louis"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "License Collector",
+        "district": "City of St. Louis",
+        "districtid": "City of St. Louis"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "Sheriff",
+        "district": "City of St. Louis",
+        "districtid": "City of St. Louis"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "Treasurer",
+        "district": "City of St. Louis",
+        "districtid": "City of St. Louis"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "Recorder of Deeds",
+        "district": "City of St. Louis",
+        "districtid": "City of St. Louis"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "President of the Board of Aldermen",
+        "district": "City of St. Louis",
+        "districtid": "City of St. Louis"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "Comptroller",
+        "district": "City of St. Louis",
+        "districtid": "City of St. Louis"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "Alderman",
+        "district": "Ward 14",
+        "districtid": "Ward 14"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "State House Representative",
+        "district": "Missouri House District 78",
+        "districtid": "Missouri House District 78"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "St. Louis Community College Trustee",
+        "district": "Community College Trustee Subdistrict 2",
+        "districtid": "Community College Trustee Subdistrict 2"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "State Senate",
+        "district": "Missouri Senate District 5",
+        "districtid": "Missouri Senate District 5"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "State Treasurer",
+        "district": "State of Missouri",
+        "districtid": "State of Missouri"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "State Auditor",
+        "district": "State of Missouri",
+        "districtid": "State of Missouri"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "Attorney General",
+        "district": "State of Missouri",
+        "districtid": "State of Missouri"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "United States Senate",
+        "district": "State of Missouri",
+        "districtid": "State of Missouri"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "Secretary of State",
+        "district": "Secretary of State",
+        "districtid": "State of Missouri"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "Lieutenant Governor",
+        "district": "Lieutenant Governor",
+        "districtid": "State of Missouri"
+      }
+    },
+    {
+      "attributes": {
+        "electedoffice": "Board of Education of the City of St. Louis",
+        "district": "Board of Education for the City of St. Louis",
+        "districtid": "Board of Education for the City of St. Louis"
+      }
+    }
+  ]
+}

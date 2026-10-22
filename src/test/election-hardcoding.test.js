@@ -22,6 +22,9 @@ const CONFIG = path.join(ROOT, 'src/config/election.js');
 // election, recognizable by its 32 hex character ID.
 const PORTAL_ITEM_ID = /[0-9a-f]{32}/;
 
+// City field names too common in the app's code to scan for.
+const COMMON_WORDS = new Set(['name', 'district']);
+
 // URLs, ISO dates and layer paths (plus the service name in each path) found
 // anywhere in the config, and the few values that are none of those.
 function electionValues(config = election) {
@@ -33,12 +36,18 @@ function electionValues(config = election) {
       config.sampleBallotUrlPattern?.source,
     ].filter(Boolean),
   );
-  // The City block's field names too (#86): City code reads them from the
-  // config, never from a literal. County field names are not collected: many
-  // are common words (`ward`, `precinct`) used across the app.
+  // The City block's field names (#86, #87) and filters (#87) too: City code
+  // reads them from the config, never from a literal. Field names that are
+  // common words used across the app are not collected, nor are County field
+  // names, many of which are (`ward`, `precinct`).
   const cityFields = config.jurisdictions?.city ?? {};
   for (const [key, value] of Object.entries(cityFields)) {
-    if (key.endsWith('Field') && typeof value === 'string') values.add(value);
+    if (/(Field|Where)$/.test(key) && typeof value === 'string') values.add(value);
+    if (key.endsWith('Fields') && value && typeof value === 'object') {
+      for (const field of Object.values(value)) {
+        if (typeof field === 'string' && !COMMON_WORDS.has(field)) values.add(field);
+      }
+    }
   }
   (function walk(value, key) {
     if (key === 'lastVerified') return;
@@ -82,6 +91,22 @@ describe('election-specific values', () => {
     expect(values).toContain(city.layers.precincts);
     expect(values).toContain(city.layers.precincts.split('/')[0]);
     expect(values).toContain(city.precinctField);
+  });
+
+  it("collects the City block's layer field names, except common words (#87)", () => {
+    const values = electionValues({
+      jurisdictions: { city: { siteFields: { id: 'site_key', name: 'name' } } },
+    });
+    expect(values).toEqual(['site_key']);
+    const { city } = election.jurisdictions;
+    expect(electionValues()).toEqual(
+      expect.arrayContaining([city.siteFields.address, city.districtLayerFields.office]),
+    );
+  });
+
+  it("collects the City block's filters (#87)", () => {
+    const values = electionValues({ jurisdictions: { city: { pollsWhere: "a = 'b'" } } });
+    expect(values).toEqual(["a = 'b'"]);
   });
 
   it('collects field names from a City block only', () => {

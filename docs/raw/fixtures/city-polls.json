@@ -1,0 +1,907 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "EPSG:4326"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.204321,
+          38.614102
+        ]
+      },
+      "properties": {
+        "facilityid": "12th_&_Park_Recreation_Center",
+        "name": "12th & Park Recreation Center",
+        "fulladdr": "1410 S Tucker Blvd",
+        "pollingPlaceZipCode": "63104"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.257066,
+          38.624505
+        ]
+      },
+      "properties": {
+        "facilityid": "Adams_School",
+        "name": "Adams Elementary School",
+        "fulladdr": "1311 Tower Grove Ave",
+        "pollingPlaceZipCode": "63110"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.275344,
+          38.586974
+        ]
+      },
+      "properties": {
+        "facilityid": "American_Czech_Educational_Center",
+        "name": "American-Czech Educational Center",
+        "fulladdr": "4690 Lansdowne Ave",
+        "pollingPlaceZipCode": "63116"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.268551,
+          38.580608
+        ]
+      },
+      "properties": {
+        "facilityid": "Association_of_Survivors_of_the_Srebrenica_Genocid",
+        "name": "Association of Survivors of the Srebrenica Genocide",
+        "fulladdr": "5039 Gravois Ave",
+        "pollingPlaceZipCode": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.276292,
+          38.562555
+        ]
+      },
+      "properties": {
+        "facilityid": "Immaculate_Heart_Of_Mary_Church",
+        "name": "Atlas Elementary School - IHM",
+        "fulladdr": "4092 Blow St",
+        "pollingPlaceZipCode": "63116"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.274496,
+          38.662832
+        ]
+      },
+      "properties": {
+        "facilityid": "Better_Famliy_Life",
+        "name": "Better Family Life",
+        "fulladdr": "5415 Page Blvd",
+        "pollingPlaceZipCode": "63112"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.247737,
+          38.685209
+        ]
+      },
+      "properties": {
+        "facilityid": "Mathews_Dickey",
+        "name": "Boy's & Girls Club - Mathews Dickey",
+        "fulladdr": "4245 N Kingshighway Blvd",
+        "pollingPlaceZipCode": "63115"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.212616,
+          38.671176
+        ]
+      },
+      "properties": {
+        "facilityid": "Bryan_Hill_School",
+        "name": "Bryan Hill Elementary School",
+        "fulladdr": "2128 Gano Ave",
+        "pollingPlaceZipCode": "63107"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.294904,
+          38.590357
+        ]
+      },
+      "properties": {
+        "facilityid": "Buder_Library",
+        "name": "Buder Library",
+        "fulladdr": "4401 Hampton Ave",
+        "pollingPlaceZipCode": "63109"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.283155,
+          38.588862
+        ]
+      },
+      "properties": {
+        "facilityid": "Buder_School",
+        "name": "Buder School",
+        "fulladdr": "5319 Lansdowne Ave",
+        "pollingPlaceZipCode": "63109"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.233105,
+          38.634913
+        ]
+      },
+      "properties": {
+        "facilityid": "Busch_Student_Center",
+        "name": "Busch Student Center",
+        "fulladdr": "20 N Grand Blvd",
+        "pollingPlaceZipCode": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.2542,
+          38.554756
+        ]
+      },
+      "properties": {
+        "facilityid": "Carondelet_Branch_Library",
+        "name": "Carondelet Branch Library",
+        "fulladdr": "6800 Michigan Ave",
+        "pollingPlaceZipCode": "63111"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.243508,
+          38.596535
+        ]
+      },
+      "properties": {
+        "facilityid": "Carpenter_Library",
+        "name": "Carpenter Branch Library",
+        "fulladdr": "3309 S Grand Blvd",
+        "pollingPlaceZipCode": "63118"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.211757,
+          38.639336
+        ]
+      },
+      "properties": {
+        "facilityid": "Carr_Lane",
+        "name": "Carr Lane VPA Middle School",
+        "fulladdr": "1004 N Jefferson Ave",
+        "pollingPlaceZipCode": "63106"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.199451,
+          38.630781
+        ]
+      },
+      "properties": {
+        "facilityid": "Central_Library",
+        "name": "Central Library",
+        "fulladdr": "1301 Olive St",
+        "pollingPlaceZipCode": "63103"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.281027,
+          38.665301
+        ]
+      },
+      "properties": {
+        "facilityid": "Christ_Southern_Missionary_Baptist",
+        "name": "Christ Southern Missionary Baptist",
+        "fulladdr": "5630 Page Blvd",
+        "pollingPlaceZipCode": "63112"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.235501,
+          38.645399
+        ]
+      },
+      "properties": {
+        "facilityid": "Deaconess_Foundation",
+        "name": "Deaconess Foundation",
+        "fulladdr": "1000 N Vandeventer Ave",
+        "pollingPlaceZipCode": "63113"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.302552,
+          38.630647
+        ]
+      },
+      "properties": {
+        "facilityid": "Dewey_School",
+        "name": "Dewey School",
+        "fulladdr": "6746 Clayton Ave",
+        "pollingPlaceZipCode": "63139"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.274158,
+          38.668737
+        ]
+      },
+      "properties": {
+        "facilityid": "Friendly_Temple_Missionary_Church",
+        "name": "Friendly Temple Missionary Church (Fellowship Hall)",
+        "fulladdr": "5544 Dr Martin Luther King Dr",
+        "pollingPlaceZipCode": "63112"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.233888,
+          38.58811
+        ]
+      },
+      "properties": {
+        "facilityid": "Froebel_School",
+        "name": "Froebel Elementary School",
+        "fulladdr": "3709 Nebraska Ave",
+        "pollingPlaceZipCode": "63118"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.284119,
+          38.577718
+        ]
+      },
+      "properties": {
+        "facilityid": "Gateway_Science_Academy_OLS",
+        "name": "Gateway Science Academy - Sorrows",
+        "fulladdr": "5020 Rhodes Ave",
+        "pollingPlaceZipCode": "63109"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.209798,
+          38.602029
+        ]
+      },
+      "properties": {
+        "facilityid": "Gene_Slays_Boys_&_Girls_Club",
+        "name": "Gene Slay's Boys & Girls Club",
+        "fulladdr": "2524 S Eleventh St",
+        "pollingPlaceZipCode": "63104"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.193403,
+          38.650115
+        ]
+      },
+      "properties": {
+        "facilityid": "Greater_Leonard_Church",
+        "name": "Greater Leonard MB Church - Education Building",
+        "fulladdr": "2501 N 11 St",
+        "pollingPlaceZipCode": "63106"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.289731,
+          38.653094
+        ]
+      },
+      "properties": {
+        "facilityid": "Hamilton_School",
+        "name": "Hamilton Elementary School",
+        "fulladdr": "5819 Westminster Pl",
+        "pollingPlaceZipCode": "63112"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.245515,
+          38.669381
+        ]
+      },
+      "properties": {
+        "facilityid": "Hickey_School",
+        "name": "Hickey School",
+        "fulladdr": "3111 Cora Ave",
+        "pollingPlaceZipCode": "63115"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.224676,
+          38.616567
+        ]
+      },
+      "properties": {
+        "facilityid": "Hodgen_School",
+        "name": "Hodgen CBA Elementary School",
+        "fulladdr": "1616 California Ave",
+        "pollingPlaceZipCode": "63104"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.222775,
+          38.634434
+        ]
+      },
+      "properties": {
+        "facilityid": "IL_Monastero",
+        "name": "Il Monastero",
+        "fulladdr": "3050 Olive St",
+        "pollingPlaceZipCode": "63103"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.238085,
+          38.603105
+        ]
+      },
+      "properties": {
+        "facilityid": "International_Institute",
+        "name": "International Institute",
+        "fulladdr": "3401 Arsenal St",
+        "pollingPlaceZipCode": "63118"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.212545,
+          38.667572
+        ]
+      },
+      "properties": {
+        "facilityid": "Jubilee_Community_Church",
+        "name": "Jubilee Community Church",
+        "fulladdr": "4231 N Grand Blvd",
+        "pollingPlaceZipCode": "63107"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.236846,
+          38.670353
+        ]
+      },
+      "properties": {
+        "facilityid": "Julia_Davis",
+        "name": "Julia Davis Library",
+        "fulladdr": "4415 Natural Bridge Ave",
+        "pollingPlaceZipCode": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.266808,
+          38.612824
+        ]
+      },
+      "properties": {
+        "facilityid": "Kingshighway_Branch_Library",
+        "name": "Kingshighway Branch Library",
+        "fulladdr": "2260 S Vandeventer Ave",
+        "pollingPlaceZipCode": "63110"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.254502,
+          38.674679
+        ]
+      },
+      "properties": {
+        "facilityid": "Lexington_School",
+        "name": "Lexington Elementary School",
+        "fulladdr": "5030 Lexington Ave",
+        "pollingPlaceZipCode": "63115"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.297771,
+          38.604775
+        ]
+      },
+      "properties": {
+        "facilityid": "Machacek_Library",
+        "name": "Machacek Library",
+        "fulladdr": "6424 Scanlan Ave",
+        "pollingPlaceZipCode": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.254619,
+          38.602195
+        ]
+      },
+      "properties": {
+        "facilityid": "Mann_School",
+        "name": "Mann Elementary School",
+        "fulladdr": "4047 Juniata St",
+        "pollingPlaceZipCode": "63116"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.290013,
+          38.610861
+        ]
+      },
+      "properties": {
+        "facilityid": "Mason_School",
+        "name": "Mason School",
+        "fulladdr": "6031 Southwest Ave",
+        "pollingPlaceZipCode": "63139"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.261931,
+          38.634752
+        ]
+      },
+      "properties": {
+        "facilityid": "McDonnell_Medical_Sciences_Building",
+        "name": "McDonnell Medical Sciences Building",
+        "fulladdr": "4565 McKinley Ave",
+        "pollingPlaceZipCode": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.25533,
+          38.617006
+        ]
+      },
+      "properties": {
+        "facilityid": "Mullanphy_School",
+        "name": "Mullanphy Elementary School",
+        "fulladdr": "4221 Shaw Ave",
+        "pollingPlaceZipCode": "63110"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.241416,
+          38.721322
+        ]
+      },
+      "properties": {
+        "facilityid": "Nance_School",
+        "name": "Nance Elementary School",
+        "fulladdr": "8959 Riverview Blvd",
+        "pollingPlaceZipCode": "63147"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.240145,
+          38.580691
+        ]
+      },
+      "properties": {
+        "facilityid": "Neighborhood_Innovation_Center_-_STL",
+        "name": "Neighborhood Innovation Center-STL",
+        "fulladdr": "3207 Meramec St",
+        "pollingPlaceZipCode": "63118"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.230303,
+          38.683735
+        ]
+      },
+      "properties": {
+        "facilityid": "New_Sunny_Mount_Church",
+        "name": "New Sunny Mount Hunter's Hall",
+        "fulladdr": "4700 W Florissant Ave",
+        "pollingPlaceZipCode": "63115"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.243181,
+          38.659535
+        ]
+      },
+      "properties": {
+        "facilityid": "Newstead_Missionary_Baptist",
+        "name": "Newstead Missionary Baptist Church",
+        "fulladdr": "4370 N Market St.",
+        "pollingPlaceZipCode": "63113"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.305,
+          38.587571
+        ]
+      },
+      "properties": {
+        "facilityid": "Nottingham_School",
+        "name": "Nottingham CAJT High School",
+        "fulladdr": "4915 Donovan Ave",
+        "pollingPlaceZipCode": "63109"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.227992,
+          38.599693
+        ]
+      },
+      "properties": {
+        "facilityid": "Salvation_Army_Temple_Corps",
+        "name": "Salvation Army Temple Corps",
+        "fulladdr": "2740 Arsenal St",
+        "pollingPlaceZipCode": "63118"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.262087,
+          38.643968
+        ]
+      },
+      "properties": {
+        "facilityid": "Schlafly_Library",
+        "name": "Schlafly Library",
+        "fulladdr": "225 N Euclid Ave",
+        "pollingPlaceZipCode": "63108"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.277021,
+          38.611798
+        ]
+      },
+      "properties": {
+        "facilityid": "Shaw_School",
+        "name": "Shaw VPA Elementary School",
+        "fulladdr": "5329 Columbia Ave",
+        "pollingPlaceZipCode": "63139"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.236835,
+          38.60911
+        ]
+      },
+      "properties": {
+        "facilityid": "Shenandoah_School",
+        "name": "Shenandoah Elementary School",
+        "fulladdr": "3412 Shenandoah Ave",
+        "pollingPlaceZipCode": "63104"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.216669,
+          38.610033
+        ]
+      },
+      "properties": {
+        "facilityid": "Sigel_School",
+        "name": "Sigel Elementary School",
+        "fulladdr": "2039 Russell Blvd",
+        "pollingPlaceZipCode": "63104"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.292335,
+          38.597177
+        ]
+      },
+      "properties": {
+        "facilityid": "St._Joan_of_Arc",
+        "name": "St. Joan of Arc",
+        "fulladdr": "5821 Pernod Ave",
+        "pollingPlaceZipCode": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.189081,
+          38.639786
+        ]
+      },
+      "properties": {
+        "facilityid": "Youth_&_Family_Center",
+        "name": "The Youth & Family Center",
+        "fulladdr": "818 Cass Ave",
+        "pollingPlaceZipCode": "63106"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.247233,
+          38.703658
+        ]
+      },
+      "properties": {
+        "facilityid": "Walnut_Park_Library",
+        "name": "Walnut Park Library",
+        "fulladdr": "5760 W Florissant Ave",
+        "pollingPlaceZipCode": "63120"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.259183,
+          38.656735
+        ]
+      },
+      "properties": {
+        "facilityid": "Washington_Montessori_School",
+        "name": "Washington Montessori School",
+        "fulladdr": "1130 N Euclid Ave",
+        "pollingPlaceZipCode": "63113"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.254269,
+          38.658122
+        ]
+      },
+      "properties": {
+        "facilityid": "West_Side_MB_Church",
+        "name": "West Side MB Church",
+        "fulladdr": "4675 Page Blvd",
+        "pollingPlaceZipCode": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.245432,
+          38.616011
+        ]
+      },
+      "properties": {
+        "facilityid": "Wild_Carrot",
+        "name": "Wild Carrot",
+        "fulladdr": "3901 Shaw Blvd",
+        "pollingPlaceZipCode": "63110"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.304761,
+          38.621882
+        ]
+      },
+      "properties": {
+        "facilityid": "Wilkinson_School",
+        "name": "Wilkinson Early Childhood Center",
+        "fulladdr": "1921 Prather Ave",
+        "pollingPlaceZipCode": "63139"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.269085,
+          38.569614
+        ]
+      },
+      "properties": {
+        "facilityid": "Woerner_School",
+        "name": "Woerner School",
+        "fulladdr": "6131 Leona St",
+        "pollingPlaceZipCode": "63116"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.249952,
+          38.565725
+        ]
+      },
+      "properties": {
+        "facilityid": "Woodward_School",
+        "name": "Woodward Elementary School",
+        "fulladdr": "725 Bellerive Blvd",
+        "pollingPlaceZipCode": "63111"
+      }
+    }
+  ]
+}

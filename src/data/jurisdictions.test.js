@@ -8,6 +8,7 @@ import {
   city,
   isPrecinctCode,
   jurisdictionFor,
+  loadCityClient,
 } from './jurisdictions.js';
 
 describe('precinct codes', () => {
@@ -79,7 +80,7 @@ describe('adapters', () => {
     }
   });
 
-  it('the City stub answers not found without a request (#87 fills it in)', async () => {
+  it('the City stub answers not found without a request (until #89)', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
     try {
       for (const call of [
@@ -90,6 +91,30 @@ describe('adapters', () => {
       ]) {
         await expect(call).rejects.toBeInstanceOf(arcgis.NotFound);
       }
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it('loads the City data client on demand, once (#87)', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    try {
+      const client = await loadCityClient();
+      expect(await loadCityClient()).toBe(client);
+      for (const name of [
+        'getCityPrecinctAtPoint',
+        'getCityPrecinctById',
+        'getCityPrecinctGeometry',
+        'getCityDistrictsAtPoint',
+        'getCityDistrictsForPrecinct',
+        'getCityPolls',
+        'getCityEarlyVotingSites',
+        'isInCityBoundary',
+      ]) {
+        expect(typeof client[name], name).toBe('function');
+      }
+      // Loading it asks nothing.
       expect(fetchSpy).not.toHaveBeenCalled();
     } finally {
       fetchSpy.mockRestore();

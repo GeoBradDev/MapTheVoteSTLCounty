@@ -19,6 +19,7 @@ import { realpathSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import election from '../src/config/election.js';
 import { PRECINCT_CODE } from '../src/data/arcgis.js';
+import { cityPrecinctCode } from '../src/data/cityPrecinctCode.js';
 import { fileNameMatchesPrecinct, parseSampleBallot } from '../src/data/sampleBallot.js';
 import { parseCityHours, selectCityWaits, selectCountyWaits } from '../src/data/waitTimes.js';
 import { earlyVotingStatus, zonedNow } from '../src/features/lookup/earlyVoting.js';
@@ -93,6 +94,34 @@ export const KNOWN_POINTS = [
 
 /** A point in St. Louis City, outside the county: no precinct, outside the boundary. */
 export const OUTSIDE_POINT = { name: 'Gateway Arch, St. Louis City', lat: 38.6247, lng: -90.1848 };
+
+/** A sane number of City precincts (#87). 207 for November 2026. */
+export const CITY_PRECINCT_RANGE = { min: 150, max: 300 };
+
+/** City Hall, 1200 Market St: in a City precinct, a ward and the City outline. */
+export const CITY_KNOWN_POINT = {
+  name: 'City Hall, St. Louis City',
+  lat: 38.62741,
+  lng: -90.19843,
+};
+
+/**
+ * What each City layer must look like (#87): the fields src/data/cityArcgis.js
+ * reads. The voting locations layer is asked by its own filters, so a filter
+ * field it lost fails the site checks instead.
+ */
+export function expectedCityLayers(config) {
+  const city = config.jurisdictions.city;
+  return {
+    precincts: { geometryType: 'esriGeometryPolygon', fields: [city.precinctField] },
+    districts: {
+      geometryType: 'esriGeometryPolygon',
+      fields: Object.values(city.districtLayerFields),
+    },
+    sites: { geometryType: 'esriGeometryPoint', fields: Object.values(city.siteFields) },
+    boundary: { geometryType: 'esriGeometryPolygon', fields: BOUNDARY_FIELDS },
+  };
+}
 
 /** What each configured layer must look like. */
 export function expectedLayers(config) {
@@ -656,7 +685,177 @@ export async function runHealthCheck(
     }
   }
 
+  // 8. The City's layers (#87): each answers with the fields the app reads,
+  // the precincts read as City codes, the site filters find the City Board's
+  // lists, and City Hall lands in a City precinct, a ward and the outline.
+  if (config.jurisdictions?.city) await checkCity(config.jurisdictions.city);
+
   return results;
+
+  async function checkCity(city) {
+    const cityLayerUrl = (key) => `${city.serviceRoot}/${city.layers[key]}`;
+    const cityQuery = async (key, params) => {
+      const body = await request(
+        `${cityLayerUrl(key)}/query?${new URLSearchParams({ f: 'json', ...params })}`,
+      );
+      if (!Array.isArray(body?.features)) {
+        throw new CheckError('the response has no features list');
+      }
+      return (body.features ?? []).map((f) => f?.attributes ?? {});
+    };
+    const cityPoint = (key, { lat, lng }, outFields, extra = {}) =>
+      cityQuery(key, {
+        ...extra,
+        geometry: `${lng},${lat}`,
+        geometryType: 'esriGeometryPoint',
+        inSR: '4326',
+        spatialRel: 'esriSpatialRelIntersects',
+        outFields,
+        returnGeometry: 'false',
+      });
+
+    const ok = {};
+    for (const [key, want] of Object.entries(expectedCityLayers(config))) {
+      const where = `jurisdictions.city.layers.${key} (${city.layers[key]})`;
+      ok[key] = await check(`city layer ${key}`, async () => {
+        let info;
+        try {
+          info = await request(`${cityLayerUrl(key)}?f=json`);
+        } catch (error) {
+          if (!(error instanceof CheckError)) throw error;
+          const hint = error.transient ? '' : '. Check this path in src/config/election.js.';
+          throw new CheckError(`${where}: ${error.message}${hint}`);
+        }
+        if (info.geometryType !== want.geometryType) {
+          throw new CheckError(
+            `${where}: geometry is ${info.geometryType ?? 'missing'}, want ${want.geometryType}. ` +
+              'Is this the right layer?',
+          );
+        }
+        const have = new Set((Array.isArray(info.fields) ? info.fields : []).map((f) => f?.name));
+        const missing = want.fields.filter((f) => !have.has(f));
+        if (missing.length) throw new CheckError(`${where}: missing fields ${missing.join(', ')}`);
+        return `${where}: ${info.name ?? 'unnamed'}, expected fields present (${want.fields.length})`;
+      });
+    }
+
+    if (ok.precincts) {
+      await check('city precincts', async () => {
+        const rows = await cityQuery('precincts', {
+          where: '1=1',
+          outFields: city.precinctField,
+          returnGeometry: 'false',
+        });
+        const { min, max } = CITY_PRECINCT_RANGE;
+        if (rows.length < min || rows.length > max) {
+          throw new CheckError(`${rows.length} precincts, want ${min} to ${max}`);
+        }
+        const bad = [];
+        const seen = new Set();
+        const wards = new Set();
+        for (const row of rows) {
+          const id = row[city.precinctField];
+          const code = cityPrecinctCode(id);
+          if (!code) bad.push(`${JSON.stringify(id)} is not a City precinct ID`);
+          else if (seen.has(code)) bad.push(`${code} appears twice`);
+          else {
+            seen.add(code);
+            wards.add(Number(code.slice(1, 3)));
+          }
+        }
+        if (bad.length) throw new CheckError(bad.join('; '));
+        return `${rows.length} precincts, wards ${Math.min(...wards)} to ${Math.max(...wards)}`;
+      });
+    } else {
+      record('city precincts', 'skip', 'the city layer precincts check failed');
+    }
+
+    const sitesCheck = async (name, whereKey, describe) => {
+      if (!ok.sites) {
+        record(name, 'skip', 'the city layer sites check failed');
+        return;
+      }
+      await check(name, async () => {
+        const rows = await cityQuery('sites', {
+          where: city[whereKey],
+          outFields: Object.values(city.siteFields).join(','),
+          returnGeometry: 'false',
+        });
+        if (rows.length === 0) {
+          throw new CheckError(`${whereKey} (${city[whereKey]}) returns no sites`);
+        }
+        const { id, name: nameField, address } = city.siteFields;
+        const text = (v) => (typeof v === 'string' ? v.trim() : '');
+        const bad = [];
+        const ids = new Set();
+        for (const row of rows) {
+          const siteId = text(row[id]);
+          const label = siteId || JSON.stringify(row[nameField] ?? null);
+          if (!siteId) bad.push(`${label}: no id`);
+          else if (ids.has(siteId)) bad.push(`${label}: id repeated`);
+          ids.add(siteId);
+          if (!text(row[nameField])) bad.push(`${label}: no name`);
+          if (!text(row[address])) bad.push(`${label}: no address`);
+        }
+        if (bad.length) throw new CheckError(bad.join('; '));
+        return describe(rows);
+      });
+    };
+    await sitesCheck('city voting locations', 'pollsWhere', (rows) => {
+      const noZip = rows.filter((r) => !String(r[city.siteFields.zip] ?? '').trim()).length;
+      const listed = city.pollsListed;
+      if (Number.isInteger(listed) && rows.length !== listed) {
+        return {
+          warn:
+            `${rows.length} Election Day sites, but the City Board lists ${listed} (pollsListed). ` +
+            "Compare the filter with the City Board's polling places page.",
+        };
+      }
+      return `${rows.length} Election Day sites, as the City Board lists; ${noZip} without a ZIP`;
+    });
+    await sitesCheck(
+      'city early voting sites',
+      'earlyVotingWhere',
+      (rows) => `${rows.length} sites`,
+    );
+
+    if (ok.precincts && ok.districts && ok.boundary) {
+      await check('city known points', async () => {
+        const bad = [];
+        const label = CITY_KNOWN_POINT.name;
+        const [precinct] = await cityPoint('precincts', CITY_KNOWN_POINT, city.precinctField);
+        if (!precinct) bad.push(`${label}: no City precinct`);
+        else if (!cityPrecinctCode(precinct[city.precinctField])) {
+          bad.push(`${label}: bad precinct ID ${JSON.stringify(precinct[city.precinctField])}`);
+        }
+        const districts = await cityPoint(
+          'districts',
+          CITY_KNOWN_POINT,
+          Object.values(city.districtLayerFields).join(','),
+        );
+        const ward = districts.some((d) => /^Ward \d+$/.test(d[city.districtLayerFields.id] ?? ''));
+        if (!ward) bad.push(`${label}: no ward`);
+        const outline = { where: city.boundaryWhere };
+        if (!(await cityPoint('boundary', CITY_KNOWN_POINT, 'OBJECTID', outline)).length) {
+          bad.push(`${label}: outside the City outline`);
+        }
+        // A County point is in neither.
+        const county = KNOWN_POINTS[0];
+        const [countyPrecinct] = await cityPoint('precincts', county, city.precinctField);
+        if (countyPrecinct) {
+          bad.push(`${county.name}: in City precinct ${countyPrecinct[city.precinctField]}`);
+        }
+        if ((await cityPoint('boundary', county, 'OBJECTID', outline)).length) {
+          bad.push(`${county.name}: inside the City outline`);
+        }
+        if (bad.length) throw new CheckError(bad.join('; '));
+        return `${label} is in a City precinct, a ward and the outline; ${county.name} is in none`;
+      });
+    } else {
+      const failed = ['precincts', 'districts', 'boundary'].find((k) => !ok[k]);
+      record('city known points', 'skip', `the city layer ${failed} check failed`);
+    }
+  }
 }
 
 /** The wait time sources the check knows, and the extra fields each must have. */

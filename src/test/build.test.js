@@ -173,6 +173,13 @@ describe('production build', () => {
     expect(html).not.toMatch(/WaitTimesPage/);
   });
 
+  // The City data client (#87) is loaded on demand (loadCityClient), never in
+  // the first load. Its own error text marks it: names are minified.
+  it('keeps the City data client out of the first load', () => {
+    const firstLoad = [...html.matchAll(/(?:src|href)="\/assets\/([\w-]+\.js)"/g)].map((m) => m[1]);
+    for (const f of firstLoad) expect(js[f], f).not.toContain('has no inside to ask at');
+  });
+
   // Performance budget (#27): every script the first load fetches (the entry
   // and anything index.html preloads) under about 120 KB gzipped.
   it('keeps the first-load JavaScript under 120 KB gzipped', () => {

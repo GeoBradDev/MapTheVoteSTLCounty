@@ -75,9 +75,12 @@ export class NotFound extends Error {
   name = 'NotFound';
 }
 
-// Trims strings and turns empty values into null, so callers check one thing.
-// A polling place's `loc` is always a 3-digit string, like 007.
-function normalize(attributes) {
+/**
+ * Trims strings and turns empty values into null, so callers check one thing.
+ * A County polling place's `loc` is always a 3-digit string, like 007.
+ * @param {Record<string, unknown>} attributes
+ */
+export function normalize(attributes) {
   return Object.fromEntries(
     Object.entries(attributes).map(([key, value]) => {
       if (key === 'loc' && typeof value === 'number') value = String(value);
@@ -94,8 +97,8 @@ function checkCode(code) {
   if (!PRECINCT_CODE.test(code)) throw new NotFound(`Not a precinct code: ${JSON.stringify(code)}`);
 }
 
-// A layer is a key of the County block's `layers`, or a wait time source from the
-// config, which names its own service root.
+// A layer is a key of the County block's `layers`, or `{ serviceRoot, layer }`:
+// a wait time source from the config, or a City layer (src/data/cityArcgis.js).
 function layerUrl(layer) {
   return typeof layer === 'string'
     ? `${countyConfig.serviceRoot}/${countyConfig.layers[layer]}`
@@ -173,9 +176,15 @@ const PRIVATE_INIT = Object.freeze({
   referrerPolicy: 'no-referrer',
 });
 
-// A GET query, or with `private` set a POST whose parameters are in the body
-// and out of the URL, the HTTP cache and the referrer.
-async function query(layer, params, { private: isPrivate = false } = {}) {
+/**
+ * A GET query, or with `private` set a POST whose parameters are in the body
+ * and out of the URL, the HTTP cache and the referrer. One retry of a
+ * transient failure. The City client (src/data/cityArcgis.js) asks through it too.
+ * @param {string | { serviceRoot: string, layer: string }} layer
+ * @param {Record<string, string>} params
+ * @param {{ private?: boolean }} [options]
+ */
+export async function query(layer, params, { private: isPrivate = false } = {}) {
   const url = isPrivate ? `${layerUrl(layer)}/query` : queryUrl(layer, params);
   const init = isPrivate ? { ...PRIVATE_INIT, body: new URLSearchParams(params) } : {};
   const fieldsKey = params.f === 'geojson' ? 'properties' : 'attributes';
@@ -188,8 +197,8 @@ async function query(layer, params, { private: isPrivate = false } = {}) {
   }
 }
 
-// A point query's parameters. Only the coordinates come from the caller.
-function pointParams(caller, { lat, lng }, outFields) {
+/** A point query's parameters. Only the coordinates come from the caller. */
+export function pointParams(caller, { lat, lng }, outFields) {
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
     throw new TypeError(`${caller} needs numeric lat and lng`);
   }
@@ -322,12 +331,20 @@ export async function getPrecinctGeometry(code) {
   return outline.promise;
 }
 
-// A whole-layer GeoJSON query, shared by all callers while it is younger than
-// the max age (#84), so a call after that sees a moved polling place. A
-// request in flight is shared too; a failed fetch is not kept, so the
-// next call tries again. The answer carries `loadedAt`, when it arrived (ms).
-// Only the fields the app reads, with coordinates to 6 decimals (about 0.1 m).
-function sharedLayer(layer, where, fields) {
+/**
+ * A whole-layer GeoJSON query, shared by all callers while it is younger than
+ * the max age (#84), so a call after that sees a moved polling place. A
+ * request in flight is shared too; a failed fetch is not kept, so the
+ * next call tries again. The answer carries `loadedAt`, when it arrived (ms).
+ * Only the fields the app reads, with coordinates to 6 decimals (about 0.1 m).
+ * @param {string | { serviceRoot: string, layer: string }} layer
+ * @param {string} where
+ * @param {readonly string[]} fields
+ * @param {(properties: object) => object} [toProperties] Turns each feature's
+ *   properties into what the app reads; `normalize` by default.
+ * @returns {() => Promise<object>}
+ */
+export function sharedLayer(layer, where, fields, toProperties = normalize) {
   let entry;
   return () => {
     if (entry && (entry.loadedAt === undefined || isFresh(entry.loadedAt, layerMaxAgeMs()))) {
@@ -345,7 +362,7 @@ function sharedLayer(layer, where, fields) {
         next.loadedAt = Date.now();
         return {
           ...body,
-          features: body.features.map((f) => ({ ...f, properties: normalize(f.properties) })),
+          features: body.features.map((f) => ({ ...f, properties: toProperties(f.properties) })),
           loadedAt: next.loadedAt,
         };
       })

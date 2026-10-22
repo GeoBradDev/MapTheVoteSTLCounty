@@ -1,0 +1,70 @@
+{
+  "objectIdFieldName": "OBJECTID",
+  "uniqueIdField": {
+    "name": "OBJECTID",
+    "isSystemMaintained": true
+  },
+  "globalIdFieldName": "globalid",
+  "geometryType": "esriGeometryPolygon",
+  "spatialReference": {
+    "wkid": 102100,
+    "latestWkid": 3857
+  },
+  "fields": [
+    {
+      "name": "OBJECTID",
+      "type": "esriFieldTypeOID",
+      "alias": "OBJECTID",
+      "sqlType": "sqlTypeOther",
+      "domain": null,
+      "defaultValue": null
+    }
+  ],
+  "features": [
+    {
+      "attributes": {
+        "OBJECTID": 46
+      }
+    },
+    {
+      "attributes": {
+        "OBJECTID": 47
+      }
+    },
+    {
+      "attributes": {
+        "OBJECTID": 48
+      }
+    },
+    {
+      "attributes": {
+        "OBJECTID": 49
+      }
+    },
+    {
+      "attributes": {
+        "OBJECTID": 50
+      }
+    },
+    {
+      "attributes": {
+        "OBJECTID": 51
+      }
+    },
+    {
+      "attributes": {
+        "OBJECTID": 52
+      }
+    },
+    {
+      "attributes": {
+        "OBJECTID": 53
+      }
+    },
+    {
+      "attributes": {
+        "OBJECTID": 54
+      }
+    }
+  ]
+}

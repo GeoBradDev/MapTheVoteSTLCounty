@@ -5,12 +5,9 @@
 import { jurisdictions } from '../config/election.js';
 import referrals from '../config/referrals.js';
 import * as arcgis from './arcgis.js';
+import { CITY_PRECINCT_CODE } from './cityPrecinctCode.js';
 
-/**
- * City precinct codes: ward and precinct, two digits each, like W01P12 for the
- * City layer's `W 1 P 12`. A County code (letters then 3 digits) never matches.
- */
-export const CITY_PRECINCT_CODE = /^W\d{2}P\d{2}$/;
+export { CITY_PRECINCT_CODE, cityPrecinctCode, cityPrecinctId } from './cityPrecinctCode.js';
 
 /**
  * @typedef {object} Jurisdiction
@@ -46,11 +43,31 @@ export const county = Object.freeze({
   getOutline: (code) => arcgis.getPrecinctGeometry(code),
 });
 
-// Until #87 reads the City's layers, every City answer is "not found".
-const notYet = () =>
-  Promise.reject(new arcgis.NotFound('City precinct data is not served yet (#87)'));
+let cityClient;
 
-/** @type {Jurisdiction} The City: a stub until #87. */
+/**
+ * The City's data code (./cityArcgis.js, #87), loaded on first use so it stays
+ * out of the first load. A failed load is not kept, so the next call tries
+ * again.
+ * @returns {Promise<typeof import('./cityArcgis.js')>}
+ */
+export function loadCityClient() {
+  cityClient ??= import('./cityArcgis.js').catch((error) => {
+    cityClient = undefined;
+    throw error;
+  });
+  return cityClient;
+}
+
+// Every City answer is "not found" until the City results page (#89): the
+// results cards still carry County text and the County's Election Day rule,
+// and the page asks for the polls and outline before the precinct answers, so
+// wiring these alone would fetch City layers for a page that shows nothing of
+// them. #89 points them at loadCityClient().
+const notYet = () =>
+  Promise.reject(new arcgis.NotFound('City precinct results are not served yet (#89)'));
+
+/** @type {Jurisdiction} The City: a stub until #89. */
 export const city = Object.freeze({
   id: 'city',
   config: jurisdictions.city,
@@ -82,15 +99,4 @@ export function jurisdictionFor(code) {
  */
 export function isPrecinctCode(code) {
   return jurisdictionFor(code) !== null;
-}
-
-/**
- * The City precincts layer's ID (its `precinctField`) for a City code: W01P12 is `W 1 P 12`.
- * @param {string} code
- * @throws {NotFound} When the code is not a City code.
- */
-export function cityPrecinctId(code) {
-  if (!CITY_PRECINCT_CODE.test(code))
-    throw new arcgis.NotFound(`Not a City precinct code: ${JSON.stringify(code)}`);
-  return `W ${Number(code.slice(1, 3))} P ${Number(code.slice(4))}`;
 }
