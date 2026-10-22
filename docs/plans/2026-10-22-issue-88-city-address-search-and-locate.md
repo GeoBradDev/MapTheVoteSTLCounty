@@ -37,7 +37,8 @@ dataviz, django, fastapi, expo (not applicable because no charts, no backend, no
    `jurisdiction: 'county'`.
 6. `stl-city` stays only as the fallback when the City precinct layer finds nothing or
    fails for a place the geocoder names as the City and the county layer has no precinct
-   there (the point decides, as today), or fails for coordinates alone near the City that are
+   there (the point decides, as today), or fails for coordinates alone (or, since resume
+   review round 3, a place the geocoder puts in the county) near the City that are
    not known to be in the county; its notice links the City Board and the City's own polling place lookup.
 7. A point in neither precinct layer keeps today's Missouri and out-of-state answers.
 8. Use my location (coordinates only) in the City opens the City precinct, under the #83
@@ -194,3 +195,10 @@ error line (#93), the Clayton municipality no match (opened as #143, unrelated).
   the README Errors list names the City lookup failing with Photon finding nothing.
   `scripts/check-geocoder.mjs` adds an "app, City down" pass: shared addresses and no-ZIP
   twins must get no precinct with the City geocoder blocked.
+- Resume review round 3: with no county source answering, a Photon place named as the City
+  goes through `twinFree` too (it then fails, so no match or unavailable: the county could
+  have it in the same ZIP); a City check answer whose parcel has no ZIP is no match;
+  `locate()` gives the `stl-city` referral, not the Missouri notice, to a place the geocoder
+  puts in the county when the City layer fails near the City outside the county. Header
+  comments of the frozen `paste58`, `retype58` and `pasteunit58` tests and docs/data.md's
+  pick tracking paragraph updated for the label-ZIP rule.

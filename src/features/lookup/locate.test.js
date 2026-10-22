@@ -258,6 +258,15 @@ describe('locate, in St. Louis City (#88)', () => {
     expect(await locate({ lat: CITY.lat, lng: CITY.lng })).toEqual({ kind: 'stl-city' });
   });
 
+  // Review finding: a place the geocoder puts in the county, at a point in the
+  // City, is never told it is outside the City and County when the City
+  // layer fails.
+  it('a county-named place near the City, outside the county, gets the City referral when the City layer fails', async () => {
+    fetchMock.mockImplementation(recorded(cityFails));
+    const place = { lat: CITY.lat, lng: CITY.lng, state: 'Missouri', county: 'Saint Louis County' };
+    expect(await locate(place)).toEqual({ kind: 'stl-city' });
+  });
+
   // On the Illinois bank, inside the City's extent box (finder report, #88).
   const EAST_ST_LOUIS = { lat: 38.6285, lng: -90.172, state: 'IL', county: 'St. Clair County' };
 

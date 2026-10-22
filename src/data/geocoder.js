@@ -159,8 +159,9 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
         // out a City parcel in another ZIP, so a City answer then is the
         // City's own ZIP.
         const zip = typedZip(place.label ?? '');
-        // A place with no ZIP of its own cannot be told apart either.
-        if (!typedZip(text) || !zip || zip === typedZip(city.place?.label ?? '')) return null;
+        // A place or a City parcel with no ZIP of its own cannot be told apart either.
+        const cityZip = typedZip(city.place?.label ?? '');
+        if (!typedZip(text) || !zip || !cityZip || zip === cityZip) return null;
         return city.place;
       }
       if (city?.status === 'none') return place;
@@ -295,7 +296,9 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
       // county twin that a typed town the county lacks ("St. Louis City")
       // hid from the county, with the City geocoder down or finding nothing:
       // the county is asked by its street, as for a City lookup answer.
-      if (place?.county === CITY_COUNTY && !typedZip(text)) {
+      // With no county source answering, the county could have it in the
+      // same ZIP (#58): the county is asked again, so never the place then.
+      if (place?.county === CITY_COUNTY && (!typedZip(text) || !county)) {
         return twinFree(place, signal, reportUnavailable);
       }
       return checkedForCity(text, place, signal, reportUnavailable);

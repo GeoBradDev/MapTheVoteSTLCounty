@@ -3,6 +3,10 @@
 // deleted or changed) the search is still a pick. Selecting the whole box and
 // pasting over it replaces the ZIP, so that forgets the pick.
 // Frozen: written red before the fix.
+// Since the owner's decision of 2026-10-22 (#88) the geocoder counts a
+// label's ZIP as typed, so a pick and the same text get the same answer;
+// this test still holds the box's pick tracking (comment updated with the
+// owner's approval of rewriting the #58 tests).
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createFakeGeocoder } from '../../test/fakeGeocoder.js';

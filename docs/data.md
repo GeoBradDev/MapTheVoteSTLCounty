@@ -382,7 +382,7 @@ puts it out of state or in another county, so a point far from the City is never
 it. A place named as the City whose point is in a county precinct gets that precinct: the
 point decides, as for every place. A City precinct opens `/p/<City code>`. With no
 precinct at the point, a place in St. Louis City (its precinct layer found nothing or
-failed), or coordinates alone near the City that are not known to be in the county (the
+failed), or coordinates alone or a place the geocoder puts in the county, near the City and not known to be in the county (the
 boundary says outside, or cannot answer) when the City's layer failed, is sent to the City's Board of Election Commissioners and its polling place lookup,
 one elsewhere in Missouri to the Secretary of State Voter Outreach Center (the
 county apps' own no-results link), and one outside Missouri gets a generic
@@ -678,9 +678,10 @@ answer with the typed text itself:
   Pasting over a selection that holds the ZIP replaces it, and an autofill (an edit with no
   input type) forgets the pick, since the box cannot tell what it replaced. A digit left
   against the ZIP when the voter searches makes it another number, so that search goes as
-  typed text; deleting the digit makes it a pick again. Once the pick is forgotten, a ZIP typed later is the voter's own, so a county
-  voter can still type a county-only ZIP to get the precinct. Since the label's ZIP counts
-  as typed (#88), a pick and the same text typed get the same answer.
+  typed text; deleting the digit makes it a pick again. Under #58, forgetting the pick made a ZIP typed later the voter's own, so a
+  county voter could still type a county-only ZIP to get the precinct. Since the label's
+  ZIP counts as typed (#88), a pick and the same text typed get the same answer, so the
+  pick tracking no longer changes the answer.
 - **A City match:** a `PointAddress` (a City parcel; interpolated `StreetAddress` ranges do
   not count) with the typed house number and whole street under the strict rules
   (`matchesStreet` in `addressMatch.js`), and the typed ZIP when one is typed (a parcel

@@ -79,8 +79,9 @@ const nearCity = ({ lat, lng }) =>
  * precinct at the point is the main sign it is outside both; the county
  * boundary confirms it. When the boundary query fails, the geocoder's fields
  * decide alone. A City place whose City precinct cannot be found gets the
- * City referral (`stl-city`), and so do coordinates alone near the City that
- * are not known to be in the county when the City's layer fails.
+ * City referral (`stl-city`), and so do coordinates alone or a place the
+ * geocoder puts in the county, near the City and not known to be in the
+ * county, when the City's layer fails.
  * @param {Place} place
  * @returns {Promise<Location>}
  * @throws {TypeError} When the place has no numeric lat and lng.
@@ -137,10 +138,11 @@ export async function locate(place) {
     // The geocoder's fields are the fallback below.
   }
   if (inCounty === true) return { kind: 'county-unmatched' };
-  // Coordinates alone near the City, not known to be in the county, and the
-  // City could not answer. (The extent box also takes in some of the Illinois
-  // bank.)
-  if (cityFailed && kind === 'unknown' && nearCity(point)) {
+  // Coordinates alone, or a place the geocoder puts in the county, near the
+  // City, not known to be in the county, and the City could not answer: never
+  // told it is outside the City and County. (The extent box also takes in
+  // some of the Illinois bank.)
+  if (cityFailed && couldBeCity && nearCity(point)) {
     return { kind: 'stl-city' };
   }
   if (inCounty === null && kind === 'st-louis-county') return { kind: 'county-unmatched' };

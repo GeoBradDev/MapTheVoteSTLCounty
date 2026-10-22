@@ -288,3 +288,29 @@ describe('a Photon place named as the City, for text with no ZIP', () => {
     expect(source.find).toHaveBeenCalledTimes(1);
   });
 });
+
+// Review finding: with no county source answering, a Photon place named as the
+// City could be a county twin in the typed ZIP (6135 Horton Pl 63133): never
+// the place then.
+it('a Photon City place with no county source answering is never the answer', async () => {
+  const PHOTON_CITY = { ...CITY_HALL, label: '6135 Horton Pl, Saint Louis, MO 63133' };
+  const { geocoder } = setup({ county: unavailable, photon: async () => PHOTON_CITY });
+  await expect(geocoder.geocode('6135 Horton Pl, St. Louis, MO 63133')).resolves.toBeNull();
+  await expect(
+    geocoder.geocode('6135 Horton Pl, St. Louis, MO 63133', { reportUnavailable: true }),
+  ).rejects.toBeInstanceOf(GeocoderUnavailableError);
+});
+
+// Review finding: a City parcel with no ZIP cannot be told apart from a county
+// match in the typed ZIP: no match.
+it('a City parcel with no ZIP of its own is no match, never the City place', async () => {
+  const BROOKINGS = { ...COUNTY_PLACE, label: '1 Brookings Dr, Saint Louis, MO 63130' };
+  const { geocoder } = setup({
+    county: async () => ({ status: 'match', place: BROOKINGS, confirmed: true }),
+    find: async () => ({
+      status: 'city',
+      place: { ...CITY_HALL, label: '1 Brookings Dr, St. Louis, MO' },
+    }),
+  });
+  await expect(geocoder.geocode('1 Brookings Dr, St. Louis, MO 63130')).resolves.toBeNull();
+});
