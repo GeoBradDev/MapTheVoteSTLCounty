@@ -506,6 +506,13 @@ describe('polls copy', () => {
     expect(copy.polls.hours('06:00', '19:30')).toBe('6 a.m. to 7:30 p.m.');
   });
 
+  it('ends the stale note with one period, after a p.m. time (#84)', () => {
+    expect(copy.polls.staleNote('20:58', null)).toBe(
+      'We could not check this list for changes. It was loaded at 8:58 p.m.',
+    );
+    expect(copy.polls.staleNote('09:05', null)).toMatch(/at 9:05 a\.m\.$/);
+  });
+
   it('formats distances to one decimal', () => {
     expect(copy.polls.distance(0.01)).toBe('Less than 0.1 miles away');
     expect(copy.polls.distance(1.04)).toBe('1.0 mile away');
