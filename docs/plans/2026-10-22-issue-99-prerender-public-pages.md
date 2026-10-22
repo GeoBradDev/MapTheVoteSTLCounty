@@ -184,6 +184,10 @@ build its head hook on the `pageHead()` function added here.
 - The smoke test also checks that `/` is the pre-rendered home page, not only `/learn` and a
   topic (review finding).
 
+- Owner decision (on #99, after the Render preview spike): a topic's description is its
+  first paragraph only when that paragraph comes before the topic's first heading; otherwise
+  it is the `/learn` intro. This narrows criterion 7's "a topic, its first paragraph".
+
 ## Proof
 
 - Criterion 1, 2, 3: `src/test/build.test.js` against a real build (files, head tags, root

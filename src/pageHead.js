@@ -61,12 +61,17 @@ function inlineText(nodes) {
 
 /**
  * A topic's description: its first paragraph as plain text, without citation
- * marks, cut like describe().
+ * marks, cut like describe(), but only a paragraph that comes before the
+ * topic's first heading. A paragraph under a heading describes that section,
+ * not the page, and can read broader than the page does, so a topic without
+ * one gets the "How to vote" intro instead (owner decision on #99).
  * @param {import('./features/learn/content/topic.js').Topic} topic
  */
 export function topicDescription(topic) {
-  const first = topic.blocks.find((block) => block.type === 'paragraph');
-  return describe(first ? inlineText(first.children) : topic.title);
+  const firstHeading = topic.blocks.findIndex((block) => block.type === 'heading');
+  const intro = firstHeading === -1 ? topic.blocks : topic.blocks.slice(0, firstHeading);
+  const first = intro.find((block) => block.type === 'paragraph');
+  return describe(first ? inlineText(first.children) : learnCopy.intro);
 }
 
 /** The shell's head: the title and description index.html has. */
