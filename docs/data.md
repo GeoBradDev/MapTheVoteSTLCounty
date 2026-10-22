@@ -846,7 +846,7 @@ Education, the citywide and statewide offices (one polygon per office, sharing a
 such as `City of St. Louis` or `State of Missouri`), and two placeholder rows, `electedoffice`
 `President of the United States` and `Vice-President of the United States` (`districtid`
 `President of the United States` and `Vice President of the United States`, no hyphen), each a
-polygon of about 1,100 m². A point query returns one row per office there: 22 at City Hall (8
+polygon of about 1,100 m² in Web Mercator. A point query returns one row per office there: 22 at City Hall (8
 distinct `districtid` values). A districts card should drop the two placeholders and group the
 rows that share a `districtid` (#90). The `electedoffice` field's coded values also include party committee posts,
 `Committeeman (R)`, `(D)`, `(L)`, `(C)`, `(G)` and the same for `Committeewoman`: no row has
@@ -862,8 +862,9 @@ it does), and never asks for `*`. `electedoffice` names the office as its holder
 
 **Districts for a precinct with no point** (a share link): `BOE/PRECINCTS_2023` on
 `maps6.stlouis-mo.gov`, which has `Ward`, `Senate`, `Rep` and `NewCC` on each precinct, still
-fails every query on 2026-10-22 (`400 Unable to perform query operation` on the FeatureServer,
-`Failed to execute query` on the MapServer), so it is not used. Instead,
+fails every query that returns its fields or shapes on 2026-10-22 (`400 Unable to perform
+query operation` on the FeatureServer, `Failed to execute query` on the MapServer; only count
+and ID-only queries answer, the FeatureServer counting 207), so it is not used. Instead,
 `getCityDistrictsForPrecinct` asks the districts layer at a point inside the precinct's shared
 outline (`interiorPoint` in `src/data/interiorPoint.js`: the middle of the widest stretch inside
 the polygon along 9 horizontal lines). It holds because every City precinct lies inside exactly
