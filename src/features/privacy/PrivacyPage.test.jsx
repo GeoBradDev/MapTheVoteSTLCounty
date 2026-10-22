@@ -84,10 +84,17 @@ describe('PrivacyPage', () => {
       "goes first to St. Louis County's address points (maps.stlouisco.com), or to the county's copy of them on Esri's ArcGIS Online (services2.arcgis.com) when the first cannot be reached. The county gets it in the body of the request, not in its web address.",
     );
     expect(item).toHaveTextContent(
-      'It also goes to Photon by komoot (photon.komoot.io) when the county has no match or cannot be reached;',
+      "When the county has no match, it also goes to the City of St. Louis's address search (maps6.stlouis-mo.gov), in the body of the request, to find it in St. Louis City.",
     );
     expect(item).toHaveTextContent(
-      "its house number and street (not the town, ZIP code or unit) also go to the City of St. Louis's address search (maps6.stlouis-mo.gov), in the body of the request, to check that the City does not have the same address. It is skipped when you typed a ZIP code that is entirely outside the City, or when the address was found in another county.",
+      'It also goes to Photon by komoot (photon.komoot.io) when neither has a match or the county cannot be reached;',
+    );
+    expect(item).toHaveTextContent(
+      "its house number and street (not the town, ZIP code or unit) also go to the City's address search, in the body of the request, to check that the City does not have the same address. The City is skipped when you typed a ZIP code that is entirely outside the City, or when the address was found in another county.",
+    );
+    // City suggestions (#88): the City gets the text as it is typed too.
+    expect(item).toHaveTextContent(
+      'so the county, Photon and, once a house number and a street name are typed, the City get each part of the address as you type it.',
     );
     expect(item).not.toHaveTextContent('not also in St. Louis City');
   });
@@ -102,6 +109,9 @@ describe('PrivacyPage', () => {
 
     expect(item).toHaveTextContent(
       "goes to St. Louis County's election maps on Esri's ArcGIS Online (services6.arcgis.com), in the body of the request, not in its web address",
+    );
+    expect(item).toHaveTextContent(
+      "When it is in or near the City of St. Louis, it goes the same way to the St. Louis City Board of Election Commissioners' election maps (services6.arcgis.com), also on Esri's ArcGIS Online.",
     );
     expect(item).toHaveTextContent(
       'Your browser does not keep these requests or their answers in its cache.',

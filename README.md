@@ -4,8 +4,9 @@ A nonpartisan voter guide for St. Louis County, Missouri, live at
 [mapthevotestl.com](https://mapthevotestl.com). A voter types an address or uses their
 location and gets their precinct, the nearest polling places, their sample ballot, their
 districts and the in-person absentee voting sites and hours, plus short "How to vote" guides
-built from official sources. A voter with a St. Louis City address is referred to the City's
-own Board of Election Commissioners.
+built from official sources. A voter with a St. Louis City address gets their City precinct
+(#88); when it cannot be found, they are referred to the City's own Board of Election
+Commissioners.
 
 It is for St. Louis County voters, on a phone first, and for whoever runs it for the next
 election: the sections below say how to set it up, where its data comes from and how to
@@ -395,7 +396,8 @@ County voters. The results page gets its jurisdiction's data adapter and officia
 from `src/data/jurisdictions.js`, picked from the precinct code's shape (`/p/CC007` is the County,
 `/p/W01P12` the City; [docs/data.md](docs/data.md#jurisdictions-and-precinct-codes)); its
 other links still read the County values until the City results land (#89, #93). The City's
-data client, `src/data/cityArcgis.js` (#87), is loaded on demand. The
+data client, `src/data/cityArcgis.js` (#87), is loaded on demand, by the City results and by
+`locate()` (#88) when it asks the City's precinct layer. The
 test also fails on a City block's layer, service, filter or field name (except the common words
 `name` and `district`) written outside the config.
 
@@ -577,16 +579,20 @@ turn the workflow back on in the Actions tab.
 The address box searches St. Louis County's official address points first, from the
 browser with no key and no server of ours: the county's live layer, then its hosted copy on
 ArcGIS Online when the live one is unavailable. When the county has no match (a St. Louis
-City address, for example) or neither layer answers, it falls back to the public
+City address, for example), the City of St. Louis's own geocoder is asked next, and a City
+parcel opens its City precinct (#88); its parcels are also suggested after the county's. When
+neither has a match, or no county layer answers, it falls back to the public
 [Photon](https://photon.komoot.io) geocoder (OpenStreetMap data). Every answer that could get
-a county precinct is then checked with the City of St. Louis's own geocoder, unless the text
+a county precinct is then checked with the City's geocoder, unless the text
 holds a ZIP entirely outside the City: when the City has the same address in another ZIP, the
-voter gets the City referral, when both list it in one ZIP the answer is no match, and when the City geocoder fails or is slow, the app says address search is not working,
+voter gets the City precinct, when both list it in one ZIP the answer is no match, and when the City geocoder fails or is slow, the app says address search is not working,
 never a county precinct (#58, #18). `src/data/geocoder.js` builds that chain, `src/data/countyAddress.js`,
 `src/data/photon.js` and `src/data/cityAddress.js` implement the sources and
 `src/data/addressMatch.js` holds the strict matching rules they share; a test fails if any
 other app file names a provider. docs/data.md (Geocoding, County address points, City check)
-explains every rule.
+explains every rule. `src/features/lookup/locate.js` asks the City's precinct layer for a
+place the geocoder names as the City, and for a point near the City that the county's
+precinct layer misses.
 To point a build at another Photon instance, set `VITE_GEOCODER_URL` (for example
 `VITE_GEOCODER_URL=https://photon.example.org npm run build`). The Content-Security-Policy in
 `render.yaml` allows only the default Photon origin, `https://photon.komoot.io`, the two
@@ -601,11 +607,13 @@ node scripts/check-geocoder.mjs [photon-base-url]
 
 It geocodes 10 polling place addresses and 1318 Ross Ave with each source alone, with the
 app's chain and with the chain while the live county layer is blocked, and checks that City
-Hall and the City addresses of #58, whose number and street the county also has, get the City
-referral, typed and picked from the suggestions, and that addresses the county and the City
-both list in one ZIP (6135 Horton Pl 63133, 1 Brookings Dr 63130) are no match. It exits 1 if
-the chain puts any address in the wrong precinct, a City address loses its referral, or a
-shared address is not no match. "No match" is
+Hall, the City addresses of #58, whose number and street the county also has, and other City
+addresses (5010 Nottingham Ave 63109, addresses near the City line) open a City precinct, typed
+and picked from the suggestions, that addresses outside both (St. Charles, out of state) get no
+precinct, and that addresses the county and the City both list in one ZIP (6135 Horton Pl
+63133, 1 Brookings Dr 63130) are no match. It exits 1 if the chain puts any address in the
+wrong precinct, a City address does not open a City precinct, an address outside both gets a
+precinct, or a shared address is not no match. "No match" is
 allowed: the app then points the voter to "Use my location" and the county's official
 lookup. Results are recorded in `docs/data.md` under Geocoding.
 
@@ -641,8 +649,8 @@ Addresses are sensitive. The app itself never puts a typed address or its coordi
 URL, `localStorage`, `sessionStorage`, IndexedDB, cookies, logs or analytics, and v1 has no
 analytics. Every request that carries a typed address or coordinates uses `cache: 'no-store'`,
 no cookies and no referrer, and sends them in a POST body, never the URL, where the service
-accepts one (#38): the county's address layers, the City geocoder and the precinct and boundary
-point queries. Photon has no POST endpoint, so it gets the typed text in a GET query string;
+accepts one (#38): the county's address layers, the City geocoder and the County and City
+precinct and boundary point queries. Photon has no POST endpoint, so it gets the typed text in a GET query string;
 the notice says so. A new request that carries either must do the same, and a service worker
 (#25) must not put those requests in Cache Storage, which `no-store` does not cover. The plain-language
 notice at `/privacy` (`src/features/privacy/privacyCopy.js`, its text under `privacy` in

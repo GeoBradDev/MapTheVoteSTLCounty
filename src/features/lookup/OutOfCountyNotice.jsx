@@ -5,12 +5,15 @@ import { copy } from './outOfCountyCopy.js';
 
 const HREFS = {
   stlCityBoard: referrals.stlCityBoard.url,
+  stlCityLookup: referrals.stlCityLookup.url,
   moVoterOutreach: referrals.moVoterOutreach.url,
   countyLookup: election.officialLookupUrl,
 };
 
 /**
- * Tells a voter whose place is not in a county precinct where to go instead.
+ * Tells a voter whose place is in neither a County nor a City precinct where
+ * to go instead. `stl-city` is the fallback when the City's precinct could not
+ * be found (#88).
  * @param {{ kind: string, headingLevel?: 2 | 3 }} props `kind` is a kind from
  *   locate(), other than `precinct`. `headingLevel` is 3 when the notice sits
  *   inside a section that has its own `h2`.

@@ -44,7 +44,8 @@ dataviz, django, fastapi, expo (not applicable because no charts, no backend, no
     City, never into a URL or storage; the notice says what the City geocoder and the City's
     election maps now get.
 11. `node scripts/check-geocoder.mjs` passes and checks City addresses (City Hall, the #58
-    addresses, addresses near the City line) for a City precinct.
+    addresses, addresses near the City line, and 5010 Nottingham Ave 63109, an owner report
+    added mid-run) for a City precinct, typed and picked.
 12. First-load JS stays under the 120 KB budget: the City data client stays lazy.
 
 ## Files that change
@@ -65,7 +66,7 @@ dataviz, django, fastapi, expo (not applicable because no charts, no backend, no
   maps host.
 - `src/features/lookup/GeocoderAttribution.jsx` copy: the City is a source, not only a check.
 - `scripts/check-geocoder.mjs`: City expectations become a City precinct; more City cases.
-- Tests: `cityAddress.test.js`, `geocoderChain.test.js` / `geocoder.city58.test.js` /
+- Tests: new `cityAddress.lookup88.test.js`, `geocoderChain.test.js` / `geocoder.city58.test.js` /
   `geocoder.sharedzip58.test.js` / `geocoder.pick58.test.js` where expectations change,
   a new `geocoder.city88.test.js`, `locate.test.js`, `AddressLookup.test.jsx`,
   `OutOfCountyNotice.test.jsx`, privacy tests as needed.
@@ -103,8 +104,9 @@ error line (#93), the Clayton municipality no match (opened as #143, unrelated).
 
 ## Proof
 
-- Criteria 1, 2, 4: `src/data/geocoder.city88.test.js` and `cityAddress.test.js`, from the
-  recorded City geocoder fixtures; `scripts/check-geocoder.mjs` live.
+- Criteria 1, 2, 4: `src/data/geocoder.city88.test.js` and `src/data/cityAddress.lookup88.test.js`
+  (new, from the recorded City geocoder fixtures, including 5010 Nottingham Ave and the partly
+  typed `6135 Washington` and `5010 Nottingham`); `scripts/check-geocoder.mjs` live.
 - Criterion 3: geocoder suggest tests and `AddressSearch` pick through the chain.
 - Criteria 5 to 8: `locate.test.js` with `city-precinct-at-point.json` and failures;
   `AddressLookup.test.jsx` navigation to `/p/W01P12`.
@@ -116,3 +118,13 @@ error line (#93), the Clayton municipality no match (opened as #143, unrelated).
   suggestion; Use my location emulated at City Hall. Expect `/p/W..P..` for City places,
   `/p/<county code>` for the county one, no match for Brookings, Missouri and out-of-state
   notices, and in the Network panel, City requests as POSTs only.
+
+## Revisions
+
+- Mid-run (coordinator, owner report): 5010 Nottingham Ave, St. Louis, MO 63109 added to the
+  fixtures, the tests and `scripts/check-geocoder.mjs`. The City geocoder matches whole words
+  only and has no suggest operation, so the City suggestion appears once `5010 Nottingham`
+  is typed, not for `5010 Notting`.
+- `locate()` also returns `stl-city` for a point near the City, outside the county, when the
+  City layer fails (coordinates only, Use my location), so a City voter is never told the
+  location is outside both.

@@ -6,8 +6,9 @@ const linkClass = 'text-primary underline';
 /**
  * Credits the address search sources: St. Louis County's address points
  * first, then the fallback service and its OpenStreetMap data, as the data
- * license requires, then the City of St. Louis's address search, which checks
- * that the City does not have the same address (#58). It also says where the
+ * license requires, then the City of St. Louis's address search, which finds
+ * City addresses (#88) and checks that the City does not have the same
+ * address (#58). It also says where the
  * typed address goes.
  */
 export default function GeocoderAttribution() {

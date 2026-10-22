@@ -85,30 +85,33 @@
       "then": "or, when needed,",
       "by": "by",
       "data": "data ©",
-      "cityCheck": "An address found outside St. Louis City may also be checked with the",
+      "cityCheck": "St. Louis City addresses are found, and an address found outside the City may be checked, with the",
       "privacy": "Your address is sent only to these services, to find your precinct. This site does not save it."
     }
   },
   "outOfCounty": {
     "stlCity": {
       "heading": "This address is in the City of St. Louis",
-      "text": "The City of St. Louis is separate from St. Louis County and has its own election board. For your polling place, sample ballot and registration, go to the",
+      "text": "We could not find its City precinct right now. The City of St. Louis has its own election board. For your polling place, sample ballot and registration, go to the",
       "link": "St. Louis City Board of Election Commissioners",
-      "after": "."
+      "after": ".",
+      "lookupText": "You can also find your polling place with the",
+      "lookupLink": "City's polling place lookup",
+      "lookupAfter": "."
     },
     "missouri": {
-      "heading": "This address is outside St. Louis County",
-      "text": "This guide covers St. Louis County only. To find your polling place and sample ballot anywhere in Missouri, use the",
+      "heading": "This address is outside St. Louis City and County",
+      "text": "This guide covers St. Louis City and St. Louis County only. To find your polling place and sample ballot anywhere else in Missouri, use the",
       "link": "Missouri Secretary of State Voter Outreach Center",
       "after": "."
     },
     "outOfState": {
       "heading": "This address is outside Missouri",
-      "text": "This guide covers St. Louis County, Missouri only. Your local election office can tell you where and how to vote."
+      "text": "This guide covers St. Louis City and St. Louis County, Missouri only. Your local election office can tell you where and how to vote."
     },
     "unknown": {
-      "heading": "This location is outside St. Louis County",
-      "text": "This guide covers St. Louis County only. If you vote anywhere else in Missouri, including the City of St. Louis, use the",
+      "heading": "This location is outside St. Louis City and County",
+      "text": "This guide covers St. Louis City and St. Louis County only. If you vote anywhere else in Missouri, use the",
       "link": "Missouri Secretary of State Voter Outreach Center",
       "after": ".",
       "outsideMissouri": "Outside Missouri, your local election office can tell you where and how to vote."
@@ -368,11 +371,11 @@
       "intro": "Each service below sees your IP address, as any website you visit does, and keeps its own logs under its own policy.",
       "addressSearch": {
         "heading": "Address search",
-        "text": "What you type in the address box goes first to St. Louis County's address points ({countyAddresses}), or to the county's copy of them on Esri's ArcGIS Online ({countyAddressesCopy}) when the first cannot be reached. The county gets it in the body of the request, not in its web address. It also goes to {service} by {serviceBy} ({openSearch}) when the county has no match or cannot be reached; {service} gets it as part of the request's web address. When you search for an address and it is found outside St. Louis City, its house number and street (not the town, ZIP code or unit) also go to the City of St. Louis's address search ({cityAddresses}), in the body of the request, to check that the City does not have the same address. It is skipped when you typed a ZIP code that is entirely outside the City, or when the address was found in another county. Suggestions are looked up as you type, so the county and {service} get each part of the address as you type it; the City gets only the address you search for. Your browser does not keep any of these requests or their answers in its cache."
+        "text": "What you type in the address box goes first to St. Louis County's address points ({countyAddresses}), or to the county's copy of them on Esri's ArcGIS Online ({countyAddressesCopy}) when the first cannot be reached. The county gets it in the body of the request, not in its web address. When the county has no match, it also goes to the City of St. Louis's address search ({cityAddresses}), in the body of the request, to find it in St. Louis City. It also goes to {service} by {serviceBy} ({openSearch}) when neither has a match or the county cannot be reached; {service} gets it as part of the request's web address. When you search for an address and it is found outside St. Louis City, its house number and street (not the town, ZIP code or unit) also go to the City's address search, in the body of the request, to check that the City does not have the same address. The City is skipped when you typed a ZIP code that is entirely outside the City, or when the address was found in another county. Suggestions are looked up as you type, so the county, {service} and, once a house number and a street name are typed, the City get each part of the address as you type it. Your browser does not keep any of these requests or their answers in its cache."
       },
       "findingPrecinct": {
         "heading": "Finding your precinct",
-        "text": "The point where your address was found, or your device's location if you choose Use my location, goes to St. Louis County's election maps on Esri's ArcGIS Online ({electionMaps}), in the body of the request, not in its web address. When the address you type has several entries in the county's address points, like the units of an apartment building, the points of all of them go there first, the same way, to check that they are in one precinct. Your browser does not keep these requests or their answers in its cache. Opening a shared link sends only the precinct code."
+        "text": "The point where your address was found, or your device's location if you choose Use my location, goes to St. Louis County's election maps on Esri's ArcGIS Online ({electionMaps}), in the body of the request, not in its web address. When it is in or near the City of St. Louis, it goes the same way to the St. Louis City Board of Election Commissioners' election maps ({cityElectionMaps}), also on Esri's ArcGIS Online. When the address you type has several entries in the county's address points, like the units of an apartment building, the points of all of them go there first, the same way, to check that they are in one precinct. Your browser does not keep these requests or their answers in its cache. Opening a shared link sends only the precinct code."
       },
       "useMyLocation": {
         "heading": "Use my location",

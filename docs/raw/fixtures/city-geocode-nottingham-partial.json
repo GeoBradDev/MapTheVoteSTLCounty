@@ -1,0 +1,272 @@
+{
+  "spatialReference": {
+    "wkid": 4326,
+    "latestWkid": 4326
+  },
+  "candidates": [
+    {
+      "address": "5010 NOTTINGHAM AVE, 63109",
+      "location": {
+        "x": -90.27896270499399,
+        "y": 38.58519018215502
+      },
+      "score": 90.92,
+      "attributes": {
+        "Addr_type": "PointAddress",
+        "AddNum": "5010",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "NOTTINGHAM",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": "63109"
+      },
+      "extent": {
+        "xmin": -90.28076134908613,
+        "ymin": 38.58339153806287,
+        "xmax": -90.27716406090184,
+        "ymax": 38.586988826247165
+      }
+    },
+    {
+      "address": "5010 NOTTINGHAM AVE",
+      "location": {
+        "x": -90.27940702770591,
+        "y": 38.58550046368067
+      },
+      "score": 90.92,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "5010",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "NOTTINGHAM",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.28120567179806,
+        "ymin": 38.58370181958852,
+        "xmax": -90.27760838361377,
+        "ymax": 38.587299107772814
+      }
+    },
+    {
+      "address": "5011 NOTTINGHAM AVE",
+      "location": {
+        "x": -90.27944184272265,
+        "y": 38.5855207938014
+      },
+      "score": 69.92,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "5011",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "NOTTINGHAM",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.2812404868148,
+        "ymin": 38.58372214970925,
+        "xmax": -90.2776431986305,
+        "ymax": 38.58731943789355
+      }
+    },
+    {
+      "address": "5200 NOTTINGHAM AVE",
+      "location": {
+        "x": -90.28042542942674,
+        "y": 38.585608777126225
+      },
+      "score": 59.29,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "5200",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "NOTTINGHAM",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.28222407351889,
+        "ymin": 38.58381013303408,
+        "xmax": -90.2786267853346,
+        "ymax": 38.58740742121837
+      }
+    },
+    {
+      "address": "5400 NOTTINGHAM AVE",
+      "location": {
+        "x": -90.28446486984251,
+        "y": 38.5860353859188
+      },
+      "score": 59.15,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "5400",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "NOTTINGHAM",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.28626351393466,
+        "ymin": 38.58423674182665,
+        "xmax": -90.28266622575036,
+        "ymax": 38.587834030010946
+      }
+    },
+    {
+      "address": "5500 NOTTINGHAM AVE",
+      "location": {
+        "x": -90.2874048796504,
+        "y": 38.58635191659715
+      },
+      "score": 59.09,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "5500",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "NOTTINGHAM",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.28920352374254,
+        "ymin": 38.584553272505005,
+        "xmax": -90.28560623555825,
+        "ymax": 38.5881505606893
+      }
+    },
+    {
+      "address": "5600 NOTTINGHAM AVE",
+      "location": {
+        "x": -90.28847394843369,
+        "y": 38.5864630398722
+      },
+      "score": 59.02,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "5600",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "NOTTINGHAM",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29027259252584,
+        "ymin": 38.58466439578005,
+        "xmax": -90.28667530434154,
+        "ymax": 38.58826168396435
+      }
+    },
+    {
+      "address": "5800 NOTTINGHAM AVE",
+      "location": {
+        "x": -90.29253619608433,
+        "y": 38.58689592945129
+      },
+      "score": 58.89,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "5800",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "NOTTINGHAM",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29433484017648,
+        "ymin": 38.58509728535914,
+        "xmax": -90.29073755199218,
+        "ymax": 38.588694573543435
+      }
+    },
+    {
+      "address": "5860 NOTTINGHAM AVE",
+      "location": {
+        "x": -90.29474142250173,
+        "y": 38.586840686798816
+      },
+      "score": 58.86,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "5860",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "NOTTINGHAM",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29654006659388,
+        "ymin": 38.58504204270667,
+        "xmax": -90.29294277840958,
+        "ymax": 38.58863933089096
+      }
+    },
+    {
+      "address": "6200 NOTTINGHAM AVE",
+      "location": {
+        "x": -90.29564881480088,
+        "y": 38.58667756478763
+      },
+      "score": 58.65,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "6200",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "NOTTINGHAM",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29744745889303,
+        "ymin": 38.58487892069548,
+        "xmax": -90.29385017070874,
+        "ymax": 38.588476208879776
+      }
+    },
+    {
+      "address": "6300 NOTTINGHAM AVE",
+      "location": {
+        "x": -90.29887415585799,
+        "y": 38.587056393774034
+      },
+      "score": 58.59,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "6300",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "NOTTINGHAM",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.30067279995014,
+        "ymin": 38.58525774968189,
+        "xmax": -90.29707551176584,
+        "ymax": 38.58885503786618
+      }
+    }
+  ]
+}

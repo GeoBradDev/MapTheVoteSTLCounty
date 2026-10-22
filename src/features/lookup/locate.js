@@ -1,7 +1,8 @@
-// Turns a geocoded place into either its precinct or the office to send the
-// voter to instead. It takes no geocoder's own format: any geocoder (or
-// "Use my location", with coordinates only) can fill a place.
+// Turns a geocoded place into either its precinct, County or City (#88), or
+// the office to send the voter to instead. It takes no geocoder's own format:
+// any geocoder (or "Use my location", with coordinates only) can fill a place.
 import { getPrecinctAtPoint, isInCountyBoundary } from '../../data/arcgis.js';
+import { loadCityClient } from '../../data/jurisdictions.js';
 
 /**
  * @typedef {object} Place
@@ -14,7 +15,7 @@ import { getPrecinctAtPoint, isInCountyBoundary } from '../../data/arcgis.js';
  */
 
 /**
- * @typedef {{ kind: 'precinct', precinct: object }
+ * @typedef {{ kind: 'precinct', jurisdiction: 'county' | 'city', precinct: object }
  *   | { kind: 'county-unmatched' | 'stl-city' | 'missouri' | 'out-of-state' | 'unknown' }}
  *   Location
  */
@@ -53,9 +54,32 @@ export function classifyPlace({ state, county } = {}) {
 }
 
 /**
- * Where a place is. No precinct at the point is the main sign it is outside the
- * county; the county boundary confirms it. When the boundary query fails, the
- * geocoder's fields decide alone.
+ * The City's outline extent (its boundary layer, 2026-10-22), widened by
+ * about 500 m. Only a point inside it is sent to the City's precinct layer
+ * when the geocoder does not name the City, so a point far from the City
+ * never goes to the City.
+ */
+export const CITY_EXTENT = Object.freeze({
+  west: -90.3256,
+  south: 38.5275,
+  east: -90.1614,
+  north: 38.7789,
+});
+
+const nearCity = ({ lat, lng }) =>
+  lat >= CITY_EXTENT.south &&
+  lat <= CITY_EXTENT.north &&
+  lng >= CITY_EXTENT.west &&
+  lng <= CITY_EXTENT.east;
+
+/**
+ * Where a place is. A place the geocoder names as the City is asked of the
+ * City's precinct layer first; any other is asked of the county's, then of
+ * the City's when the county has none and the point is near the City. No
+ * precinct at the point is the main sign it is outside both; the county
+ * boundary confirms it. When the boundary query fails, the geocoder's fields
+ * decide alone. A City place, or a point near the City outside the county,
+ * whose City precinct cannot be found gets the City referral (`stl-city`).
  * @param {Place} place
  * @returns {Promise<Location>}
  * @throws {TypeError} When the place has no numeric lat and lng.
@@ -65,17 +89,52 @@ export async function locate(place) {
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
     throw new TypeError('locate needs a place with numeric lat and lng');
   }
-  const precinct = await getPrecinctAtPoint({ lat, lng });
-  if (precinct) return { kind: 'precinct', precinct };
+  const point = { lat, lng };
+  const kind = classifyPlace(place);
+  const named = kind === 'stl-city';
+  let cityAsked = false;
+  let cityFailed = false;
+  // The City precinct at the point, or null when it has none or fails. The
+  // City's data code loads only now, so it stays out of the first load.
+  async function cityPrecinct() {
+    cityAsked = true;
+    try {
+      const client = await loadCityClient();
+      const precinct = await client.getCityPrecinctAtPoint(point);
+      return precinct ? { kind: 'precinct', jurisdiction: 'city', precinct } : null;
+    } catch {
+      cityFailed = true;
+      return null;
+    }
+  }
+
+  if (named) {
+    const city = await cityPrecinct();
+    if (city) return city;
+  }
+  let precinct;
+  try {
+    precinct = await getPrecinctAtPoint(point);
+  } catch (error) {
+    // The geocoder named the City, and the City had no precinct for it.
+    if (named) return { kind: 'stl-city' };
+    throw error;
+  }
+  if (precinct) return { kind: 'precinct', jurisdiction: 'county', precinct };
+  if (!cityAsked && nearCity(point)) {
+    const city = await cityPrecinct();
+    if (city) return city;
+  }
 
   let inCounty = null;
   try {
-    inCounty = await isInCountyBoundary({ lat, lng });
+    inCounty = await isInCountyBoundary(point);
   } catch {
     // The geocoder's fields are the fallback below.
   }
-  const kind = classifyPlace(place);
   if (inCounty === true) return { kind: 'county-unmatched' };
+  // Near the City, outside the county, and the City could not answer.
+  if (cityFailed && inCounty === false && nearCity(point)) return { kind: 'stl-city' };
   if (inCounty === null && kind === 'st-louis-county') return { kind: 'county-unmatched' };
   // Outside the boundary, a geocoder that still says St. Louis County is wrong
   // about the county, not the state.

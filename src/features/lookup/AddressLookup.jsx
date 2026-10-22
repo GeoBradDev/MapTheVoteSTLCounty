@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
 import election from '../../config/election.js';
-import { PRECINCT_CODE } from '../../data/arcgis.js';
 import { GeocoderUnavailableError } from '../../data/geocoder.js';
+import {
+  city as cityJurisdiction,
+  county as countyJurisdiction,
+} from '../../data/jurisdictions.js';
 import AddressSearch from './AddressSearch.jsx';
 import GeocoderAttribution from './GeocoderAttribution.jsx';
 import { useGeocoder } from './geocoderContext.js';
@@ -25,7 +28,7 @@ function errorKind(error) {
 
 /**
  * The whole lookup: the address box and "Use my location". Either gives a
- * place for locate() (#8). A precinct opens its page (only the precinct code
+ * place for locate() (#8). A County or City precinct (#88) opens its page (only the precinct code
  * goes in the URL); anywhere else shows where to go instead. The address text
  * is never stored, and the coordinates are kept only in memory, for the
  * polling places card (lookupPoint.js).
@@ -93,9 +96,12 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
       } else {
         const { lat, lng, state, county } = place;
         const result = await locate({ lat, lng, state, county });
+        // A City precinct carries its URL code (#88); a county one, its own.
+        const isCity = result.jurisdiction === 'city';
+        const found = isCity ? result.precinct?.code : result.precinct?.precinct;
         if (result.kind !== 'precinct') next = { kind: result.kind };
-        else if (PRECINCT_CODE.test(result.precinct?.precinct)) {
-          code = result.precinct.precinct;
+        else if ((isCity ? cityJurisdiction : countyJurisdiction).code.test(found ?? '')) {
+          code = found;
           point = { lat, lng };
         } else next = { error: 'failed' };
       }

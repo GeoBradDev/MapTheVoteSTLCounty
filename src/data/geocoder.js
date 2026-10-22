@@ -8,8 +8,10 @@
 // or is unavailable. Issue #58: every answer outside St. Louis City is checked
 // against the City of St. Louis's own geocoder (src/data/cityAddress.js)
 // unless the text holds a ZIP entirely outside the City, so a City voter whose
-// address also exists in the county never gets a county precinct. Address
-// text goes only to those services: never into the URL, storage, logs or
+// address also exists in the county never gets a county precinct. Issue #88:
+// the same City geocoder is an address source too, asked after a county no
+// match and before Photon, and its parcels are suggested next to the county's,
+// so a City address opens its City precinct. Address text goes only to those services: never into the URL, storage, logs or
 // analytics.
 import {
   attribution as countyAttribution,
@@ -63,8 +65,9 @@ export { GeocoderUnavailableError };
  *   caused rejects with a GeocoderUnavailableError instead, so the voter
  *   hears "try again", not "no such address": the City check failing, the
  *   county's precinct check failing (find() answers `unavailable`), the
- *   fallback down after a county no match, or no county source answering
- *   and the fallback finding nothing. It never turns a failure into a place.
+ *   fallback down after a county no match, no county source answering and
+ *   the fallback finding nothing, or the City source failing and the
+ *   fallback finding nothing. It never turns a failure into a place.
  */
 
 /** Who to credit for address search, shown next to the address box. */
@@ -107,13 +110,14 @@ function couldBeCounty(place) {
  * @param {{
  *   sources: Array<{ find: Function, suggest: Function }>,
  *   fallback: Geocoder,
- *   cityCheck: { find: Function },
+ *   cityCheck: { find: Function, lookup?: Function, suggest?: Function },
  * }} options `sources` are county address sources in order: each later one
  *   is asked only when the one before is unavailable. `fallback` answers when
  *   the county has no match, or no county source is available. `cityCheck`
  *   (createCityAddressCheck in src/data/cityAddress.js) says whether St. Louis
  *   City has the address too; it is required, since without it a City voter
- *   could get a county precinct.
+ *   could get a county precinct. Its `lookup` and `suggest`, when given,
+ *   make the City an address source as well (#88).
  * @returns {Readonly<Geocoder>}
  */
 export function createGeocoder({ sources, fallback, cityCheck }) {
@@ -176,9 +180,20 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
     async suggest(input, { signal } = {}) {
       const text = String(input ?? '').trim();
       if (!text) return [];
+      // The City's parcels (#88) are asked alongside the county; a City
+      // request that fails just adds none.
+      const cityAsk =
+        typeof cityCheck.suggest === 'function'
+          ? cityCheck.suggest(text, { signal }).catch(() => [])
+          : Promise.resolve([]);
       const county = await firstAnswer((source) => source.suggest(text, { signal }), signal);
+      const city = await cityAsk;
       if (signal?.aborted) throw abortError();
-      if (county?.length) return county;
+      const official = [
+        ...(county ?? []),
+        ...city.filter((c) => !county?.some((s) => s.label === c.label)),
+      ];
+      if (official.length) return official;
       try {
         return await fallback.suggest(text, { signal });
       } catch (error) {
@@ -215,6 +230,23 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
       if (county?.status === 'match') {
         return checkedForCity(typed, county.place, signal, reportUnavailable);
       }
+      // The county answered no match: the City's own geocoder is asked next
+      // (#88), ahead of Photon, which misses many City house numbers. Not
+      // when no county source answered: the county could have the address
+      // in the same ZIP (#58). A City geocoder that fails leaves Photon,
+      // whose county answer still needs the City check.
+      let cityFailed = false;
+      if (county && typeof cityCheck.lookup === 'function' && needsCityCheck(typed)) {
+        try {
+          const city = await cityCheck.lookup(text, { signal });
+          if (signal?.aborted) throw abortError();
+          if (city?.status === 'city') return city.place;
+          if (city?.status === 'ambiguous') return null;
+        } catch {
+          if (signal?.aborted) throw abortError();
+          cityFailed = true;
+        }
+      }
       let place;
       try {
         place = await fallback.geocode(text, { signal });
@@ -230,6 +262,11 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
       // was never asked, so the search could not finish.
       if (!place && !county && reportUnavailable) {
         throw new GeocoderUnavailableError('No county source answered');
+      }
+      // Nothing found, and the City, which has many addresses Photon lacks,
+      // could not answer: the search could not finish.
+      if (!place && cityFailed && reportUnavailable) {
+        throw new GeocoderUnavailableError('The City did not answer');
       }
       return checkedForCity(typed, place, signal, reportUnavailable);
     },

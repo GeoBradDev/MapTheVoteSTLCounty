@@ -1,0 +1,296 @@
+{
+  "spatialReference": {
+    "wkid": 4326,
+    "latestWkid": 4326
+  },
+  "candidates": [
+    {
+      "address": "6135 WASHINGTON AVE, 63112",
+      "location": {
+        "x": -90.29743408716568,
+        "y": 38.6545584909972
+      },
+      "score": 90.92,
+      "attributes": {
+        "Addr_type": "PointAddress",
+        "AddNum": "6135",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "WASHINGTON",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": "63112"
+      },
+      "extent": {
+        "xmin": -90.29923273125783,
+        "ymin": 38.652759846905056,
+        "xmax": -90.29563544307354,
+        "ymax": 38.65635713508935
+      }
+    },
+    {
+      "address": "6135 WASHINGTON BLVD, 63112",
+      "location": {
+        "x": -90.29743408716568,
+        "y": 38.6545584909972
+      },
+      "score": 90.92,
+      "attributes": {
+        "Addr_type": "PointAddress",
+        "AddNum": "6135",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "WASHINGTON",
+        "StType": "BLVD",
+        "StDir": "",
+        "ZIP": "63112"
+      },
+      "extent": {
+        "xmin": -90.29923273125783,
+        "ymin": 38.652759846905056,
+        "xmax": -90.29563544307354,
+        "ymax": 38.65635713508935
+      }
+    },
+    {
+      "address": "6135 WASHINGTON AVE",
+      "location": {
+        "x": -90.29745631580744,
+        "y": 38.65432137739434
+      },
+      "score": 90.92,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "6135",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "WASHINGTON",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29925495989959,
+        "ymin": 38.65252273330219,
+        "xmax": -90.29565767171529,
+        "ymax": 38.65612002148649
+      }
+    },
+    {
+      "address": "6135 WASHINGTON BLVD",
+      "location": {
+        "x": -90.29745631580744,
+        "y": 38.65432137739434
+      },
+      "score": 90.92,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "6135",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "WASHINGTON",
+        "StType": "BLVD",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29925495989959,
+        "ymin": 38.65252273330219,
+        "xmax": -90.29565767171529,
+        "ymax": 38.65612002148649
+      }
+    },
+    {
+      "address": "6136 WASHINGTON AVE",
+      "location": {
+        "x": -90.2975319376041,
+        "y": 38.65431167672917
+      },
+      "score": 69.92,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "6136",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "WASHINGTON",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29933058169625,
+        "ymin": 38.652513032637025,
+        "xmax": -90.29573329351196,
+        "ymax": 38.65611032082132
+      }
+    },
+    {
+      "address": "6136 WASHINGTON BLVD",
+      "location": {
+        "x": -90.2975319376041,
+        "y": 38.65431167672917
+      },
+      "score": 69.92,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "6136",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "WASHINGTON",
+        "StType": "BLVD",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29933058169625,
+        "ymin": 38.652513032637025,
+        "xmax": -90.29573329351196,
+        "ymax": 38.65611032082132
+      }
+    },
+    {
+      "address": "6099 WASHINGTON AVE",
+      "location": {
+        "x": -90.29614227987048,
+        "y": 38.654201285085755
+      },
+      "score": 59.4,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "6099",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "WASHINGTON",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29794092396263,
+        "ymin": 38.65240264099361,
+        "xmax": -90.29434363577833,
+        "ymax": 38.6559999291779
+      }
+    },
+    {
+      "address": "6099 WASHINGTON BLVD",
+      "location": {
+        "x": -90.29614227987048,
+        "y": 38.654201285085755
+      },
+      "score": 59.4,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "6099",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "WASHINGTON",
+        "StType": "BLVD",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29794092396263,
+        "ymin": 38.65240264099361,
+        "xmax": -90.29434363577833,
+        "ymax": 38.6559999291779
+      }
+    },
+    {
+      "address": "6201 WASHINGTON AVE",
+      "location": {
+        "x": -90.29987074588526,
+        "y": 38.6545342479522
+      },
+      "score": 59.38,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "6201",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "WASHINGTON",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.3016693899774,
+        "ymin": 38.65273560386005,
+        "xmax": -90.29807210179311,
+        "ymax": 38.65633289204435
+      }
+    },
+    {
+      "address": "6201 WASHINGTON BLVD",
+      "location": {
+        "x": -90.29987074588526,
+        "y": 38.6545342479522
+      },
+      "score": 59.38,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "6201",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "WASHINGTON",
+        "StType": "BLVD",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.3016693899774,
+        "ymin": 38.65273560386005,
+        "xmax": -90.29807210179311,
+        "ymax": 38.65633289204435
+      }
+    },
+    {
+      "address": "5999 WASHINGTON AVE",
+      "location": {
+        "x": -90.29258931018813,
+        "y": 38.65375627589574
+      },
+      "score": 59.33,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "5999",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "WASHINGTON",
+        "StType": "AVE",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29438795428028,
+        "ymin": 38.65195763180359,
+        "xmax": -90.29079066609599,
+        "ymax": 38.655554919987885
+      }
+    },
+    {
+      "address": "5999 WASHINGTON BLVD",
+      "location": {
+        "x": -90.29258931018813,
+        "y": 38.65375627589574
+      },
+      "score": 59.33,
+      "attributes": {
+        "Addr_type": "StreetAddress",
+        "AddNum": "5999",
+        "StPreDir": "",
+        "StPreType": "",
+        "StName": "WASHINGTON",
+        "StType": "BLVD",
+        "StDir": "",
+        "ZIP": ""
+      },
+      "extent": {
+        "xmin": -90.29438795428028,
+        "ymin": 38.65195763180359,
+        "xmax": -90.29079066609599,
+        "ymax": 38.655554919987885
+      }
+    }
+  ]
+}
