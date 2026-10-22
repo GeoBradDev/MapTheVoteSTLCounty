@@ -1,6 +1,6 @@
-# Checks the live election layers, the geocoder and the learn topics' source
-# links every day through Election Day, and opens an issue (or comments on the
-# open one) when a check fails.
+# Checks the live election layers, the geocoder, the learn topics' source
+# links and the pages the election config links every day through Election
+# Day, and opens an issue (or comments on the open one) when a check fails.
 # It has no pull_request or push trigger, so a live outage can never block a
 # merge: the CI workflow (ci.yml) never calls a live service.
 

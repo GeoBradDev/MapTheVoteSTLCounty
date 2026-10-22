@@ -43,6 +43,9 @@ because no UI changes. django, fastapi, expo: not applicable because the repo us
   topics and config), `skip` status, an `onResult` option on `checkLinks`, and a
   `--skipped <file>` flag (`parseArgs`, `writeSkipped`) that writes one line per skipped URL:
   `<url> (<files>)`.
+- `package.json`, `package-lock.json`: `parse5` as a direct devDependency (already installed
+  through jsdom at 8.0.1), so the meta refresh scan reads the page as a browser parses it.
+  The data health workflow runs `npm ci` before the link check, so it is available there.
 - `src/test/checkContentLinks.test.js`: fixtures from the issue.
 - `src/test/checkConfig.test.js`: the data health workflow test also checks that skipped links
   reach the job summary and the failure issue.
@@ -60,9 +63,11 @@ because no UI changes. django, fastapi, expo: not applicable because the repo us
 
 ## Risks
 
-- The meta refresh scan is a pattern match, not a full HTML parser. It strips comments,
-  scripts and `noscript` blocks first; an unusual page could still be misread, and a person
-  reads the FAIL detail.
+- The meta refresh scan first used patterns; two review rounds found pages a browser reads
+  differently (abrupt comments, `<!--` in a script, text in a title or template, entities,
+  two refreshes). It now parses the page with parse5 (scripting on, so `noscript` is text) and
+  reads `content` by the HTML standard's declarative refresh steps: the first refresh a
+  browser can parse is the only one that counts.
 - Reading bodies makes each check slower; capped at 512 KB, and only for `text/html`.
 - Skips are permanent for the county site, so a skip alone does not open an issue (it would
   open one every day for a page the owner checked by hand). It shows in the job summary and in

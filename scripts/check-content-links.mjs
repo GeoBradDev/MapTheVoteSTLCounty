@@ -16,6 +16,7 @@ import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { realpathSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parse as parseHtml } from 'parse5';
 import election from '../src/config/election.js';
 import { isOfficialUrl } from '../src/features/learn/content/officialSources.js';
 import { readTopicFile } from '../src/features/learn/content/topic.js';
@@ -159,48 +160,66 @@ async function readCapped(res) {
   return new TextDecoder().decode(bytes);
 }
 
-/** The attributes of one HTML tag, names lower-cased. */
-function tagAttributes(tag) {
-  const attrs = {};
-  const pattern = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>"']+)))?/g;
-  for (const m of tag.replace(/^<meta\b/i, '').matchAll(pattern)) {
-    const name = m[1].toLowerCase();
-    // As in HTML, the first of a repeated attribute counts.
-    if (!Object.hasOwn(attrs, name)) attrs[name] = m[2] ?? m[3] ?? m[4] ?? '';
+/**
+ * Reads a refresh's `content` value by the HTML standard's rule (the shared
+ * declarative refresh steps): a delay, then an optional `url=` and URL.
+ * @param {string} content
+ * @returns {{ url: string | null } | null} null when a browser would ignore
+ *   it; `url` null when it only reloads the page.
+ */
+export function parseRefreshContent(content) {
+  const m = /^[\t\n\f\r ]*(\d*)([\d.]*)(.*)$/s.exec(content);
+  if (!m[1] && !m[2].startsWith('.')) return null;
+  let rest = m[3];
+  if (!rest) return { url: null };
+  if (!/^[;,\t\n\f\r ]/.test(rest)) return null;
+  rest = rest.replace(/^[\t\n\f\r ]*[;,]?[\t\n\f\r ]*/, '');
+  if (!rest) return { url: null };
+  const named = /^url[\t\n\f\r ]*=[\t\n\f\r ]*/i.exec(rest);
+  if (named) rest = rest.slice(named[0].length);
+  if (/^["']/.test(rest)) {
+    const end = rest.indexOf(rest[0], 1);
+    rest = rest.slice(1, end === -1 ? undefined : end);
   }
-  return attrs;
+  // Trailing whitespace and controls are dropped by the URL parser too.
+  rest = rest.trim();
+  return { url: rest || null };
+}
+
+/** The page's `<meta>` elements in document order, as a browser builds them. */
+function metaElements(node, found = []) {
+  // Template contents are not part of the page, and a parsed page keeps them
+  // outside childNodes.
+  for (const child of node.childNodes ?? []) {
+    if (child.nodeName === 'meta') found.push(child);
+    metaElements(child, found);
+  }
+  return found;
 }
 
 /**
  * Where a page's `<meta http-equiv="refresh">` sends the browser, resolved
- * against `baseUrl`, or null when it has none or only reloads itself.
+ * against `baseUrl`, or null when it has none or only reloads itself. The
+ * page is parsed as HTML with scripting on, as a browser would, so comments,
+ * script text and noscript blocks never count. As in a browser, the first
+ * refresh it can parse is the only one that counts.
  * @param {string} html
  * @param {string} baseUrl The page's own URL.
  * @returns {string | null}
  */
 export function metaRefreshTarget(html, baseUrl) {
-  // A browser never acts on a tag in a comment or a script, nor, with
-  // scripts on, in a noscript block.
-  const live = html
-    .replace(/<!--[\s\S]*?(?:-->|$)/g, '')
-    .replace(/<(script|noscript)\b[\s\S]*?(?:<\/\1\s*>|$)/gi, '');
-  // A > inside a quoted attribute value does not end the tag.
-  for (const [tag] of live.matchAll(/<meta\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)) {
-    const attrs = tagAttributes(tag);
-    if ((attrs['http-equiv'] ?? '').trim().toLowerCase() !== 'refresh') continue;
-    const content = (attrs.content ?? '').replaceAll('&amp;', '&');
-    // The HTML rule: a delay, then ; or , or space, then an optional url=.
-    // A refresh with no delay is ignored.
-    const m = /^\s*[\d.]+\s*(?:[;,]\s*|\s+)(?:url\s*=\s*)?(.*)$/is.exec(content);
-    let target = m?.[1].trim() ?? '';
-    if (/^["']/.test(target)) {
-      const end = target.indexOf(target[0], 1);
-      target = target.slice(1, end === -1 ? undefined : end);
-    }
-    if (!target) continue;
+  for (const meta of metaElements(parseHtml(html))) {
+    const attr = (name) => meta.attrs.find((a) => a.name === name)?.value;
+    if ((attr('http-equiv') ?? '').trim().toLowerCase() !== 'refresh') continue;
+    const content = attr('content');
+    if (content === undefined) continue;
+    const refresh = parseRefreshContent(content);
+    if (!refresh) continue;
+    if (!refresh.url) return null;
     try {
-      return new URL(target, baseUrl).href;
+      return new URL(refresh.url, baseUrl).href;
     } catch {
+      // A browser drops a refresh whose URL does not parse and reads the next.
       continue;
     }
   }
