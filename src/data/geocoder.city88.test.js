@@ -81,11 +81,14 @@ describe('issue #88: the City as an address source', () => {
     expect(fallback.geocode).toHaveBeenCalled();
   });
 
-  it('a ZIP entirely outside the City skips it', async () => {
-    const { geocoder, cityCheck } = setup();
-    await geocoder.geocode('6135 Washington Ave 63134');
-    expect(cityCheck.lookup).not.toHaveBeenCalled();
-  });
+  it.each(['6135 Washington Ave 63134', '1200 Market St, Philadelphia, PA 19107'])(
+    'a ZIP entirely outside the City skips it: %s',
+    async (text) => {
+      const { geocoder, cityCheck } = setup();
+      await geocoder.geocode(text);
+      expect(cityCheck.lookup).not.toHaveBeenCalled();
+    },
+  );
 
   it('a county match never asks the City as a source (the #58 check decides)', async () => {
     const { geocoder, cityCheck } = setup({

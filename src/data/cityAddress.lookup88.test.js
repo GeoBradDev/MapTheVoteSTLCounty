@@ -220,9 +220,18 @@ describe('suggest(): City parcels as the voter types', () => {
     },
   );
 
-  it('is not asked when the text holds a ZIP entirely outside the City', async () => {
+  it.each(['6135 Washington Ave 63134', '1200 Market St Philadelphia PA 19107'])(
+    'is not asked when the text holds a ZIP entirely outside the City: %s',
+    async (text) => {
+      const fetch = answering(partial);
+      await expect(city(fetch).suggest(text)).resolves.toEqual([]);
+      expect(fetch).not.toHaveBeenCalled();
+    },
+  );
+
+  it('is not asked when only the house number is left once a St. Louis town is cut', async () => {
     const fetch = answering(partial);
-    await expect(city(fetch).suggest('6135 Washington Ave 63134')).resolves.toEqual([]);
+    await expect(city(fetch).suggest('4500 St Louis')).resolves.toEqual([]);
     expect(fetch).not.toHaveBeenCalled();
   });
 

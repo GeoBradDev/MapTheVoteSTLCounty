@@ -137,3 +137,8 @@ error line (#93), the Clayton municipality no match (opened as #143, unrelated).
   coordinates alone or a place the geocoder puts in St. Louis County, and falls back to
   `stl-city` on a City failure only for coordinates alone; no City suggestions while no county
   source answers.
+- Review round 2: any ZIP not starting 631 is entirely outside the City, so text with one
+  never goes to the City (`needsCityCheck`), making the privacy notice's skip rule true for the
+  City as a source; the City is not asked for suggestions once only the house number is left;
+  `scripts/check-geocoder.mjs` fails when a City suggestion is missing and picks City Hall,
+  6500 Chippewa St and 8900 Riverview Blvd from the City's suggestions too.

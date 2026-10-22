@@ -186,6 +186,7 @@ for (const [name, geocoder] of [
   // A voter who types the start of the address and picks a suggestion: the
   // first (the county's, labeled with the county record's ZIP, #58), or the
   // City's own (#88), labeled "St. Louis City".
+  // A City pick must exist: no City suggestion is a failure, not no match.
   for (const [partial, want, which] of [
     ['6135 Washington', 'city', 'first'],
     ['6109 Washington', 'city', 'first'],
@@ -193,12 +194,19 @@ for (const [name, geocoder] of [
     ['6135 Washington', 'city', 'city'],
     ['1 Brookings', 'no match', 'city'],
     ['5010 Nottingham', 'city', 'city'],
+    ['1200 Market St', 'city', 'city'],
+    ['6500 Chippewa', 'city', 'city'],
+    ['8900 Riverview', 'city', 'city'],
   ]) {
     const suggestions = await withRetry(() => geocoder.suggest(partial));
     const pick =
       which === 'city'
         ? suggestions.find((s) => / St\. Louis City,/.test(s.label))
         : suggestions[0];
+    if (which === 'city' && !pick) {
+      wrong.push(`${name}: no City suggestion for ${partial}`);
+      continue;
+    }
     const place = pick ? await withRetry(() => geocoder.geocode(pick)) : null;
     const kind = await kindOf(place);
     console.log(`${name}: pick "${pick?.label}" for ${partial}: ${kind} (${place?.label ?? ''})`);

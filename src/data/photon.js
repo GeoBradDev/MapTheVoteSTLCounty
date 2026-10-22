@@ -24,8 +24,8 @@ export const attribution = Object.freeze({
 
 /**
  * St. Louis County's extent (docs/data.md) as minLon, minLat, maxLon, maxLat.
- * It also covers St. Louis City, so a City address still resolves and gets the
- * City's own referral (#8).
+ * It also covers St. Louis City, so a City address still resolves, to its City
+ * precinct (#88).
  */
 export const COUNTY_BBOX = Object.freeze([-90.74, 38.39, -90.11, 38.89]);
 // Near the middle of the county, to rank its addresses first.

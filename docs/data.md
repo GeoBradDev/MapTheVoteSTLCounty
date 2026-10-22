@@ -663,7 +663,8 @@ answer with the typed text itself:
   or a Photon answer that is not in the City and not in another county), ZIP typed or
   not, town typed or not. The one skip is a ZIP entirely outside the City: the Census
   2020 ZIP Code Tabulation Areas that touch the county and do not come within 500 m of
-  the City (`COUNTY_ONLY_ZIPS`, from TIGERweb). A ZIP that crosses the City line (63130,
+  the City (`COUNTY_ONLY_ZIPS`, from TIGERweb; since #88 also any ZIP not starting 631, as
+  every City ZIP does). A ZIP that crosses the City line (63130,
   63133, 63136, 63120, 63147 and others) or is not listed gets the check. The ZIP in a
   picked suggestion's label is the county record's, not the voter's, so for a pick the
   check ignores it: it neither skips the check nor rules out a City parcel in another ZIP
@@ -708,16 +709,19 @@ which misses many City house numbers (`6135 Washington Ave 63112`, `5010 Notting
 63109`). `lookup()` and `suggest()` in `src/data/cityAddress.js`:
 
 - **When:** after the county answers no match, unless the text holds a ZIP entirely outside
-  the City (`COUNTY_ONLY_ZIPS`). Not when no county source answered: the county could have
+  the City (`COUNTY_ONLY_ZIPS`, or any ZIP not starting 631). Not when no county source
+  answered: the county could have
   the address in the same ZIP (#58), so that search goes on to Photon and the City check.
 - **A match:** a `PointAddress` only, under the strict rules every source shares
   (`matchesTyped`): the house number and whole street, and a typed ZIP or town must agree,
   so `1200 Market St, Philadelphia, PA` is not City Hall. Two parcels that fit, or one whose
   street has a direction the text left out, are no match, without Photon. No parcel goes on
   to Photon.
-- **What is sent:** the house number and street only (`cityStreetOf`: the text before its
-  first comma, without a unit, and without a St. Louis town, the state or a ZIP after it,
-  since the geocoder finds nothing when they follow the street).
+- **What is sent:** `cityStreetOf` the typed text: the text before its first comma, without
+  a unit, and without a St. Louis town, the state or a ZIP after it, since the geocoder finds
+  nothing when they follow the street. Another town typed without a comma goes too (the
+  strict rules then turn the answer away). Text with a ZIP entirely outside the City (one of
+  `COUNTY_ONLY_ZIPS`, or any ZIP not starting 631, as every City ZIP does) is never sent.
 - **Labels:** a City place and suggestion read `<number> <street>, St. Louis City, MO
   <ZIP>`, so a City address reads apart from its county twin, whose label names its own
   town. A picked City label fails the county's strict rules (it names the City), so it is

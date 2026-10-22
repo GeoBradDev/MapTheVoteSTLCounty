@@ -7,10 +7,10 @@
 // OpenStreetMap misses many City house numbers, so without this a City voter
 // whose house number and street also exist in the county could get a county
 // precinct. Called straight from the browser: no proxy, no server of ours, no
-// key. The check, lookup() and suggest() send only the house number and
-// street (cityStreetOf: the text before its first comma, without a unit or a
-// St. Louis town, state or ZIP after it; for suggest() as typed so far), each
-// in a POST body (never a URL), with
+// key. The check sends the house number and street of the found place;
+// lookup() and suggest() send cityStreetOf the typed text (the text before its
+// first comma, without a unit or a St. Louis town, state or ZIP after it, so
+// another town typed without a comma goes too), each in a POST body (never a URL), with
 // no cookies, no referrer and no browser cache. Every failure becomes a
 // GeocoderUnavailableError; src/data/geocoder.js then answers no match (or,
 // with reportUnavailable, rejects as unavailable, #18), never the county place.
@@ -60,13 +60,15 @@ export const COUNTY_ONLY_ZIPS = Object.freeze(
 );
 
 /**
- * Whether typed text needs the City check: unless it holds a ZIP that is
- * entirely outside the City. A typed town does not skip it.
+ * Whether typed text needs the City check, or the City as a source (#88):
+ * unless it holds a ZIP that is entirely outside the City, one of
+ * COUNTY_ONLY_ZIPS or any ZIP that does not start 631, as every City ZIP
+ * does. A typed town does not skip it.
  * @param {string} text
  */
 export function needsCityCheck(text) {
   const zip = typedZip(String(text ?? ''));
-  return !zip || !COUNTY_ONLY_ZIPS.has(zip);
+  return !zip || (zip.startsWith('631') && !COUNTY_ONLY_ZIPS.has(zip));
 }
 
 /**
@@ -315,11 +317,11 @@ export function createCityAddressCheck({
      */
     async suggest(typed, { signal } = {}) {
       const input = String(typed ?? '').trim();
-      if (!SUGGESTIBLE.test(input) || !needsCityCheck(input)) {
+      const query = cityStreetOf(input);
+      if (!SUGGESTIBLE.test(query) || !needsCityCheck(input)) {
         if (signal?.aborted) throw abortError();
         return [];
       }
-      const query = cityStreetOf(input);
       const want = words(query);
       const last = want.length - 1;
       const suggestions = [];
