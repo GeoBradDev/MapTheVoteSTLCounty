@@ -376,6 +376,10 @@
         "heading": "The map",
         "text": "The map's streets and labels come from OpenFreeMap ({basemap}). Those requests show which area is on screen: your precinct and the polling places near it, or, on the early voting wait times page, the early voting sites."
       },
+      "waitTimes": {
+        "heading": "Early voting wait times",
+        "text": "The early voting wait times page asks the line count layers of the St. Louis County Board of Elections and the St. Louis City Board of Election Commissioners, both on Esri's ArcGIS Online ({electionMaps}), for the current counts every 30 seconds while it is open on your screen. These requests carry nothing about you: no address, location or precinct."
+      },
       "website": {
         "heading": "This website",
         "text": "Render, which hosts this site, sees the address of each page your browser loads from it, like /p/CC007, as any web host does."

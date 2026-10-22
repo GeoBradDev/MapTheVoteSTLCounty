@@ -250,6 +250,23 @@ describe('WaitTimesPage', () => {
     expect(statusLine()).not.toHaveTextContent(copy.status.unavailable);
   });
 
+  it('leaves focus on a list link when the map fails', async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal('WebGL2RenderingContext', function WebGL2RenderingContext() {});
+    createWaitTimesMap.mockReturnValue({ setSites: vi.fn(), remove: vi.fn() });
+    renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
+    await screen.findByRole('list', { name: copy.listLabel });
+    await user.click(screen.getByRole('button', { name: copy.map.show }));
+    await waitFor(() => expect(createWaitTimesMap).toHaveBeenCalled());
+    const link = within(items()[3]).getByRole('link', { name: /Get directions/ });
+    link.focus();
+    const { onFail } = createWaitTimesMap.mock.calls.at(-1)[1];
+    act(() => onFail(new Error('timeout')));
+    expect(screen.queryByRole('button', { name: copy.map.hide })).toBeNull();
+    expect(link).toHaveFocus();
+    createWaitTimesMap.mockReset();
+  });
+
   it('hides the map button when the map fails', async () => {
     const user = userEvent.setup();
     vi.stubGlobal('WebGL2RenderingContext', function WebGL2RenderingContext() {});
@@ -384,7 +401,7 @@ describe('WaitTimesPage', () => {
     expect(within(region).getByRole('list', { name: copy.map.legend })).toBeInTheDocument();
     unmount();
 
-    renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
+    renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: cityStale }) });
     await waitFor(() => expect(statusLine()).toHaveTextContent(copy.status.checked('09:00')));
     await user.click(screen.getByRole('button', { name: copy.map.show }));
     expect(screen.getByRole('region', { name: copy.map.label })).not.toHaveTextContent(
@@ -407,8 +424,15 @@ describe('WaitTimesPage', () => {
     ).toBeInTheDocument();
   });
 
-  it('uses no ranking words', () => {
-    renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
+  it('uses no ranking words', async () => {
+    const getCurrentPosition = vi.fn((ok) =>
+      ok({ coords: { latitude: 38.7313, longitude: -90.4002, accuracy: 20 } }),
+    );
+    vi.stubGlobal('navigator', { ...navigator, geolocation: { getCurrentPosition } });
+    renderPage({ waitSource: createWaitTimesStore({ county: countyFresh, city: null }) });
+    await waitFor(() => expect(screen.getAllByText(COUNT_TEXT).length).toBeGreaterThan(0));
+    await userEvent.setup().click(screen.getByRole('button', { name: copy.location.button }));
+    await screen.findByRole('radio', { name: copy.sort.nearest });
     expect(document.body.textContent).not.toMatch(/\b(best|worst|avoid|recommended)\b/i);
   });
 });

@@ -186,3 +186,7 @@ Chosen not to do: City rows (#91), the results page origin (#105), Election Day 
   leaves focus where the voter put it while its code loaded; when early voting ends with
   the page open and focus goes with the list, focus moves to the heading. A test checks the
   location is never sent, stored or logged.
+- Review (finder 5): a failed map moves focus only when focus was lost with its button, never
+  off a list link still on the page. The privacy notice gains an "Early voting wait times"
+  item: the page asks both boards' line count layers, and those requests carry nothing about
+  the voter.

@@ -306,11 +306,12 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
   // Set when the map fails: the page then offers no map, as without WebGL.
   const [mapFailed, setMapFailed] = useState(false);
   const canShowMap = mapSupported && !mapFailed;
-  const mapFocusRef = useRef(false);
+  // The "Hide map" button goes with a failed map: if it had focus, put focus
+  // on the list's container instead of the page. Focus anywhere else stays.
   useLayoutEffect(() => {
-    if (!mapFailed || !mapFocusRef.current) return;
-    mapFocusRef.current = false;
-    targetRef.current?.focus();
+    if (!mapFailed) return;
+    const focused = document.activeElement;
+    if (!focused || focused === document.body) targetRef.current?.focus();
   }, [mapFailed, targetRef]);
 
   const rows = result?.rows;
@@ -433,17 +434,7 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
                   </button>
                 )}
                 {canShowMap && showMap && (
-                  <WaitTimesMap
-                    sites={mapSites}
-                    onFail={() => {
-                      // The focused "Hide map" button goes with the map: put
-                      // focus on the list's container instead of the page.
-                      const focused = document.activeElement;
-                      const hadFocus = targetRef.current?.contains(focused);
-                      setMapFailed(true);
-                      if (hadFocus) mapFocusRef.current = true;
-                    }}
-                  />
+                  <WaitTimesMap sites={mapSites} onFail={() => setMapFailed(true)} />
                 )}
                 <ol
                   aria-labelledby="wait-sites-heading"

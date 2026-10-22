@@ -69,6 +69,11 @@ export const copy = translated((t) => ({
         text: t('privacy.sent.map.text', { basemap: hosts.basemap }),
       },
       {
+        // The wait times page (#104) reads both boards' line count layers.
+        heading: t('privacy.sent.waitTimes.heading'),
+        text: t('privacy.sent.waitTimes.text', { electionMaps: hosts.electionMaps }),
+      },
+      {
         heading: t('privacy.sent.website.heading'),
         text: t('privacy.sent.website.text'),
       },
