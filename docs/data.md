@@ -58,7 +58,10 @@ HTML; a test fails on `dangerouslySetInnerHTML` anywhere under `src/`.
 The data health check (`node scripts/check-config.mjs`, see the README) runs the parser
 over every precinct on the live layer and fails unless each `In Election` precinct has its
 own valid link whose file name names that precinct, and every other precinct a message. It also sends a `HEAD` request to 5
-random links and expects `application/pdf`.
+random links (or more with `--ballot-sample <n|all>`) and expects `application/pdf` with a
+`Content-Disposition` file name that names the link's precinct (#111): the link text can name
+the right precinct while the opaque item ID serves another one's PDF. Every live link checked
+this way on 2026-10-22 matched.
 
 Do not use `lookup_view_sample_ballot`. Despite its name, it is a stale view of
 `precincts_2024_08_ToPublish` (1199 rows) with older ballot item IDs.

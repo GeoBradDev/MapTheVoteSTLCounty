@@ -3,9 +3,11 @@
 // open (.github/workflows/data-health.yml). Everything comes from
 // src/config/election.js, so it works again next election.
 //
-// Usage: node scripts/check-config.mjs [--layer <key>=<path>]...
+// Usage: node scripts/check-config.mjs [--layer <key>=<path>]... [--ballot-sample <n|all>]
 //   --layer replaces one of the config's layer paths for this run, for example
 //   to try a new layer before editing the config.
+//   --ballot-sample sets how many sample ballot links get a HEAD request
+//   (BALLOT_SAMPLE_SIZE by default); `all` checks every link.
 // Prints one PASS, FAIL or SKIP line per check and exits 1 when any check fails.
 
 import { realpathSync } from 'node:fs';
@@ -17,7 +19,14 @@ import { fileNameMatchesPrecinct, parseSampleBallot } from '../src/data/sampleBa
 /** A sane number of precincts. 1213 for November 2026. */
 export const PRECINCT_RANGE = { min: 900, max: 1600 };
 
-/** How many sample ballot links get a HEAD request. */
+/**
+ * How many sample ballot links get a HEAD request on a default run (#111). The
+ * "sample ballot links" check already compares every link's text with its
+ * precinct; this sample catches the served files drifting from that text, which
+ * a re-publish would do to many at once. Checking all of them daily would load
+ * the county's portal and outrun the workflow's step limit in the worst case,
+ * so a full sweep is a manual `--ballot-sample all`.
+ */
 export const BALLOT_SAMPLE_SIZE = 5;
 
 /** Fields the app reads from the polls layer, and the boundary layer's query field. */
@@ -148,8 +157,10 @@ async function requestOnce(fetchImpl, url, { method = 'GET', timeoutMs }) {
  * @param {object} config An election config, like src/config/election.js.
  * @param {object} [options]
  * @param {typeof fetch} [options.fetch] The fetch to use.
- * @param {(items: string[], count: number) => string[]} [options.sample] Picks the
+ * @param {<T>(items: T[], count: number) => T[]} [options.sample] Picks the
  *   ballot links to HEAD; random by default.
+ * @param {number} [options.ballotSample] How many ballot links to HEAD;
+ *   `Infinity` for every one.
  * @param {number} [options.retryDelayMs] The wait before a retry, times the attempt.
  * @param {number} [options.timeoutMs] How long one request may take.
  * @param {number} [options.attempts] How many tries a transient failure gets.
@@ -160,6 +171,7 @@ export async function runHealthCheck(
   {
     fetch: fetchImpl = globalThis.fetch,
     sample = randomSample,
+    ballotSample = BALLOT_SAMPLE_SIZE,
     retryDelayMs = 2000,
     timeoutMs = 15000,
     attempts = 3,
@@ -244,7 +256,9 @@ export async function runHealthCheck(
   const skip = (name, layer) => record(name, 'skip', `the ${layer} layer check failed`);
 
   // 2. Precinct count, and 3. every precinct's sample ballot field.
-  const ballotUrls = [];
+  /** @type {{ precinct: string, url: string }[]} */
+  const ballotLinks = [];
+  const ballotUrls = new Set();
   if (layerOk.precincts) {
     let precincts;
     const countOk = await check('precinct count', async () => {
@@ -280,10 +294,11 @@ export async function runHealthCheck(
               failures.push(`${precinct}: no valid link in ${JSON.stringify(html)}`);
             } else if (!result.fileName) {
               failures.push(`${precinct}: link has no file name`);
-            } else if (ballotUrls.includes(result.url)) {
+            } else if (ballotUrls.has(result.url)) {
               failures.push(`${precinct}: link shared with another precinct`);
             } else {
-              ballotUrls.push(result.url);
+              ballotUrls.add(result.url);
+              ballotLinks.push({ precinct, url: result.url });
               // The app shows a link only when its file name names the
               // precinct (#82), so a swapped link reaches no voter: report it.
               if (!fileNameMatchesPrecinct(result.fileName, precinct)) {
@@ -307,30 +322,40 @@ export async function runHealthCheck(
         const entities = [...messages].some((m) => m.includes('&'))
           ? ' (a message contains &: check for HTML entities)'
           : '';
-        return `${ballotUrls.length} distinct links, ${messages.size} distinct messages${entities}`;
+        return `${ballotUrls.size} distinct links, ${messages.size} distinct messages${entities}`;
       });
     } else {
       record('sample ballot links', 'skip', 'the precinct count check failed');
     }
 
-    // 4. A few of the links really serve a PDF.
-    if (ballotUrls.length) {
+    // 4. A few of the links really serve a PDF, named for their precinct (#111):
+    // the link text can name the precinct while the URL, an opaque portal item
+    // ID, serves another precinct's ballot.
+    if (ballotLinks.length) {
       await check('sample ballot PDFs', async () => {
-        const picked = sample(ballotUrls, BALLOT_SAMPLE_SIZE);
+        const picked = sample(ballotLinks, ballotSample);
         const bad = [];
-        for (const url of picked) {
+        for (const { precinct, url } of picked) {
+          const where = `${precinct} (${url})`;
           try {
             const res = await request(url, { method: 'HEAD' });
             const type = (res.headers.get('content-type') ?? '').split(';')[0].trim();
-            if (type !== 'application/pdf') bad.push(`${url}: Content-Type ${type || 'missing'}`);
+            const fileName = contentDispositionFileName(res.headers.get('content-disposition'));
+            if (type !== 'application/pdf') {
+              bad.push(`${where}: Content-Type ${type || 'missing'}`);
+            } else if (!fileName) {
+              bad.push(`${where}: no file name in Content-Disposition`);
+            } else if (!fileNameMatchesPrecinct(fileName, precinct)) {
+              bad.push(`${where}: the PDF is named ${fileName}`);
+            }
           } catch (error) {
             if (!(error instanceof CheckError)) throw error;
-            bad.push(`${url}: ${error.message}`);
+            bad.push(`${where}: ${error.message}`);
           }
         }
         if (bad.length)
           throw new CheckError(`${bad.length} of ${picked.length}: ${bad.join('; ')}`);
-        return `${picked.length} of ${picked.length} answer HEAD with application/pdf`;
+        return `${picked.length} of ${picked.length} answer HEAD with a PDF named for their precinct`;
       });
     } else {
       record('sample ballot PDFs', 'skip', 'no valid sample ballot links to try');
@@ -402,6 +427,37 @@ export async function runHealthCheck(
   return results;
 }
 
+/**
+ * The file name in a Content-Disposition header, like the portal's
+ * `attachment; filename="CC-007.pdf"; size=55289`. An RFC 6266 `filename*`
+ * wins over `filename`. Null when the header names no file.
+ * @param {string | null | undefined} header
+ * @returns {string | null}
+ */
+export function contentDispositionFileName(header) {
+  if (typeof header !== 'string') return null;
+  const extended = /(?:^|;)\s*filename\*\s*=\s*([^;]*)/i.exec(header);
+  if (extended) {
+    // charset'language'percent-encoded-value
+    const value = extended[1].trim().replace(/^[^']*'[^']*'/, '');
+    try {
+      const decoded = decodeURIComponent(value);
+      if (decoded) return decoded;
+    } catch {
+      // A malformed filename* names nothing; fall through to filename.
+    }
+  }
+  const plain = /(?:^|;)\s*filename\s*=\s*("(?:[^"\\]|\\.)*"|[^;]*)/i.exec(header);
+  if (!plain) return null;
+  let value = plain[1].trim();
+  if (value.startsWith('"')) {
+    // An unclosed quote is malformed: it names nothing.
+    if (value.length < 2 || !value.endsWith('"')) return null;
+    value = value.slice(1, -1).replace(/\\(.)/g, '$1');
+  }
+  return value || null;
+}
+
 /** Picks up to `count` items at random, without repeats. */
 export function randomSample(items, count) {
   const pool = [...items];
@@ -437,11 +493,20 @@ export function isPastElection(config, now = new Date()) {
  * Reads the command line.
  * @param {string[]} args
  * @param {object} config The election config, to check layer keys against.
- * @returns {{ layers: Record<string, string> }}
+ * @returns {{ layers: Record<string, string>, ballotSample?: number }}
  */
 export function parseArgs(args, config) {
   const layers = {};
+  let ballotSample;
   for (let i = 0; i < args.length; i += 1) {
+    if (args[i] === '--ballot-sample') {
+      const value = args[i + 1] ?? '';
+      if (value === 'all') ballotSample = Infinity;
+      else if (/^[1-9]\d*$/.test(value)) ballotSample = Number(value);
+      else throw new Error('--ballot-sample needs a whole number above 0, or all');
+      i += 1;
+      continue;
+    }
     if (args[i] !== '--layer') throw new Error(`Unknown argument ${args[i]}`);
     const match = /^([A-Za-z]+)=(\S+)$/.exec(args[i + 1] ?? '');
     if (!match) throw new Error('--layer needs <key>=<path>');
@@ -452,20 +517,21 @@ export function parseArgs(args, config) {
     layers[key] = value;
     i += 1;
   }
-  return { layers };
+  return { layers, ballotSample };
 }
 
 async function main(args) {
   let layers;
+  let ballotSample;
   try {
-    ({ layers } = parseArgs(args, election));
+    ({ layers, ballotSample } = parseArgs(args, election));
   } catch (error) {
     console.error(error.message);
     return 2;
   }
   const config = { ...election, layers: { ...election.layers, ...layers } };
   console.log(`Checking ${config.electionName} layers under ${config.serviceRoot}`);
-  const results = await runHealthCheck(config);
+  const results = await runHealthCheck(config, { ballotSample });
   for (const { name, status, detail } of results) {
     console.log(`${status.toUpperCase().padEnd(4)} ${name}: ${detail}`);
   }
