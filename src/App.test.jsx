@@ -82,6 +82,24 @@ describe('App', () => {
     );
   });
 
+  it('renders the early voting wait times page at /early-voting', async () => {
+    renderAt('/early-voting');
+
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
+      'Early voting wait times',
+    );
+  });
+
+  it('opens the wait times page from the home page without a full reload', async () => {
+    const user = userEvent.setup();
+    const location = renderAt('/');
+    await user.click(screen.getByRole('link', { name: 'See early voting wait times' }));
+    expect(location.history.at(-1)).toBe('/early-voting');
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
+      'Early voting wait times',
+    );
+  });
+
   it('renders the privacy notice at /privacy', () => {
     renderAt('/privacy');
 

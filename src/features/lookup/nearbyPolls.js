@@ -2,6 +2,7 @@
 // County data assigns no polling place to a precinct, so the card lists the
 // closest ones by straight-line distance and says the voter must confirm their
 // assigned one (issue #72).
+import election from '../../config/election.js';
 
 /** Mean Earth radius in miles (IUGG mean radius, 6371.0088 km). */
 const EARTH_RADIUS_MILES = 3958.7613;
@@ -98,22 +99,24 @@ function zipOf(value) {
  * @property {string | null} zip Five-digit ZIP.
  * @property {number} lat
  * @property {number} lng
- * @property {number} miles Straight-line distance from the origin.
+ * @property {number | null} miles Straight-line distance from the origin; null
+ *   from pollRows, which has none.
  * @property {string | null} absType The layer's `abs_type`: `none`, or the
  *   kind of in-person absentee site.
  * @property {string | null} absNote The layer's voter-facing `notes_abs`.
+ * @property {string | null} waitKey The early voting site's key in the
+ *   County's line count reports (the polls layer's `absentee`, #103).
  */
 
+const textOrNull = (value) => (typeof value === 'string' && value !== '' ? value : null);
+
 /**
- * Every polling place with coordinates, nearest the origin first. Every
- * feature in the layer is an Election Day polling place: the absentee sites
- * carry Election Day location numbers too, and the county's own Election Day
- * app shows the whole layer.
- * @param {{ features: object[] }} collection GeoJSON from getPolls().
- * @param {{ lat: number, lng: number }} origin
+ * Every site with coordinates, in layer order, with no distance.
+ * @param {{ features: object[] }} collection GeoJSON from getPolls() or
+ *   getAbsenteeSites().
  * @returns {NearbyPoll[]}
  */
-export function nearestPolls(collection, origin) {
+export function pollRows(collection) {
   const rows = [];
   for (const feature of collection?.features ?? []) {
     const point = pointOf(feature);
@@ -126,12 +129,28 @@ export function nearestPolls(collection, origin) {
       zip: zipOf(props.zipcode),
       absType: typeof props.abs_type === 'string' ? props.abs_type : null,
       absNote: typeof props.notes_abs === 'string' ? props.notes_abs : null,
+      waitKey: textOrNull(props[election.waitTimes.county.pollsField]),
       lat: point.lat,
       lng: point.lng,
-      miles: distanceMiles(origin, point),
+      miles: null,
     });
   }
-  return rows.sort((a, b) => a.miles - b.miles || String(a.loc).localeCompare(String(b.loc)));
+  return rows;
+}
+
+/**
+ * Every polling place with coordinates, nearest the origin first. Every
+ * feature in the layer is an Election Day polling place: the absentee sites
+ * carry Election Day location numbers too, and the county's own Election Day
+ * app shows the whole layer.
+ * @param {{ features: object[] }} collection GeoJSON from getPolls().
+ * @param {{ lat: number, lng: number }} origin
+ * @returns {NearbyPoll[]}
+ */
+export function nearestPolls(collection, origin) {
+  return pollRows(collection)
+    .map((row) => ({ ...row, miles: distanceMiles(origin, row) }))
+    .sort((a, b) => a.miles - b.miles || String(a.loc).localeCompare(String(b.loc)));
 }
 
 // Signed area and area-weighted centroid of one ring, in planar lon/lat. At a

@@ -8,6 +8,8 @@ export const copy = translated((t) => ({
   // Says up front that this is not the county's own site (#71); the footer
   // names the official boards.
   unofficial: t('home.unofficial'),
+  // The first action next to the address search (#104).
+  waitTimes: t('home.waitTimes'),
   /** @param {string} isoDate YYYY-MM-DD @param {string} timeZone */
   electionDay: (isoDate, timeZone) => {
     const formatted = formatCalendarDate(isoDate, {

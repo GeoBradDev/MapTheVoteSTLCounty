@@ -27,6 +27,16 @@
   --color-on-primary: oklch(0.99 0.003 90);
   --color-accent: oklch(0.72 0.12 80);
   --color-on-accent: oklch(0.22 0.005 90);
+  /*
+    The wait times map's people-in-line scale (#104), for markers and their
+    legend only: teal for a short line, tan in between, brown for a long one,
+    from ColorBrewer's BrBG ramp (owner's choice). Each marker has an ink
+    outline, so it passes 3:1 against the basemap whatever its fill
+    (src/features/waitTimes/mapColors.test.js).
+  */
+  --color-wait-low: oklch(0.54 0.1 177);
+  --color-wait-mid: oklch(0.824 0.094 87.5);
+  --color-wait-high: oklch(0.559 0.12 60.5);
 }
 
 /*

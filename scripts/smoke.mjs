@@ -1,5 +1,6 @@
 // Post-deploy smoke test: checks that a deployed copy of the app serves the
-// home page and the shell, survives a hard load of a deep link, serves its hashed assets, serves
+// home page and the shell, survives a hard load of a deep link and of the
+// wait times page, serves its hashed assets, serves
 // robots.txt and sitemap.xml as real files (#97), serves the public pages
 // pre-rendered (#99), and sends the expected headers.
 // Usage: node scripts/smoke.mjs <base-url> [--skip-headers] [--preview]
@@ -12,6 +13,9 @@ import { fileURLToPath } from 'node:url';
 import { siteUrl } from '../src/config/site.js';
 
 const DEEP_LINK = '/p/CC007';
+// The early voting wait times page (#104): live data, client-rendered from
+// the shell like a precinct page, never pre-rendered.
+const WAIT_TIMES = '/early-voting';
 // Pre-rendered pages (#99) to hard load: the home page, the learn index and one
 // topic. Change the topic if content/en/learn/voter-id.md is ever renamed.
 const PRERENDERED = ['/', '/learn', '/learn/voter-id'];
@@ -125,6 +129,11 @@ export async function runSmoke(baseUrl, { checkHeaders = true, preview = false }
       if (script && src !== script) throw new Error(`script ${src}, but / has ${script}`);
       // Precinct pages are client-rendered from the empty shell, never a
       // pre-rendered page (#99).
+      if (body.includes('data-prerendered')) throw new Error('got a pre-rendered page');
+    }),
+    await check(`hard load of ${WAIT_TIMES} returns the app shell`, async () => {
+      const { src, body } = await shellScript(await get(baseUrl, WAIT_TIMES), WAIT_TIMES);
+      if (script && src !== script) throw new Error(`script ${src}, but / has ${script}`);
       if (body.includes('data-prerendered')) throw new Error('got a pre-rendered page');
     }),
     await check('hashed asset returns JavaScript', async () => {

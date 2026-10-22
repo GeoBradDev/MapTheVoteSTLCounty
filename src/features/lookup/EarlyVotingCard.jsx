@@ -11,29 +11,17 @@ import { copy, sourceName } from './resultsCopy.js';
 import RetryButton from './RetryButton.jsx';
 import StaleNote from './StaleNote.jsx';
 import { useNearestSites } from './useNearestSites.js';
+import { useNow } from './useNow.js';
 
 const linkClass = 'text-primary underline';
 const tapLinkClass = `inline-flex min-h-11 items-center ${linkClass}`;
 const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
-
-/** How often the open or closed status is worked out again. */
-const TICK_MS = 60_000;
 
 // The early voting text in the current language.
 const t = translated(() => copy.earlyVoting);
 const { schedules, sources, lastVerified } = election.earlyVoting;
 // The groups the config has hours for, in config order, that have a label.
 const groupKeys = Object.keys(schedules).filter((key) => t.groups[key]);
-
-// The current time, updated every minute so a page left open stays right.
-function useNow() {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), TICK_MS);
-    return () => clearInterval(id);
-  }, []);
-  return now;
-}
 
 function statusText(key, now) {
   return t.status(earlyVotingStatus(schedules[key], now, election.timeZone), formatLongDate);

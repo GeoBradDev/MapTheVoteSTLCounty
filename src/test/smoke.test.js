@@ -58,6 +58,7 @@ function stubHost({
   preview = false,
   robots = preview ? 'preview' : 'production',
   sitemap = preview ? 'missing' : 'xml',
+  waitTimes = 'shell',
 } = {}) {
   const shell = preview ? PREVIEW_SHELL : SHELL;
   return createServer((req, res) => {
@@ -89,6 +90,19 @@ function stubHost({
         ...(headers && { 'cache-control': 'no-cache' }),
       });
       return res.end(prerendered(shell, req.url));
+    }
+    // The wait times page (#104): the shell, a 404 or the pre-rendered home page.
+    if (req.url === '/early-voting' && waitTimes !== 'shell') {
+      if (waitTimes === '404') {
+        res.writeHead(404, { 'content-type': 'text/html' });
+        return res.end('Not Found');
+      }
+      res.writeHead(200, { ...common, 'content-type': 'text/html; charset=utf-8' });
+      return res.end(prerendered(shell, '/'));
+    }
+    if (req.url === '/early-voting') {
+      res.writeHead(200, { ...common, 'content-type': 'text/html; charset=utf-8' });
+      return res.end(shell);
     }
     if (deepLink === 'indexable' && req.url === '/p/CC007') {
       res.writeHead(200, { ...common, 'content-type': 'text/html; charset=utf-8' });
@@ -144,6 +158,7 @@ describe('smoke test against stub hosts', () => {
     expect(results.map((r) => r.name)).toEqual([
       'GET / returns the home page',
       'hard load of /p/CC007 returns the app shell',
+      'hard load of /early-voting returns the app shell',
       'hashed asset returns JavaScript',
       'hard load of / returns the pre-rendered page',
       'hard load of /learn returns the pre-rendered page',
@@ -184,6 +199,7 @@ describe('smoke test against stub hosts', () => {
     expect(results.map((r) => r.name)).toEqual([
       'GET / returns the home page',
       'hard load of /p/CC007 returns the app shell',
+      'hard load of /early-voting returns the app shell',
       'hashed asset returns JavaScript',
       'hard load of / returns the pre-rendered page',
       'hard load of /learn returns the pre-rendered page',
@@ -237,6 +253,20 @@ describe('smoke test against stub hosts', () => {
     ]);
   });
 
+  it('fails when the wait times page is not rewritten to the app shell', async () => {
+    server = stubHost({ waitTimes: '404' });
+    const results = await runSmoke(await listen(server));
+
+    expect(failedChecks(results)).toEqual(['hard load of /early-voting returns the app shell']);
+  });
+
+  it('fails when the wait times page gets a pre-rendered page', async () => {
+    server = stubHost({ waitTimes: 'home' });
+    const results = await runSmoke(await listen(server));
+
+    expect(failedChecks(results)).toEqual(['hard load of /early-voting returns the app shell']);
+  });
+
   it('fails when a deep link gets a pre-rendered page instead of the empty shell', async () => {
     server = stubHost({ deepLink: 'home' });
     const results = await runSmoke(await listen(server));
@@ -273,7 +303,7 @@ describe('smoke test against stub hosts', () => {
     const results = await runSmoke(await listen(server), { checkHeaders: false });
 
     expect(failedChecks(results)).toEqual([]);
-    expect(results).toHaveLength(8);
+    expect(results).toHaveLength(9);
   });
 
   it('fails instead of throwing when the host is unreachable', async () => {
@@ -301,7 +331,7 @@ describe('smoke test CLI', () => {
     server = stubHost();
     const { stdout } = await promisify(execFile)('node', [SCRIPT, await listen(server)]);
 
-    expect(stdout).toContain('10 of 10 checks passed');
+    expect(stdout).toContain('11 of 11 checks passed');
   });
 
   it('runs the preview checks with --preview', async () => {
@@ -313,7 +343,7 @@ describe('smoke test CLI', () => {
     ]);
 
     expect(stdout).toContain('PASS /robots.txt keeps every crawler out');
-    expect(stdout).toContain('10 of 10 checks passed');
+    expect(stdout).toContain('11 of 11 checks passed');
   });
 
   it('exits 1 and prints the failure when a check fails', async () => {

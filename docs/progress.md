@@ -51,3 +51,6 @@ One line per issue: number, PR, summary, follow-ups.
 - #22: PR #68 was merged by the owner after review; the vote-anywhere conflict was resolved by #72 (owner chose to follow RSMo 115.430).
 
 ## Batch 4 (2026-10-22)
+
+- #102: https://github.com/GeoBradDev/MapTheVoteSTLCounty/pull/133: docs/data.md records the County Voters_in_Line_View and City VotingLocations_currentwait sources with real open-hours fixtures; the City report time is created_date, not last_edited_date. Owner decided 2026-10-22 the City waittime is people in line. Election Day line counts sit in a hidden County layer (noted on #107).
+- #103: https://github.com/GeoBradDev/MapTheVoteSTLCounty/pull/134 and https://github.com/GeoBradDev/MapTheVoteSTLCounty/pull/135: One wait time client for County and City (people in line), shown only while a site is open and the report is under 2 hours old, one shared 30 s refresh per board, paused in background tabs. #135 fixed main after #102 and #103 merged close together. New issue #132 (health check for the wait time layers).

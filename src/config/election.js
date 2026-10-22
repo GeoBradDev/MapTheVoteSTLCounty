@@ -64,6 +64,8 @@
  * @property {string} timeField The report's time, epoch milliseconds.
  * @property {'people' | 'minutes'} unit What `valueField` counts. Never converted.
  * @property {string} source The board that reports it, for the "Reported by" line.
+ * @property {string} sourceUrl The board's own public page for these counts,
+ *   one of `waitTimes.sources`; the wait times page links it (#104).
  */
 
 /**
@@ -80,6 +82,13 @@
  *   closedText: string }} city The site's hours text, its comments field, and
  *   the comment text that marks a site closed.
  */
+
+// The boards' own public pages for the early voting line counts (#102).
+// The county's Absentee Voting Lookup app shows its counts.
+const countyWaitSource =
+  'https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=9301b4594bef4d9c9271778e4648179d';
+// The City Board's public Election Wait Times Dashboard.
+const cityWaitSource = 'https://www.arcgis.com/apps/dashboards/8548fe3a065a455182181399909102ef';
 
 // The 2025 map. congressional_district_20 is the old map; do not show it.
 const congressionalField = 'congressional_district_25';
@@ -158,12 +167,7 @@ const election = deepFreeze({
     refreshSeconds: 30,
     maxAgeMinutes: 120,
     skewMinutes: 5,
-    sources: [
-      // The county's Absentee Voting Lookup app shows these counts.
-      'https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=9301b4594bef4d9c9271778e4648179d',
-      // The City Board's public Election Wait Times Dashboard.
-      'https://www.arcgis.com/apps/dashboards/8548fe3a065a455182181399909102ef',
-    ],
+    sources: [countyWaitSource, cityWaitSource],
     lastVerified: '2026-10-22',
     county: {
       enabled: true,
@@ -180,6 +184,7 @@ const election = deepFreeze({
       pollsField: 'absentee',
       unit: 'people',
       source: 'St. Louis County Board of Elections',
+      sourceUrl: countyWaitSource,
     },
     city: {
       enabled: true,
@@ -201,6 +206,7 @@ const election = deepFreeze({
       closedText: 'poll closed',
       unit: 'people',
       source: 'St. Louis City Board of Election Commissioners',
+      sourceUrl: cityWaitSource,
     },
   },
 

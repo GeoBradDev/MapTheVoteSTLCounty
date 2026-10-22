@@ -149,11 +149,28 @@ describe('production build', () => {
     // A class name MapLibre's map code sets on its canvas.
     const isMapLibre = (code) => code.includes('maplibregl-canvas');
     expect(isMapLibre(js[entry])).toBe(false);
-    const mapChunks = Object.keys(js).filter((f) => f !== entry && isMapLibre(js[f]));
-    expect(mapChunks.some((f) => f.startsWith('precinctMapView-'))).toBe(true);
-    // Imported with import(), not statically: no modulepreload either.
+    // One MapLibre chunk, shared by the precinct map and the wait times map
+    // (#104), and imported only by their view modules.
+    const mapChunks = Object.keys(js).filter((f) => isMapLibre(js[f]));
+    expect(mapChunks).toHaveLength(1);
+    const [mapChunk] = mapChunks;
+    const importers = Object.keys(js).filter((f) => js[f].includes(`./${mapChunk}`));
+    expect(importers.map((f) => f.replace(/-[\w-]+\.js$/, '')).sort()).toEqual([
+      'precinctMapView',
+      'waitTimesMapView',
+    ]);
+    // Each view is imported with import(), not statically: no modulepreload either.
+    const waitTimesPage = Object.keys(js).find((f) => f.startsWith('WaitTimesPage-'));
     expect(js[entry]).toMatch(/import\(["'`][^"'`]*precinctMapView-[\w-]+\.js/);
-    expect(html).not.toMatch(/precinctMapView/);
+    expect(js[waitTimesPage]).toMatch(/import\(["'`][^"'`]*waitTimesMapView-[\w-]+\.js/);
+    expect(html).not.toMatch(/MapView|precinctMap|maplibre/);
+  });
+
+  // The wait times page (#104) is its own chunk, loaded when its route is.
+  it('loads the wait times page on demand', () => {
+    const entry = html.match(/src="\/assets\/(index-[\w-]+\.js)"/)[1];
+    expect(js[entry]).toMatch(/import\(["'`][^"'`]*WaitTimesPage-[\w-]+\.js/);
+    expect(html).not.toMatch(/WaitTimesPage/);
   });
 
   // Performance budget (#27): every script the first load fetches (the entry
@@ -174,7 +191,7 @@ describe('production build', () => {
   it('ships the map worker as a same-origin file the map chunk points to', () => {
     const worker = Object.keys(js).find((f) => f.startsWith('maplibre-gl-worker-'));
     expect(worker).toBeDefined();
-    const view = Object.keys(js).find((f) => f.startsWith('precinctMapView-'));
+    const view = Object.keys(js).find((f) => js[f].includes('maplibregl-canvas'));
     expect(js[view]).toContain(`/assets/${worker}`);
   });
 

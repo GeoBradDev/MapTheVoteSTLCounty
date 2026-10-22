@@ -26,6 +26,8 @@ export const hosts = Object.freeze({
   openSearch: host(openSearch.serviceUrl),
   electionMaps: host(election.serviceRoot),
   basemap: host(BASEMAP_STYLE_URL),
+  countyWaits: host(election.waitTimes.county.serviceRoot),
+  cityWaits: host(election.waitTimes.city.serviceRoot),
 });
 
 export const copy = translated((t) => ({
@@ -67,6 +69,17 @@ export const copy = translated((t) => ({
       {
         heading: t('privacy.sent.map.heading'),
         text: t('privacy.sent.map.text', { basemap: hosts.basemap }),
+      },
+      {
+        // The wait times page (#104) reads both boards' line count layers.
+        heading: t('privacy.sent.waitTimes.heading'),
+        text: t('privacy.sent.waitTimes.text', {
+          countyBoard: election.waitTimes.county.source,
+          countyLayers: hosts.countyWaits,
+          cityBoard: election.waitTimes.city.source,
+          cityLayers: hosts.cityWaits,
+          seconds: election.waitTimes.refreshSeconds,
+        }),
       },
       {
         heading: t('privacy.sent.website.heading'),

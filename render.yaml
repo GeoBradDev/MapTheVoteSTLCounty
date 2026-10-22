@@ -146,6 +146,13 @@ services:
       - path: /p/*
         name: Cache-Control
         value: no-cache
+      # The early voting wait times page (#104), client-rendered from the shell.
+      - path: /early-voting
+        name: Cache-Control
+        value: no-cache
+      - path: /early-voting/*
+        name: Cache-Control
+        value: no-cache
       - path: /learn
         name: Cache-Control
         value: no-cache

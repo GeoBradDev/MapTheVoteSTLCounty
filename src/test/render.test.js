@@ -25,6 +25,8 @@ const SHELL_PATHS = [
   '/index.html',
   '/shell.html',
   '/p/CC007',
+  '/early-voting',
+  '/early-voting/',
   '/learn',
   '/learn/voter-id',
   '/learn/voter-id/',

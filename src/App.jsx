@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef } from 'react';
 import { Route, Switch, useLocation } from 'wouter';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import NotFoundPage from './components/NotFoundPage.jsx';
@@ -12,6 +12,10 @@ import { t, useLocale } from './i18n/index.js';
 import LanguageSwitcher from './i18n/LanguageSwitcher.jsx';
 import { endHydration } from './hydrate.js';
 import { applyHead, pageHead } from './pageHead.js';
+
+// The wait times page (#104) loads on demand, so its code (and the wait time
+// loop) stays out of the first load's JavaScript budget (#27).
+const WaitTimesPage = lazy(() => import('./features/waitTimes/WaitTimesPage.jsx'));
 
 // The path as wouter reports it: decoded with decodeURI, or as is when that fails.
 function decodedPath() {
@@ -43,7 +47,9 @@ if (typeof window !== 'undefined') {
  * leaving focus on the body (or on main, where Safari puts it after a click),
  * moves focus to the new page's heading so a screen reader announces it.
  * Pages that focus their own heading do it in their own effects, which run
- * first, so they are left alone. Back and Forward do not scroll to the top,
+ * first, so they are left alone; a page loaded on demand (the wait times
+ * page, #104) mounts after this effect found no heading, and focuses its own
+ * when it arrives. Back and Forward do not scroll to the top,
  * so the position the browser restores stays, unless the page itself focuses
  * its heading on arrival.
  */
@@ -115,6 +121,13 @@ export default function App() {
             <Route path="/p/:precinct" component={PrecinctPage} />
             <Route path="/learn" component={LearnPage} />
             <Route path="/learn/:topic" component={LearnTopicPage} />
+            <Route path="/early-voting">
+              {/* Holds the page's height while its code loads, so the footer
+                  does not show and then jump down (#27). */}
+              <Suspense fallback={<div className="min-h-screen" />}>
+                <WaitTimesPage />
+              </Suspense>
+            </Route>
             <Route path="/privacy" component={PrivacyPage} />
             <Route component={NotFoundPage} />
           </Switch>
