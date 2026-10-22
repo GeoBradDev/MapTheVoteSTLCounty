@@ -131,3 +131,11 @@ issue), City sites (#91), analytics (#70).
   sites"), which is true; the card does not repeat the page's "could not be loaded" status.
 - Done outside the diff: the note on #81, and follow-up issue #139 for the `/early-voting`
   origin from a results page.
+- Review (finder 3): `docs/data.md` scopes the per-site "No current line count" rule to the
+  wait times page and describes the card's one line; the README's accessibility section says
+  the results route also runs at the wait fixtures' time. Dismissed: "rows reorder on a
+  refresh when focus is not in the list". The default "Nearest first" order does not depend
+  on counts, so a refresh only changes text in place; only the opt-in "Shortest line within 5
+  miles" is a live sort, which reorders as `/early-voting` does (#104), and holds while focus
+  is in the list. A count line arriving after the rows grows a row (content, not a load
+  shift: Lighthouse CLS on `/p/CC007` is 0.000).

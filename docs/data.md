@@ -258,7 +258,10 @@ jurisdictions report **people in line**. For the City this is the owner's decisi
 (2026-10-22): its field alias says minutes, but the City Board's own dashboard shows the
 same value as people in line (see City below). Keep the unit with the value and never turn one into the other. With no report in the last 2 hours, a site shows a quiet
 "No current line count" with its hours and open status still shown; it is never hidden
-(owner decision on #102, 2026-10-22, option 1). That 2-hour rule applies to both
+(owner decision on #102, 2026-10-22, option 1). That is the wait times page
+(`/early-voting`). The early voting card on a precinct's results page (#105) lists only the
+nearest few sites, so it shows no per-row "no count" text: when none of the sites it shows has
+a current count, one line under the list says so. That 2-hour rule applies to both
 jurisdictions; the City dashboard's own 1-hour "may be out of date" mark (below) is the City's
 display, not this app's cutoff.
 

@@ -316,7 +316,7 @@ runs axe-core (WCAG 2.1 A and AA plus best practice, contrast included) and chec
 horizontal scroll (also with the WCAG text spacing override), one `h1`, the page language and
 the skip link; it also checks focus after an in-app link and reduced motion. The county's
 layers, and the County and City wait time layers, are answered from `docs/raw/fixtures/`
-(the wait times route at the time those were recorded, so counts show) and every other outside request is blocked, so
+(the wait times route and the results route at the time those were recorded, so counts show) and every other outside request is blocked, so
 it needs no network. The first run needs `npx playwright install chromium`. Add a route there
 when the app gets a new one. In jsdom, without layout, `src/test/a11yPages.test.jsx` runs axe on home, the wait times page, privacy and
 the two not-found pages, and `src/features/learn/learnA11y.test.jsx` on `/learn` with fixture
