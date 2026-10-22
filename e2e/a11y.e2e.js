@@ -32,10 +32,19 @@ async function answerFromFixtures(page, { delayMs = 0 } = {}) {
 const ROUTES = [
   { path: '/', ready: (page) => expect(page.getByRole('combobox')).toBeVisible() },
   {
+    // At the time the wait fixtures were recorded, so the early voting card
+    // shows its line counts, sort and link (#105).
     path: `/p/${CODE}`,
+    at: WAITS_RECORDED_AT,
     ready: async (page) => {
       await expect(page.getByText(`Results for precinct ${CODE} are ready.`)).toBeAttached();
       await expect(page.getByRole('list', { name: 'Nearest polling places' })).toBeVisible();
+      const early = page.getByRole('list', { name: 'Nearest early voting sites' });
+      await expect(early.getByText(/in line, reported/).first()).toBeVisible();
+      await expect(page.getByRole('radiogroup', { name: 'Sort sites' })).toBeVisible();
+      await expect(
+        page.getByRole('link', { name: 'See wait times at every early voting site' }),
+      ).toBeVisible();
     },
   },
   {

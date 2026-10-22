@@ -38,7 +38,8 @@ same.)
 
 The site has no accounts, no analytics, no cookies and no server of its own: the browser talks
 straight to the public services that look up the address and the precinct, and to the boards'
-early voting line count layers on the wait times page. It never saves a
+early voting line count layers on the wait times page and, while early voting runs, the results
+page. It never saves a
 typed address or a device location, in the URL, browser storage, cookies or the browser's
 cache, and a share link holds only the precinct code, like `/p/CC007`. The plain-language
 notice at [`/privacy`](https://mapthevotestl.com/privacy) says what each service gets; the

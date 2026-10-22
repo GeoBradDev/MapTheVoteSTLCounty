@@ -108,3 +108,14 @@ issue), City sites (#91), analytics (#70).
 - Criterion 9: `src/test/election-hardcoding.test.js`, i18n tests.
 - Live drive: dev server at `/p/CC007` (a precinct page) against live layers, sort by
   keyboard, the link, a 30 s refresh with focus on a row link.
+
+## Revisions during implementation
+
+- `src/features/lookup/PrecinctPage.test.jsx` ("loads only the precinct in the URL") now
+  also allows the two line count layers, and checks those requests do not carry the
+  precinct code: the results page asks them while early voting runs.
+- `src/features/lookup/cardsRetry18.test.jsx` mocks the two wait fetchers (as an empty
+  answer), since the card now reads the app's wait loop.
+- `e2e/a11y.e2e.js` runs `/p/CC007` at the time the wait fixtures were recorded and waits for
+  the card's counts, sort and link, so axe and reflow cover the new UI in Chromium.
+- Lighthouse `/p/CC007` is unchanged against main (97, LCP 2415 ms on main, 2416 ms here).

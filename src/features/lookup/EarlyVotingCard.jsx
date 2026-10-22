@@ -1,10 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Link } from 'wouter';
 import election from '../../config/election.js';
 import { getAbsenteeSites } from '../../data/arcgis.js';
 import { CARD_TOPICS } from '../learn/cardTopics.js';
 import { getLocale, translated } from '../../i18n/index.js';
 import { getTopic } from '../learn/topics.js';
+import { earlyVotingSeason } from '../waitTimes/earlyVotingSeason.js';
+import { NEARBY_MILES, orderSites } from '../waitTimes/siteOrder.js';
+import { createWaitTimesStore, useWaitTimes } from '../waitTimes/useWaitTimes.js';
+import WaitReport from '../waitTimes/WaitReport.jsx';
+import { copy as waitCopy } from '../waitTimes/waitTimesCopy.js';
 import { earlyVotingStatus, formatLongDate, scheduleLines } from './earlyVoting.js';
 import { directionsLinks, isAppleMobile } from './nearbyPolls.js';
 import { copy, sourceName } from './resultsCopy.js';
@@ -22,6 +27,74 @@ const t = translated(() => copy.earlyVoting);
 const { schedules, sources, lastVerified } = election.earlyVoting;
 // The groups the config has hours for, in config order, that have a label.
 const groupKeys = Object.keys(schedules).filter((key) => t.groups[key]);
+
+// Read instead of the shared loop outside early voting, so the results page
+// asks the line count layers only while early voting runs.
+const OFF_STATE = createWaitTimesStore({ county: null, city: null }).getServerSnapshot();
+const OFF_SOURCE = {
+  subscribe: () => () => {},
+  getSnapshot: () => OFF_STATE,
+  getServerSnapshot: () => OFF_STATE,
+};
+
+const isOpenNow = (site, now) =>
+  earlyVotingStatus(schedules[site.absType], now, election.timeZone).kind === 'openNow';
+
+/**
+ * A key per row that stays the same when the rows are reordered or a count
+ * changes, so a refresh never remounts the row that has focus. Rows that
+ * share a location number and wait key get a running suffix, in the
+ * nearest-first order the rows arrive in.
+ */
+function withKeys(rows) {
+  const seen = new Map();
+  return rows.map((row) => {
+    const base = `${row.loc}:${row.waitKey}`;
+    const n = seen.get(base) ?? 0;
+    seen.set(base, n + 1);
+    return { ...row, key: n === 0 ? base : `${base}:${n}` };
+  });
+}
+
+// The rows in the held order: rows it does not know go last, in their order.
+function inHeldOrder(rows, held) {
+  const rank = new Map(held.map((key, i) => [key, i]));
+  const at = (row, i) => rank.get(row.key) ?? held.length + i;
+  return rows
+    .map((row, i) => [at(row, i), row])
+    .sort((x, y) => x[0] - y[0])
+    .map(([, row]) => row);
+}
+
+function SortControls({ sort, onSort }) {
+  const id = useId();
+  const options = [
+    ['nearest', t.waits.nearest],
+    ['nearby', waitCopy.sort.nearby(NEARBY_MILES)],
+  ];
+  return (
+    <fieldset role="radiogroup" aria-labelledby={`${id}-legend`} className="mt-3">
+      <legend id={`${id}-legend`} className="font-semibold">
+        {waitCopy.sort.legend}
+      </legend>
+      <div className="mt-1 flex flex-col">
+        {options.map(([value, label]) => (
+          <label key={value} className="flex min-h-11 items-center gap-3">
+            <input
+              type="radio"
+              name={`${id}-sort`}
+              value={value}
+              checked={sort === value}
+              onChange={() => onSort(value)}
+              className="size-5 accent-primary"
+            />
+            {label}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
 
 function statusText(key, now) {
   return t.status(earlyVotingStatus(schedules[key], now, election.timeZone), formatLongDate);
@@ -50,6 +123,7 @@ function SiteRow({ site, now, apple, headingRef }) {
           {kind}. {schedules[site.absType] && statusText(site.absType, now)}
         </p>
       )}
+      <WaitReport wait={site.wait} now={now} />
       <p>{copy.polls.address(site.address, site.zip)}</p>
       <p className="text-muted">{copy.polls.distance(site.miles)}</p>
       {site.absNote && (
@@ -107,11 +181,15 @@ function Schedules({ now }) {
 /**
  * The body of the "Early voting" card: the nearest in-person absentee sites,
  * whether each kind of site is open now, and the county's dates and hours.
- * @param {{ code: string, origin: { lat: number, lng: number } | null }} props
+ * While early voting runs, each site's current line count from the shared
+ * #103 loop, a sort by shortest line nearby, and a link to the wait times
+ * page (#105).
+ * @param {{ code: string, origin: { lat: number, lng: number } | null,
+ *   waitSource?: Parameters<typeof useWaitTimes>[0] }} props
  *   `origin` is the looked-up point, held in memory only; without one,
- *   distances are from the precinct's center.
+ *   distances are from the precinct's center. `waitSource` is for tests.
  */
-export default function EarlyVotingCard({ code, origin }) {
+export default function EarlyVotingCard({ code, origin, waitSource }) {
   // The absentee topic, once published (#22, #23); until then, the index.
   const absentee = getTopic(CARD_TOPICS.absentee, getLocale());
   // { rows, loadedAt } once loaded, { error: true, attempt } on failure. A
@@ -121,14 +199,43 @@ export default function EarlyVotingCard({ code, origin }) {
   const [showAll, setShowAll] = useState(false);
   const focusRef = useRef(null);
   const now = useNow();
+  const season = earlyVotingSeason(schedules, now, election.timeZone).kind;
+  const during = season === 'during';
+  const waits = useWaitTimes(during ? waitSource : OFF_SOURCE);
+  const [sort, setSort] = useState('nearest');
+  // The row keys in the order shown when focus entered the list. While focus
+  // is in it the order holds, so a refresh never moves (and so blurs) the
+  // focused row; the current order applies once focus leaves (#27).
+  const [held, setHeld] = useState(null);
 
   useEffect(() => {
     if (showAll) focusRef.current?.focus();
   }, [showAll]);
 
-  const rows = result?.rows;
+  const loaded = result?.rows;
+  const countyWaits = waits.county.waits;
+  const ordered = useMemo(() => {
+    if (!loaded) return loaded;
+    const byKey = new Map(countyWaits.map((entry) => [entry.siteId, entry]));
+    const rows = withKeys(loaded).map((row) => ({
+      ...row,
+      wait: (during && row.waitKey && byKey.get(row.waitKey)) || null,
+    }));
+    if (!during || sort !== 'nearby') return rows;
+    return orderSites(rows, {
+      sort,
+      waitOf: (row) => row.wait?.value ?? null,
+      isOpen: (row) => isOpenNow(row, now),
+    });
+  }, [loaded, countyWaits, during, sort, now]);
+  const rows = held && ordered ? inHeldOrder(ordered, held) : ordered;
   const first = election.nearbyPollCount;
   const shownRows = showAll ? rows : rows?.slice(0, first);
+  const noCounts =
+    during &&
+    waits.county.status !== 'loading' &&
+    shownRows?.length > 0 &&
+    !shownRows.some((row) => row.wait);
   const apple = isAppleMobile(globalThis.navigator);
 
   return (
@@ -163,10 +270,18 @@ export default function EarlyVotingCard({ code, origin }) {
       {rows && rows.length > 0 && (
         <>
           {!origin && <p className="mt-3 text-muted">{copy.polls.fromCenter(code)}</p>}
-          <ol aria-label={t.listLabel} className="mt-3 list-decimal space-y-3 pl-6">
+          {during && <SortControls sort={sort} onSort={setSort} />}
+          <ol
+            aria-label={t.listLabel}
+            className="mt-3 list-decimal space-y-3 pl-6"
+            onFocus={() => setHeld((keys) => keys ?? rows.map((row) => row.key))}
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget)) setHeld(null);
+            }}
+          >
             {shownRows.map((site, i) => (
               <SiteRow
-                key={`${site.loc}:${i}`}
+                key={site.key}
                 site={site}
                 now={now}
                 apple={apple}
@@ -174,6 +289,7 @@ export default function EarlyVotingCard({ code, origin }) {
               />
             ))}
           </ol>
+          {noCounts && <p className="mt-3 text-muted">{t.waits.none}</p>}
           {result.refreshFailed && <StaleNote loadedAt={result.loadedAt} />}
           {!showAll && rows.length > first && (
             <button
@@ -185,6 +301,14 @@ export default function EarlyVotingCard({ code, origin }) {
             </button>
           )}
         </>
+      )}
+
+      {season !== 'ended' && (
+        <p className="mt-3">
+          <Link href="/early-voting" className={tapLinkClass}>
+            {t.waits.seeAll}
+          </Link>
+        </p>
       )}
 
       <Schedules now={now} />

@@ -120,9 +120,18 @@ describe('PrecinctPage', () => {
     );
     expect(precinctQueries).toHaveLength(1);
     expect(precinctQueries[0].searchParams.get('where')).toBe("precinct='CC007'");
-    // Everything else is the polls list or this precinct's outline.
+    // Everything else is the polls list, this precinct's outline, or, while
+    // early voting runs, the boards' line counts (#105), which carry nothing
+    // about the voter.
+    const { county, city } = election.waitTimes;
+    const waitLayer = (url) =>
+      [county, city].some((s) => url.href.startsWith(`${s.serviceRoot}/${s.layer}/`));
     for (const url of urls.filter((u) => !precinctQueries.includes(u))) {
       if (url.pathname.includes(election.layers.polls)) continue;
+      if (waitLayer(url)) {
+        expect(url.href).not.toContain('CC007');
+        continue;
+      }
       expect(url.pathname).toContain(election.layers.precincts);
       expect(url.searchParams.get('f')).toBe('geojson');
       expect(url.searchParams.get('where')).toBe("precinct='CC007'");
