@@ -382,14 +382,16 @@ Every word the app shows is in `src/i18n/en.json` and reaches the page through `
 (`src/i18n/index.js`), mostly by way of the copy module next to each feature, such as
 `src/features/lookup/resultsCopy.js`. Messages fill in `{name}` values and pick plurals with
 `{count, plural, one {...} other {...}}`. Values from the county's data, such as district
-names, and election values from `src/config/election.js` are shown as they are. ESLint's
+names, election values from `src/config/election.js`, and the names of the address search
+services and their data (from the geocoder modules, as the privacy notice requires) are shown as
+they are. So is the home page's tab title, which is `index.html`'s. ESLint's
 `react/jsx-no-literals` fails on words typed straight into JSX.
 
 To add a language, such as Spanish: copy `en.json` to `src/i18n/es.json`, translate the
 values (keep the keys and the `{...}` names), and add its line to `LOCALES` in
 `src/i18n/config.js`. A key it lacks falls back to English. The language switcher appears once
-there are two languages; choosing one loads its file and sets `<html lang>`. The site always
-starts in English. Dates are formatted for the language in the election's time zone,
+there are two languages; choosing one loads its file, sets `<html lang>` and redraws the page
+in it (the page starts over, as on a new visit). The site always starts in English. Dates are formatted for the language in the election's time zone,
 `America/Chicago`.
 
 ## Data health check
@@ -493,7 +495,8 @@ accepts one (#38): the county's address layers, the City geocoder and the precin
 point queries. Photon has no POST endpoint, so it gets the typed text in a GET query string;
 the notice says so. A new request that carries either must do the same, and a service worker
 (#25) must not put those requests in Cache Storage, which `no-store` does not cover. The plain-language
-notice at `/privacy` (`src/features/privacy/privacyCopy.js`) says what each third party gets;
+notice at `/privacy` (`src/features/privacy/privacyCopy.js`, its text under `privacy` in
+`src/i18n/en.json` and every other language's file) says what each third party gets;
 change it in the same change as any new service or any change to what is sent. `src/test/no-storage.test.js` fails
 when app code under `src` uses browser storage, cookies or the console, and
 `src/test/addressPrivacy.test.jsx` runs a lookup and checks storage, cookies, Cache Storage

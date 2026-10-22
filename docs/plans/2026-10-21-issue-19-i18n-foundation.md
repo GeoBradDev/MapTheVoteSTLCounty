@@ -14,8 +14,10 @@ changes (the switcher renders nothing with one locale).
 
 1. Every UI string the app renders comes from `src/i18n/en.json` through `t()`: the copy
    modules, the skip link, the not found page, the footer link and the tab title suffix.
-   Values from the county's data (district names, places) and election values from
-   `src/config/election.js` (the election's name) are not translated.
+   Values from the county's data (district names, places), election values from
+   `src/config/election.js` (the election's name), and the address search services' names
+   and data names from the geocoder modules (the privacy notice requires them there) are not
+   translated.
 2. English output is identical: every copy value, called with sample arguments, matches the
    value before the change, and the existing test suite passes unchanged.
 3. `t(key, params)` interpolates `{name}` and supports ICU-style plurals
@@ -77,14 +79,22 @@ changes (the switcher renders nothing with one locale).
 
 Not done: choosing the initial locale from the browser, or a `?lang=` parameter (a decision
 for when Spanish exists); translating `electionName` (an election value in config);
-translating `index.html`'s static title (the app sets the tab title on load).
+translating `index.html`'s static title, which stays the home page's tab title (no page
+restores a translated base title yet); remembering the chosen language across reloads. These
+are follow-ups for when Spanish is added.
+
+Revisions during review: `setLocale` keeps only the last pick when a file is still loading,
+and the switcher ignores a failed load; `src/i18n/addLocale.test.js` proves the real loader
+with a copy of `src/i18n` plus an `es.json` and one config line; docs that named the old copy
+files as the place for the privacy notice and the learn group labels now name `en.json`.
 
 ## Proof
 
 - Criterion 1: lint rule (7) plus a test that every key the copy modules use exists in
   `en.json`.
 - Criterion 2: snapshot comparison output in the PR, plus the unchanged suite.
-- Criteria 3, 4, 5, 6, 8: `src/i18n/*.test.js(x)`.
+- Criteria 3, 4, 5, 6: `src/i18n/i18n.test.jsx`, `src/i18n/format.test.js`.
+- Criterion 8: `src/i18n/addLocale.test.js` (Vite's real loader finds `es.json`).
 - Criterion 9: build output and `npm run test:perf`.
 - Live drive: home, a precinct page, /learn, a topic, /privacy and the not found page
   render the same English as on main.

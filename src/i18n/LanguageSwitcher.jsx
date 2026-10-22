@@ -20,7 +20,11 @@ export default function LanguageSwitcher() {
       <select
         id={id}
         value={locale}
-        onChange={(event) => setLocale(event.target.value)}
+        onChange={(event) => {
+          // A language file that fails to load (offline) leaves the site in
+          // its current language, which the select goes back to showing.
+          setLocale(event.target.value).catch(() => {});
+        }}
         className="min-h-11 rounded-md border border-ink bg-surface px-2 text-ink"
       >
         {codes.map((code) => (

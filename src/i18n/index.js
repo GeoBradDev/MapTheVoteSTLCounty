@@ -69,17 +69,23 @@ export function intlLocale(locale = current) {
   return LOCALES[locale]?.intl ?? LOCALES[DEFAULT_LOCALE].intl;
 }
 
+let requested = DEFAULT_LOCALE;
+
 /**
  * Switches the site to `locale`, loading its messages first, and sets
- * <html lang> to match.
+ * <html lang> to match. When the voter picks again while a file is still
+ * loading, only the last pick takes effect.
  * @param {string} locale A key of LOCALES.
  */
 export async function setLocale(locale) {
   if (!Object.hasOwn(LOCALES, locale)) throw new Error(`Unknown locale: ${locale}`);
+  requested = locale;
   if (!Object.hasOwn(catalogs, locale)) {
     const load = loaders[`./${locale}.json`];
     if (!load) throw new Error(`No messages for locale: ${locale}`);
-    catalogs[locale] = await load();
+    const messages = await load();
+    catalogs[locale] = messages;
+    if (requested !== locale) return;
   }
   current = locale;
   document.documentElement.lang = locale;
@@ -154,8 +160,8 @@ export function formatDate(date, options, locale = current) {
 
 /**
  * A calendar date, YYYY-MM-DD, formatted like formatDate. It is read at noon
- * UTC, which is the same calendar day in the election's time zone, so the day
- * never shifts.
+ * UTC, which is the same calendar day in the election's time zone (and in UTC
+ * and every US zone), so the day does not shift there.
  * @param {string} isoDate
  * @param {Intl.DateTimeFormatOptions} options
  * @param {string} [locale]

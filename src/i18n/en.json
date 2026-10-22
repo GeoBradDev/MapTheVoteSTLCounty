@@ -1,6 +1,5 @@
 {
   "site": {
-    "name": "St. Louis County Voter Guide",
     "pageTitle": "{name} | St. Louis County Voter Guide"
   },
   "app": {
