@@ -915,8 +915,10 @@ fields (`pocname`, `pocemail`, `pocphone`).
 
 ### City boundary: `ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/2`, `districtid = 'City of St. Louis'`
 
-Neither official server has a separate City boundary layer (the org's service list and the
-`maps6` folders were searched on 2026-10-22). The citywide offices' polygons in the districts
+Neither official server has a City Board election boundary layer (the org's service list and
+the `maps6` folders were searched on 2026-10-22). The org's other citywide outlines,
+`Census_2020_Citywide` and `Census_2010_Citywide` (owner `gumeli_stlcity`), are Census layers,
+not the City Board's, so they are not used. The citywide offices' polygons in the districts
 layer are the City outline: 9 rows (mayor, comptroller and the other citywide offices), each
 about 281.41 million m² in Web Mercator (within 60 m² of each other), within 300 m² of
 the 207 precincts' total area (about 66 square miles on the ground). `isInCityBoundary` asks with `boundaryWhere` for `OBJECTID` only; any row

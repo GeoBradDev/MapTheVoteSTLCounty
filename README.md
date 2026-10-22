@@ -102,8 +102,8 @@ against, and why. In short:
   The polls layer holds both Election Day and in-person absentee sites; no layer assigns a
   polling place to a precinct, so the app lists the nearest and says how to confirm the
   assigned one.
-- **St. Louis City:** the City Board of Election Commissioners' layers in its ArcGIS org (the
-  one its polling places page's map comes from): precincts, districts (names and numbers only),
+- **St. Louis City:** the City Board of Election Commissioners' layers in the City's ArcGIS org
+  (the one its polling places page's map comes from): precincts, districts (names and numbers only),
   the 56 Election Day sites and 8 early voting sites, and the City outline. See the St. Louis
   City section of `docs/data.md`.
 - **Sample ballots:** each precinct's `html` field links its PDF on the board's
