@@ -23,6 +23,8 @@ describe('shouldHydrate', () => {
     ['/', '/index.html'],
     ['/learn', '/learn/voter-id'],
     ['/privacy', '/p/CC007'],
+    ['/', '//'],
+    ['/learn/voter-id', '/learn/voter-id//'],
   ])('renders fresh when markup for %s is served at %s', (rendered, pathname) => {
     expect(shouldHydrate(root(rendered), pathname)).toBe(false);
   });

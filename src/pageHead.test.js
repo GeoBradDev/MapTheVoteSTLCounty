@@ -22,7 +22,9 @@ describe('normalizePath', () => {
     ['/', '/'],
     ['', '/'],
     ['/learn/', '/learn'],
-    ['/learn//', '/learn'],
+    // wouter's routes take one trailing slash, not two: /learn// is not /learn.
+    ['/learn//', '/learn//'],
+    ['//', '//'],
     ['/learn?x=1#y', '/learn'],
     ['/learn/voter-id/', '/learn/voter-id'],
     ['/privacy#main', '/privacy'],
@@ -121,12 +123,19 @@ describe('pageHead', () => {
     expect(head.canonical).toBe(`${siteUrl}/privacy`);
   });
 
-  it.each(['/p/CC007', '/learn/no-such-topic', '/nope', '/index.html', '/learn/voter-id/x'])(
-    'has no entry for %s, which keeps the shell head',
-    (route) => {
-      expect(pageHead(route)).toBeNull();
-    },
-  );
+  it.each([
+    '/p/CC007',
+    '/learn/no-such-topic',
+    '/nope',
+    '/index.html',
+    '/learn/voter-id/x',
+    '//',
+    '/learn//',
+    '/learn/voter-id//',
+    '/privacy//',
+  ])('has no entry for %s, which keeps the shell head', (route) => {
+    expect(pageHead(route)).toBeNull();
+  });
 });
 
 describe('shellHead', () => {
