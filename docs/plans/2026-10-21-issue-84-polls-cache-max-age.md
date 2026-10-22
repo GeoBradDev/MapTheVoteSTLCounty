@@ -102,3 +102,11 @@ six new card tests fail for the expected reasons: the list still holds the neare
   passive effect, a visibility change in the same moment the rows appear could read the
   previous value and skip the refresh (seen as a flaky card test under full-suite load,
   about 3 runs in 8; 0 in 12 after the change).
+- `copy.polls.staleNote(time, date)` takes the date too: when the list loaded on an earlier
+  day in `election.timeZone`, the note names that day, so "loaded at 3:42 p.m." never means
+  yesterday's list.
+- Review finding (finder 1): a refresh that removes or shifts the row holding focus (after
+  "Show more") unmounted the focused heading and dropped focus to the page. The hook now
+  notes whether focus was in the card before the new rows commit, and if the commit leaves
+  focus on the page, moves it to the card (`targetRef`), as the retry flow does (#18).
+  Covered by a new PollsCard test, committed red first.

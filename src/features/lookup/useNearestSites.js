@@ -28,6 +28,8 @@ export function loadedAtParts(loadedAt, now = Date.now()) {
  * becomes visible again and the list is older than the layer max age, it is
  * fetched again and replaced in place, with no skeleton (#84); if that refresh
  * fails, the rows stay and `refreshFailed` is set until a refresh succeeds.
+ * When the new rows remove the element that had focus, focus moves to
+ * `targetRef`, the card.
  * @param {() => Promise<object>} getLayer getPolls or getAbsenteeSites.
  * @param {string} code The precinct code.
  * @param {{ lat: number, lng: number } | null} origin The looked-up point.
@@ -44,10 +46,18 @@ export function useNearestSites(getLayer, code, origin) {
   // the commit that shows the rows, so a visibility change right after it
   // never reads the previous value.
   const loadedAtRef = useRef(null);
+  // Set when focus was inside the card just before a refresh replaced its rows.
+  const hadFocusRef = useRef(false);
 
   useLayoutEffect(() => {
     loadedAtRef.current = result?.rows ? result.loadedAt : null;
-  }, [result]);
+    // A refresh can remove or move the row that had focus, which drops focus
+    // to the page; put it on the card instead, in the same commit.
+    if (!hadFocusRef.current) return;
+    hadFocusRef.current = false;
+    const focused = document.activeElement;
+    if (!focused || focused === document.body) targetRef.current?.focus();
+  }, [result, targetRef]);
 
   useEffect(() => {
     function onVisibilityChange() {
@@ -73,6 +83,7 @@ export function useNearestSites(getLayer, code, origin) {
       )
       .then((next) => {
         if (!current) return;
+        hadFocusRef.current = Boolean(targetRef.current?.contains(document.activeElement));
         // A failed refresh keeps the rows it was refreshing, never another
         // precinct's or point's.
         setResult((prev) =>
@@ -85,7 +96,7 @@ export function useNearestSites(getLayer, code, origin) {
     return () => {
       current = false;
     };
-  }, [getLayer, code, origin, attempt, done, refresh]);
+  }, [getLayer, code, origin, attempt, done, refresh, targetRef]);
 
   return { result, loading, retry, targetRef };
 }
