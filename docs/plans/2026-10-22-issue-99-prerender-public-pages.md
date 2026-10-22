@@ -188,6 +188,13 @@ build its head hook on the `pageHead()` function added here.
   first paragraph only when that paragraph comes before the topic's first heading; otherwise
   it is the `/learn` intro. This narrows criterion 7's "a topic, its first paragraph".
 
+- Owner decision (on #99, after the spike showed Render serves a directory index only with
+  the trailing slash, and that PR previews keep the service's old route rules): `render.yaml`
+  rewrites each pre-rendered page's path to its file, one rule per page, before the `/*`
+  catch-all to `/shell.html`. This replaces criterion 11's assumption. The routes can only be
+  checked on production after merge, so the PR is merged after November 3 and checked with
+  `npm run smoke -- https://mapthevotestl.com` right after the deploy, with the revert ready.
+
 ## Proof
 
 - Criterion 1, 2, 3: `src/test/build.test.js` against a real build (files, head tags, root
