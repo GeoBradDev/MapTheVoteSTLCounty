@@ -447,3 +447,48 @@ describe('metaRefreshTarget, parsed as HTML', () => {
     ).toBe('https://x.gov/?a=1&b=2');
   });
 });
+
+// Third review round on #74.
+describe('metaRefreshTarget, resolved as a browser resolves it', () => {
+  it('resolves the target against the page base URL', () => {
+    expect(
+      metaRefreshTarget(
+        '<head><base href="/"><meta http-equiv=refresh content="0; url=app/"></head>',
+        'https://a.gov/app/',
+      ),
+    ).toBe('https://a.gov/app/');
+  });
+
+  it('matches http-equiv without trimming it', () => {
+    expect(
+      metaRefreshTarget(
+        '<meta http-equiv=" refresh" content="0;url=https://b.gov/">',
+        'https://a.gov/',
+      ),
+    ).toBeNull();
+    expect(
+      metaRefreshTarget(
+        '<meta http-equiv="REFRESH" content="0;url=https://b.gov/">',
+        'https://a.gov/',
+      ),
+    ).toBe('https://b.gov/');
+  });
+
+  it('keeps Unicode spaces that the URL parser keeps', () => {
+    expect(
+      metaRefreshTarget(
+        '<meta http-equiv=refresh content="0; url=&nbsp;">',
+        'https://a.gov/x/page',
+      ),
+    ).toBe('https://a.gov/x/%C2%A0');
+  });
+
+  it('ignores a refresh to a javascript: URL, which browsers refuse', () => {
+    expect(
+      metaRefreshTarget(
+        '<meta http-equiv=refresh content="0;url=javascript:void(0)">',
+        'https://a.gov/',
+      ),
+    ).toBeNull();
+  });
+});
