@@ -45,6 +45,9 @@
  *   voter must vote at their assigned polling place on Election Day is stated,
  *   and the county board's number for confirming that polling place, with the
  *   page that lists it.
+ * @property {{ minutes: number, electionDayMinutes: number }} layerMaxAge How
+ *   long a loaded layer, such as the polling places, is reused before the app
+ *   fetches it again, and the shorter limit on Election Day (#84).
  */
 
 // The 2025 map. congressional_district_20 is the old map; do not show it.
@@ -108,6 +111,11 @@ const election = deepFreeze({
   // directly (#73). stlouiscountymovotes.gov reaches it only after two hops.
   countySiteUrl: 'https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/',
   nearbyPollCount: 3,
+  // The county serves the polls layer with max-age=30. Ten minutes keeps a
+  // tab left open from showing a moved polling place for long, without asking
+  // the county again on every search; two on Election Day, when emergency
+  // relocations happen (#84).
+  layerMaxAge: { minutes: 10, electionDayMinutes: 2 },
 
   // From the county's Absentee Voting Lookup app introduction, re-read from the
   // app's live config on 2026-10-21 (issue #16). The board's old website showed

@@ -5,6 +5,7 @@
 // URL, kept out of the browser's HTTP cache, with no cookies and no referrer
 // (#38). Queries by precinct code or for a whole layer stay cacheable GETs.
 import election from '../config/election.js';
+import { isFresh, layerMaxAgeMs } from './freshness.js';
 
 /** Precinct codes: a 2 or 3 letter township prefix plus 3 digits, like CC007. */
 export const PRECINCT_CODE = /^[A-Z]{2,3}\d{3}$/;
@@ -307,43 +308,55 @@ export async function getPrecinctGeometry(code) {
   return outline.promise;
 }
 
-// A whole-layer GeoJSON query, fetched once per page load and shared by all
-// callers. A failed fetch is not kept, so the next call tries again. Only the
-// fields the app reads, with coordinates to 6 decimals (about 0.1 m).
+// A whole-layer GeoJSON query, shared by all callers while it is younger than
+// the max age (#84), so a tab left open for days still sees a moved polling
+// place. A request in flight is shared too; a failed fetch is not kept, so the
+// next call tries again. The answer carries `loadedAt`, when it arrived (ms).
+// Only the fields the app reads, with coordinates to 6 decimals (about 0.1 m).
 function sharedLayer(layer, where, fields) {
-  let pending;
+  let entry;
   return () => {
-    pending ??= query(layer, {
+    if (entry && (entry.loadedAt === undefined || isFresh(entry.loadedAt, layerMaxAgeMs()))) {
+      return entry.promise;
+    }
+    const next = {};
+    next.promise = query(layer, {
       where,
       outFields: fields.join(','),
       outSR: '4326',
       geometryPrecision: '6',
       f: 'geojson',
     })
-      .then((body) => ({
-        ...body,
-        features: body.features.map((f) => ({ ...f, properties: normalize(f.properties) })),
-      }))
+      .then((body) => {
+        next.loadedAt = Date.now();
+        return {
+          ...body,
+          features: body.features.map((f) => ({ ...f, properties: normalize(f.properties) })),
+          loadedAt: next.loadedAt,
+        };
+      })
       .catch((error) => {
-        pending = undefined;
+        if (entry === next) entry = undefined;
         throw error;
       });
-    return pending;
+    entry = next;
+    return next.promise;
   };
 }
 
 /**
- * Every polling place, fetched once per page load and shared by all callers.
- * A failed fetch is not kept, so the next call tries again.
+ * Every polling place, shared by all callers until it is older than the max
+ * age (`layerMaxAgeMs`), then fetched again. A failed fetch is not kept, so
+ * the next call tries again.
  * @returns {Promise<object>} A GeoJSON FeatureCollection in lat/lng with
- *   normalized properties.
+ *   normalized properties and `loadedAt`.
  */
 export const getPolls = sharedLayer('polls', '1=1', POLL_FIELDS);
 
 /**
  * The in-person absentee (early voting) sites: the polls layer filtered by
- * `absenteeWhere` from the election config. Fetched once per page load and
- * shared like getPolls.
+ * `absenteeWhere` from the election config. Shared and refreshed like
+ * getPolls.
  * @returns {Promise<object>} A GeoJSON FeatureCollection in lat/lng with
  *   normalized properties, including `abs_type` and `notes_abs`.
  */
