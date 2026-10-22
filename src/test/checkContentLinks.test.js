@@ -347,3 +347,59 @@ describe('writeSkipped', () => {
     expect(await readFile(file, 'utf8')).toBe('');
   });
 });
+
+// Review findings on #74: read a refresh as a browser does.
+describe('metaRefreshTarget, as a browser reads it', () => {
+  const base = 'https://a.gov/page/';
+  it('reads a tag with > inside a quoted attribute', () => {
+    expect(
+      metaRefreshTarget('<meta http-equiv="refresh" content="0; url=https://x.gov/?a>b">', base),
+    ).toBe('https://x.gov/?a%3Eb');
+    expect(
+      metaRefreshTarget(
+        '<meta http-equiv="refresh" data-x=">" content="0;url=https://x.gov/">',
+        base,
+      ),
+    ).toBe('https://x.gov/');
+  });
+
+  it('keeps the first of a repeated attribute', () => {
+    expect(
+      metaRefreshTarget(
+        '<meta content="0;url=https://x.gov/" http-equiv="refresh" http-equiv="x">',
+        base,
+      ),
+    ).toBe('https://x.gov/');
+  });
+
+  it('ignores a refresh in a comment, a script or a noscript block', () => {
+    const tag = '<meta http-equiv="refresh" content="0;url=https://x.gov/">';
+    expect(metaRefreshTarget(`<!-- ${tag} -->`, base)).toBeNull();
+    expect(metaRefreshTarget(`<script>document.write('${tag}')</script>`, base)).toBeNull();
+    expect(metaRefreshTarget(`<noscript>${tag}</noscript>`, base)).toBeNull();
+  });
+
+  it('ignores a refresh with no delay', () => {
+    expect(
+      metaRefreshTarget('<meta http-equiv="refresh" content=";url=https://x.gov/">', base),
+    ).toBeNull();
+  });
+});
+
+describe('checkLinks onResult', () => {
+  it('reports each result as soon as it is known', async () => {
+    const seen = [];
+    await checkLinks(
+      [
+        { url: 'https://a.gov/', files: ['f'] },
+        { url: 'https://b.gov/', files: ['f'] },
+      ],
+      {
+        fetch: async () => new Response('', { status: 200 }),
+        attempts: 1,
+        onResult: (r) => seen.push(r.url),
+      },
+    );
+    expect(seen).toEqual(['https://a.gov/', 'https://b.gov/']);
+  });
+});
