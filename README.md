@@ -21,8 +21,9 @@ Contents: [Nonpartisan statement](#nonpartisan-statement) ·
 
 A nonpartisan, unofficial guide. Not affiliated with the St. Louis County Board of Elections
 or the St. Louis City Board of Election Commissioners. (The site's footer opens with this
-statement on every page, from `footer.statement` in `src/i18n/en.json`, then links both
-boards; keep the two the same.)
+statement on every page: it is the start of `footer.statement` in `src/i18n/en.json`, which
+then adds "For official information, visit:" before links to both boards. Keep the two the
+same.)
 
 - **Reference tool only.** It says where, when and how to vote. It makes no endorsements and
   no comment on any candidate, party or ballot measure, and it never ranks or orders
