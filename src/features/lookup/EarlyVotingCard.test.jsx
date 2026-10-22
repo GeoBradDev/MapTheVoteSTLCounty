@@ -525,4 +525,44 @@ describe('line counts', () => {
     act(() => screen.getByRole('radio', { name: waitCopy.sort.nearby(NEARBY_MILES) }).focus());
     expect(rowNames(await list()).slice(0, 2)).toEqual([b.name, a.name]);
   });
+
+  it('shows no sort or no-count line when the County source is off in the config', async () => {
+    render(
+      <EarlyVotingCard
+        code="CC007"
+        origin={ORIGIN}
+        waitSource={createWaitTimesStore({ county: null, city: null })}
+      />,
+    );
+    await list();
+    expect(sortGroup()).toBeNull();
+    expect(screen.queryByText(t.waits.none)).toBeNull();
+    expect(seeAll()).toHaveAttribute('href', '/early-voting');
+  });
+
+  it('lets go of a held order when the focused row leaves the list without a blur', async () => {
+    const user = userEvent.setup();
+    const source = manualSource([entryFor(a, 1), entryFor(b, 20)]);
+    render(<EarlyVotingCard code="CC007" origin={ORIGIN} waitSource={source} />);
+    await list();
+    await user.click(screen.getByRole('radio', { name: waitCopy.sort.nearby(NEARBY_MILES) }));
+    const link = within((await items())[0]).getAllByRole('link')[0];
+    act(() => link.focus());
+    // Focus goes elsewhere with no blur reaching the list, as when the focused
+    // row is removed from the page.
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    const blur = (event) => event.stopPropagation();
+    link.addEventListener('focusout', blur);
+    act(() => outside.focus());
+    link.removeEventListener('focusout', blur);
+    act(() => source.emit([entryFor(a, 20), entryFor(b, 1)]));
+    await waitFor(() =>
+      expect(rowNames(screen.getByRole('list', { name: t.listLabel })).slice(0, 2)).toEqual([
+        b.name,
+        a.name,
+      ]),
+    );
+    outside.remove();
+  });
 });

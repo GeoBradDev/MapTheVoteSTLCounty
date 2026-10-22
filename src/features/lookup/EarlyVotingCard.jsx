@@ -207,6 +207,12 @@ export default function EarlyVotingCard({ code, origin, waitSource }) {
   // is in it the order holds, so a refresh never moves (and so blurs) the
   // focused row; the current order applies once focus leaves (#27).
   const [held, setHeld] = useState(null);
+  const listRef = useRef(null);
+  // Focus can leave the list with no blur reaching it (the focused row was
+  // removed, #84): let go of the held order once focus is elsewhere.
+  useEffect(() => {
+    if (held && !listRef.current?.contains(document.activeElement)) setHeld(null);
+  });
 
   useEffect(() => {
     if (showAll) focusRef.current?.focus();
@@ -214,25 +220,27 @@ export default function EarlyVotingCard({ code, origin, waitSource }) {
 
   const loaded = result?.rows;
   const countyWaits = waits.county.waits;
+  // Counts can show: early voting is running and the County source is on.
+  const waitsOn = during && waits.county.status !== 'off';
   const ordered = useMemo(() => {
     if (!loaded) return loaded;
     const byKey = new Map(countyWaits.map((entry) => [entry.siteId, entry]));
     const rows = withKeys(loaded).map((row) => ({
       ...row,
-      wait: (during && row.waitKey && byKey.get(row.waitKey)) || null,
+      wait: (waitsOn && row.waitKey && byKey.get(row.waitKey)) || null,
     }));
-    if (!during || sort !== 'nearby') return rows;
+    if (!waitsOn || sort !== 'nearby') return rows;
     return orderSites(rows, {
       sort,
       waitOf: (row) => row.wait?.value ?? null,
       isOpen: (row) => isOpenNow(row, now),
     });
-  }, [loaded, countyWaits, during, sort, now]);
+  }, [loaded, countyWaits, waitsOn, sort, now]);
   const rows = held && ordered ? inHeldOrder(ordered, held) : ordered;
   const first = election.nearbyPollCount;
   const shownRows = showAll ? rows : rows?.slice(0, first);
   const noCounts =
-    during &&
+    waitsOn &&
     waits.county.status !== 'loading' &&
     shownRows?.length > 0 &&
     !shownRows.some((row) => row.wait);
@@ -270,8 +278,9 @@ export default function EarlyVotingCard({ code, origin, waitSource }) {
       {rows && rows.length > 0 && (
         <>
           {!origin && <p className="mt-3 text-muted">{copy.polls.fromCenter(code)}</p>}
-          {during && <SortControls sort={sort} onSort={setSort} />}
+          {waitsOn && <SortControls sort={sort} onSort={setSort} />}
           <ol
+            ref={listRef}
             aria-label={t.listLabel}
             className="mt-3 list-decimal space-y-3 pl-6"
             onFocus={() => setHeld((keys) => keys ?? rows.map((row) => row.key))}

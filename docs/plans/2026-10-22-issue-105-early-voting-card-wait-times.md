@@ -119,3 +119,7 @@ issue), City sites (#91), analytics (#70).
 - `e2e/a11y.e2e.js` runs `/p/CC007` at the time the wait fixtures were recorded and waits for
   the card's counts, sort and link, so axe and reflow cover the new UI in Chromium.
 - Lighthouse `/p/CC007` is unchanged against main (97, LCP 2415 ms on main, 2416 ms here).
+- Review (finder 1): `docs/progress.md` gets the coordinator's #106 line. The sort and the
+  no-count line show only when the County source is on in the config (with it off, the card
+  shows only the link). A held order lets go once focus is outside the list after any render,
+  so it does not stick when the focused row is removed without a blur.
