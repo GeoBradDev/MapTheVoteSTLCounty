@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
-
-const SITE_NAME = 'St. Louis County Voter Guide';
+import { t } from '../i18n/index.js';
 
 /**
  * Sets the tab title to "<name> | St. Louis County Voter Guide" while the page
@@ -11,7 +10,7 @@ const SITE_NAME = 'St. Louis County Voter Guide';
 export function usePageTitle(name) {
   useEffect(() => {
     const previous = document.title;
-    document.title = `${name} | ${SITE_NAME}`;
+    document.title = t('site.pageTitle', { name });
     return () => {
       document.title = previous;
     };

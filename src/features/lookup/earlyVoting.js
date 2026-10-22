@@ -2,6 +2,7 @@
 // zone (America/Chicago), whatever zone the voter's device is set to. Dates are
 // YYYY-MM-DD strings; date arithmetic runs on UTC midnights, which have no
 // daylight saving shifts.
+import { formatCalendarDate } from '../../i18n/index.js';
 
 /**
  * @typedef {{ kind: 'openNow', close: string }
@@ -110,19 +111,6 @@ export function earlyVotingStatus(entries, now, timeZone) {
   return { kind: 'ended' };
 }
 
-const longDate = new Intl.DateTimeFormat('en-US', {
-  timeZone: 'UTC',
-  weekday: 'long',
-  month: 'long',
-  day: 'numeric',
-});
-const dateWithYear = new Intl.DateTimeFormat('en-US', {
-  timeZone: 'UTC',
-  month: 'long',
-  day: 'numeric',
-  year: 'numeric',
-});
-
 /**
  * A calendar date as voters read it: "Saturday, October 24", or with
  * `{ year: true }`, "October 20, 2026".
@@ -130,7 +118,12 @@ const dateWithYear = new Intl.DateTimeFormat('en-US', {
  * @param {{ year?: boolean }} [options]
  */
 export function formatLongDate(date, { year = false } = {}) {
-  return (year ? dateWithYear : longDate).format(utcDate(date));
+  return formatCalendarDate(
+    date,
+    year
+      ? { month: 'long', day: 'numeric', year: 'numeric' }
+      : { weekday: 'long', month: 'long', day: 'numeric' },
+  );
 }
 
 /**

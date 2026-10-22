@@ -1,11 +1,12 @@
-// The words the error states share (#18), kept in one file so the i18n work
-// (#19) can move them to en.json without touching the markup.
-export const copy = {
-  retry: 'Try again',
-  retrying: 'Trying again...',
+// The words the error states share (#18). The text is in src/i18n/en.json (#19).
+import { translated } from '../../i18n/index.js';
+
+export const copy = translated((t) => ({
+  retry: t('retry.retry'),
+  retrying: t('retry.retrying'),
   // Shown, and announced, after a lookup or a page has waited SLOW_MS.
-  slow: 'Still working... This is taking longer than usual.',
-};
+  slow: t('retry.slow'),
+}));
 
 /** Whether the browser says it has no network connection. */
 export function isOffline() {

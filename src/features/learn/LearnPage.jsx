@@ -2,10 +2,10 @@ import { useEffect, useRef } from 'react';
 import { Link } from 'wouter';
 import election from '../../config/election.js';
 import { TOPIC_GROUPS } from './groups.js';
-import { learnCopy } from './learnCopy.js';
+import { getLocale } from '../../i18n/index.js';
+import { copy } from './learnCopy.js';
 import { getTopics } from './topics.js';
 
-const copy = learnCopy.en;
 const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
 
 // The "How to vote" index (#23): every topic, by group. Until the first topic
@@ -13,7 +13,7 @@ const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
 // and the address lookup instead.
 export default function LearnPage() {
   const headingRef = useRef(null);
-  const topics = getTopics();
+  const topics = getTopics(getLocale());
 
   // Links to this page sit low on other pages, so move focus (and the scroll
   // position) to the heading on arrival.

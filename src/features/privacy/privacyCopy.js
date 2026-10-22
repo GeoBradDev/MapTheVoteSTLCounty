@@ -1,12 +1,12 @@
-// The privacy notice (issue #20), kept in one file so the i18n work (#19) can
-// move it to en.json without touching the markup. It must stay true of the
-// code: when the app starts calling a new service, or changes what it sends or
-// keeps, change this notice in the same change. PrivacyPage.test.jsx fails when
+// The privacy notice (issue #20). The text is in src/i18n/en.json (#19). It
+// must stay true of the code: when the app starts calling a new service, or
+// changes what it sends or keeps, change this notice in the same change. PrivacyPage.test.jsx fails when
 // render.yaml's connect-src allows an origin this notice does not name.
 import election from '../../config/election.js';
 import { CITY_GEOCODER_URL } from '../../data/cityAddress.js';
 import { HOSTED_URL, LIVE_URL } from '../../data/countyAddress.js';
 import { attribution } from '../../data/geocoder.js';
+import { translated } from '../../i18n/index.js';
 import { BASEMAP_STYLE_URL } from '../lookup/basemap.js';
 
 const host = (url) => new URL(url).host;
@@ -28,52 +28,57 @@ export const hosts = Object.freeze({
   basemap: host(BASEMAP_STYLE_URL),
 });
 
-export const copy = {
-  heading: 'Privacy',
-  intro:
-    'This site helps you find your precinct, polling places and sample ballot. It has no accounts, no analytics and no server of its own: your browser talks straight to the public services below. Here is what each one gets, and what this site never keeps.',
+export const copy = translated((t) => ({
+  heading: t('privacy.heading'),
+  intro: t('privacy.intro'),
 
   never: {
-    heading: 'What this site never does',
+    heading: t('privacy.never.heading'),
     items: [
-      "It never saves your address or your location: they are not put in the page address (URL), in browser storage, in cookies or in your browser's cache. Your browser history and cache do keep the precinct pages you open, like /p/CC007.",
-      'It has no analytics, ads or tracking, and sets no cookies.',
-      'A shared link holds only your precinct code, like /p/CC007, never your address.',
+      t('privacy.never.noSaving'),
+      t('privacy.never.noTracking'),
+      t('privacy.never.sharedLink'),
     ],
   },
 
   sent: {
-    heading: 'What is sent where',
-    intro:
-      'Each service below sees your IP address, as any website you visit does, and keeps its own logs under its own policy.',
+    heading: t('privacy.sent.heading'),
+    intro: t('privacy.sent.intro'),
     items: [
       {
-        heading: 'Address search',
-        text: `What you type in the address box goes first to St. Louis County's address points (${hosts.countyAddresses}), or to the county's copy of them on Esri's ArcGIS Online (${hosts.countyAddressesCopy}) when the first cannot be reached. The county gets it in the body of the request, not in its web address. It also goes to ${openSearch.service} by ${openSearch.serviceBy} (${hosts.openSearch}) when the county has no match or cannot be reached; ${openSearch.service} gets it as part of the request's web address. When you search for an address and it is found outside St. Louis City, its house number and street (not the town, ZIP code or unit) also go to the City of St. Louis's address search (${hosts.cityAddresses}), in the body of the request, to check that the City does not have the same address. It is skipped when you typed a ZIP code that is entirely outside the City, or when the address was found in another county. Suggestions are looked up as you type, so the county and ${openSearch.service} get each part of the address as you type it; the City gets only the address you search for. Your browser does not keep any of these requests or their answers in its cache.`,
+        heading: t('privacy.sent.addressSearch.heading'),
+        text: t('privacy.sent.addressSearch.text', {
+          countyAddresses: hosts.countyAddresses,
+          countyAddressesCopy: hosts.countyAddressesCopy,
+          service: openSearch.service,
+          serviceBy: openSearch.serviceBy,
+          openSearch: hosts.openSearch,
+          cityAddresses: hosts.cityAddresses,
+        }),
       },
       {
-        heading: 'Finding your precinct',
-        text: `The point where your address was found, or your device's location if you choose Use my location, goes to St. Louis County's election maps on Esri's ArcGIS Online (${hosts.electionMaps}), in the body of the request, not in its web address. When the address you type has several entries in the county's address points, like the units of an apartment building, the points of all of them go there first, the same way, to check that they are in one precinct. Your browser does not keep these requests or their answers in its cache. Opening a shared link sends only the precinct code.`,
+        heading: t('privacy.sent.findingPrecinct.heading'),
+        text: t('privacy.sent.findingPrecinct.text', { electionMaps: hosts.electionMaps }),
       },
       {
-        heading: 'Use my location',
-        text: 'Your browser asks for your permission before it shares your location with this site, unless you allowed it before. The site uses it only to find your precinct, mark it on the map and list the nearest places to vote.',
+        heading: t('privacy.sent.useMyLocation.heading'),
+        text: t('privacy.sent.useMyLocation.text'),
       },
       {
-        heading: 'The map',
-        text: `The map's streets and labels come from OpenFreeMap (${hosts.basemap}). Those requests show which area is on screen: your precinct and the polling places near it.`,
+        heading: t('privacy.sent.map.heading'),
+        text: t('privacy.sent.map.text', { basemap: hosts.basemap }),
       },
       {
-        heading: 'This website',
-        text: 'Render, which hosts this site, sees the address of each page your browser loads from it, like /p/CC007, as any web host does.',
+        heading: t('privacy.sent.website.heading'),
+        text: t('privacy.sent.website.text'),
       },
     ],
   },
 
   links: {
-    heading: 'Links to other sites',
-    text: "Links to other sites, like the county's, take you to those sites. They are not told which page of this site you came from.",
+    heading: t('privacy.links.heading'),
+    text: t('privacy.links.text'),
   },
 
-  backHome: 'Back to home',
-};
+  backHome: t('privacy.backHome'),
+}));

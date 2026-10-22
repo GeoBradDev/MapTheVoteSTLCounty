@@ -1,4 +1,5 @@
 import { Link } from 'wouter';
+import { formatCalendarDate } from '../../i18n/index.js';
 import { learnCopy } from './learnCopy.js';
 
 // Renders one voter education topic (#21) from the JSON node tree the build
@@ -36,12 +37,6 @@ function sections(blocks) {
     else result.at(-1).blocks.push(block);
   }
   return result.filter((section) => section.heading || section.blocks.length);
-}
-
-function formatDate(isoDate, locale) {
-  return new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(
-    new Date(`${isoDate}T00:00:00Z`),
-  );
 }
 
 function Inline({ nodes, topic, copy }) {
@@ -170,7 +165,9 @@ export default function TopicArticle({ topic, headingRef }) {
           ))}
         </ol>
         <p className="mt-4 text-sm">
-          {copy.lastVerified(formatDate(topic.lastVerified, topic.locale))}
+          {copy.lastVerified(
+            formatCalendarDate(topic.lastVerified, { dateStyle: 'long' }, topic.locale),
+          )}
         </p>
       </section>
     </article>

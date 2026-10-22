@@ -1,18 +1,18 @@
 import { useEffect, useRef } from 'react';
 import { Link, useParams } from 'wouter';
 import NotFoundPage from '../../components/NotFoundPage.jsx';
-import { learnCopy } from './learnCopy.js';
+import { getLocale } from '../../i18n/index.js';
+import { copy } from './learnCopy.js';
 import TopicArticle from './TopicArticle.jsx';
 import { getTopic } from './topics.js';
 
-const copy = learnCopy.en;
 const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
 
 // One "How to vote" topic (#23) at /learn/<id>, or the not-found page for an
 // id with no topic.
 export default function LearnTopicPage() {
   const { topic: id } = useParams();
-  const topic = getTopic(id);
+  const topic = getTopic(id, getLocale());
   const headingRef = useRef(null);
   const articleRef = useRef(null);
   const found = topic?.id;

@@ -8,6 +8,8 @@ import LearnTopicPage from './features/learn/LearnTopicPage.jsx';
 import HomePage from './features/lookup/HomePage.jsx';
 import PrecinctPage from './features/lookup/PrecinctPage.jsx';
 import PrivacyPage from './features/privacy/PrivacyPage.jsx';
+import { t, useLocale } from './i18n/index.js';
+import LanguageSwitcher from './i18n/LanguageSwitcher.jsx';
 
 // The path as wouter reports it: decoded with decodeURI, or as is when that fails.
 function decodedPath() {
@@ -59,18 +61,20 @@ function usePageArrival() {
 export default function App() {
   usePageArrival();
   const [location] = useLocation();
+  // A new language re-renders every page in it (#19).
+  const locale = useLocale();
   return (
     <div className="flex min-h-screen flex-col bg-surface text-ink">
       <a
         href="#main"
         className="sr-only rounded-md bg-primary font-semibold text-on-primary focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-20 focus:inline-flex focus:min-h-11 focus:items-center focus:px-4 focus:py-2"
       >
-        Skip to main content
+        {t('app.skipLink')}
       </a>
       <main id="main" tabIndex={-1} className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
         {/* A page that throws shows a way forward, not a blank screen (#18);
-            a new location starts fresh. */}
-        <ErrorBoundary key={location}>
+            a new location, or a new language, starts fresh. */}
+        <ErrorBoundary key={`${locale} ${location}`}>
           <Switch>
             <Route path="/" component={HomePage} />
             <Route path="/p/:precinct" component={PrecinctPage} />
@@ -81,6 +85,7 @@ export default function App() {
           </Switch>
         </ErrorBoundary>
       </main>
+      <LanguageSwitcher />
       <SiteFooter />
     </div>
   );

@@ -362,8 +362,8 @@ the early voting card to the `absentee` topic, each only once that topic exists
 `src/features/learn/learnA11y.test.jsx` runs axe on the pages with fixture topics.
 
 Translations (#19): put a topic with the same `id` under another locale, such as
-`content/es/learn/voter-id.md`, and add that locale's labels to
-`src/features/learn/learnCopy.js`. A locale shows the English topic until its own exists.
+`content/es/learn/voter-id.md`. A locale shows the English topic until its own exists. The
+labels around a topic are in that locale's messages (see [Languages](#languages)).
 
 `node scripts/check-content-links.mjs` requests every source and link in every topic, and every
 page `src/config/election.js` links (each `sources` entry and each value whose key ends in `Url`
@@ -375,6 +375,22 @@ challenge, which only a browser gets past, is a SKIP: it does not fail the run, 
 must open the URL in a browser. Any other `403` fails. It exits 1 on any failure;
 `--skipped <file>` writes the skipped URLs to a file. The data health workflow runs it daily
 (see below), never on pull requests.
+
+## Languages
+
+Every word the app shows is in `src/i18n/en.json` and reaches the page through `t()`
+(`src/i18n/index.js`), mostly by way of the copy module next to each feature, such as
+`src/features/lookup/resultsCopy.js`. Messages fill in `{name}` values and pick plurals with
+`{count, plural, one {...} other {...}}`. Values from the county's data, such as district
+names, and election values from `src/config/election.js` are shown as they are. ESLint's
+`react/jsx-no-literals` fails on words typed straight into JSX.
+
+To add a language, such as Spanish: copy `en.json` to `src/i18n/es.json`, translate the
+values (keep the keys and the `{...}` names), and add its line to `LOCALES` in
+`src/i18n/config.js`. A key it lacks falls back to English. The language switcher appears once
+there are two languages; choosing one loads its file and sets `<html lang>`. The site always
+starts in English. Dates are formatted for the language in the election's time zone,
+`America/Chicago`.
 
 ## Data health check
 

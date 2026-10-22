@@ -1,18 +1,17 @@
-// All the "Use my location" text, kept in one file so the i18n work (#19) can
-// move it to en.json without touching the markup.
-export const copy = {
-  button: 'Use my location',
-  busy: 'Finding your location...',
-  privacy: 'Your location is used only to find your precinct. This site does not save it.',
-  notHome:
-    'Results are for where your device is now, which may not be your home address. Your ballot is based on the address where you are registered to vote.',
+// All the "Use my location" text. The text is in src/i18n/en.json (#19).
+import { translated } from '../../i18n/index.js';
+
+export const copy = translated((t) => ({
+  button: t('useMyLocation.button'),
+  busy: t('useMyLocation.busy'),
+  privacy: t('useMyLocation.privacy'),
+  notHome: t('useMyLocation.notHome'),
   errors: {
-    denied: 'Location access was not allowed. Type your address instead.',
-    timeout: 'Finding your location took too long. Try again, or type your address instead.',
-    unavailable: 'Your location could not be found. Try again, or type your address instead.',
-    insecure: 'Location works only on a secure (HTTPS) page. Type your address instead.',
-    unsupported: 'This browser cannot share your location. Type your address instead.',
-    coarse:
-      'Your device could only estimate your location roughly, so it might show the wrong precinct. Try again, or type your address instead.',
+    denied: t('useMyLocation.errors.denied'),
+    timeout: t('useMyLocation.errors.timeout'),
+    unavailable: t('useMyLocation.errors.unavailable'),
+    insecure: t('useMyLocation.errors.insecure'),
+    unsupported: t('useMyLocation.errors.unsupported'),
+    coarse: t('useMyLocation.errors.coarse'),
   },
-};
+}));
