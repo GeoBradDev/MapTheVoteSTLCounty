@@ -78,7 +78,7 @@ workflow), never in CI:
 ```sh
 node scripts/inspect-data.mjs         # dump the county layers' schemas and samples to docs/raw/
 node scripts/record-fixtures.mjs      # re-record the live responses the tests use (docs/raw/fixtures/)
-node scripts/check-config.mjs         # check the layers src/config/election.js names (Data health check)
+node scripts/check-config.mjs         # check the County layers src/config/election.js names (Data health check)
 node scripts/check-geocoder.mjs       # check address search end to end (Address search)
 node scripts/check-content-links.mjs  # request every source and link (Learn content)
 npm run smoke -- <url>                # check a deploy (Smoke test)
@@ -386,9 +386,10 @@ those from the config too. Text under `content/` may repeat them.
 
 The config holds the shared election values and one block per jurisdiction, `county` and
 `city` (#86). The default export still reads as the County block for code that serves only
-County voters; the results page reads its jurisdiction's block and data through
-`src/data/jurisdictions.js`, picked from the precinct code's shape (`/p/CC007` is the County,
-`/p/W01P12` the City; [docs/data.md](docs/data.md#jurisdictions-and-precinct-codes)). The
+County voters. The results page gets its jurisdiction's data adapter and official lookup link
+from `src/data/jurisdictions.js`, picked from the precinct code's shape (`/p/CC007` is the County,
+`/p/W01P12` the City; [docs/data.md](docs/data.md#jurisdictions-and-precinct-codes)); its
+other links still read the County values until the City results land (#87, #93). The
 test also fails on a City block's layer, service or field name written outside the config.
 
 The polling places layer the app keeps in memory (`getPolls` and `getAbsenteeSites`) has a max
@@ -516,7 +517,8 @@ in it, keeping focus and what the page has loaded. The site always starts in Eng
 
 ## Data health check
 
-Before each election, after editing `src/config/election.js`, check the live layers it names:
+Before each election, after editing `src/config/election.js`, check the live County layers it
+names (the City block's layers are checked here once the City results use them, #87):
 
 ```sh
 node scripts/check-config.mjs [--layer <key>=<path>] [--ballot-sample <n|all>] [--warnings <file>]

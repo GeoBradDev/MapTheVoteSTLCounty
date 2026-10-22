@@ -794,7 +794,8 @@ Two digits each leaves room for a ward or precinct number up to 99. The rest of 
 layers (#57) are for #87.
 
 `src/config/election.js` holds the shared election values and one block per jurisdiction
-(`county`, `city`), each with its `id`, display name, board, service root and layers. The
+(`county`, `city`), each with its `id`, display name, board, service root, layers and
+`sources` (each layer's own description, which the daily link check asks). The
 City block holds only what is confirmed. The City board's site and lookup page (its polling
 places page, with the Assigned Polling Place Lookup) do not change between elections, so they
 are in `src/config/referrals.js`. `src/data/jurisdictions.js` pairs each block with its data:
