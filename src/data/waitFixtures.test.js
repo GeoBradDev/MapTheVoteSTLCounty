@@ -25,7 +25,7 @@ const dayOf = (ms) => zonedNow(ms, timeZone).date;
 const minutesOf = (time) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3));
 const rows = (body) => body.features.map((f) => f.attributes);
 
-describe('County wait fixtures (Voters_in_Line_View)', () => {
+describe('County wait fixtures (the County line count view)', () => {
   it('fresh: real reports with the fields the client reads', () => {
     expect(countyFresh.error).toBeUndefined();
     expect(countyFresh.features.length).toBeGreaterThan(0);

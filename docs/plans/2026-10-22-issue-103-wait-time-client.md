@@ -35,8 +35,8 @@ From the issue, with the owner's #102 findings (comment on #103, 2026-10-22) app
    field (`earlyvotingoperhours`), `returnGeometry=false`. Never `outFields=*`.
 4. Every entry has the shape
    `{ siteId, jurisdiction: 'county' | 'city', unit, value, reportedAt: Date, source, openUntil: Date }`.
-   The County reports people in line. The City unit is an open owner question; it is
-   `'people'` in config for now, per the City Board's dashboard. The unit comes from
+   Both report people in line (the City unit by owner decision, 2026-10-22, matching the
+   City Board's dashboard), so `unit` is `'people'` for both. The unit comes from
    config and is never converted. `openUntil` (added) is when the site closes
    today, so a kept entry can be dropped at closing without the schedule.
 5. An entry is returned only when: its value is a non-negative integer; `reportedAt` is
@@ -159,9 +159,9 @@ config move (#86).
   `last_edited_date_1740505041182` matched it on every site. The query also asks for
   `comments` and `earlyvotingoperhours`, beyond the owner's field list, because the
   open-now gate and the dashboard's "poll closed" rule need them (neither holds contact
-  data). The City unit is not settled (owner question on #102): it stays one config value,
-  `unit: 'people'` for now, following the City Board's own dashboard ("Estimated People
-  in Line", item `8548fe3a065a455182181399909102ef`, re-read on 2026-10-22). Nothing
-  shows City values until #104.
+  data). The City unit was open (owner question on #102) and kept as one config value,
+  `unit: 'people'`, following the City Board's own dashboard ("Estimated People in
+  Line", item `8548fe3a065a455182181399909102ef`, re-read on 2026-10-22). The owner then
+  decided people in line (coordinator message, 2026-10-22); the config comments say so.
 - Review (finder 3): a reader mounting after the clock moved back asks at once instead of
   waiting out a negative elapsed time.
