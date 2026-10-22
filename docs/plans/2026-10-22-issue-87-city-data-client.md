@@ -58,10 +58,13 @@ style changes. dataviz, django and the rest: not applicable because no charts or
    point; `src/test/checkConfig.test.js` fails if it does not.
 8. Fixtures in `docs/raw/fixtures/` recorded with `scripts/record-fixtures.mjs`, using the
    app's field lists (never `*` on City layers that hold contact fields).
-9. The City adapter in `src/data/jurisdictions.js` reads the City layers for the polls,
-   early voting sites and outline through a lazy import, so the City client stays out of
-   the first load. Its `getPrecinct` stays "not found" until #89, because the results
-   cards still carry County text and rules.
+9. `src/data/jurisdictions.js` exports `loadCityClient()`, a lazy import of the City
+   client, so it stays out of the first load. The City adapter's four functions stay "not
+   found" with no request until #89: the results cards still carry County text and rules,
+   and the page prefetches the polls and outline before the precinct answers, so wiring
+   them now would fetch City layers for a page that shows none of them
+   (`PrecinctPage.test.jsx` guards this). Revised during implementation: the plan first
+   wired the polls, early voting sites and outline.
 10. `docs/data.md` "St. Louis City" section records every layer, field, filter and the
     evidence above, so #57 can close by pointing at it.
 11. `docs/progress.md` gets the coordinator's #86 line under Batch 4.
@@ -99,9 +102,6 @@ style changes. dataviz, django and the rest: not applicable because no charts or
 - 7 of the 56 have no `pollingPlaceZipCode`; the cards show no ZIP for them.
 - First-load budget: the City client must be its own chunk. `src/test/build.test.js`
   guards it.
-- Wiring the adapter's polls and outline while `getPrecinct` is a stub means a City link
-  prefetches City layers before showing "not found". No voter data is sent; #89 replaces
-  the stub.
 
 ## Proof
 

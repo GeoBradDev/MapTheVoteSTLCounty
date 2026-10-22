@@ -5,7 +5,12 @@
 // The early voting wait fixtures (county-waits-*.json, city-waits-*.json) are
 // not recorded here: a useful fresh fixture needs reports made during open
 // hours, so they are recorded by hand then (docs/data.md, Wait times).
-// Usage: node scripts/record-fixtures.mjs
+// The City layers (#87) are asked only for the fields the app reads, never `*`:
+// the districts and voting locations layers also hold officeholder and staff
+// contact fields.
+// Usage: node scripts/record-fixtures.mjs [<file name prefix>]
+//   With a prefix, only the fixtures whose file names start with it, like
+//   `city-` for the City layers' fixtures.
 
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -53,6 +58,24 @@ const cityQuery = (street) => ({
   outSR: '4326',
   f: 'json',
 });
+
+// The City Board's layers (#87).
+const cityConfig = election.jurisdictions.city;
+const cityLayer = (key) => `${cityConfig.serviceRoot}/${cityConfig.layers[key]}/query`;
+const cityPointQuery = (key, [lng, lat], outFields, where) => ({
+  ...(where ? { where } : {}),
+  ...pointQuery(lng, lat),
+  outFields,
+});
+const cityDistrictFields = Object.values(cityConfig.districtLayerFields).join(',');
+const citySites = (where) => ({
+  where,
+  outFields: Object.values(cityConfig.siteFields).join(','),
+  outSR: '4326',
+  geometryPrecision: '6',
+  f: 'geojson',
+});
+const COUNTY_POINT = [-90.33, 38.62];
 
 const byId = (code) => ({
   where: `precinct='${code}'`,
@@ -106,12 +129,57 @@ const FIXTURES = {
   'city-geocode-ross-ave.json': [cityFind, cityQuery('1318 Ross Ave')],
   // Washington University: the county and the City both list it in 63130.
   'city-geocode-brookings-dr.json': [cityFind, cityQuery('1 Brookings Dr')],
+  // The City's layers, at City Hall and at a county point (#87).
+  'city-precinct-at-point.json': [
+    cityLayer('precincts'),
+    cityPointQuery('precincts', CITY, cityConfig.precinctField),
+  ],
+  'city-precinct-at-county.json': [
+    cityLayer('precincts'),
+    cityPointQuery('precincts', COUNTY_POINT, cityConfig.precinctField),
+  ],
+  'city-precinct-by-id.json': [
+    cityLayer('precincts'),
+    {
+      where: `${cityConfig.precinctField}='W 1 P 12'`,
+      outFields: cityConfig.precinctField,
+      returnGeometry: 'false',
+      f: 'json',
+    },
+  ],
+  'city-precinct-geometry.json': [
+    cityLayer('precincts'),
+    {
+      where: `${cityConfig.precinctField}='W 1 P 12'`,
+      outFields: cityConfig.precinctField,
+      returnGeometry: 'true',
+      outSR: '4326',
+      maxAllowableOffset: '0.0001',
+      f: 'geojson',
+    },
+  ],
+  'city-districts-at-point.json': [
+    cityLayer('districts'),
+    cityPointQuery('districts', CITY, cityDistrictFields),
+  ],
+  'city-polls.json': [cityLayer('sites'), citySites(cityConfig.pollsWhere)],
+  'city-early-voting-sites.json': [cityLayer('sites'), citySites(cityConfig.earlyVotingWhere)],
+  'city-boundary-inside.json': [
+    cityLayer('boundary'),
+    cityPointQuery('boundary', CITY, 'OBJECTID', cityConfig.boundaryWhere),
+  ],
+  'city-boundary-at-county.json': [
+    cityLayer('boundary'),
+    cityPointQuery('boundary', COUNTY_POINT, 'OBJECTID', cityConfig.boundaryWhere),
+  ],
   // An invalid field: ArcGIS answers HTTP 200 with an error body.
   'error-body.json': [precincts, { where: 'no_such_field=1', f: 'json' }],
 };
 
+const prefix = process.argv[2] ?? '';
 await mkdir(OUT_DIR, { recursive: true });
 for (const [file, [url, params]] of Object.entries(FIXTURES)) {
+  if (!file.startsWith(prefix)) continue;
   const res = await fetch(`${url}?${new URLSearchParams(params)}`);
   if (!res.ok) throw new Error(`${res.status} ${file}`);
   const body = await res.json();

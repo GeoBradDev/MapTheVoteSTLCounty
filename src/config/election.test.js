@@ -132,6 +132,24 @@ describe('jurisdictions (#86)', () => {
     expect(jurisdictions.city.precinctField).toMatch(/^\w+$/);
   });
 
+  it('names the City layers, their fields and filters (#87)', () => {
+    const { city } = jurisdictions;
+    for (const key of ['precincts', 'districts', 'sites', 'boundary']) {
+      expect(city.layers[key], key).toMatch(/^\w+\/FeatureServer\/\d+$/);
+    }
+    for (const fields of [city.districtLayerFields, city.siteFields]) {
+      for (const field of Object.values(fields)) expect(field).toMatch(/^\w+$/);
+    }
+    expect(Object.keys(city.districtLayerFields).sort()).toEqual(['id', 'name', 'office']);
+    expect(Object.keys(city.siteFields).sort()).toEqual(['address', 'id', 'name', 'zip']);
+    for (const key of ['pollsWhere', 'earlyVotingWhere', 'boundaryWhere']) {
+      expect(city[key], key).toMatch(/\S/);
+    }
+    // Every named layer is cited by its own description, once.
+    const cited = Object.values(city.layers).map((l) => `${city.serviceRoot}/${l}?f=pjson`);
+    expect([...city.sources].sort()).toEqual([...new Set(cited)].sort());
+  });
+
   it('is frozen', () => {
     expect(Object.isFrozen(jurisdictions.city)).toBe(true);
     expect(Object.isFrozen(jurisdictions.city.layers)).toBe(true);

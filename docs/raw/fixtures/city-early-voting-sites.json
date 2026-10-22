@@ -1,0 +1,139 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "EPSG:4326"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.294904,
+          38.590357
+        ]
+      },
+      "properties": {
+        "facilityid": "Buder_Library",
+        "name": "Buder Library",
+        "fulladdr": "4401 Hampton Ave",
+        "pollingPlaceZipCode": "63109"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.243508,
+          38.596535
+        ]
+      },
+      "properties": {
+        "facilityid": "Carpenter_Library",
+        "name": "Carpenter Branch Library",
+        "fulladdr": "3309 S Grand Blvd",
+        "pollingPlaceZipCode": "63118"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.266808,
+          38.612824
+        ]
+      },
+      "properties": {
+        "facilityid": "Kingshighway_Branch_Library",
+        "name": "Kingshighway Branch Library",
+        "fulladdr": "2260 S Vandeventer Ave",
+        "pollingPlaceZipCode": "63110"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.262087,
+          38.643968
+        ]
+      },
+      "properties": {
+        "facilityid": "Schlafly_Library",
+        "name": "Schlafly Library",
+        "fulladdr": "225 N Euclid Ave",
+        "pollingPlaceZipCode": "63108"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.247233,
+          38.703658
+        ]
+      },
+      "properties": {
+        "facilityid": "Walnut_Park_Library",
+        "name": "Walnut Park Library",
+        "fulladdr": "5760 W Florissant Ave",
+        "pollingPlaceZipCode": "63120"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.196991,
+          38.629893
+        ]
+      },
+      "properties": {
+        "facilityid": "St._Louis_City_Election_Board",
+        "name": "St. Louis City Board of Elections",
+        "fulladdr": "300 N Tucker Blvd",
+        "pollingPlaceZipCode": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.236846,
+          38.670353
+        ]
+      },
+      "properties": {
+        "facilityid": "Julia_Davis",
+        "name": "Julia Davis Library",
+        "fulladdr": "4415 Natural Bridge Ave",
+        "pollingPlaceZipCode": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.292335,
+          38.597177
+        ]
+      },
+      "properties": {
+        "facilityid": "St._Joan_of_Arc",
+        "name": "St. Joan of Arc",
+        "fulladdr": "5821 Pernod Ave",
+        "pollingPlaceZipCode": null
+      }
+    }
+  ]
+}

@@ -73,6 +73,14 @@
  * @property {string[]} sources Each named layer's own description.
  * @property {string} [precinctField] The precincts layer's code field (the
  *   City's; the County's is `precinct`, read by src/data/arcgis.js).
+ * @property {{ office: string, name: string, id: string }} [districtLayerFields]
+ *   The City districts layer's fields the app reads (#87).
+ * @property {{ id: string, name: string, address: string, zip: string }} [siteFields]
+ *   The City voting locations layer's fields the app reads (#87).
+ * @property {string} [pollsWhere] The City's Election Day voting locations filter.
+ * @property {number} [pollsListed] How many Election Day sites the City Board lists.
+ * @property {string} [earlyVotingWhere] The City's early voting sites filter.
+ * @property {string} [boundaryWhere] The filter on `layers.boundary` for the City outline.
  * @property {string} [lastVerified]
  */
 
@@ -229,13 +237,23 @@ const county = {
   },
 };
 
-// St. Louis City (#85). Only what is confirmed so far: #87 adds the precinct
-// lookup, polling places and districts, #91 the early voting sites. The
-// precincts layer's `precinctid` reads `W <ward> P <precinct>`, like `W 1 P 12`:
-// 207 precincts in wards 1 to 14, checked on 2026-10-22 (docs/data.md).
+// St. Louis City (#85). The City Board's layers, checked live on 2026-10-22
+// (docs/data.md, "St. Louis City"). The precincts layer's `precinctid` reads
+// `W <ward> P <precinct>`, like `W 1 P 12`: 207 precincts in wards 1 to 14.
+// #91 adds the early voting hours, #89 the Election Day rule.
 const cityServiceRoot = 'https://services6.arcgis.com/HZXbCkpCSqbGd0vK/ArcGIS/rest/services';
+const cityGeography = 'ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer';
 const cityLayers = {
-  precincts: 'ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/1',
+  precincts: `${cityGeography}/1`,
+  // One polygon per office. Never ask it for `*`: it also holds officeholder
+  // names, photos, parties and contact details.
+  districts: `${cityGeography}/2`,
+  // The voting locations, one row per site (the wait time layer's own rows).
+  // Never ask it for `*`: it also holds staff contact fields.
+  sites: 'VotingLocations_currentwait_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/0',
+  // The citywide offices' polygons in the districts layer (`boundaryWhere`): the
+  // City Board publishes no separate boundary layer.
+  boundary: `${cityGeography}/2`,
 };
 const city = {
   id: 'city',
@@ -244,8 +262,24 @@ const city = {
   serviceRoot: cityServiceRoot,
   layers: cityLayers,
   precinctField: 'precinctid',
-  // The layers above; docs/data.md has the code shape check.
-  sources: layerSources(cityServiceRoot, cityLayers),
+  // The districts layer fields the app reads: names and numbers only (#90).
+  districtLayerFields: { office: 'electedoffice', name: 'district', id: 'districtid' },
+  // The voting location fields the app reads. 7 of the 56 Election Day sites
+  // have no ZIP on 2026-10-22.
+  siteFields: { id: 'facilityid', name: 'name', address: 'fulladdr', zip: 'pollingPlaceZipCode' },
+  // The Election Day list: the 56 sites of the City Board's polling places page
+  // ("Total 56 polling places"), which are the public rows less the Board
+  // office, an early voting site that page does not list for Election Day.
+  pollsWhere: "publicview = 'Yes' AND facilityid <> 'St._Louis_City_Election_Board'",
+  // The count that page gives; the health check warns when the filter finds
+  // another number.
+  pollsListed: 56,
+  // The 8 No Excuse Absentee sites on the same page: the City Board's own
+  // dashboard filter (waitTimes.city.where).
+  earlyVotingWhere: "publicview = 'Yes' AND earlyvoting = 'Yes'",
+  boundaryWhere: "districtid = 'City of St. Louis'",
+  // The layers above; docs/data.md has the inspection.
+  sources: [...new Set(layerSources(cityServiceRoot, cityLayers))],
   // The City board's site and lookup page do not change between elections, so
   // they are in referrals.js (src/data/jurisdictions.js pairs them with this
   // block). This file holds only what a new election changes.

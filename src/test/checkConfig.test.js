@@ -8,14 +8,22 @@ import path from 'node:path';
 import { parse } from 'yaml';
 import absenteeSites from '../../docs/raw/fixtures/absentee-sites.json';
 import { POLL_FIELDS, PRECINCT_FIELDS } from '../data/arcgis.js';
+import {
+  CITY_DISTRICT_FIELDS,
+  CITY_POLL_FIELDS,
+  CITY_PRECINCT_FIELDS,
+} from '../data/cityArcgis.js';
 import { cityFresh, cityStale, countyFresh } from '../data/waitTimes.fixtures.js';
 import election from '../config/election.js';
 import {
   BALLOT_SAMPLE_SIZE,
+  CITY_KNOWN_POINT,
+  CITY_PRECINCT_RANGE,
   KNOWN_POINTS,
   OUTSIDE_POINT,
   contentDispositionFileName,
   exitCodeFor,
+  expectedCityLayers,
   expectedLayers,
   isPastElection,
   parseArgs,
@@ -40,6 +48,7 @@ const waitLayerPath = (source) => `${source.serviceRoot}/${source.layer}`;
 const waitFields = (source, extra = []) =>
   [source.siteField, source.valueField, source.timeField, ...extra].map((name) => ({ name }));
 const councilField = election.districtFields.find((d) => d.key === 'countyCouncil').field;
+const cityConfig = election.jurisdictions.city;
 
 const ballotUrl = (i) =>
   `https://stlouiscovotes.maps.arcgis.com/sharing/rest/content/items/${i
@@ -109,9 +118,105 @@ function healthyWorld() {
       type: 'application/pdf',
       disposition: disposition(servedFileName(url)),
     }),
+    city: healthyCity(),
     calls: [],
     waitQueries: [],
+    cityQueries: [],
   };
+}
+
+// The City's layers (#87): 207 precincts in 14 wards, the Election Day list
+// and early voting sites the config expects, and City Hall where it belongs.
+function healthyCity() {
+  const { siteFields: f } = cityConfig;
+  const site = (i) => ({
+    [f.id]: `Site_${i}`,
+    [f.name]: `Site ${i}`,
+    [f.address]: `${i} Main St`,
+    [f.zip]: i % 8 ? '63101' : null,
+  });
+  const precincts = [];
+  for (let ward = 1; ward <= 14; ward += 1) {
+    for (let p = 1; p <= (ward <= 11 ? 15 : 14); p += 1) {
+      precincts.push({ [cityConfig.precinctField]: `W ${ward} P ${p}` });
+    }
+  }
+  // Layer descriptions by path. Two keys can share a path (the districts and
+  // the boundary), and the voting locations are the City wait layer's rows.
+  const layers = {};
+  for (const [key, want] of Object.entries(expectedCityLayers(election))) {
+    const path = cityConfig.layers[key];
+    const known = layers[path]?.fields ?? [];
+    layers[path] = {
+      name: `${key}_local`,
+      geometryType: want.geometryType,
+      fields: [...known, ...want.fields.map((name) => ({ name }))],
+    };
+  }
+  return {
+    layers,
+    precincts,
+    polls: Array.from({ length: cityConfig.pollsListed }, (_, i) => site(i + 1)),
+    earlyVoting: Array.from({ length: 8 }, (_, i) => site(i + 1)),
+    pointPrecinct: (lng, lat) =>
+      lng === CITY_KNOWN_POINT.lng && lat === CITY_KNOWN_POINT.lat
+        ? { [cityConfig.precinctField]: 'W 14 P 2' }
+        : null,
+    districts: (lng, lat) =>
+      lng === CITY_KNOWN_POINT.lng && lat === CITY_KNOWN_POINT.lat
+        ? [
+            {
+              [cityConfig.districtLayerFields.office]: 'Alderman',
+              [cityConfig.districtLayerFields.name]: 'Ward 14',
+              [cityConfig.districtLayerFields.id]: 'Ward 14',
+            },
+          ]
+        : [],
+    inBoundary: (lng, lat) => lng === CITY_KNOWN_POINT.lng && lat === CITY_KNOWN_POINT.lat,
+  };
+}
+
+// A City layer request, answered from the world's City layers, or undefined
+// for anything else.
+function cityAnswer(world, url) {
+  const prefix = `${cityConfig.serviceRoot}/`;
+  if (!url.href.startsWith(prefix)) return undefined;
+  const rest = url.pathname.slice(new URL(prefix).pathname.length);
+  const isQuery = rest.endsWith('/query');
+  const layerPath = isQuery ? rest.slice(0, -'/query'.length) : rest;
+  const info = world.city.layers[layerPath];
+  if (!info) return undefined;
+  const params = url.searchParams;
+  if (!isQuery) {
+    // The voting locations layer is the City wait layer too: one description.
+    const wait = world.waits[`${cityConfig.serviceRoot}/${layerPath}`]?.info;
+    return json({ ...info, ...wait, fields: [...info.fields, ...(wait?.fields ?? [])] });
+  }
+  const outFields = (params.get('outFields') ?? '').split(',');
+  if (layerPath === cityConfig.layers.sites && !outFields.includes(cityConfig.siteFields.id)) {
+    return undefined;
+  }
+  world.cityQueries.push(params);
+  const features = (rows) => json({ features: rows.map((attributes) => ({ attributes })) });
+  const geometry = params.get('geometry');
+  const [lng, lat] = geometry ? geometry.split(',').map(Number) : [];
+  const where = params.get('where');
+  if (layerPath === cityConfig.layers.precincts) {
+    if (geometry) {
+      const hit = world.city.pointPrecinct(lng, lat);
+      return features(hit ? [hit] : []);
+    }
+    return features(world.city.precincts);
+  }
+  if (layerPath === cityConfig.layers.sites) {
+    if (where === cityConfig.pollsWhere) return features(world.city.polls);
+    if (where === cityConfig.earlyVotingWhere) return features(world.city.earlyVoting);
+    return json({ error: { code: 400, message: 'Unable to complete operation.' } });
+  }
+  if (where === cityConfig.boundaryWhere) {
+    return features(world.city.inBoundary(lng, lat) ? [{ OBJECTID: 1 }] : []);
+  }
+  return features(world.city.districts(lng, lat));
 }
 
 const json = (body, status = 200) =>
@@ -133,6 +238,8 @@ function stubFetch(world) {
       if (cd) headers['content-disposition'] = cd;
       return new Response(null, { status, headers });
     }
+    const city = cityAnswer(world, url);
+    if (city) return city;
     const wait = Object.entries(world.waits).find(
       ([root]) => url.href.startsWith(`${root}?`) || url.href.startsWith(`${root}/query?`),
     );
@@ -207,7 +314,20 @@ describe('runHealthCheck', () => {
       'wait layer city',
       'wait reports county',
       'wait reports city',
+      'city layer precincts',
+      'city layer districts',
+      'city layer sites',
+      'city layer boundary',
+      'city precincts',
+      'city voting locations',
+      'city early voting sites',
+      'city known points',
     ]);
+    expect(results['city precincts'].detail).toBe('207 precincts, wards 1 to 14');
+    expect(results['city voting locations'].detail).toBe(
+      `${cityConfig.pollsListed} Election Day sites, as the City Board lists; 7 without a ZIP`,
+    );
+    expect(results['city early voting sites'].detail).toBe('8 sites');
     expect(results['precinct count'].detail).toBe('1000 precincts, 990 In Election');
     expect(results['sample ballot PDFs'].detail).toMatch(/^5 of 5/);
   });
@@ -882,12 +1002,17 @@ describe('wait time checks', () => {
     const results = await run(world, config);
     expect(results['wait layer city']).toBeUndefined();
     expect(results['wait reports city']).toBeUndefined();
-    expect(world.calls.some((c) => c.url.startsWith(city))).toBe(false);
+    // The City's voting locations (#87) are the same layer's rows, so only
+    // a wait query, one asking for the count, would be the wait check's.
+    const waitQuery = (c) =>
+      c.url.startsWith(city) &&
+      (new URL(c.url).searchParams.get('outFields') ?? '').includes(cityWait.valueField);
+    expect(world.calls.some(waitQuery)).toBe(false);
     expect(results['wait reports county'].status).toBe('pass');
 
     const off = healthyWorld();
     await run(off, { ...election, waitTimes: { ...election.waitTimes, enabled: false } });
-    expect(off.calls.some((c) => c.url.startsWith(county) || c.url.startsWith(city))).toBe(false);
+    expect(off.calls.some((c) => c.url.startsWith(county) || waitQuery(c))).toBe(false);
   });
 });
 
@@ -1146,9 +1271,120 @@ describe('data health workflow', () => {
   });
 });
 
+describe('the City layers (#87)', () => {
+  it('fails a City layer missing a field the app reads, and skips what needs it', async () => {
+    const world = healthyWorld();
+    const info = world.city.layers[cityConfig.layers.precincts];
+    info.fields = info.fields.filter((f) => f.name !== cityConfig.precinctField);
+    const results = await run(world);
+    expect(results['city layer precincts']).toMatchObject({ status: 'fail' });
+    expect(results['city layer precincts'].detail).toContain(
+      `missing fields ${cityConfig.precinctField}`,
+    );
+    expect(results['city precincts'].status).toBe('skip');
+    expect(results['city known points'].status).toBe('skip');
+    expect(results['city voting locations'].status).toBe('pass');
+  });
+
+  it('fails a wrong City layer path, naming the config key', async () => {
+    const config = {
+      ...election,
+      jurisdictions: {
+        ...election.jurisdictions,
+        city: { ...cityConfig, layers: { ...cityConfig.layers, sites: 'Nope/FeatureServer/0' } },
+      },
+    };
+    const results = await run(healthyWorld(), config);
+    expect(results['city layer sites'].status).toBe('fail');
+    expect(results['city layer sites'].detail).toMatch(
+      /^jurisdictions\.city\.layers\.sites \(Nope\/FeatureServer\/0\): /,
+    );
+    expect(results['city voting locations'].status).toBe('skip');
+    expect(results['city early voting sites'].status).toBe('skip');
+  });
+
+  it('fails on a precinct ID the app cannot read, a repeated one, or a count out of range', async () => {
+    const odd = healthyWorld();
+    odd.city.precincts[3] = { [cityConfig.precinctField]: 'Ward 1 Precinct 4' };
+    odd.city.precincts[4] = { ...odd.city.precincts[5] };
+    const { status, detail } = (await run(odd))['city precincts'];
+    expect(status).toBe('fail');
+    expect(detail).toBe('"Ward 1 Precinct 4" is not a City precinct ID; W01P06 appears twice');
+
+    const few = healthyWorld();
+    few.city.precincts = few.city.precincts.slice(0, 20);
+    const { min, max } = CITY_PRECINCT_RANGE;
+    expect((await run(few))['city precincts'].detail).toBe(`20 precincts, want ${min} to ${max}`);
+  });
+
+  it('fails when a site filter finds nothing, and warns when the list is not the expected count', async () => {
+    const empty = healthyWorld();
+    empty.city.polls = [];
+    empty.city.earlyVoting = [];
+    const results = await run(empty);
+    expect(results['city voting locations']).toMatchObject({
+      status: 'fail',
+      detail: `pollsWhere (${cityConfig.pollsWhere}) returns no sites`,
+    });
+    expect(results['city early voting sites']).toMatchObject({
+      status: 'fail',
+      detail: `earlyVotingWhere (${cityConfig.earlyVotingWhere}) returns no sites`,
+    });
+
+    const more = healthyWorld();
+    more.city.polls.push({ ...more.city.polls[0], [cityConfig.siteFields.id]: 'Board' });
+    const { status, detail } = (await run(more))['city voting locations'];
+    expect(status).toBe('warn');
+    expect(detail).toContain(
+      `${cityConfig.pollsListed + 1} Election Day sites, but the City Board lists ` +
+        `${cityConfig.pollsListed} (pollsListed)`,
+    );
+  });
+
+  it('fails a site with no id, name or address, or a repeated id', async () => {
+    const world = healthyWorld();
+    const { siteFields: f } = cityConfig;
+    world.city.polls[0] = { ...world.city.polls[0], [f.name]: ' ' };
+    world.city.polls[1] = { ...world.city.polls[1], [f.id]: world.city.polls[2][f.id] };
+    const { status, detail } = (await run(world))['city voting locations'];
+    expect(status).toBe('fail');
+    expect(detail).toBe('Site_1: no name; Site_3: id repeated');
+  });
+
+  it('fails when City Hall is not in a City precinct, a ward or the outline, or a county point is', async () => {
+    const world = healthyWorld();
+    world.city.pointPrecinct = (lng) =>
+      lng === KNOWN_POINTS[0].lng ? { [cityConfig.precinctField]: 'W 1 P 1' } : null;
+    world.city.districts = () => [];
+    world.city.inBoundary = (lng) => lng === KNOWN_POINTS[0].lng;
+    const { status, detail } = (await run(world))['city known points'];
+    expect(status).toBe('fail');
+    expect(detail).toBe(
+      `${CITY_KNOWN_POINT.name}: no City precinct; ${CITY_KNOWN_POINT.name}: no ward; ` +
+        `${CITY_KNOWN_POINT.name}: outside the City outline; ` +
+        `${KNOWN_POINTS[0].name}: in City precinct W 1 P 1; ` +
+        `${KNOWN_POINTS[0].name}: inside the City outline`,
+    );
+  });
+
+  it('asks the City layers only for the fields the app reads, never *', async () => {
+    const world = healthyWorld();
+    await run(world);
+    expect(world.cityQueries.length).toBeGreaterThan(0);
+    for (const params of world.cityQueries) expect(params.get('outFields')).not.toBe('*');
+  });
+});
+
 // The app asks ArcGIS for named fields (#27), and a query naming a field the
 // layer lacks fails outright, so the health check must check every one.
 describe('the fields the app asks for', () => {
+  it('are all checked by the health check, County and City (#87)', () => {
+    const city = expectedCityLayers(election);
+    expect(city.precincts.fields).toEqual(expect.arrayContaining([...CITY_PRECINCT_FIELDS]));
+    expect(city.sites.fields).toEqual(expect.arrayContaining([...CITY_POLL_FIELDS]));
+    expect(city.districts.fields).toEqual(expect.arrayContaining([...CITY_DISTRICT_FIELDS]));
+  });
+
   it('are all checked by the health check', () => {
     const want = expectedLayers(election);
     expect(want.precincts.fields).toEqual(expect.arrayContaining([...PRECINCT_FIELDS]));

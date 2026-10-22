@@ -33,12 +33,12 @@ function electionValues(config = election) {
       config.sampleBallotUrlPattern?.source,
     ].filter(Boolean),
   );
-  // The City block's field names too (#86): City code reads them from the
-  // config, never from a literal. County field names are not collected: many
+  // The City block's field names (#86) and filters (#87) too: City code reads
+  // them from the config, never from a literal. County field names are not collected: many
   // are common words (`ward`, `precinct`) used across the app.
   const cityFields = config.jurisdictions?.city ?? {};
   for (const [key, value] of Object.entries(cityFields)) {
-    if (key.endsWith('Field') && typeof value === 'string') values.add(value);
+    if (/(Field|Where)$/.test(key) && typeof value === 'string') values.add(value);
   }
   (function walk(value, key) {
     if (key === 'lastVerified') return;
@@ -82,6 +82,11 @@ describe('election-specific values', () => {
     expect(values).toContain(city.layers.precincts);
     expect(values).toContain(city.layers.precincts.split('/')[0]);
     expect(values).toContain(city.precinctField);
+  });
+
+  it("collects the City block's filters (#87)", () => {
+    const values = electionValues({ jurisdictions: { city: { pollsWhere: "a = 'b'" } } });
+    expect(values).toEqual(["a = 'b'"]);
   });
 
   it('collects field names from a City block only', () => {
