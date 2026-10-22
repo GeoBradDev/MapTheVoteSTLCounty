@@ -67,9 +67,9 @@ dataviz, django, fastapi, expo (not applicable because no charts, no backend, no
   maps host.
 - `src/features/lookup/GeocoderAttribution.jsx` copy: the City is a source, not only a check.
 - `scripts/check-geocoder.mjs`: City expectations become a City precinct; more City cases.
-- Tests: new `cityAddress.lookup88.test.js`, `geocoderChain.test.js` / `geocoder.city58.test.js` /
-  `geocoder.sharedzip58.test.js` / `geocoder.pick58.test.js` where expectations change,
-  a new `geocoder.city88.test.js`, `locate.test.js`, `AddressLookup.test.jsx`,
+- Tests: new `cityAddress.lookup88.test.js` and `geocoder.city88.test.js` (the existing
+  `geocoderChain`, `geocoder.city58`, `geocoder.sharedzip58` and `geocoder.pick58` tests needed no
+  change and pass unchanged), `locate.test.js`, `AddressLookup.test.jsx`,
   `OutOfCountyNotice.test.jsx`, privacy tests as needed.
 - Docs: README (Address search, Privacy, Election config), `docs/data.md` (Geocoding, City
   check), `docs/progress.md` (the #87 line the coordinator gave).
@@ -147,3 +147,5 @@ error line (#93), the Clayton municipality no match (opened as #143, unrelated).
   README intro and the CSP comment say what the City now does. Searching the same City
   address again on the City stub page stays on that URL, as a repeat search on any precinct
   page does on `main`; #89 replaces the stub.
+- Verifier note: the privacy notice's "Finding your precinct" now says a point found in the
+  City goes to the City's maps first, and to the county's only if the City has no precinct.
