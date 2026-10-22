@@ -54,6 +54,24 @@ describe('PrivacyPage', () => {
     expect(hosts.electionMaps).toBe(new URL(election.serviceRoot).host);
   });
 
+  // The wait times page (#104): both boards' layers, the refresh rate and
+  // nothing about the voter, all from the config.
+  it('says what the wait times page asks, from the config', () => {
+    render(<PrivacyPage />);
+    const { county, city, refreshSeconds } = election.waitTimes;
+    const item = screen.getByRole('heading', { name: 'Early voting wait times' }).parentElement;
+    for (const text of [
+      county.source,
+      city.source,
+      new URL(county.serviceRoot).host,
+      new URL(city.serviceRoot).host,
+      `every ${refreshSeconds} seconds`,
+      'carry nothing about you',
+    ]) {
+      expect(item).toHaveTextContent(text);
+    }
+  });
+
   it('says where the typed address goes: the county service, Photon and the City check', () => {
     render(<PrivacyPage />);
     const item = within(section(copy.sent.heading))

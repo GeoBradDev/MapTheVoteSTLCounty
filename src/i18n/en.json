@@ -378,7 +378,7 @@
       },
       "waitTimes": {
         "heading": "Early voting wait times",
-        "text": "The early voting wait times page asks the line count layers of the St. Louis County Board of Elections and the St. Louis City Board of Election Commissioners, both on Esri's ArcGIS Online ({electionMaps}), for the current counts every 30 seconds while it is open on your screen. These requests carry nothing about you: no address, location or precinct."
+        "text": "The early voting wait times page asks the line count layers of the {countyBoard} ({countyLayers}) and the {cityBoard} ({cityLayers}), both on Esri's ArcGIS Online, for the current counts every {seconds} seconds while it is open on your screen. These requests carry nothing about you: no address, location or precinct."
       },
       "website": {
         "heading": "This website",

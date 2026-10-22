@@ -190,3 +190,7 @@ Chosen not to do: City rows (#91), the results page origin (#105), Election Day 
   off a list link still on the page. The privacy notice gains an "Early voting wait times"
   item: the page asks both boards' line count layers, and those requests carry nothing about
   the voter.
+- Review (finder 6): the privacy notice's wait times item takes the board names, the layer
+  hosts and the refresh rate from the config, with a test; the README's privacy statement
+  names the line count layers. Not yet reviewed: the Phase 5 loop stopped here (two extra
+  finders in a row led to fixes), so the next run starts with a finder on this commit.
