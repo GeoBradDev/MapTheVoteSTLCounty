@@ -57,8 +57,8 @@ describe('SiteFooter', () => {
     expect(screen.getByRole('link', { name: 'Privacy' }).closest('.print\\:hidden')).not.toBeNull();
   });
 
-  it('names no party or candidate', () => {
-    const text = JSON.stringify(copy).toLowerCase();
+  it('names no party or candidate, nor does the privacy intro that repeats it', () => {
+    const text = JSON.stringify([copy, privacyCopy.intro]).toLowerCase();
     for (const word of ['democrat', 'republican', 'libertarian', 'green party', 'candidate']) {
       expect(text).not.toContain(word);
     }

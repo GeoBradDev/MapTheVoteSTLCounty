@@ -75,6 +75,7 @@ Domain skills:
 - Criterion 1, 2, 7: `src/App.test.jsx` per route; `src/components/SiteFooter.test.jsx`.
 - Criterion 3: `HomePage.test.jsx` (renders) and `e2e/a11y.e2e.js` (above the fold).
 - Criterion 4: `e2e/a11y.e2e.js` print emulation; `build.test.js` keeps the print styles.
-- Criterion 5: `PrivacyPage` render check in `SiteFooter.test.jsx` comparing wording.
+- Criterion 5: `SiteFooter.test.jsx` checks the privacy intro names the site nonpartisan
+  and both boards; whether it agrees in wording is part of criterion 8.
 - Criterion 6: `build.test.js` on the built `index.html`.
 - Live drive: build, preview, view `/` at 360px and a results page in print emulation.
