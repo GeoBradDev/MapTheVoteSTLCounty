@@ -13,7 +13,9 @@ because no UI changes. django, fastapi, expo: not applicable because the repo us
 
 1. For a `text/html` 2xx answer, the checker reads at most 512 KB of the body and finds a
    `<meta http-equiv="refresh" content="N; url=...">` (attributes in either order, any letter
-   case, quoted or not). When the target, resolved against the final URL, is a different page
+   case, quoted or not, a `>` inside a quoted value, the first of a repeated attribute, as a
+   browser reads it; tags in comments, scripts and `noscript` blocks and a refresh with no
+   delay are ignored). When the target, resolved against the final URL, is a different page
    (a different origin, path or query; the fragment is ignored), the URL fails with
    `meta refresh to <target>`. A refresh with no URL, or to the same page, passes.
 2. Run live, the checker fails a page of the board's retired site (which #73 removed from the
@@ -25,18 +27,22 @@ because no UI changes. django, fastapi, expo: not applicable because the repo us
    already covers through its layers. Each is reported with `src/config/election.js (<key>)`.
 4. A `403` with a bot-challenge marker (a `cf-mitigated: challenge` header, or a body naming
    `challenges.cloudflare.com` or `/cdn-cgi/challenge-platform/`) is reported as
-   `SKIP <url>: bot challenge, check by hand in a browser`, is not retried, and does not make
+   `SKIP <url>: bot challenge, check by hand in a browser (HTTP 403) (<files>)`, is not retried, and does not make
    the script exit 1. Any other `403` still fails.
-5. Skipped URLs are listed in the issue the workflow opens on a failure, and in the run's job
-   summary every day, so they are never passed silently.
+5. Skipped URLs, each with the files that use it, are listed in the issue the workflow opens
+   on a failure, and in the run's job summary every day, so they are never passed silently. The
+   skipped file is rewritten after each skip, so a step cut off by its timeout still lists the
+   skips it found.
 6. CI makes no live requests: the check stays in the scheduled workflow only; unit tests use a
    stubbed fetch.
 
 ## Files that change
 
 - `scripts/check-content-links.mjs`: `metaRefreshTarget(html, baseUrl)`, `isBotChallenge(res,
-  body)`, a capped body reader, `configLinks(config)`, `skip` status, `--skipped <file>` flag
-  that writes one skipped URL per line.
+  body)`, a capped body reader, `configLinks(config)`, `mergeLinks` (one entry per URL across
+  topics and config), `skip` status, an `onResult` option on `checkLinks`, and a
+  `--skipped <file>` flag (`parseArgs`, `writeSkipped`) that writes one line per skipped URL:
+  `<url> (<files>)`.
 - `src/test/checkContentLinks.test.js`: fixtures from the issue.
 - `src/test/checkConfig.test.js`: the data health workflow test also checks that skipped links
   reach the job summary and the failure issue.
@@ -54,8 +60,9 @@ because no UI changes. django, fastapi, expo: not applicable because the repo us
 
 ## Risks
 
-- A page whose body has a `noscript` meta refresh to a no-JS page would fail. Accept: a person
-  reads the FAIL detail; none of today's links does this (live drive shows it).
+- The meta refresh scan is a pattern match, not a full HTML parser. It strips comments,
+  scripts and `noscript` blocks first; an unusual page could still be misread, and a person
+  reads the FAIL detail.
 - Reading bodies makes each check slower; capped at 512 KB, and only for `text/html`.
 - Skips are permanent for the county site, so a skip alone does not open an issue (it would
   open one every day for a page the owner checked by hand). It shows in the job summary and in

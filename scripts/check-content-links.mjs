@@ -164,7 +164,9 @@ function tagAttributes(tag) {
   const attrs = {};
   const pattern = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>"']+)))?/g;
   for (const m of tag.replace(/^<meta\b/i, '').matchAll(pattern)) {
-    attrs[m[1].toLowerCase()] = m[2] ?? m[3] ?? m[4] ?? '';
+    const name = m[1].toLowerCase();
+    // As in HTML, the first of a repeated attribute counts.
+    if (!Object.hasOwn(attrs, name)) attrs[name] = m[2] ?? m[3] ?? m[4] ?? '';
   }
   return attrs;
 }
@@ -177,12 +179,19 @@ function tagAttributes(tag) {
  * @returns {string | null}
  */
 export function metaRefreshTarget(html, baseUrl) {
-  for (const [tag] of html.matchAll(/<meta\b[^>]*>/gi)) {
+  // A browser never acts on a tag in a comment or a script, nor, with
+  // scripts on, in a noscript block.
+  const live = html
+    .replace(/<!--[\s\S]*?(?:-->|$)/g, '')
+    .replace(/<(script|noscript)\b[\s\S]*?(?:<\/\1\s*>|$)/gi, '');
+  // A > inside a quoted attribute value does not end the tag.
+  for (const [tag] of live.matchAll(/<meta\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)) {
     const attrs = tagAttributes(tag);
     if ((attrs['http-equiv'] ?? '').trim().toLowerCase() !== 'refresh') continue;
     const content = (attrs.content ?? '').replaceAll('&amp;', '&');
     // The HTML rule: a delay, then ; or , or space, then an optional url=.
-    const m = /^\s*[\d.]*\s*(?:[;,]\s*|\s+)(?:url\s*=\s*)?(.*)$/is.exec(content);
+    // A refresh with no delay is ignored.
+    const m = /^\s*[\d.]+\s*(?:[;,]\s*|\s+)(?:url\s*=\s*)?(.*)$/is.exec(content);
     let target = m?.[1].trim() ?? '';
     if (/^["']/.test(target)) {
       const end = target.indexOf(target[0], 1);
@@ -288,11 +297,19 @@ async function requestOnce(fetchImpl, url, timeoutMs) {
  * @param {number} [options.timeoutMs] How long one request may take.
  * @param {number} [options.attempts] Tries per URL.
  * @param {number} [options.retryDelayMs] The wait before a retry, times the attempt.
+ * @param {(result: object) => unknown} [options.onResult] Called with each result as soon
+ *   as it is known, so a run cut off by a timeout has still reported what it found.
  * @returns {Promise<{ url: string, files: string[], status: 'pass' | 'fail' | 'skip', detail: string }[]>}
  */
 export async function checkLinks(
   links,
-  { fetch: fetchImpl = fetch, timeoutMs = 15000, attempts = 3, retryDelayMs = 2000 } = {},
+  {
+    fetch: fetchImpl = fetch,
+    timeoutMs = 15000,
+    attempts = 3,
+    retryDelayMs = 2000,
+    onResult = () => {},
+  } = {},
 ) {
   const results = [];
   for (const { url, files } of links) {
@@ -303,7 +320,9 @@ export async function checkLinks(
       await new Promise((resolve) => setTimeout(resolve, retryDelayMs * attempt));
     }
     const status = outcome.ok ? 'pass' : outcome.skip ? 'skip' : 'fail';
-    results.push({ url, files, status, detail: outcome.detail });
+    const result = { url, files, status, detail: outcome.detail };
+    results.push(result);
+    await onResult(result);
   }
   return results;
 }
@@ -348,11 +367,18 @@ async function main(args) {
   const { unreadable } = topics;
   const links = mergeLinks(topics.links, configLinks(election));
   for (const { file, detail } of unreadable) console.log(`FAIL ${file}: cannot read it: ${detail}`);
-  const results = await checkLinks(links);
-  for (const { url, files, status, detail } of results) {
-    console.log(`${status.toUpperCase()} ${url}: ${detail} (${files.join(', ')})`);
-  }
-  if (skippedFile) await writeSkipped(skippedFile, results);
+  // The skipped list is kept current after every URL, so a step that times out
+  // still reports the skips it found.
+  const done = [];
+  if (skippedFile) await writeSkipped(skippedFile, done);
+  const results = await checkLinks(links, {
+    onResult: async (result) => {
+      const { url, files, status, detail } = result;
+      console.log(`${status.toUpperCase()} ${url}: ${detail} (${files.join(', ')})`);
+      done.push(result);
+      if (skippedFile && status === 'skip') await writeSkipped(skippedFile, done);
+    },
+  });
   const skipped = results.filter((r) => r.status === 'skip').length;
   const skipNote = skipped
     ? ` ${skipped} skipped behind a bot challenge: check them by hand in a browser.`
