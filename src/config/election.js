@@ -110,8 +110,9 @@ const election = deepFreeze({
   nearbyPollCount: 3,
 
   // From the county's Absentee Voting Lookup app introduction, re-read from the
-  // app's live config on 2026-10-21 (issue #16). The county website's absentee
-  // page still shows 2020 hours, so it is not a source. Re-check before launch.
+  // app's live config on 2026-10-21 (issue #16). The board's old website showed
+  // 2020 hours on its absentee page, so it was never a source; that site was
+  // retired on 2026-10-21 (#73). Re-check before launch.
   earlyVoting: {
     sources: [
       'https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=9301b4594bef4d9c9271778e4648179d',

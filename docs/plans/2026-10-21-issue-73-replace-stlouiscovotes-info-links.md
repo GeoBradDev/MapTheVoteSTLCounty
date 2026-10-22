@@ -121,3 +121,5 @@ https://stlouiscovotes.info/faq/` and `rejects https://www.stlouiscovotes.info/a
   skipping only JavaScript comment lines and tests, with unit cases for each form (they fail
   against the old URL regex). Added `resultsCopy.test.js` for the board's source name, the
   proof criterion 3 promised.
+- Review 3: the early voting comment in `election.js` still said the county website's absentee
+  page shows 2020 hours; it now says the old site showed them and was retired on 2026-10-21.
