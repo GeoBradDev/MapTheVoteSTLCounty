@@ -57,7 +57,6 @@ describe('topicDescription', () => {
   it('is the first paragraph as plain text, without citation marks', () => {
     const topic = {
       blocks: [
-        { type: 'heading', level: 2, children: [{ type: 'text', value: 'Not this' }] },
         {
           type: 'paragraph',
           children: [
@@ -78,6 +77,48 @@ describe('topicDescription', () => {
       ],
     };
     expect(topicDescription(topic)).toBe('Bring a photo ID. See the list.');
+  });
+
+  // A paragraph under a heading describes that section, not the page (owner
+  // decision on #99): the "How to vote" intro stands in for it.
+  const LEARN_INTRO =
+    'Short guides to voting in St. Louis County, each checked against official sources.';
+  const text = (value) => [{ type: 'text', value }];
+
+  it('is the learn intro when the topic starts with a heading', () => {
+    const topic = {
+      blocks: [
+        { type: 'heading', level: 2, children: text('When you vote') },
+        { type: 'paragraph', children: text('A later section.') },
+      ],
+    };
+    expect(topicDescription(topic)).toBe(LEARN_INTRO);
+  });
+
+  it('takes a paragraph that follows a list, while still before the first heading', () => {
+    const topic = {
+      blocks: [
+        { type: 'list', ordered: false, items: [text('One')] },
+        { type: 'paragraph', children: text('Before any heading.') },
+        { type: 'heading', level: 2, children: text('Later') },
+      ],
+    };
+    expect(topicDescription(topic)).toBe('Before any heading.');
+  });
+
+  it('is the learn intro when the topic has no paragraph before a heading', () => {
+    const topic = {
+      blocks: [
+        { type: 'list', ordered: false, items: [text('One')] },
+        { type: 'heading', level: 2, children: text('Later') },
+        { type: 'paragraph', children: text('Under the heading.') },
+      ],
+    };
+    expect(topicDescription(topic)).toBe(LEARN_INTRO);
+  });
+
+  it('never describes your rights with a later, conditional section', () => {
+    expect(topicDescription(getTopic('your-rights'))).toBe(LEARN_INTRO);
   });
 
   it('is the real voter ID topic text', () => {
