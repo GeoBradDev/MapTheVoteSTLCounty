@@ -264,8 +264,8 @@ display, not this app's cutoff.
 
 The real responses are in `docs/raw/fixtures/` (`county-waits-*.json`,
 `city-waits-*.json`), and `src/data/waitFixtures.test.js` checks the join and freshness
-facts below against them. `scripts/record-fixtures.mjs` does not record these: the layers
-hold reports only while sites are open, so record them by hand during open hours with the
+facts below against them. `scripts/record-fixtures.mjs` does not record these: a useful
+fresh fixture needs reports made during open hours, so record them by hand then with the
 queries below.
 
 #### County: `Voters_in_Line_View/FeatureServer/0`
@@ -286,8 +286,8 @@ in a different ArcGIS org from the polls layer. Keyless, CORS `*`,
   21 absentee sites.
 - **Freshness:** the view's own filter is
   `CreationDate BETWEEN CURRENT_TIMESTAMP - 0.08333333333333333 AND CURRENT_TIMESTAMP AND username LIKE 'abs%'`
-  (0.0833 days is 2 hours), so it holds only early voting reports from the last 2 hours and is empty when the sites
-  are closed (0 rows at 6:47 p.m. on 2026-10-21 and at 7:44 a.m. on 2026-10-22). A row's
+  (0.0833 days is 2 hours), so it holds only early voting reports from the last 2 hours. It is empty from about 2
+  hours after closing until the sites open (0 rows at 6:47 p.m. on 2026-10-21 and at 7:44 a.m. on 2026-10-22). A row's
   age is `CreationDate`; apply the app's own max age with `isFresh` in
   `src/data/freshness.js` as well.
 - **What the samples showed (2026-10-22):** by 9:30 a.m. the view held 61 reports, made
@@ -297,10 +297,13 @@ in a different ArcGIS org from the polls layer. Keyless, CORS `*`,
   within a minute (the Board office sent 5 between 8:29:05 and 8:30:00). The first reports
   come a minute or so before the 8 a.m. opening. Values ran from 0 to 29. The fresh fixture
   is the 9:00 a.m. response (43 reports).
-- **Election Day:** the official Polling Place Lookup app (web map
-  `5e98818fdb354d719193ec562d359050`) joins `Creator` = `polls_2026_11_view.username`
-  (for example `loc019boec`), but today's view filter keeps only `abs%` reports, so Election
-  Day reports will not appear here unless the County changes the view (#107).
+- **Election Day:** in the official Polling Place Lookup app (web map
+  `5e98818fdb354d719193ec562d359050`), only the hidden "Polling Places (2026 08)" layer
+  (`polls_2026_08_view`) has the line count popup, joining `Creator` = `username` (for
+  example `loc019boec`). The visible "Polling Places (Election Day)" layer
+  (`polls_2026_11_view`) has a plain popup with no line count (checked 2026-10-22). Today's
+  view filter also keeps only `abs%` reports. So Election Day counts need the County to
+  change both the view and the app (#107).
 - **Not the source:** `polls_2026_11_view.inline` is blank and neither official popup reads
   it. It was the 2024 source; keep it only as a fallback if #107 finds Election Day uses it
   again.
@@ -326,7 +329,8 @@ config.
   query.
 - **Freshness:** `created_date_1740505041182` is the report time (on 2026-10-22,
   `last_edited_date_1740505041182` matched it on every reported site). The site row's own
-  `last_edited_date` (2026-10-09 on every site) does not move with reports, so never use
+  `last_edited_date` (2026-10-09 on 7 sites, 2026-10-21 on St. Joan of Arc) does not move
+  with reports, so never use
   it. A site with no report has `waittime` and both report dates null (St. Joan of Arc on
   2026-10-22, whose `comments` say it opens Tuesday, October 27).
 - **Unit, not settled:** the field alias is "Wait Time (Minutes)" and the values seen (0, 3,

@@ -1,14 +1,14 @@
 // The early voting wait fixtures (#102) are live responses recorded by hand
 // during open hours, for the wait time client (#103). These checks keep them
 // honest: the fields #103 reads are there, and the join and freshness facts
-// docs/data.md states hold for them. They join to absentee-sites.json, so
-// re-record them by hand with it each election (README, Updating for a new
-// election).
+// docs/data.md states hold for them. They pin what was true on the recording
+// day (the sites, their hours) rather than reading per-election files, so they
+// stay green until the next election's fixtures are recorded by hand (README,
+// Updating for a new election).
 import countyEmpty from '../../docs/raw/fixtures/county-waits-empty.json';
 import countyFresh from '../../docs/raw/fixtures/county-waits-fresh.json';
 import cityFresh from '../../docs/raw/fixtures/city-waits-fresh.json';
 import cityStale from '../../docs/raw/fixtures/city-waits-stale.json';
-import absenteeSites from '../../docs/raw/fixtures/absentee-sites.json';
 import election from '../config/election.js';
 import { zonedNow } from '../features/lookup/earlyVoting.js';
 
@@ -17,14 +17,15 @@ const RECORDED_ON = '2026-10-22';
 // Absentee Voting Lookup app, as recorded in docs/data.md). Pinned here rather
 // than read from the election config, which the next election rewrites.
 const RECORDED_DAY_HOURS = { open: '08:00', close: '16:30' };
+// The 21 absentee site usernames (polls_2026_11_view.absentee) on the
+// recording day. The County renumbers them each election.
+const RECORDED_DAY_SITES = new Set(Array.from({ length: 21 }, (_, i) => `abs${601 + i}boec`));
 const { timeZone } = election;
 const dayOf = (ms) => zonedNow(ms, timeZone).date;
 const minutesOf = (time) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3));
 const rows = (body) => body.features.map((f) => f.attributes);
 
 describe('County wait fixtures (Voters_in_Line_View)', () => {
-  const sites = new Set(absenteeSites.features.map((f) => f.properties.absentee));
-
   it('fresh: real reports with the fields the client reads', () => {
     expect(countyFresh.error).toBeUndefined();
     expect(countyFresh.features.length).toBeGreaterThan(0);
@@ -42,7 +43,7 @@ describe('County wait fixtures (Voters_in_Line_View)', () => {
   });
 
   it('fresh: every Creator is an absentee site username on the polls layer', () => {
-    for (const { Creator } of rows(countyFresh)) expect(sites.has(Creator)).toBe(true);
+    for (const { Creator } of rows(countyFresh)) expect(RECORDED_DAY_SITES.has(Creator)).toBe(true);
   });
 
   // Staff report from a few minutes before the doors open (07:59 on
@@ -98,9 +99,10 @@ describe('City wait fixtures (VotingLocations_currentwait)', () => {
     expect(times).toEqual([...times].sort((a, b) => b - a));
   });
 
+  // On 2026-10-22 one site (St. Joan of Arc, opening October 27) had no report.
+  // A later recording may have none, so this checks only the rows it finds.
   it('a site with no report has a null wait and null report dates', () => {
     const unreported = rows(cityFresh).filter((r) => r.waittime === null);
-    expect(unreported.length).toBeGreaterThan(0);
     for (const r of unreported) {
       expect(r.created_date_1740505041182).toBeNull();
       expect(r.last_edited_date_1740505041182).toBeNull();

@@ -89,3 +89,9 @@ app code changes.
   dashboard shows it as people in line. `docs/data.md` records both and leaves the choice to
   the owner, asked on #102, instead of asserting either. This replaces the first revision's
   "the City unit is people".
+- Second review: the test now also pins the recording day's 21 site usernames (the County
+  renumbers them each election) instead of reading `absentee-sites.json`, so re-recording
+  the per-election fixtures before early voting opens leaves it green. The reason given for
+  recording wait fixtures by hand is now "a useful fresh fixture needs open-hours reports"
+  (both layers keep reports after closing). The Election Day bullet now says the official
+  Election Day layer has no line count popup, which #107 needs.
