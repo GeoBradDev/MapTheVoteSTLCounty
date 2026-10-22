@@ -145,6 +145,7 @@ describe('smoke test against stub hosts', () => {
       'GET / returns the home page',
       'hard load of /p/CC007 returns the app shell',
       'hashed asset returns JavaScript',
+      'hard load of / returns the pre-rendered page',
       'hard load of /learn returns the pre-rendered page',
       'hard load of /learn/voter-id returns the pre-rendered page',
       '/robots.txt is text naming the sitemap',
@@ -184,6 +185,7 @@ describe('smoke test against stub hosts', () => {
       'GET / returns the home page',
       'hard load of /p/CC007 returns the app shell',
       'hashed asset returns JavaScript',
+      'hard load of / returns the pre-rendered page',
       'hard load of /learn returns the pre-rendered page',
       'hard load of /learn/voter-id returns the pre-rendered page',
       '/robots.txt keeps every crawler out',
@@ -229,6 +231,7 @@ describe('smoke test against stub hosts', () => {
     const results = await runSmoke(await listen(server));
 
     expect(failedChecks(results)).toEqual([
+      'hard load of / returns the pre-rendered page',
       'hard load of /learn returns the pre-rendered page',
       'hard load of /learn/voter-id returns the pre-rendered page',
     ]);
@@ -270,7 +273,7 @@ describe('smoke test against stub hosts', () => {
     const results = await runSmoke(await listen(server), { checkHeaders: false });
 
     expect(failedChecks(results)).toEqual([]);
-    expect(results).toHaveLength(7);
+    expect(results).toHaveLength(8);
   });
 
   it('fails instead of throwing when the host is unreachable', async () => {
@@ -298,7 +301,7 @@ describe('smoke test CLI', () => {
     server = stubHost();
     const { stdout } = await promisify(execFile)('node', [SCRIPT, await listen(server)]);
 
-    expect(stdout).toContain('9 of 9 checks passed');
+    expect(stdout).toContain('10 of 10 checks passed');
   });
 
   it('runs the preview checks with --preview', async () => {
@@ -310,7 +313,7 @@ describe('smoke test CLI', () => {
     ]);
 
     expect(stdout).toContain('PASS /robots.txt keeps every crawler out');
-    expect(stdout).toContain('9 of 9 checks passed');
+    expect(stdout).toContain('10 of 10 checks passed');
   });
 
   it('exits 1 and prints the failure when a check fails', async () => {

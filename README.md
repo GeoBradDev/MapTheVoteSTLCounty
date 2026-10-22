@@ -231,8 +231,8 @@ npm run smoke -- https://<site-or-preview-url>
 ```
 
 It checks that `/` returns the home page and a hard load of `/p/CC007` the app shell (with
-nothing pre-rendered in it), that a hashed asset is served as JavaScript, that a hard load of
-`/learn` and of `/learn/voter-id` returns the page pre-rendered, with its `h1` and canonical, that `/robots.txt` is a text file with a `Sitemap:` line and
+nothing pre-rendered in it), that a hashed asset is served as JavaScript, that a hard load of `/`,
+`/learn` and `/learn/voter-id` returns the page pre-rendered, with its `h1` and canonical, that `/robots.txt` is a text file with a `Sitemap:` line and
 `/sitemap.xml` is XML (not the app shell), and that the expected security and cache headers are
 present. It exits 1 and lists what failed. Against a host that sets no headers, such as
 `npm run preview`, add `--skip-headers`. Against a PR preview, add `--preview`: it then checks

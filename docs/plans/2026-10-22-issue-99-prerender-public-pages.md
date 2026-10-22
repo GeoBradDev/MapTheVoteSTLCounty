@@ -181,6 +181,9 @@ build its head hook on the `pageHead()` function added here.
   `/privacy`, topics). The home page and shell keep `index.html`'s description as written
   (158 characters, #71's wording), not cut (review finding; the README says so).
 
+- The smoke test also checks that `/` is the pre-rendered home page, not only `/learn` and a
+  topic (review finding).
+
 ## Proof
 
 - Criterion 1, 2, 3: `src/test/build.test.js` against a real build (files, head tags, root

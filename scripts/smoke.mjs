@@ -12,9 +12,9 @@ import { fileURLToPath } from 'node:url';
 import { siteUrl } from '../src/config/site.js';
 
 const DEEP_LINK = '/p/CC007';
-// Pre-rendered pages (#99) to hard load: the learn index and one topic. Change
-// the topic if content/en/learn/voter-id.md is ever renamed.
-const PRERENDERED = ['/learn', '/learn/voter-id'];
+// Pre-rendered pages (#99) to hard load: the home page, the learn index and one
+// topic. Change the topic if content/en/learn/voter-id.md is ever renamed.
+const PRERENDERED = ['/', '/learn', '/learn/voter-id'];
 const TIMEOUT_MS = 10_000;
 
 // The headers the Render Blueprint (render.yaml) sets. Each entry passes when
