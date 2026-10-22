@@ -27,12 +27,63 @@ services:
     domains:
       - mapthevotestl.com
     # Render never rewrites a path where a file exists, so /assets/*, /sw.js,
-    # icons and the pre-rendered public pages (#99: index.html is the home page,
-    # learn/index.html, learn/<id>/index.html and privacy/index.html, each
-    # served at its path with or without the trailing slash) are served as
-    # files; everything else, precinct pages included, gets the
-    # client-rendered app shell, shell.html (src/prerender/plugin.js).
+    # icons and the pre-rendered public pages (#99) are served as files. It
+    # serves a directory's index.html only for the path with a trailing slash
+    # (/learn/, not /learn: checked on PR #127's preview), so each pre-rendered
+    # page but the home page (dist/index.html) has its own rewrite to its file,
+    # before the catch-all. One rule per page, not /learn/:topic, so an unknown
+    # topic still gets the shell and the app's not-found page; a new topic needs
+    # its rule (src/test/render.test.js fails until it has one). Everything
+    # else, precinct pages included, gets the client-rendered app shell,
+    # shell.html (src/prerender/plugin.js). PR previews keep the service's
+    # existing rules, so check a change here on production after it deploys
+    # (README, Deploy).
     routes:
+      - type: rewrite
+        source: /learn
+        destination: /learn/index.html
+      - type: rewrite
+        source: /learn/absentee
+        destination: /learn/absentee/index.html
+      - type: rewrite
+        source: /learn/accessible-voting
+        destination: /learn/accessible-voting/index.html
+      - type: rewrite
+        source: /learn/check-registration
+        destination: /learn/check-registration/index.html
+      - type: rewrite
+        source: /learn/help-voting
+        destination: /learn/help-voting/index.html
+      - type: rewrite
+        source: /learn/mail-in-ballots
+        destination: /learn/mail-in-ballots/index.html
+      - type: rewrite
+        source: /learn/military-overseas
+        destination: /learn/military-overseas/index.html
+      - type: rewrite
+        source: /learn/moved-or-changed-name
+        destination: /learn/moved-or-changed-name/index.html
+      - type: rewrite
+        source: /learn/provisional-ballots
+        destination: /learn/provisional-ballots/index.html
+      - type: rewrite
+        source: /learn/registration-deadlines
+        destination: /learn/registration-deadlines/index.html
+      - type: rewrite
+        source: /learn/voter-id
+        destination: /learn/voter-id/index.html
+      - type: rewrite
+        source: /learn/what-to-expect
+        destination: /learn/what-to-expect/index.html
+      - type: rewrite
+        source: /learn/who-to-contact
+        destination: /learn/who-to-contact/index.html
+      - type: rewrite
+        source: /learn/your-rights
+        destination: /learn/your-rights/index.html
+      - type: rewrite
+        source: /privacy
+        destination: /privacy/index.html
       - type: rewrite
         source: /*
         destination: /shell.html
