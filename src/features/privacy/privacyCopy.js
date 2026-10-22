@@ -31,7 +31,7 @@ export const hosts = Object.freeze({
 export const copy = {
   heading: 'Privacy',
   intro:
-    'This site helps you find your precinct, polling places and sample ballot. It has no accounts, no analytics and no server of its own: your browser talks straight to the public services below. Here is what each one gets, and what this site never keeps.',
+    'This site is an independent, nonpartisan guide. It is not run by or affiliated with the St. Louis County Board of Elections or the St. Louis City Board of Election Commissioners. It helps you find your precinct, polling places and sample ballot. It has no accounts, no analytics and no server of its own: your browser talks straight to the public services below. Here is what each one gets, and what this site never keeps.',
 
   never: {
     heading: 'What this site never does',

@@ -22,6 +22,7 @@ export default function HomePage() {
           </time>
         </p>
         <p className="mt-2">{copy.intro}</p>
+        <p className="mt-1 text-sm text-muted">{copy.unofficial}</p>
       </header>
 
       <div className="mt-6">

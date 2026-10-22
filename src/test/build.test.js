@@ -108,13 +108,21 @@ describe('production build', () => {
     expect(css).toContain('.bg-surface{');
   });
 
-  // "How to vote" pages print cleanly (#23): no footer or page links, and each
-  // external link prints its address.
+  // "How to vote" pages print cleanly (#23): no page links or Privacy link (the
+  // footer's nonpartisan statement still prints, #71), and each external link
+  // prints its address.
   it('ships the print styles', () => {
     expect(css).toMatch(/@media print\{[^@]*\.print\\:hidden\{display:none\}/);
     expect(css).toMatch(
       /@media print\{[^@]*\.print-href:after\{content:" \(" attr\(href\) "\)";overflow-wrap:anywhere\}/,
     );
+  });
+
+  // Link previews and search results say what the site is (#71).
+  it('describes the site as nonpartisan and unofficial', () => {
+    const description = html.match(/<meta\s+name="description"\s+content="([^"]+)"/)?.[1];
+    expect(description).toMatch(/nonpartisan/i);
+    expect(description).toMatch(/unofficial/i);
   });
 
   it('loads hashed assets by root-absolute path, so a hard load of /p/CC007 finds them', () => {

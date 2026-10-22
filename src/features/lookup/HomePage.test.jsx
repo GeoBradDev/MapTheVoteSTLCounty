@@ -64,6 +64,14 @@ describe('HomePage', () => {
     );
   });
 
+  it('says in its header, under the intro, that this is an independent, nonpartisan guide', () => {
+    renderHome();
+    const line = screen.getByText(copy.unofficial);
+    expect(line).toHaveTextContent(/nonpartisan/i);
+    expect(line).toHaveTextContent(/not an official/i);
+    expect(screen.getByText(copy.intro).nextElementSibling).toBe(line);
+  });
+
   it('names no party or candidate', () => {
     const text = JSON.stringify(copy).toLowerCase();
     for (const word of ['democrat', 'republican', 'libertarian', 'green party', 'candidate']) {

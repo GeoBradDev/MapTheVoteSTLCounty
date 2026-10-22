@@ -154,3 +154,27 @@ test.describe('with reduced motion', () => {
     expect(await page.evaluate(() => document.getAnimations().length)).toBe(0);
   });
 });
+
+// The site says it is nonpartisan and unofficial (#71).
+test.describe('the nonpartisan, unofficial statement', () => {
+  test('sits above the fold on a 360 x 640 phone, with the address box', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 640 });
+    await answerFromFixtures(page);
+    await page.goto('/');
+    await expect(page.getByText(/independent, nonpartisan guide/)).toBeInViewport({ ratio: 1 });
+    await expect(page.getByRole('combobox')).toBeInViewport({ ratio: 1 });
+  });
+
+  test('prints on a results page, without the Privacy link', async ({ page }) => {
+    await answerFromFixtures(page);
+    await page.goto(`/p/${CODE}`);
+    await expect(page.getByRole('list', { name: 'Nearest polling places' })).toBeVisible();
+    await page.emulateMedia({ media: 'print' });
+    const footer = page.getByRole('contentinfo');
+    await expect(footer.getByText(/nonpartisan, unofficial guide/)).toBeVisible();
+    await expect(
+      footer.getByRole('link', { name: 'St. Louis County Board of Elections website' }),
+    ).toBeVisible();
+    await expect(footer.getByRole('link', { name: 'Privacy' })).toBeHidden();
+  });
+});

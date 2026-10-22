@@ -3,6 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import App from './App.jsx';
+import { copy as footerCopy } from './components/siteFooterCopy.js';
+import election from './config/election.js';
+import referrals from './config/referrals.js';
 import { learnCopy } from './features/learn/learnCopy.js';
 
 // content/en/learn/ ships empty until #22, so the topic routes use fixtures.
@@ -94,6 +97,26 @@ describe('App', () => {
       const link = within(footer).getByRole('link', { name: 'Privacy' });
       expect(link).toHaveAttribute('href', '/privacy');
       expect(screen.getByRole('main')).not.toContainElement(footer);
+    },
+  );
+
+  it.each(['/', '/p/CC007', '/learn', '/learn/voter-id', '/privacy', '/nope'])(
+    'says in the footer that the site is nonpartisan and unofficial, with both boards linked, on %s',
+    (path) => {
+      renderAt(path);
+
+      const footer = screen.getByRole('contentinfo');
+      expect(footer).toHaveTextContent(footerCopy.statement);
+      expect(footer).toHaveTextContent(/nonpartisan/i);
+      expect(footer).toHaveTextContent(/unofficial/i);
+      expect(within(footer).getByRole('link', { name: footerCopy.countySite })).toHaveAttribute(
+        'href',
+        election.countySiteUrl,
+      );
+      expect(within(footer).getByRole('link', { name: footerCopy.citySite })).toHaveAttribute(
+        'href',
+        referrals.stlCityBoard.url,
+      );
     },
   );
 

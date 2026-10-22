@@ -4,6 +4,9 @@
 export const copy = {
   heading: 'St. Louis County Voter Guide',
   intro: 'Find your precinct, polling places near you and your sample ballot.',
+  // Says up front that this is not the county's own site (#71); the footer
+  // names the official boards.
+  unofficial: 'This is an independent, nonpartisan guide, not an official county or city site.',
   /** @param {string} isoDate YYYY-MM-DD @param {string} timeZone */
   electionDay: (isoDate, timeZone) => {
     // Noon UTC is the same calendar day in every US time zone.
