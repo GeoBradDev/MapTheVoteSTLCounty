@@ -47,12 +47,13 @@ function PendingCard() {
  *   `origin` is the looked-up point, in memory only. `showBallot` false hides
  *   the sample ballot card, for a precinct with nothing on the ballot.
  *   `ballotHtml` is the precinct's `html` field, which only the sample ballot
- *   parser reads. `precinct` is the precinct's attributes, for its districts.
+ *   parser reads; the card checks its link against `code`. `precinct` is the
+ *   precinct's attributes, for its districts.
  */
 export default function ResultsCards({ code, origin, showBallot, ballotHtml, precinct }) {
   const body = {
     polls: () => <PollsCard code={code} origin={origin} />,
-    ballot: () => <SampleBallotCard html={ballotHtml} />,
+    ballot: () => <SampleBallotCard html={ballotHtml} code={code} />,
     earlyVoting: () => <EarlyVotingCard code={code} origin={origin} />,
     districts: () => <DistrictsCard precinct={precinct} />,
   };
