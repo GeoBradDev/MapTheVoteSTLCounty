@@ -33,7 +33,8 @@
  * @property {string} officialLookupUrl The county's own lookup app, the
  *   fallback when ours fails.
  * @property {string} countySiteUrl The county election board's website: the
- *   County block's `boardSiteUrl`, which is here too under that name.
+ *   County block's `boardSiteUrl`, which is here too under that name, as are
+ *   its `sources`.
  * @property {number} nearbyPollCount How many nearby polling places to show at
  *   first, and how many more each "Show more" adds.
  * @property {{ sources: string[], lastVerified: string,
@@ -69,7 +70,10 @@
  *   City's is in referrals.js.
  * @property {string} [boardSiteUrl] The board's website (the County's; the
  *   City's is in referrals.js).
- * @property {string[]} [sources] Where the block's values were checked.
+ * @property {string[]} sources Each named layer's own description.
+ * @property {string} [precinctField] The precincts layer's code field (the
+ *   City's; the County's is `precinct`, read by src/data/arcgis.js).
+ * @property {string} [lastVerified]
  */
 
 /**
@@ -121,24 +125,28 @@ function deepFreeze(value) {
   return Object.freeze(value);
 }
 
+// Each layer's own description (its field list), the source a block cites for
+// the layers it names, so the daily link check confirms every one answers.
+const layerSources = (root, layers) => Object.values(layers).map((l) => `${root}/${l}?f=pjson`);
+
+const countyServiceRoot = 'https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services';
+// Not the lookup_view_* services: their names look current, but they point at
+// 2024 data.
+const countyLayers = {
+  precincts: 'precincts_2026_11_view/FeatureServer/1',
+  polls: 'polls_2026_11_view/FeatureServer/1',
+  countyBoundary: 'St_Louis_County_Boundary/FeatureServer/0',
+};
+
 // St. Louis County. Every value is the one the app has always used.
 const county = {
   id: 'county',
   name: 'St. Louis County',
   board: 'St. Louis County Board of Elections',
-  serviceRoot: 'https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services',
-  // Not the lookup_view_* services: their names look current, but they point
-  // at 2024 data.
-  layers: {
-    precincts: 'precincts_2026_11_view/FeatureServer/1',
-    polls: 'polls_2026_11_view/FeatureServer/1',
-    countyBoundary: 'St_Louis_County_Boundary/FeatureServer/0',
-  },
-  // The layers the County block names (field lists; docs/data.md has the
-  // inspection). Each value's own source is next to it.
-  sources: [
-    'https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/precincts_2026_11_view/FeatureServer/1?f=pjson',
-  ],
+  serviceRoot: countyServiceRoot,
+  layers: countyLayers,
+  // The layers above; docs/data.md has the inspection.
+  sources: layerSources(countyServiceRoot, countyLayers),
   absenteeWhere: "abs_type IN ('abs','boe')",
   sampleBallotUrlPattern:
     /^https:\/\/stlouiscovotes\.maps\.arcgis\.com\/sharing\/rest\/content\/items\/[0-9a-f]{32}\/data$/,
@@ -226,20 +234,18 @@ const county = {
 // precincts layer's `precinctid` reads `W <ward> P <precinct>`, like `W 1 P 12`:
 // 207 precincts in wards 1 to 14, checked on 2026-10-22 (docs/data.md).
 const cityServiceRoot = 'https://services6.arcgis.com/HZXbCkpCSqbGd0vK/ArcGIS/rest/services';
+const cityLayers = {
+  precincts: 'ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/1',
+};
 const city = {
   id: 'city',
   name: 'City of St. Louis',
   board: 'St. Louis City Board of Election Commissioners',
   serviceRoot: cityServiceRoot,
-  layers: {
-    precincts: 'ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/1',
-  },
+  layers: cityLayers,
   precinctField: 'precinctid',
-  // The precincts layer the code shape was checked against (its field list;
-  // docs/data.md has the check).
-  sources: [
-    `${cityServiceRoot}/ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/1?f=pjson`,
-  ],
+  // The layers above; docs/data.md has the code shape check.
+  sources: layerSources(cityServiceRoot, cityLayers),
   // The City board's site and lookup page do not change between elections, so
   // they are in referrals.js (src/data/jurisdictions.js pairs them with this
   // block). This file holds only what a new election changes.
