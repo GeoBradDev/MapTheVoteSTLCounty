@@ -274,8 +274,8 @@ describe('isOfficialUrl', () => {
     'https://www.sos.mo.gov/elections',
     'https://revisor.mo.gov/main/OneSection.aspx?section=115.407',
     'https://www.eac.gov/voters',
-    // Not the bare county site URL: src/ may not repeat config URLs.
-    'https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/faq/',
+    // Not a county site URL: src/ may not repeat config URLs, even as a prefix.
+    'https://stlouiscountymo.gov/st-louis-county-government/',
     'https://stlouiscovotes.maps.arcgis.com/apps/instant/lookup/index.html',
   ])('accepts %s', (url) => {
     expect(isOfficialUrl(url)).toBe(true);

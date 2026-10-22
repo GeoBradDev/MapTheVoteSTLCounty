@@ -26,9 +26,6 @@ sources:
   - id: sos-absentee-form
     label: Missouri Secretary of State, Request for Missouri Absentee Ballot (PDF)
     url: https://www.sos.mo.gov/CMSImages/ElectionGoVoteMissouri/AbsenteeBallotRequestForm.pdf
-  - id: county-contact
-    label: St. Louis County Board of Elections, Contact Us
-    url: https://stlouiscovotes.info/about-us/
   - id: rsmo-115-283
     label: Missouri Revised Statutes, Section 115.283 (absentee ballot statements and notaries)
     url: https://revisor.mo.gov/main/OneSection.aspx?section=115.283
@@ -67,7 +64,7 @@ Satellite sites are open:[^county-absentee-app]
 - Monday, November 2, 8 a.m. to 5 p.m.[^county-absentee-app]
 
 The Board of Elections office, 725 Northwest Plaza Drive, St. Ann, has the same hours.[^county-absentee-app] It
-also opened earlier, on Tuesday, September 22.[^county-absentee-app][^county-contact] Before
+also opened earlier, on Tuesday, September 22.[^county-absentee-app] Before
 October 20, you need one of the reasons below to vote there.[^rsmo-115-277]
 
 To find the sites closest to you, look up your address on the

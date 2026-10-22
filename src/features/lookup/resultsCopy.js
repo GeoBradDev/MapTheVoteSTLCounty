@@ -105,7 +105,7 @@ export const copy = {
     // Link text for a source, by its host. Anything else shows its host.
     sourceNames: {
       'revisor.mo.gov': 'Missouri law',
-      'stlouiscovotes.info': 'St. Louis County Board of Elections',
+      'stlouiscountymo.gov': 'St. Louis County Board of Elections',
       // The county's own ArcGIS apps, such as its Absentee Voting Lookup.
       'stlouiscovotes.maps.arcgis.com': 'St. Louis County Board of Elections',
     },

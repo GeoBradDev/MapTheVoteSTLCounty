@@ -103,10 +103,10 @@ const election = deepFreeze({
   ],
   officialLookupUrl:
     'https://stlouiscovotes.maps.arcgis.com/apps/instant/lookup/index.html?appid=4c3116b104af40bea77ebea20aaae275',
-  // Decided in issue #1: link the .info site directly, since
-  // stlouiscountymovotes.gov redirects to it and stlouiscovotes.gov does not
-  // resolve.
-  countySiteUrl: 'https://stlouiscovotes.info/',
+  // Issue #1 chose the county board's own site. Since 2026-10-21 every page of
+  // that site, stlouiscovotes.info, sends visitors here, so link this page
+  // directly (#73). stlouiscountymovotes.gov reaches it only after two hops.
+  countySiteUrl: 'https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/',
   nearbyPollCount: 3,
 
   // From the county's Absentee Voting Lookup app introduction, re-read from the
@@ -138,11 +138,9 @@ const election = deepFreeze({
     open: '06:00',
     close: '19:00',
     inLineAtCloseMayVote: true,
-    sources: [
-      'https://revisor.mo.gov/main/OneSection.aspx?section=115.407',
-      'https://stlouiscovotes.info/faq/',
-    ],
-    lastVerified: '2026-10-20',
+    // The county FAQ that also said so now redirects (#73).
+    sources: ['https://revisor.mo.gov/main/OneSection.aspx?section=115.407'],
+    lastVerified: '2026-10-21',
   },
 
   // Owner decision on issue #72 (2026-10-21), replacing the issue #1 line that
@@ -150,8 +148,9 @@ const election = deepFreeze({
   // must vote at their assigned polling place on Election Day, and a
   // provisional ballot cast at the wrong one is not counted. The Secretary of
   // State says the same. County data assigns no polling place to a precinct
-  // (docs/data.md), so the app says how to confirm it: the phone number is on
-  // the county board's Contact Us page.
+  // (docs/data.md), so the app says how to confirm it: the phone number is in
+  // the county's November 3, 2026 Polling Place Lookup app, re-read on
+  // 2026-10-21 (its old Contact Us page now redirects, #73).
   electionDayPollingPlace: {
     sources: [
       'https://revisor.mo.gov/main/OneSection.aspx?section=115.430',
@@ -159,7 +158,8 @@ const election = deepFreeze({
     ],
     lastVerified: '2026-10-21',
     phone: '314-615-1800',
-    phoneSource: 'https://stlouiscovotes.info/about-us/',
+    phoneSource:
+      'https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=13fb36e785c84dbdbcc5219f999652ba',
   },
 });
 

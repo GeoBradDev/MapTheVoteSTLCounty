@@ -5,10 +5,11 @@
 /** Any government host: federal, state and local sites use .gov. */
 const GOV_SUFFIX = '.gov';
 
-/** The St. Louis County Board of Election Commissioners' own sites, and their subdomains. */
-const OFFICIAL_DOMAINS = ['stlouiscovotes.info'];
-
-/** Single hosts the county board publishes on (its ArcGIS portal), exact match only. */
+/**
+ * Single hosts the county board publishes on (its ArcGIS portal), exact match
+ * only. Its website is on the county's .gov site; its old site,
+ * stlouiscovotes.info, now redirects every page there and is no source (#73).
+ */
 const OFFICIAL_HOSTS = ['stlouiscovotes.maps.arcgis.com'];
 
 /**
@@ -33,9 +34,5 @@ export function isOfficialUrl(url) {
     return false;
   }
   const host = parsed.hostname;
-  return (
-    host.endsWith(GOV_SUFFIX) ||
-    OFFICIAL_HOSTS.includes(host) ||
-    OFFICIAL_DOMAINS.some((domain) => host === domain || host.endsWith(`.${domain}`))
-  );
+  return host.endsWith(GOV_SUFFIX) || OFFICIAL_HOSTS.includes(host);
 }

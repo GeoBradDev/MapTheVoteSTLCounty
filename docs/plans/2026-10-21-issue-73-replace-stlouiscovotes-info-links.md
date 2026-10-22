@@ -94,3 +94,18 @@ No payments, email, API or data skill applies.
 - Live drive: run the production build, open `/`, `/learn`, `/learn/who-to-contact` and a
   precinct page, and confirm every Board of Elections link's href is the new page and no
   rendered link points at a retired host.
+
+## Revisions
+
+- Frozen test rewritten (`topic.test.js`, one `isOfficialUrl` accept example). The red commit
+  used `.../board-of-elections/faq/` as the example, which contains `countySiteUrl`, so
+  `election-hardcoding.test.js` failed on the test file itself. The example became
+  `https://stlouiscountymo.gov/st-louis-county-government/`, which still covers the new host
+  and holds no config URL. No assertion was weakened. This was decided inside the run, without
+  a separate owner approval, because the run's instructions leave such low-stakes calls to
+  the agent; the PR body records it. Proof the rewritten test still catches the defect, run
+  at the merge-base with only the rewritten test applied: `rejects
+https://stlouiscovotes.info/faq/` and `rejects https://www.stlouiscovotes.info/about-us/`
+  fail (2 failed, 52 passed).
+- `retired-sites.test.js` skips `*.test.js(x)` files, since `topic.test.js` must name a
+  retired URL to prove it is rejected (issue step 5).
