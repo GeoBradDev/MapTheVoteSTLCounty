@@ -17,6 +17,17 @@ export default Object.freeze({
   }),
 
   /**
+   * The City board's polling places page, with its Assigned Polling Place
+   * Lookup: the City's official lookup, the fallback when ours fails (#86).
+   * @type {Referral}
+   */
+  stlCityLookup: Object.freeze({
+    url: 'https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/polling-places/index.cfm',
+    source: 'https://www.stlouis-mo.gov/government/departments/board-election-commissioners/',
+    lastVerified: '2026-10-22',
+  }),
+
+  /**
    * The Missouri Secretary of State Voter Outreach Center, which looks up any
    * Missouri voter. The county's own lookup apps use it as their no-results link.
    * @type {Referral}

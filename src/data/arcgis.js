@@ -8,6 +8,9 @@ import election from '../config/election.js';
 import { isFresh, layerMaxAgeMs } from './freshness.js';
 import { selectCityWaits, selectCountyWaits } from './waitTimes.js';
 
+// This module is the County's data adapter (#86): it reads the County block.
+const countyConfig = election.jurisdictions.county;
+
 /** Precinct codes: a 2 or 3 letter township prefix plus 3 digits, like CC007. */
 export const PRECINCT_CODE = /^[A-Z]{2,3}\d{3}$/;
 
@@ -21,8 +24,8 @@ export const PRECINCT_FIELDS = Object.freeze([
     'precinct',
     'in_election',
     'html',
-    election.congressionalField,
-    ...election.districtFields.map((d) => d.field),
+    countyConfig.congressionalField,
+    ...countyConfig.districtFields.map((d) => d.field),
   ]),
 ]);
 
@@ -91,11 +94,11 @@ function checkCode(code) {
   if (!PRECINCT_CODE.test(code)) throw new NotFound(`Not a precinct code: ${JSON.stringify(code)}`);
 }
 
-// A layer is a key of `election.layers`, or a wait time source from the
+// A layer is a key of the County block's `layers`, or a wait time source from the
 // config, which names its own service root.
 function layerUrl(layer) {
   return typeof layer === 'string'
-    ? `${election.serviceRoot}/${election.layers[layer]}`
+    ? `${countyConfig.serviceRoot}/${countyConfig.layers[layer]}`
     : `${layer.serviceRoot}/${layer.layer}`;
 }
 
@@ -371,7 +374,7 @@ export const getPolls = sharedLayer('polls', '1=1', POLL_FIELDS);
  * @returns {Promise<object>} A GeoJSON FeatureCollection in lat/lng with
  *   normalized properties, including `abs_type` and `notes_abs`.
  */
-export const getAbsenteeSites = sharedLayer('polls', election.absenteeWhere, POLL_FIELDS);
+export const getAbsenteeSites = sharedLayer('polls', countyConfig.absenteeWhere, POLL_FIELDS);
 
 // The rows of a wait time layer: attributes only, no geometry. A plain GET:
 // the query carries no voter data, and the layers send max-age=30.
