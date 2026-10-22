@@ -4,8 +4,8 @@ A nonpartisan voter guide for St. Louis County, Missouri, live at
 [mapthevotestl.com](https://mapthevotestl.com). A voter types an address or uses their
 location and gets their precinct, the nearest polling places, their sample ballot, their
 districts and the in-person absentee voting sites and hours, plus short "How to vote" guides
-built from official sources. A St. Louis City address is sent to the City's own Board of
-Election Commissioners.
+built from official sources. A voter with a St. Louis City address is referred to the City's
+own Board of Election Commissioners.
 
 It is for St. Louis County voters, on a phone first, and for whoever runs it for the next
 election: the sections below say how to set it up, where its data comes from and how to
@@ -20,8 +20,8 @@ Contents: [Nonpartisan statement](#nonpartisan-statement) ·
 ## Nonpartisan statement
 
 A nonpartisan, unofficial guide. Not affiliated with the St. Louis County Board of Elections
-or the St. Louis City Board of Election Commissioners. (The wording the site itself shows is
-settled in #71; keep this line the same as the site's.)
+or the St. Louis City Board of Election Commissioners. (The statement the site itself shows is
+being settled in #71; keep this line the same as the site's once it is.)
 
 - **Reference tool only.** It says where, when and how to vote. It makes no endorsements and
   no comment on any candidate, party or ballot measure, and it never ranks or orders
@@ -89,9 +89,11 @@ against, and why. In short:
   Elections' public ArcGIS layers under
   [its service root](https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services), named
   per election (`precincts_2026_11_view` and `polls_2026_11_view` for November 3, 2026), plus
-  the county boundary layer. The polls layer holds both Election Day and in-person absentee
-  sites; no layer assigns a polling place to a precinct, so the app lists the nearest and says
-  how to confirm the assigned one.
+  the
+  [county boundary layer](https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/St_Louis_County_Boundary/FeatureServer/0).
+  The polls layer holds both Election Day and in-person absentee sites; no layer assigns a
+  polling place to a precinct, so the app lists the nearest and says how to confirm the
+  assigned one.
 - **Sample ballots:** each precinct's `html` field links its PDF on the board's
   [ArcGIS portal](https://stlouiscovotes.maps.arcgis.com). The app shows the link only when it
   matches the config's pattern and names the precinct.
@@ -99,9 +101,14 @@ against, and why. In short:
   the [Missouri Secretary of State](https://www.sos.mo.gov) and the
   [Revised Statutes of Missouri](https://revisor.mo.gov), and live in `src/config/election.js`
   with their sources and the date each was last checked.
-- **Address search:** St. Louis County's address points (a live county layer, then its hosted
-  copy), then [Photon](https://photon.komoot.io) (OpenStreetMap data), with every match checked
-  against the City of St. Louis's own geocoder. See [Address search](#address-search).
+- **Address search:** St. Louis County's address points (the
+  [live county layer](https://maps.stlouisco.com/hosting/rest/services/Maps/ASR_Address_Points/FeatureServer/0),
+  then its
+  [hosted copy](https://services2.arcgis.com/w657bnjzrjguNyOy/arcgis/rest/services/Address_Points/FeatureServer/2)),
+  then [Photon](https://photon.komoot.io) (OpenStreetMap data), with every match checked
+  against the City of St. Louis's own
+  [geocoder](https://maps6.stlouis-mo.gov/arcgis/rest/services/GEOCODERS/COMPOSITE_GEOCODE/GeocodeServer).
+  See [Address search](#address-search).
 - **Map:** [OpenFreeMap](https://openfreemap.org)'s Positron basemap. See [Map](#map).
 - **How to vote guides:** Markdown under `content/`, each citing official sources only. See
   [Learn content](#learn-content).
@@ -110,8 +117,8 @@ against, and why. In short:
 
 ## Updating for a new election
 
-The next election should be an edit to config and content, not to code. Work on a branch and
-merge through the usual pull request.
+The next election is mostly an edit to config and content; the scripts' own sample lists
+may need new values too. Work on a branch and merge through the usual pull request.
 
 1. **Find the new layers.** The board publishes a new view per election, named like
    `precincts_YYYY_MM_view` and `polls_YYYY_MM_view`. List the services at the service root
@@ -124,20 +131,23 @@ merge through the usual pull request.
    rows to `docs/raw/`. Compare them with `docs/data.md`: field names, the `in_election`
    values, the congressional district field, the `abs_type` values and the sample ballot link
    format.
-3. **Update `src/config/election.js`.** Every value that changes between elections is there:
-   the date and name, the layer paths, the absentee filter, the sample ballot link pattern,
-   the congressional field and the district fields, the official lookup URL, the early voting
-   schedules, the Election Day hours and polling place rule, each with its `sources` and
-   `lastVerified`. Re-read every source; do not copy a value forward unchecked. If a field the
-   app reads was renamed, `PRECINCT_FIELDS` or `POLL_FIELDS` in `src/data/arcgis.js` changes
-   too. See [Election config](#election-config).
+3. **Update `src/config/election.js`.** Every value that changes between elections is there,
+   including every link to that election's own Instant Apps, each with its `sources` and
+   `lastVerified` where it has them. Re-read every source; do not copy a value forward
+   unchecked. If a field the app reads was renamed, search `src/` and `scripts/` for the old
+   name and change every use, including `PRECINCT_FIELDS` and `POLL_FIELDS` in
+   `src/data/arcgis.js` and the field lists in `scripts/check-config.mjs`. See
+   [Election config](#election-config).
 4. **Update `docs/data.md`** with what the inspection found, and why for anything that
    changed.
 5. **Re-verify every content topic.** For each file under `content/*/learn/`, re-read every
    source, fix any text that changed, then set `election` to the new date and `lastVerified`
-   to the day you checked. The build fails until every topic is updated. See
-   [Learn content](#learn-content).
-6. **Run the health check** and fix what it reports:
+   to the day you checked. The build fails until every topic is updated, and it also fails on
+   a `lastVerified` more than 60 days before Election Day, so do this step within that window.
+   See [Learn content](#learn-content).
+6. **Re-record the fixtures** with `node scripts/record-fixtures.mjs`, so the tests and the
+   checks below use the new layers. Pick new sample precincts in it if the old ones are gone.
+7. **Run the health check** and fix what it reports:
 
    ```sh
    node scripts/check-config.mjs
@@ -145,17 +155,20 @@ merge through the usual pull request.
    node scripts/check-content-links.mjs
    ```
 
-   Open any link the content check skipped in a browser. Update the thresholds or known
-   points at the top of `scripts/check-config.mjs` if the new data needs it. See
-   [Data health check](#data-health-check).
-7. **Re-record the fixtures** with `node scripts/record-fixtures.mjs` if the layers' fields
-   changed, and pick new sample precincts in it if the old ones are gone. Then run the full
-   gate locally (`npm run lint`, `npm run format:check`, `npm test`, `npm run build`,
-   `npm run test:e2e`, `npm run test:perf`).
-8. **Deploy.** Merge the pull request; `main` deploys once CI passes. Run
+   The first two take their sample points from the new fixtures: when a polling place or
+   precinct they name is gone, change the lists at the top of each script (the known points,
+   the polling place IDs and the sample address with its precinct) and the thresholds if the
+   new data needs it. Open any link the content check skipped in a browser. See
+   [Data health check](#data-health-check) and [Address search](#address-search).
+8. **Run the full gate** locally (`npm run lint`, `npm run format:check`, `npm test`,
+   `npm run build`, `npm run test:e2e`, `npm run test:perf`). Tests that name a precinct,
+   polling place or count from the old fixtures may need the new values.
+9. **Deploy.** Merge the pull request; `main` deploys once CI passes. Run
    `npm run smoke -- https://mapthevotestl.com`, then the hand checks in
    [Accessibility](#accessibility), [Performance](#performance) and [Privacy](#privacy).
-   The daily data health workflow picks up the new `electionDate` on its own.
+   The daily data health workflow reads the new `electionDate` without changes; confirm in
+   the Actions tab that it is still turned on and that a run passes (**Data health**,
+   **Run workflow**).
 
 ## Deploy
 
@@ -534,6 +547,6 @@ gate above and needs it green; run it locally first. Keep each pull request to o
 
 ## License
 
-No license has been chosen yet, so the code is not yet open for reuse. Until a `LICENSE` file
+No license has been chosen yet (#118), so the code is not yet open for reuse. Until a `LICENSE` file
 is added, ask the owner before reusing it. Voter information and sample ballots belong to
 their official publishers.
