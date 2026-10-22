@@ -260,12 +260,14 @@ function samePage(a, b) {
 
 /**
  * True when a 403 is a bot challenge that a browser would get past: a
- * `cf-mitigated: challenge` header, or a page that loads Cloudflare's
- * challenge platform.
+ * `cf-mitigated: challenge` header, or Cloudflare's challenge page itself,
+ * which sets `_cf_chl_opt` and loads the challenge orchestrator. Cloudflare
+ * also adds its detection script and Turnstile to ordinary pages, including a
+ * real 403, so a mention of the challenge platform alone is not enough.
  */
 function isBotChallenge(res, body) {
   if ((res.headers.get('cf-mitigated') ?? '').toLowerCase() === 'challenge') return true;
-  return /challenges\.cloudflare\.com|\/cdn-cgi\/challenge-platform\//i.test(body);
+  return /_cf_chl_opt|\/cdn-cgi\/challenge-platform\/h\/[^"'\s]*\/orchestrate\//i.test(body);
 }
 
 const isHtml = (res) =>

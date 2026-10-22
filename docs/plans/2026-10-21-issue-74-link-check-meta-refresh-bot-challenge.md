@@ -25,8 +25,9 @@ because no UI changes. django, fastapi, expo: not applicable because the repo us
    `countySiteUrl`, `officialLookupUrl`, every `sources` entry and any other key ending in
    `Url` or `Source` (today `phoneSource`), but not `serviceRoot`, which `check-config.mjs`
    already covers through its layers. Each is reported with `src/config/election.js (<key>)`.
-4. A `403` with a bot-challenge marker (a `cf-mitigated: challenge` header, or a body naming
-   `challenges.cloudflare.com` or `/cdn-cgi/challenge-platform/`) is reported as
+4. A `403` with a bot-challenge marker (a `cf-mitigated: challenge` header, or Cloudflare's
+   challenge page itself: a body that sets `_cf_chl_opt` or loads
+   `/cdn-cgi/challenge-platform/h/.../orchestrate/`) is reported as
    `SKIP <url>: bot challenge, check by hand in a browser (HTTP 403) (<files>)`, is not retried, and does not make
    the script exit 1. Any other `403` still fails.
 5. Skipped URLs, each with the files that use it, are listed in the issue the workflow opens
@@ -74,6 +75,9 @@ because no UI changes. django, fastapi, expo: not applicable because the repo us
   another page fails like any other. That is what criterion 1 says, and none of today's links
   has one (live drive). If one appears, a person reads the FAIL detail; a delay threshold is a
   follow-up, not done here.
+- Cloudflare injects its detection script (`/cdn-cgi/challenge-platform/scripts/jsd/`) and
+  Turnstile (`challenges.cloudflare.com`) into ordinary pages, including a real 403, so those
+  alone do not make a skip (review round 4 narrowed the markers).
 - An HTTP `Refresh` response header is not checked; the issue asks only for the meta tag.
 - Reading bodies makes each check slower; capped at 512 KB, and only for `text/html`.
 - Skips are permanent for the county site, so a skip alone does not open an issue (it would
