@@ -111,7 +111,7 @@ describe('PrivacyPage', () => {
       "goes to St. Louis County's election maps on Esri's ArcGIS Online (services6.arcgis.com), in the body of the request, not in its web address",
     );
     expect(item).toHaveTextContent(
-      "When it is in or near the City of St. Louis, it goes the same way to the St. Louis City Board of Election Commissioners' election maps (services6.arcgis.com), also on Esri's ArcGIS Online, as well or instead: an address found in the City goes there first, and to the county only if the City has no precinct for it.",
+      "When it is in or near the City of St. Louis, it goes the same way to the St. Louis City Board of Election Commissioners' election maps (services6.arcgis.com), also on Esri's ArcGIS Online. An address the address search places in the City goes there first, and to the county's maps too only if the City has no precinct for it or cannot be reached.",
     );
     expect(item).toHaveTextContent(
       'Your browser does not keep these requests or their answers in its cache.',

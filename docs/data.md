@@ -728,8 +728,8 @@ which misses many City house numbers (`6135 Washington Ave 63112`, `5010 Notting
   found again by the City, unless the county lists the address in the same ZIP (no match,
   #58).
 - **Suggestions:** the geocoder has no suggest operation and matches whole words only, so
-  it is asked with `findAddressCandidates` once a house number and a word of at least three
-  letters are typed, and its parcels whose number and street start with the typed words
+  it is asked with `findAddressCandidates` once a house number and a street word of two or
+  more letters or digits are typed (`12th`, `Oz`; not a lone `W`), and its parcels whose number and street start with the typed words
   (the last as a prefix) are shown after the county's, at most 5. `5010 Notting` gets no
   City suggestion; `5010 Nottingham` does. A failed City request adds none, and none are
   shown while no county source answers, since a pick could not then be found again.

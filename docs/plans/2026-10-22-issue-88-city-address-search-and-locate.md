@@ -98,7 +98,8 @@ dataviz, django, fastapi, expo (not applicable because no charts, no backend, no
 - Bundle: the new geocoder code is in the first load (about 2.1 KB room); the City
   precinct client stays behind `loadCityClient()`.
 - The City getting typed text as suggestions are typed: only text that starts with a house
-  number and a full word, debounced like today, in a POST body; the notice says so.
+  number and a street word of two or more letters or digits, debounced like today, in a POST
+  body; the notice says so.
 
 Not doing: the City results page (#89), the City's official lookup link in the lookup's
 error line (#93), the Clayton municipality no match (opened as #143, unrelated).
@@ -147,5 +148,7 @@ error line (#93), the Clayton municipality no match (opened as #143, unrelated).
   README intro and the CSP comment say what the City now does. Searching the same City
   address again on the City stub page stays on that URL, as a repeat search on any precinct
   page does on `main`; #89 replaces the stub.
-- Verifier note: the privacy notice's "Finding your precinct" now says a point found in the
-  City goes to the City's maps first, and to the county's only if the City has no precinct.
+- Verifier note: the privacy notice's "Finding your precinct" now says an address the search
+  places in the City goes to the City's maps first, and to the county's too only if the City
+  has no precinct for it or cannot be reached (coordinates alone still go to the county's
+  first).
