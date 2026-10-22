@@ -396,8 +396,8 @@ from `src/data/jurisdictions.js`, picked from the precinct code's shape (`/p/CC0
 `/p/W01P12` the City; [docs/data.md](docs/data.md#jurisdictions-and-precinct-codes)); its
 other links still read the County values until the City results land (#89, #93). The City's
 data client, `src/data/cityArcgis.js` (#87), is loaded on demand. The
-test also fails on a City block's layer, service, field name or filter written outside the
-config.
+test also fails on a City block's layer, service, filter or field name (except the common words
+`name` and `district`) written outside the config.
 
 The polling places layer the app keeps in memory (`getPolls` and `getAbsenteeSites`) has a max
 age (#84): `layerMaxAge` in the config, shorter on Election Day (the date in the config's time

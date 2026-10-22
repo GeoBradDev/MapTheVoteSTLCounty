@@ -3,7 +3,8 @@
 Inspected 2026-10-20 with `node scripts/inspect-data.mjs`. Raw schema and sample
 dumps are in `docs/raw/`. Re-run the script before each election and update this file.
 
-The precinct and polling place layers are read through `src/data/arcgis.js`. Its tests
+The County precinct and polling place layers are read through `src/data/arcgis.js`, the St.
+Louis City layers through `src/data/cityArcgis.js` (St. Louis City, at the end). Their tests
 use live responses recorded in `docs/raw/fixtures/` by `node scripts/record-fixtures.mjs`.
 
 Service root: `https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services`
@@ -805,7 +806,11 @@ and the County's Election Day rule.
 
 ## St. Louis City
 
-Checked live on 2026-10-22 for #87, which settles the layer questions #57 left open. The
+Checked live on 2026-10-22 for #87, which settles the layer questions #87 needed from #57:
+the Election Day list and its filter, the early voting sites, the City boundary, and districts
+for a precinct. Two #57 questions stay open: what the City page's Assigned Polling Place Lookup
+calls (the layers assign no polling place to a precinct, below), and whether the U.S. House
+"First District" polygon follows the 2025 congressional map (for #90). The
 City client is `src/data/cityArcgis.js`, with the same request rules as the County client
 (plain fetch, one retry, coordinates only in a POST body). The layers, fields and filters are
 in the City block of `src/config/election.js`; `node scripts/check-config.mjs` checks them
@@ -838,11 +843,14 @@ point -90.33, 38.62 returns none; City Hall returns `W 14 P 2`).
 46 polygons: wards 1 to 14, Missouri House 76 to 82 and 84, Missouri Senate 4 and 5, U.S.
 House "First District", Community College Trustee Subdistricts 2 and 3, the Board of
 Education, the citywide and statewide offices (one polygon per office, sharing a `districtid`
-such as `City of St. Louis` or `State of Missouri`), and two placeholder rows, `President of the
-United States` and `Vice-President of the United States`, each a polygon of about 1,100 m² with
-its own `districtid`. A point query returns one row per office there: 22 at City Hall (8
+such as `City of St. Louis` or `State of Missouri`), and two placeholder rows, `electedoffice`
+`President of the United States` and `Vice-President of the United States` (`districtid`
+`President of the United States` and `Vice President of the United States`, no hyphen), each a
+polygon of about 1,100 m². A point query returns one row per office there: 22 at City Hall (8
 distinct `districtid` values). A districts card should drop the two placeholders and group the
-rows that share a `districtid` (#90). The statewide and some district polygons reach past the City line (the
+rows that share a `districtid` (#90). The `electedoffice` field's coded values also include party committee posts,
+`Committeeman (R)`, `(D)`, `(L)`, `(C)`, `(G)` and the same for `Committeewoman`: no row has
+one on 2026-10-22, but a card must never show such a row's office, which names a party. The statewide and some district polygons reach past the City line (the
 county point -90.33, 38.62 gets 9 rows, among them Missouri Senate District 4), so a districts
 answer is never the test of being in the City: the precinct and boundary queries are. The app reads `electedoffice`, `district` and
 `districtid` only. The layer also holds each officeholder's name, photo, party and contact
@@ -910,6 +918,6 @@ Neither official server has a separate City boundary layer (the org's service li
 `maps6` folders were searched on 2026-10-22). The citywide offices' polygons in the districts
 layer are the City outline: 9 rows (mayor, comptroller and the other citywide offices), each
 about 281.41 million m² in Web Mercator (within 60 m² of each other), within 300 m² of
-the 207 precincts' total area (about 66 square miles on the ground). `isInCityBoundary` asks with `boundaryWhere`; any row
+the 207 precincts' total area (about 66 square miles on the ground). `isInCityBoundary` asks with `boundaryWhere` for `OBJECTID` only; any row
 means inside. A backup to the precinct point query, as the county boundary is for the County.
 
