@@ -114,3 +114,6 @@ six new card tests fail for the expected reasons: the list still holds the neare
   midnight kept "loaded at 11:50 p.m." without the day after midnight. `StaleNote` now
   re-checks the day every minute (`StaleNote.test.jsx`, committed red first).
   `loadedAtParts` is exported from `useNearestSites.js` for it.
+- Live drive finding: the stale note read "loaded at 8:58 p.m.." with two periods, since
+  every formatted time already ends in "a.m." or "p.m."; the copy no longer adds one (copy
+  test committed red first).

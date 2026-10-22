@@ -115,8 +115,9 @@ export const copy = {
      * @param {string} time HH:MM when the list loaded.
      * @param {string | null} date YYYY-MM-DD when that was not today.
      */
+    // No closing period: every time already ends in "a.m." or "p.m.".
     staleNote: (time, date) =>
-      `We could not check this list for changes. It was loaded ${date ? `on ${formatLongDate(date)} at` : 'at'} ${formatTime(time)}.`,
+      `We could not check this list for changes. It was loaded ${date ? `on ${formatLongDate(date)} at` : 'at'} ${formatTime(time)}`,
     failed: 'We could not load polling places right now. Find them with the',
     none: 'We could not find polling places near here. Find them with the',
   },
