@@ -4,14 +4,7 @@
 // docs/data.md).
 import { jurisdictions } from '../config/election.js';
 import referrals from '../config/referrals.js';
-import {
-  getAbsenteeSites,
-  getPolls,
-  getPrecinctById,
-  getPrecinctGeometry,
-  NotFound,
-  PRECINCT_CODE,
-} from './arcgis.js';
+import * as arcgis from './arcgis.js';
 
 /**
  * City precinct codes: ward and precinct, two digits each, like W01P12 for the
@@ -34,21 +27,28 @@ export const CITY_PRECINCT_CODE = /^W\d{2}P\d{2}$/;
  * @property {(code: string) => Promise<object>} getOutline The precinct's outline.
  */
 
-/** @type {Jurisdiction} The County: today's data code. */
+/**
+ * @type {Jurisdiction} The County: today's data code in ./arcgis.js. Each
+ * function calls through to it when called, not when this module loads, so a
+ * test that replaces part of ./arcgis.js (the cards' tests do) still works.
+ */
 export const county = Object.freeze({
   id: 'county',
   config: jurisdictions.county,
-  code: PRECINCT_CODE,
+  get code() {
+    return arcgis.PRECINCT_CODE;
+  },
   officialLookupUrl: jurisdictions.county.officialLookupUrl,
   boardSiteUrl: jurisdictions.county.boardSiteUrl,
-  getPrecinct: getPrecinctById,
-  getPolls,
-  getEarlyVotingSites: getAbsenteeSites,
-  getOutline: getPrecinctGeometry,
+  getPrecinct: (code) => arcgis.getPrecinctById(code),
+  getPolls: () => arcgis.getPolls(),
+  getEarlyVotingSites: () => arcgis.getAbsenteeSites(),
+  getOutline: (code) => arcgis.getPrecinctGeometry(code),
 });
 
 // Until #87 reads the City's layers, every City answer is "not found".
-const notYet = () => Promise.reject(new NotFound('City precinct data is not served yet (#87)'));
+const notYet = () =>
+  Promise.reject(new arcgis.NotFound('City precinct data is not served yet (#87)'));
 
 /** @type {Jurisdiction} The City: a stub until #87. */
 export const city = Object.freeze({
@@ -90,6 +90,7 @@ export function isPrecinctCode(code) {
  * @throws {NotFound} When the code is not a City code.
  */
 export function cityPrecinctId(code) {
-  if (!CITY_PRECINCT_CODE.test(code)) throw new NotFound(`Not a City precinct code: ${code}`);
+  if (!CITY_PRECINCT_CODE.test(code))
+    throw new arcgis.NotFound(`Not a City precinct code: ${code}`);
   return `W ${Number(code.slice(1, 3))} P ${Number(code.slice(4))}`;
 }

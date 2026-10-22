@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import election from '../../config/election.js';
 import { isFresh, layerMaxAgeMs } from '../../data/freshness.js';
 import { distanceOrigin } from './distanceOrigin.js';
+import { useJurisdiction } from './jurisdictionContext.js';
 import { zonedNow } from './earlyVoting.js';
 import { nearestPolls } from './nearbyPolls.js';
 import { useRetry } from './useRetry.js';
@@ -30,7 +31,9 @@ export function loadedAtParts(loadedAt, now = Date.now()) {
  * fails, the rows stay and `refreshFailed` is set until a refresh succeeds.
  * When the new rows remove the element that had focus, focus moves to
  * `targetRef`, the card.
- * @param {() => Promise<object>} getLayer getPolls or getAbsenteeSites.
+ * @param {() => Promise<object>} getLayer The jurisdiction's getPolls or
+ *   getEarlyVotingSites. The precinct's outline, for its center, comes from the
+ *   jurisdiction too (#86).
  * @param {string} code The precinct code.
  * @param {{ lat: number, lng: number } | null} origin The looked-up point.
  * @returns {{ result: null | { error: true, attempt: number }
@@ -42,6 +45,7 @@ export function useNearestSites(getLayer, code, origin) {
   const [result, setResult] = useState(null);
   const { attempt, loading, retry, done, targetRef } = useRetry();
   const [refresh, setRefresh] = useState(0);
+  const { getOutline } = useJurisdiction();
   // When the rows shown were loaded, read by the visibility listener. Set in
   // the commit that shows the rows, so a visibility change right after it
   // never reads the previous value.
@@ -71,7 +75,7 @@ export function useNearestSites(getLayer, code, origin) {
 
   useEffect(() => {
     let current = true;
-    Promise.all([getLayer(), distanceOrigin(code, origin)])
+    Promise.all([getLayer(), distanceOrigin(code, origin, getOutline)])
       .then(
         ([layer, point]) => ({
           rows: nearestPolls(layer, point),
@@ -96,7 +100,7 @@ export function useNearestSites(getLayer, code, origin) {
     return () => {
       current = false;
     };
-  }, [getLayer, code, origin, attempt, done, refresh, targetRef]);
+  }, [getLayer, getOutline, code, origin, attempt, done, refresh, targetRef]);
 
   return { result, loading, retry, targetRef };
 }

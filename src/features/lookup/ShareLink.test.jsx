@@ -23,6 +23,10 @@ describe('shareUrl', () => {
     expect(siteUrl).toBe('https://mapthevotestl.com');
     expect(shareUrl('CC007')).toBe('https://mapthevotestl.com/p/CC007');
   });
+
+  it('works the same for a City precinct code (#86)', () => {
+    expect(shareUrl('W01P12')).toBe('https://mapthevotestl.com/p/W01P12');
+  });
 });
 
 describe('ShareLink', () => {

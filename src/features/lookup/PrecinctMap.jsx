@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import election from '../../config/election.js';
-import { getPrecinctGeometry } from '../../data/arcgis.js';
 import { BASEMAP_ATTRIBUTION } from './basemap.js';
+import { useJurisdiction } from './jurisdictionContext.js';
 import { copy } from './resultsCopy.js';
 
 const linkClass = 'text-primary underline';
@@ -51,6 +51,7 @@ function Attribution() {
  *   point, in memory only. `polls` are the places the list shows, in order.
  */
 export default function PrecinctMap({ code, origin, polls }) {
+  const { getOutline } = useJurisdiction();
   const [supported] = useState(canDrawMap);
   // 'loading', 'ready' or 'failed'.
   const [state, setState] = useState('loading');
@@ -125,7 +126,7 @@ export default function PrecinctMap({ code, origin, polls }) {
 
     if (document.visibilityState !== 'hidden') runClock();
     document.addEventListener('visibilitychange', onVisibility);
-    Promise.all([import('./precinctMapView.js'), getPrecinctGeometry(code)])
+    Promise.all([import('./precinctMapView.js'), getOutline(code)])
       .then(([{ createPrecinctMap }, feature]) => {
         if (!current || !loading) return;
         viewRef.current = createPrecinctMap(containerRef.current, {
@@ -143,7 +144,7 @@ export default function PrecinctMap({ code, origin, polls }) {
       viewRef.current?.remove();
       viewRef.current = null;
     };
-  }, [supported, inView, code, origin]);
+  }, [supported, inView, code, origin, getOutline]);
 
   if (!supported || state === 'failed') return null;
 

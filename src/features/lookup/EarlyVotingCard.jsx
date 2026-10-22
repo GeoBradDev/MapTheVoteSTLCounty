@@ -1,7 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Link } from 'wouter';
 import election from '../../config/election.js';
-import { getAbsenteeSites } from '../../data/arcgis.js';
 import { CARD_TOPICS } from '../learn/cardTopics.js';
 import { getLocale, translated } from '../../i18n/index.js';
 import { getTopic } from '../learn/topics.js';
@@ -15,6 +14,7 @@ import { directionsLinks, isAppleMobile } from './nearbyPolls.js';
 import { copy, sourceName } from './resultsCopy.js';
 import RetryButton from './RetryButton.jsx';
 import StaleNote from './StaleNote.jsx';
+import { useJurisdiction } from './jurisdictionContext.js';
 import { useNearestSites } from './useNearestSites.js';
 import { useNow } from './useNow.js';
 
@@ -195,7 +195,8 @@ export default function EarlyVotingCard({ code, origin, waitSource }) {
   // { rows, loadedAt } once loaded, { error: true, attempt } on failure. A
   // failed load can be tried again; it stays shown while it is (#18). A list
   // left open past the max age refreshes when the tab is shown again (#84).
-  const { result, loading, retry, targetRef } = useNearestSites(getAbsenteeSites, code, origin);
+  const { getEarlyVotingSites } = useJurisdiction();
+  const { result, loading, retry, targetRef } = useNearestSites(getEarlyVotingSites, code, origin);
   const [showAll, setShowAll] = useState(false);
   const focusRef = useRef(null);
   const now = useNow();

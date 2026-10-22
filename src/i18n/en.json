@@ -140,6 +140,7 @@
     "searchAnother": "Search another address",
     "ready": "Results for precinct {code} are ready.",
     "officialLookup": "county's official lookup",
+    "officialLookupCity": "City's official lookup",
     "pageTitle": "Precinct {code} | St. Louis County Voter Guide",
     "notFoundTitle": "Precinct not found | St. Louis County Voter Guide",
     "searchInstead": "Search for your address",

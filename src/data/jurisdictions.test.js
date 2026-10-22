@@ -55,11 +55,28 @@ describe('adapters', () => {
     expect(city.boardSiteUrl).toBe(referrals.stlCityBoard.url);
   });
 
-  it("the County adapter is today's County data code", () => {
-    expect(county.getPrecinct).toBe(arcgis.getPrecinctById);
-    expect(county.getPolls).toBe(arcgis.getPolls);
-    expect(county.getEarlyVotingSites).toBe(arcgis.getAbsenteeSites);
-    expect(county.getOutline).toBe(arcgis.getPrecinctGeometry);
+  it("the County adapter calls today's County data code", async () => {
+    expect(county.code).toBe(arcgis.PRECINCT_CODE);
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(() =>
+        Promise.resolve(new Response(JSON.stringify({ features: [] }), { status: 200 })),
+      );
+    try {
+      await expect(county.getPrecinct('nope')).rejects.toBeInstanceOf(arcgis.NotFound);
+      await expect(county.getPrecinct('ZZ999')).rejects.toBeInstanceOf(arcgis.NotFound);
+      await county.getPolls();
+      await county.getEarlyVotingSites();
+      const urls = fetchSpy.mock.calls.map(([input]) => decodeURIComponent(String(input)));
+      expect(urls[0]).toContain(`${election.layers.precincts}/query`);
+      expect(urls[0]).toContain("precinct='ZZ999'");
+      expect(urls.some((u) => u.includes(election.layers.polls) && u.includes('where=1=1'))).toBe(
+        true,
+      );
+      expect(urls.some((u) => u.includes(election.absenteeWhere.replace(/ /g, '+')))).toBe(true);
+    } finally {
+      fetchSpy.mockRestore();
+    }
   });
 
   it('the City stub answers not found without a request (#87 fills it in)', async () => {

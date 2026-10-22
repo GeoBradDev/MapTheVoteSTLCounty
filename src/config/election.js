@@ -195,7 +195,6 @@ const county = {
     },
   },
 
-
   // Owner decision on issue #72 (2026-10-21), replacing the issue #1 line that
   // county voters may vote at any polling place: follow RSMo 115.430. A voter
   // must vote at their assigned polling place on Election Day, and a
@@ -318,7 +317,6 @@ const shared = {
     sources: ['https://revisor.mo.gov/main/OneSection.aspx?section=115.407'],
     lastVerified: '2026-10-21',
   },
-
 };
 
 // The County block's values without its identity, for the default export.

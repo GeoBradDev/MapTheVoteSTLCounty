@@ -5,7 +5,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import byId from '../../docs/raw/fixtures/precinct-by-id.json';
-import election from './election.js';
+import election, { jurisdictions } from './election.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 
@@ -116,6 +116,34 @@ describe('election config', () => {
     expect(Number.isInteger(election.nearbyPollCount)).toBe(true);
     expect(election.nearbyPollCount).toBeGreaterThanOrEqual(3);
     expect(election.nearbyPollCount).toBeLessThanOrEqual(5);
+  });
+});
+
+describe('jurisdictions (#86)', () => {
+  it('has a County and a City block, each with its id, names and layers', () => {
+    expect(Object.keys(jurisdictions)).toEqual(['county', 'city']);
+    for (const [id, block] of Object.entries(jurisdictions)) {
+      expect(block.id).toBe(id);
+      expect(block.name).toMatch(/\S/);
+      expect(block.board).toMatch(/\S/);
+      expect(block.serviceRoot).toMatch(/^https:\/\/[^/]+\/.+[^/]$/);
+      expect(block.layers.precincts).toMatch(/\/FeatureServer\/\d+$/);
+    }
+    expect(jurisdictions.city.precinctField).toMatch(/^\w+$/);
+  });
+
+  it('is frozen', () => {
+    expect(Object.isFrozen(jurisdictions.city)).toBe(true);
+    expect(Object.isFrozen(jurisdictions.city.layers)).toBe(true);
+  });
+
+  it("keeps the County's values in the default export, unchanged", () => {
+    const { id, name, board, boardSiteUrl, ...values } = jurisdictions.county;
+    for (const [key, value] of Object.entries(values)) expect(election[key]).toBe(value);
+    expect(election.countySiteUrl).toBe(boardSiteUrl);
+    expect([id, name, board].every((v) => typeof v === 'string')).toBe(true);
+    expect(election).not.toHaveProperty('id');
+    expect(election.jurisdictions).toBe(jurisdictions);
   });
 });
 

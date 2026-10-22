@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'wouter';
 import election from '../../config/election.js';
-import { getPolls } from '../../data/arcgis.js';
 import { CARD_TOPICS } from '../learn/cardTopics.js';
 import { getLocale } from '../../i18n/index.js';
 import { getTopic } from '../learn/topics.js';
@@ -11,6 +10,7 @@ import PrecinctMap from './PrecinctMap.jsx';
 import RetryButton from './RetryButton.jsx';
 import { copy, sourceName } from './resultsCopy.js';
 import StaleNote from './StaleNote.jsx';
+import { useJurisdiction } from './jurisdictionContext.js';
 import { useNearestSites } from './useNearestSites.js';
 
 const linkClass = 'text-primary underline';
@@ -125,6 +125,7 @@ export default function PollsCard({ code, origin }) {
   // { rows, loadedAt } once loaded, { error: true, attempt } on failure. A
   // failed load can be tried again; it stays shown while it is (#18). A list
   // left open past the max age refreshes when the tab is shown again (#84).
+  const { getPolls } = useJurisdiction();
   const { result, loading, retry, targetRef } = useNearestSites(getPolls, code, origin);
   const [shown, setShown] = useState(election.nearbyPollCount);
   // The index of the first place a "Show more" revealed, which takes focus.
