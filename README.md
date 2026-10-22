@@ -195,8 +195,10 @@ headers and the cache rules. `src/test/render.test.js` checks it.
 - **Route changes show only on production.** A PR preview keeps the service's existing
   route rules, so a change to `routes` in `render.yaml` cannot be checked before merge. Merge
   it outside election weeks, then run `npm run smoke -- https://mapthevotestl.com` once the
-  deploy finishes; if a check fails, revert the merge commit on `main` (a Dashboard rollback
-  does not roll back routes, below).
+  deploy finishes. If a check fails, revert the merge commit on `main` and also delete, in the
+  Dashboard, any rule the revert took out of `render.yaml` (a sync keeps Dashboard rules, and
+  a page rule left behind points at a file the older build lacks). The same goes for a topic
+  that is removed or renamed: delete its old rule in the Dashboard too.
 
 - **Deploys:** a push to `main` deploys after CI passes (`autoDeployTrigger: checksPass`).
   A change only under `docs/` or to `README.md` does not build. Markdown under `content/`

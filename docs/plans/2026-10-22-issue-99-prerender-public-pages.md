@@ -206,7 +206,7 @@ build its head hook on the `pageHead()` function added here.
 - Criterion 7: `src/pageHead.test.js`.
 - Criterion 8, 10: `e2e/prerender.e2e.js` and `e2e/a11y.e2e.js` against `vite preview`;
   `npm run test:perf`.
-- Criterion 9: `src/test/smoke.test.js`, and `npm run smoke -- <preview url> --preview`.
+- Criterion 9: `src/test/smoke.test.js`, and `npm run smoke -- https://mapthevotestl.com` after the merge deploys (previews keep the old routes).
 - Criterion 11: curl of the PR preview, recorded in the PR and on the issue.
 - Live drive: build, `vite preview`, curl each route with no JavaScript, then Playwright on
   `/learn/voter-id` (open a section, follow an in-app link, check focus), `/` (type in the

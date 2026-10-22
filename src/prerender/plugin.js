@@ -6,7 +6,8 @@
 // the client-rendered shell (shell.html), loads src/entry-server.jsx in Node
 // through a Vite server and writes one file per public page: index.html (the
 // home page), learn/index.html, learn/<id>/index.html and privacy/index.html.
-// render.yaml rewrites every path with no file to /shell.html, so precinct
+// render.yaml rewrites each of those paths to its file and every other path
+// with no file to /shell.html, so precinct
 // pages (/p/*), whose data is live, are never baked into a build.
 //
 // `previewRoutes` makes `vite preview` (the e2e and Lighthouse runs) serve
