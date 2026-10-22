@@ -57,4 +57,4 @@ load on the county's portal and blow the workflow's step limit in the worst case
 
 - Unit tests: criteria 1 to 5 (stubbed fetch).
 - Live drive: `node scripts/check-config.mjs` passes against the live layers, and
-  `--ballot-sample 25` passes, showing real `Content-Disposition` names match.
+  `--ballot-sample all` passes (run: 974 of 974 named for their precinct, 3 min 37 s).
