@@ -54,6 +54,8 @@ No payments, email, API or data skill applies.
   sources.
 - `docs/data.md`: "Official website domain", the polling place join paragraph, the absentee
   section note.
+- `README.md`: the learn content section's description of the official hosts (added after
+  the first review).
 - `src/config/election.test.js`: only if an assertion names the old host (it does in a
   negative check, which stays valid).
 
@@ -109,3 +111,6 @@ https://stlouiscovotes.info/faq/` and `rejects https://www.stlouiscovotes.info/a
   fail (2 failed, 52 passed).
 - `retired-sites.test.js` skips `*.test.js(x)` files, since `topic.test.js` must name a
   retired URL to prove it is rejected (issue step 5).
+- Review 1: `check-registration.md`'s phone line said a call checks registration, which the
+  polling place app does not say; narrowed to "Questions? Call ...". README's official hosts
+  sentence updated.
