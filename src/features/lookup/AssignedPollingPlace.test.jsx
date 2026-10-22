@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
+import { isOfficialUrl } from '../learn/content/officialSources.js';
 import AssignedPollingPlace from './AssignedPollingPlace.jsx';
 import { copy } from './assignedPollingPlaceCopy.js';
 
@@ -11,8 +12,15 @@ describe('AssignedPollingPlace', () => {
     const { container } = render(<AssignedPollingPlace />);
     expect(screen.getByText(copy.rule)).toBeInTheDocument();
     expect(container).toHaveTextContent(/must vote at your assigned polling place/);
-    expect(container).toHaveTextContent(/provisional ballot cast at a different polling place/);
+    expect(container).toHaveTextContent(/provisional ballot cast at the wrong polling place/);
     expect(container).toHaveTextContent(/not counted/);
+  });
+
+  it("mentions the central polling place with the Secretary of State's hedge", () => {
+    render(<AssignedPollingPlace />);
+    expect(screen.getByText(copy.central)).toHaveTextContent(
+      /may be able to vote at a central polling place/,
+    );
   });
 
   it('never says any polling place works', () => {
@@ -34,12 +42,13 @@ describe('AssignedPollingPlace', () => {
     expect(link.closest('p')).toHaveTextContent(/may also be able to find it/);
   });
 
-  it('cites each source by a distinct name', () => {
+  it('cites each source, and the page that lists the phone number, by a distinct name', () => {
     render(<AssignedPollingPlace />);
-    const names = rule.sources.map((url) => copy.sourceNames[new URL(url).host]);
+    const cited = [...rule.sources, rule.phoneSource];
+    const names = cited.map((url) => copy.sourceNames[new URL(url).host]);
     expect(names.every(Boolean)).toBe(true);
     expect(new Set(names).size).toBe(names.length);
-    rule.sources.forEach((url, i) => {
+    cited.forEach((url, i) => {
       expect(screen.getByRole('link', { name: names[i] })).toHaveAttribute('href', url);
     });
   });
@@ -49,9 +58,7 @@ describe('AssignedPollingPlace', () => {
     for (const a of container.querySelectorAll('a')) {
       const href = a.getAttribute('href');
       if (href.startsWith('tel:')) continue;
-      const { protocol, hostname } = new URL(href);
-      expect(protocol).toBe('https:');
-      expect(hostname).toMatch(/(^|\.)mo\.gov$/);
+      expect(isOfficialUrl(href)).toBe(true);
       expect(a).toHaveAttribute('rel', 'noreferrer');
     }
   });

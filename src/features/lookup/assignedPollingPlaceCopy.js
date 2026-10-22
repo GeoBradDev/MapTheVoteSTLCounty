@@ -4,7 +4,10 @@
 // Louis has its own board and its own rule (#89). Wording follows RSMo 115.430
 // and the Secretary of State, like the provisional ballots topic (#22).
 export const copy = {
-  rule: 'On Election Day, you must vote at your assigned polling place. A provisional ballot cast at a different polling place is not counted.',
+  // The central polling place sentence keeps the Secretary of State's own hedge.
+  rule: 'On Election Day, you must vote at your assigned polling place. A provisional ballot cast at the wrong polling place is not counted.',
+  central:
+    'If there is a problem at your assigned polling place, you may be able to vote at a central polling place instead.',
   // Then the phone number as a link.
   confirm:
     'To confirm your assigned polling place, call the St. Louis County Board of Elections at',
@@ -15,7 +18,8 @@ export const copy = {
   // Link text for each source, by its host. Distinct from the hours' "Missouri
   // law" link, which cites another section.
   sourceNames: {
-    'revisor.mo.gov': 'Missouri law, section 115.430',
+    'revisor.mo.gov': 'Missouri law (section 115.430)',
     'www.sos.mo.gov': 'Missouri Secretary of State',
+    'stlouiscovotes.info': 'St. Louis County Board of Elections, Contact Us',
   },
 };

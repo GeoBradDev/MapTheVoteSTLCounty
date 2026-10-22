@@ -40,10 +40,11 @@
  *   absentee hours, keyed by the polls layer's `abs_type`.
  * @property {{ open: string, close: string, inLineAtCloseMayVote: boolean,
  *   sources: string[], lastVerified: string }} electionDayHours
- * @property {{ sources: string[], lastVerified: string, phone: string }}
- *   electionDayPollingPlace Where the rule that a county voter must vote at
- *   their assigned polling place on Election Day is stated, and the county
- *   board's number for confirming that polling place.
+ * @property {{ sources: string[], lastVerified: string, phone: string,
+ *   phoneSource: string }} electionDayPollingPlace Where the rule that a county
+ *   voter must vote at their assigned polling place on Election Day is stated,
+ *   and the county board's number for confirming that polling place, with the
+ *   page that lists it.
  */
 
 // The 2025 map. congressional_district_20 is the old map; do not show it.
@@ -158,6 +159,7 @@ const election = deepFreeze({
     ],
     lastVerified: '2026-10-21',
     phone: '314-615-1800',
+    phoneSource: 'https://stlouiscovotes.info/about-us/',
   },
 });
 

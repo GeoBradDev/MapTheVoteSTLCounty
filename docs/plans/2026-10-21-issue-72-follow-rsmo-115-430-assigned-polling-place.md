@@ -56,7 +56,8 @@ Domain skills:
    places and the nearest may not be the voter's assigned one, and points to the Early
    voting card for voting in person before Election Day.
 5. The rule lives in `src/config/election.js` with its sources and verification date
-   (replacing `voteAnywhere`), the phone number with it, and no election-specific value is
+   (replacing `voteAnywhere`), the phone number with it and the county page that lists it
+   (`phoneSource`, cited next to the rule's sources), and no election-specific value is
    written elsewhere in `src/`.
 6. Nonpartisan wording; links only to official hosts (`revisor.mo.gov`, `sos.mo.gov`,
    `voteroutreach.sos.mo.gov`); lint, format, tests, build, e2e and perf all pass.
@@ -79,6 +80,8 @@ Domain skills:
   vote-anywhere line and test go.
 - `src/features/lookup/nearbyPolls.js`: header comment.
 - `docs/data.md`: section 2 and the Election config paragraph.
+- `src/features/learn/learnCopy.js`: the `/learn` lookup link said "Look up your polling
+  place"; it now says "nearby polling places" (review finding 1).
 
 ## Order of work
 
@@ -90,7 +93,8 @@ Domain skills:
 ## Risks
 
 - Saying "must" too strongly: the statute and SOS also allow a central polling place. The
-  short line keeps to the SOS framing; the detail is in PR #68's provisional ballots topic.
+  component adds the SOS's own hedged sentence about it, since no topic on `main` covers it
+  yet (review finding 2).
 - Duplicate link names: the hours already link "Missouri law" (115.407); the new link is named
   "Missouri law, section 115.430" so the two differ.
 - Layout shift (#27): the new note before the list is static and shows while loading.

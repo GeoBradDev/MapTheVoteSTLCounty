@@ -36,6 +36,7 @@ const REQUIRED_KEYS = [
   'electionDayPollingPlace.sources',
   'electionDayPollingPlace.lastVerified',
   'electionDayPollingPlace.phone',
+  'electionDayPollingPlace.phoneSource',
 ];
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -269,5 +270,6 @@ describe('the Election Day polling place rule', () => {
 
   it("has the county board's phone number", () => {
     expect(rule.phone).toMatch(/^\d{3}-\d{3}-\d{4}$/);
+    expectSources([rule.phoneSource]);
   });
 });

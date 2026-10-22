@@ -197,6 +197,17 @@ describe('PollsCard', () => {
     expect(screen.getByText(ruleCopy.rule)).toBeInTheDocument();
   });
 
+  it('gives links to different pages different names (#72)', () => {
+    getPolls.mockReturnValue(new Promise(() => {}));
+    render(<PollsCard code="CC007" origin={ORIGIN} />);
+    const hrefByName = new Map();
+    for (const link of screen.getAllByRole('link')) {
+      const name = link.textContent;
+      if (hrefByName.has(name)) expect(link.getAttribute('href')).toBe(hrefByName.get(name));
+      hrefByName.set(name, link.getAttribute('href'));
+    }
+  });
+
   it('points to early voting for voting in person before Election Day (#72)', () => {
     getPolls.mockReturnValue(new Promise(() => {}));
     render(<PollsCard code="CC007" origin={ORIGIN} />);

@@ -163,8 +163,6 @@ export default function PollsCard({ code, origin }) {
 
   return (
     <div ref={targetRef} tabIndex={-1} className="mt-2">
-      {/* Said while loading too, so the line does not push the card down when
-          the list arrives (#27). */}
       {/* Said while loading too, so the lines do not push the card down when
           the list arrives (#27). The nearest note comes before the list, so it
           is read first: county data assigns no polling place to a precinct

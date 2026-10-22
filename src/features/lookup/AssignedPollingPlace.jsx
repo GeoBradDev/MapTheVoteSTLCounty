@@ -15,10 +15,11 @@ function telHref(phone) {
  * @param {{ linkClass?: string }} props
  */
 export default function AssignedPollingPlace({ linkClass = 'text-primary underline' }) {
-  const { sources, phone } = election.electionDayPollingPlace;
+  const { sources, phone, phoneSource } = election.electionDayPollingPlace;
   return (
     <>
       <p className="font-semibold">{copy.rule}</p>
+      <p className="mt-2">{copy.central}</p>
       <p className="mt-2">
         {copy.confirm}{' '}
         <a href={telHref(phone)} className={linkClass}>
@@ -35,7 +36,7 @@ export default function AssignedPollingPlace({ linkClass = 'text-primary underli
       </p>
       <p className="mt-2 text-sm">
         {copy.sources}{' '}
-        {sources.map((url, i) => (
+        {[...sources, phoneSource].map((url, i) => (
           <span key={url}>
             {i > 0 && ', '}
             <a href={url} rel="noreferrer" className={linkClass}>
