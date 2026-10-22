@@ -81,7 +81,9 @@ describe('geocode with reportUnavailable (#18)', () => {
       county: countyMatch,
       city: async () => ({ status: 'city', place: CITY }),
     });
-    await expect(city.geocode('1318 Ross Ave', strict)).resolves.toEqual(CITY);
+    // The City's ZIP typed: with none, a City twin is no match (owner decision,
+    // 2026-10-22, #88; rewritten with the owner's approval).
+    await expect(city.geocode('1318 Ross Ave 63110', strict)).resolves.toEqual(CITY);
     await expect(chain({ county: countyMatch }).geocode('1318 Ross Ave', strict)).resolves.toEqual(
       ROSS,
     );

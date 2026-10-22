@@ -8,8 +8,10 @@
 // or is unavailable. Issue #58: every answer outside St. Louis City is checked
 // against the City of St. Louis's own geocoder (src/data/cityAddress.js)
 // unless the text holds a ZIP entirely outside the City, so a City voter whose
-// address also exists in the county never gets a county precinct. Address
-// text goes only to those services: never into the URL, storage, logs or
+// address also exists in the county never gets a county precinct. Issue #88:
+// the same City geocoder is an address source too, asked after a county no
+// match and before Photon, and its parcels are suggested next to the county's,
+// so a City address opens its City precinct. Address text goes only to those services: never into the URL, storage, logs or
 // analytics.
 import {
   attribution as countyAttribution,
@@ -63,8 +65,11 @@ export { GeocoderUnavailableError };
  *   caused rejects with a GeocoderUnavailableError instead, so the voter
  *   hears "try again", not "no such address": the City check failing, the
  *   county's precinct check failing (find() answers `unavailable`), the
- *   fallback down after a county no match, or no county source answering
- *   and the fallback finding nothing. It never turns a failure into a place.
+ *   fallback down after a county no match, no county source answering and
+ *   the fallback finding nothing, the City source failing and the
+ *   fallback finding nothing, or no county source answering the twin
+ *   check for a City place (`twinFree`). It never turns a failure into a
+ *   place.
  */
 
 /** Who to credit for address search, shown next to the address box. */
@@ -83,17 +88,6 @@ function abortError() {
 // City check.
 const ST_LOUIS_COUNTY = new Set(['st louis county', 'st louis']);
 
-// A picked suggestion's label without its ZIPs, as the City check sees it:
-// the ZIP in a county label is the county record's own, not one the voter
-// typed, so it must neither skip the check nor rule out a City parcel in
-// another ZIP (6135 Washington Ave 63134 in the county, 63112 in the City).
-function withoutZip(label) {
-  return label.replace(
-    /^(\s*\S+)(.*)$/,
-    (_, first, rest) => first + rest.replace(/\b\d{5}(?:-\d{4})?\b/g, ' '),
-  );
-}
-
 // Whether a place could get a county precinct: not the City, and not named
 // as another county by its provider.
 function couldBeCounty(place) {
@@ -107,13 +101,14 @@ function couldBeCounty(place) {
  * @param {{
  *   sources: Array<{ find: Function, suggest: Function }>,
  *   fallback: Geocoder,
- *   cityCheck: { find: Function },
+ *   cityCheck: { find: Function, lookup?: Function, suggest?: Function },
  * }} options `sources` are county address sources in order: each later one
  *   is asked only when the one before is unavailable. `fallback` answers when
  *   the county has no match, or no county source is available. `cityCheck`
  *   (createCityAddressCheck in src/data/cityAddress.js) says whether St. Louis
  *   City has the address too; it is required, since without it a City voter
- *   could get a county precinct.
+ *   could get a county precinct. Its `lookup` and `suggest`, when given,
+ *   make the City an address source as well (#88).
  * @returns {Readonly<Geocoder>}
  */
 export function createGeocoder({ sources, fallback, cityCheck }) {
@@ -139,9 +134,10 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
   // county's address points leave out almost every City address, and Photon
   // misses many, so an answer that could get a county precinct is checked
   // with the City's own geocoder, unless the text holds a ZIP entirely
-  // outside the City. A City address that fits is the answer (the City
-  // referral, #8), unless it is in the same ZIP as the place found; that, one
-  // the text could mean but not exactly, is no match; a City geocoder that
+  // outside the City. A City address that fits is the answer (its City
+  // precinct, #88; the City referral before) when the text holds a ZIP and
+  // the place found is in another ZIP; in the same ZIP, with no ZIP in the
+  // text, or one the text could mean but not exactly, it is no match; a City geocoder that
   // fails or is slow is no match too, or with reportUnavailable a
   // GeocoderUnavailableError (#18). Never the county place then.
   async function checkedForCity(text, place, signal, reportUnavailable) {
@@ -158,9 +154,17 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
       if (city?.status === 'city') {
         // The county (or Photon) and the City both list this number and
         // street in one ZIP: the lookup cannot tell which the voter means, so
-        // no match (owner decision, #58), never the county precinct.
+        // no match (owner decision, #58), never the county precinct. In
+        // different ZIPs, text with no ZIP could mean either: no match too,
+        // so the voter adds a ZIP or picks the suggestion of their own
+        // jurisdiction (owner decision, 2026-10-22, #88). A typed ZIP rules
+        // out a City parcel in another ZIP, so a City answer then is the
+        // City's own ZIP.
         const zip = typedZip(place.label ?? '');
-        return zip && zip === typedZip(city.place?.label ?? '') ? null : city.place;
+        // A place or a City parcel with no ZIP of its own cannot be told apart either.
+        const cityZip = typedZip(city.place?.label ?? '');
+        if (!typedZip(text) || !zip || !cityZip || zip === cityZip) return null;
+        return city.place;
       }
       if (city?.status === 'none') return place;
       if (city?.status === 'ambiguous') return null;
@@ -172,13 +176,46 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
     }
   }
 
+  // A City place found for text with no ZIP (by the City lookup, or named as
+  // the City by Photon), unless the county has the same number and street. The county answered no match for the text, but a
+  // typed town it lacks ("St. Louis City") rules out every county record, so
+  // it is asked for the street alone: a county twin, in any ZIP, makes the
+  // text one that could mean either, so no match and the voter adds a ZIP
+  // (owner decision, 2026-10-22, #58 and #88). A county that cannot answer
+  // is no match too, or with reportUnavailable a rejection.
+  async function twinFree(cityPlace, signal, reportUnavailable) {
+    const street = streetOf(cityPlace.label);
+    const county = await firstAnswer((source) => source.find(street, { signal }), signal);
+    if (signal?.aborted) throw abortError();
+    if (!county) {
+      if (reportUnavailable) throw new GeocoderUnavailableError('No county source answered');
+      return null;
+    }
+    return county.status === 'none' ? cityPlace : null;
+  }
+
   return Object.freeze({
     async suggest(input, { signal } = {}) {
       const text = String(input ?? '').trim();
       if (!text) return [];
+      // The City's parcels (#88) are asked alongside the county; a City
+      // request that fails just adds none.
+      // Its answer is dropped while no county source answers: a picked City
+      // label could not then be found again (the City is asked as a source
+      // only after a county no match). The request starts alongside the
+      // county's, so suggestions do not wait for one after the other.
+      const cityAsk =
+        typeof cityCheck.suggest === 'function'
+          ? cityCheck.suggest(text, { signal }).catch(() => [])
+          : Promise.resolve([]);
       const county = await firstAnswer((source) => source.suggest(text, { signal }), signal);
+      const city = county ? await cityAsk : [];
       if (signal?.aborted) throw abortError();
-      if (county?.length) return county;
+      const official = [
+        ...(county ?? []),
+        ...city.filter((c) => !county?.some((s) => s.label === c.label)),
+      ];
+      if (official.length) return official;
       try {
         return await fallback.suggest(text, { signal });
       } catch (error) {
@@ -192,12 +229,12 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
     async geocode(query, { signal, reportUnavailable = false } = {}) {
       // A picked suggestion is geocoded again by its label, county first, so
       // every rule applies to it as to typed text; a Photon suggestion's own
-      // place could be one house of two the county knows.
-      const picked = typeof query === 'object';
-      const text = String((picked ? query?.label : query) ?? '').trim();
+      // place could be one house of two the county knows. The label's ZIP
+      // counts as typed (owner decision, 2026-10-22, #88): a pick opens the
+      // place of the jurisdiction its label names, so the county's label of a
+      // City twin is the county place and the City's label the City place.
+      const text = String((typeof query === 'object' ? query?.label : query) ?? '').trim();
       if (!text) return null;
-      // What the voter typed, for the City check.
-      const typed = picked ? withoutZip(text) : text;
       // The option goes to a source only when set, as it changes what find()
       // may answer.
       const findOptions = reportUnavailable ? { signal, reportUnavailable } : { signal };
@@ -211,9 +248,30 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
         if (!reportUnavailable) return null;
         throw new GeocoderUnavailableError('The county precinct check did not answer');
       }
-      // A county record in the City already gets the City's referral.
+      // A county record in the City is a City place: locate() asks the City's
+      // precinct layer for it (#88).
       if (county?.status === 'match') {
-        return checkedForCity(typed, county.place, signal, reportUnavailable);
+        return checkedForCity(text, county.place, signal, reportUnavailable);
+      }
+      // The county answered no match: the City's own geocoder is asked next
+      // (#88), ahead of Photon, which misses many City house numbers. Not
+      // when no county source answered: the county could have the address
+      // in the same ZIP (#58). A City geocoder that fails leaves Photon,
+      // whose county answer still needs the City check.
+      let cityFailed = false;
+      if (county && typeof cityCheck.lookup === 'function' && needsCityCheck(text)) {
+        let city;
+        try {
+          city = await cityCheck.lookup(text, { signal });
+        } catch {
+          if (signal?.aborted) throw abortError();
+          cityFailed = true;
+        }
+        if (signal?.aborted) throw abortError();
+        if (city?.status === 'city') {
+          return typedZip(text) ? city.place : twinFree(city.place, signal, reportUnavailable);
+        }
+        if (city?.status === 'ambiguous') return null;
       }
       let place;
       try {
@@ -231,7 +289,21 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
       if (!place && !county && reportUnavailable) {
         throw new GeocoderUnavailableError('No county source answered');
       }
-      return checkedForCity(typed, place, signal, reportUnavailable);
+      // Nothing found, and the City, which has many addresses Photon lacks,
+      // could not answer: the search could not finish.
+      if (!place && cityFailed && reportUnavailable) {
+        throw new GeocoderUnavailableError('The City did not answer');
+      }
+      // A place Photon names as the City, for text with no ZIP, could be a
+      // county twin that a typed town the county lacks ("St. Louis City")
+      // hid from the county, with the City geocoder down or finding nothing:
+      // the county is asked by its street, as for a City lookup answer.
+      // With no county source answering, the county could have it in the
+      // same ZIP (#58): the county is asked again, so never the place then.
+      if (place?.county === CITY_COUNTY && (!typedZip(text) || !county)) {
+        return twinFree(place, signal, reportUnavailable);
+      }
+      return checkedForCity(text, place, signal, reportUnavailable);
     },
   });
 }

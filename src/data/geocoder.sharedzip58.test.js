@@ -2,7 +2,9 @@
 // parcel share number, street and ZIP, the address is in both lists and the
 // lookup cannot tell which one the voter means: no match (Use my location and
 // the county's official lookup), never the county precinct and not the City
-// referral. A City twin in another ZIP still gets the City referral.
+// referral. A City twin in another ZIP: text with no ZIP is no match too (the
+// voter is asked for a ZIP), and the City's ZIP gets the City place (owner
+// decision, 2026-10-22, #88; this test rewritten with the owner's approval).
 // Frozen: written red before the fix.
 import brookings from '../../docs/raw/fixtures/city-geocode-brookings-dr.json';
 import washington from '../../docs/raw/fixtures/city-geocode-washington-ave.json';
@@ -52,9 +54,13 @@ describe('a county record and a City parcel in the same ZIP (#58)', () => {
     await expect(geocoder.geocode(pick)).resolves.toBeNull();
   });
 
-  it('a City twin in another ZIP still gets the City place', async () => {
+  it('a City twin in another ZIP, with no ZIP typed, is no match', async () => {
+    await expect(chain(WASHINGTON, washington).geocode('6135 Washington Ave')).resolves.toBeNull();
+  });
+
+  it("a City twin in another ZIP, with the City's ZIP typed, gets the City place", async () => {
     await expect(
-      chain(WASHINGTON, washington).geocode('6135 Washington Ave'),
+      chain(WASHINGTON, washington).geocode('6135 Washington Ave 63112'),
     ).resolves.toMatchObject({
       county: 'St. Louis city',
       label: '6135 Washington Ave, St. Louis, MO 63112',

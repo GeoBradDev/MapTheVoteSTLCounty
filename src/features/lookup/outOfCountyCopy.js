@@ -12,6 +12,11 @@ export const copy = translated((t) => ({
         link: { href: 'stlCityBoard', label: t('outOfCounty.stlCity.link') },
         after: t('outOfCounty.stlCity.after'),
       },
+      {
+        text: t('outOfCounty.stlCity.lookupText'),
+        link: { href: 'stlCityLookup', label: t('outOfCounty.stlCity.lookupLink') },
+        after: t('outOfCounty.stlCity.lookupAfter'),
+      },
     ],
   },
   missouri: {

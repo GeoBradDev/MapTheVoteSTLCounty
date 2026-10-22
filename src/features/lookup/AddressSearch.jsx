@@ -73,10 +73,10 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
   const formRef = useRef(null);
   const pointerPickRef = useRef(null);
   // The last picked suggestion, whether the box was edited since, and where
-  // its label's ZIP is in the box. That ZIP is the source's, not one the
-  // voter typed, and the geocoder's City check treats the two differently
-  // (#58), so a search goes as a pick until the voter deletes or changes that
-  // ZIP (owner decision), pasting over it included. An autofill forgets it.
+  // its label's ZIP is in the box. A search goes as a pick until the voter
+  // deletes or changes that ZIP (owner decision, #58), pasting over it
+  // included. An autofill forgets it. Since #88 the geocoder counts a label's
+  // ZIP as typed, so a pick and the same text typed get the same answer.
   const pickedRef = useRef(null);
   // The selection a paste replaces, read when it starts: the texts before and
   // after cannot show whether a pasted ZIP replaced the picked one.

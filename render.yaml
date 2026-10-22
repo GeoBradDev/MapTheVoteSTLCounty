@@ -101,11 +101,12 @@ services:
         name: Strict-Transport-Security
         value: max-age=31536000
       # connect-src: the county ArcGIS services (src/config/election.js
-      # serviceRoot, and the County and City early voting wait time layers in
-      # waitTimes, #103, on the same host), the county address points for address search (#49,
+      # serviceRoot, and the City Board's election layers, #87, #88, and the
+      # County and City early voting wait time layers in waitTimes, #103, on
+      # the same host), the county address points for address search (#49,
       # src/data/countyAddress.js: the live county server and its hosted
-      # copy), the City of St. Louis's geocoder for the City check (#58,
-      # src/data/cityAddress.js), the Photon geocoder (#7) and the OpenFreeMap basemap
+      # copy), the City of St. Louis's geocoder for City addresses and the City
+      # check (#58, #88, src/data/cityAddress.js), the Photon geocoder (#7) and the OpenFreeMap basemap
       # (#13, src/features/lookup/basemap.js), whose style, tiles, sprites and
       # glyphs share one origin. MapLibre fetches all of those, images too
       # (decoded with createImageBitmap, which img-src does not govern), so

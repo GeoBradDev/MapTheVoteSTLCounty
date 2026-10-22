@@ -129,6 +129,11 @@ const FIXTURES = {
   'city-geocode-ross-ave.json': [cityFind, cityQuery('1318 Ross Ave')],
   // Washington University: the county and the City both list it in 63130.
   'city-geocode-brookings-dr.json': [cityFind, cityQuery('1 Brookings Dr')],
+  // Suggestions with the City as a source (#88): a partly typed street.
+  'city-geocode-washington-partial.json': [cityFind, cityQuery('6135 Washington')],
+  // 5010 Nottingham Ave 63109, an owner report (#88): typed, and as typed so far.
+  'city-geocode-nottingham-ave.json': [cityFind, cityQuery('5010 Nottingham Ave')],
+  'city-geocode-nottingham-partial.json': [cityFind, cityQuery('5010 Nottingham')],
   // The City's layers, at City Hall and at a county point (#87).
   'city-precinct-at-point.json': [
     cityLayer('precincts'),

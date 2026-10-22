@@ -177,12 +177,24 @@ describe('geocode', () => {
       expect(city.find).toHaveBeenCalledWith('1318 Ross Ave', '1318 Ross Ave', expect.any(Object));
     });
 
-    it('gives the City place when the City has the address', async () => {
+    // Rewritten with the owner's approval (2026-10-22, #88): the City has the
+    // number and street in another ZIP, so text with no ZIP is no match (the
+    // voter is asked for a ZIP); the City's ZIP gives the City place.
+    it('is no match, never the county place, when the City has the address and no ZIP is typed', async () => {
       const { geocoder, fallback } = chain({
         live: countySource({ find: match(false) }),
         city: cityCheck(CITY_ANSWER),
       });
-      await expect(geocoder.geocode('1318 Ross Ave')).resolves.toEqual(CITY);
+      await expect(geocoder.geocode('1318 Ross Ave')).resolves.toBeNull();
+      expect(fallback.geocode).not.toHaveBeenCalled();
+    });
+
+    it('gives the City place when the City has the address in the typed ZIP', async () => {
+      const { geocoder, fallback } = chain({
+        live: countySource({ find: match(false) }),
+        city: cityCheck(CITY_ANSWER),
+      });
+      await expect(geocoder.geocode('1318 Ross Ave 63110')).resolves.toEqual(CITY);
       expect(fallback.geocode).not.toHaveBeenCalled();
     });
 
@@ -201,7 +213,8 @@ describe('geocode', () => {
         live: countySource({ find: match(true) }),
         city: cityCheck(CITY_ANSWER),
       });
-      await expect(geocoder.geocode('1318 Ross Ave, Olivette')).resolves.toEqual(CITY);
+      // No ZIP typed: no match (owner decision, 2026-10-22), never the county place.
+      await expect(geocoder.geocode('1318 Ross Ave, Olivette')).resolves.toBeNull();
       expect(city.find).toHaveBeenCalled();
     });
 
@@ -249,8 +262,17 @@ describe('geocode', () => {
 
     it('checks a Photon answer in St. Louis County too', async () => {
       const { geocoder, city } = chain({ city: cityCheck(CITY_ANSWER) });
-      await expect(geocoder.geocode('1318 Ross Ave')).resolves.toEqual(CITY);
+      // No ZIP typed: no match (owner decision, 2026-10-22), never the county place.
+      await expect(geocoder.geocode('1318 Ross Ave')).resolves.toBeNull();
       expect(city.find).toHaveBeenCalledWith('1318 Ross Ave', 'from Photon', expect.any(Object));
+      // A Photon place with no ZIP of its own cannot be told apart from the
+      // City parcel in the typed ZIP: no match.
+      await expect(geocoder.geocode('1318 Ross Ave 63110')).resolves.toBeNull();
+      const zipped = chain({
+        city: cityCheck(CITY_ANSWER),
+        fallback: photon({ geocode: async () => ROSS }),
+      });
+      await expect(zipped.geocoder.geocode('1318 Ross Ave 63110')).resolves.toEqual(CITY);
     });
 
     it('does not check a Photon answer in the City or in another county', async () => {

@@ -262,8 +262,8 @@ function recordOf(feature) {
     postcode: text(a.ZIPCODE) || undefined,
     city: titleCase(a.MAILINGCITY) || undefined,
     state: 'Missouri',
-    // The layer holds a few St. Louis City addresses (MUNI STL); they get the
-    // City's referral, not a county precinct.
+    // The layer holds a few St. Louis City addresses (MUNI STL); they are City
+    // places (their City precinct, #88), never a county precinct.
     county: text(a.MUNI) === 'STL' ? CITY_COUNTY : 'Saint Louis County',
   };
   const unitNo = text(a.UNITNO).toUpperCase();

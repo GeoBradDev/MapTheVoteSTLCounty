@@ -72,6 +72,30 @@ describe('AddressLookup', () => {
     expect(location.history).toEqual(['/', '/p/OAK019']);
   });
 
+  it('opens a City precinct by its City code (#88)', async () => {
+    locate.mockResolvedValue({
+      kind: 'precinct',
+      jurisdiction: 'city',
+      precinct: { code: 'W01P12' },
+    });
+    const { location } = renderLookup();
+    await search();
+    expect(location.history).toEqual(['/', '/p/W01P12']);
+    expect(lookupPointFor('W01P12')).toEqual({ lat: 38.5, lng: -90.3 });
+  });
+
+  it.each([
+    [{ jurisdiction: 'city', precinct: { code: 'OAK019' } }],
+    [{ jurisdiction: 'city', precinct: { precinct: 'W01P12' } }],
+    [{ jurisdiction: 'county', precinct: { precinct: 'W01P12' } }],
+  ])('never opens a code of the other jurisdiction: %j', async (result) => {
+    locate.mockResolvedValue({ kind: 'precinct', ...result });
+    const { location } = renderLookup();
+    await search();
+    expect(await screen.findByText(copy.errors.failed)).toBeInTheDocument();
+    expect(location.history).toEqual(['/']);
+  });
+
   it('shows the out-of-county notice for a place outside the county and focuses it', async () => {
     locate.mockResolvedValue({ kind: 'stl-city' });
     const { location } = renderLookup();
@@ -116,7 +140,7 @@ describe('AddressLookup', () => {
     expect(
       await screen.findByRole('heading', { name: noticeCopy.unknown.heading }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/including the City of St. Louis/)).toBeInTheDocument();
+    expect(screen.getByText(/anywhere else in Missouri/)).toBeInTheDocument();
   });
 
   it('wires the address box to "Use my location", so a denied request focuses it', async () => {

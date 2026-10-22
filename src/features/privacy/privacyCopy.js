@@ -2,7 +2,7 @@
 // must stay true of the code: when the app starts calling a new service, or
 // changes what it sends or keeps, change this notice in the same change. PrivacyPage.test.jsx fails when
 // render.yaml's connect-src allows an origin this notice does not name.
-import election from '../../config/election.js';
+import election, { jurisdictions } from '../../config/election.js';
 import { CITY_GEOCODER_URL } from '../../data/cityAddress.js';
 import { HOSTED_URL, LIVE_URL } from '../../data/countyAddress.js';
 import { attribution } from '../../data/geocoder.js';
@@ -14,8 +14,8 @@ const host = (url) => new URL(url).host;
 // The address search services. Only the geocoder modules may name a
 // provider, so the names, links and hosts come from there: St. Louis County's
 // address points first (its live layer, then its hosted copy), the open
-// service after them, and the City of St. Louis's geocoder for the City
-// check (src/data/geocoder.js).
+// service after them, and the City of St. Louis's geocoder, a source for City
+// addresses (#88) and the City check (src/data/geocoder.js).
 const openSearch = attribution.fallback;
 
 /** Host names the notice names, so a reader can match them to network requests. */
@@ -25,6 +25,7 @@ export const hosts = Object.freeze({
   cityAddresses: host(CITY_GEOCODER_URL),
   openSearch: host(openSearch.serviceUrl),
   electionMaps: host(election.serviceRoot),
+  cityElectionMaps: host(jurisdictions.city.serviceRoot),
   basemap: host(BASEMAP_STYLE_URL),
   countyWaits: host(election.waitTimes.county.serviceRoot),
   cityWaits: host(election.waitTimes.city.serviceRoot),
@@ -60,7 +61,10 @@ export const copy = translated((t) => ({
       },
       {
         heading: t('privacy.sent.findingPrecinct.heading'),
-        text: t('privacy.sent.findingPrecinct.text', { electionMaps: hosts.electionMaps }),
+        text: t('privacy.sent.findingPrecinct.text', {
+          electionMaps: hosts.electionMaps,
+          cityElectionMaps: hosts.cityElectionMaps,
+        }),
       },
       {
         heading: t('privacy.sent.useMyLocation.heading'),

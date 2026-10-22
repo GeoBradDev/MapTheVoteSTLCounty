@@ -13,23 +13,30 @@ function links() {
 }
 
 describe('OutOfCountyNotice', () => {
-  it('sends a St. Louis City voter to the City election board', () => {
+  it('sends a St. Louis City voter whose precinct was not found to the City board and its lookup', () => {
     render(<OutOfCountyNotice kind="stl-city" />);
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
       'This address is in the City of St. Louis',
     );
-    expect(screen.getByText(/has its own election board/)).toBeInTheDocument();
+    expect(screen.getByText(/could not find its City precinct/)).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'St. Louis City Board of Election Commissioners' }),
     ).toHaveAttribute('href', referrals.stlCityBoard.url);
-    expect(links()).toEqual([referrals.stlCityBoard.url]);
+    expect(screen.getByRole('link', { name: "City's polling place lookup" })).toHaveAttribute(
+      'href',
+      referrals.stlCityLookup.url,
+    );
+    expect(links()).toEqual([referrals.stlCityBoard.url, referrals.stlCityLookup.url]);
   });
 
   it('sends a voter elsewhere in Missouri to the Voter Outreach Center', () => {
     render(<OutOfCountyNotice kind="missouri" />);
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
-      'This address is outside St. Louis County',
+      'This address is outside St. Louis City and County',
     );
+    expect(
+      screen.getByText(/covers St\. Louis City and St\. Louis County only/),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'Missouri Secretary of State Voter Outreach Center' }),
     ).toHaveAttribute('href', referrals.moVoterOutreach.url);
@@ -41,6 +48,9 @@ describe('OutOfCountyNotice', () => {
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
       'This address is outside Missouri',
     );
+    expect(
+      screen.getByText(/St\. Louis City and St\. Louis County, Missouri only/),
+    ).toBeInTheDocument();
     expect(screen.getByText(/local election office/)).toBeInTheDocument();
     expect(links()).toEqual([]);
   });
@@ -48,9 +58,11 @@ describe('OutOfCountyNotice', () => {
   it('covers both Missouri and elsewhere when the state is not known', () => {
     render(<OutOfCountyNotice kind="unknown" />);
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
-      'This location is outside St. Louis County',
+      'This location is outside St. Louis City and County',
     );
-    expect(screen.getByText(/including the City of St\. Louis/)).toBeInTheDocument();
+    // A City voter is no longer sent to the Secretary of State (#88).
+    expect(screen.queryByText(/including the City of St\. Louis/)).toBeNull();
+    expect(screen.getByText(/anywhere else in Missouri/)).toBeInTheDocument();
     expect(screen.getByText(/local election office/)).toBeInTheDocument();
     expect(links()).toEqual([referrals.moVoterOutreach.url]);
   });
@@ -67,7 +79,9 @@ describe('OutOfCountyNotice', () => {
     'keeps the referrer from the official site for %s',
     (kind) => {
       render(<OutOfCountyNotice kind={kind} />);
-      expect(screen.getByRole('link')).toHaveAttribute('rel', 'noreferrer');
+      for (const link of screen.getAllByRole('link')) {
+        expect(link).toHaveAttribute('rel', 'noreferrer');
+      }
     },
   );
 

@@ -10,11 +10,14 @@ import precinctAtCity from '../../../docs/raw/fixtures/precinct-at-city.json';
 import precinctAtOutOfState from '../../../docs/raw/fixtures/precinct-at-out-of-state.json';
 import precinctAtStCharles from '../../../docs/raw/fixtures/precinct-at-st-charles.json';
 import atPoint from '../../../docs/raw/fixtures/precinct-at-point.json';
-import election from '../../config/election.js';
+import cityPrecinctAtPoint from '../../../docs/raw/fixtures/city-precinct-at-point.json';
+import cityPrecinctAtCounty from '../../../docs/raw/fixtures/city-precinct-at-county.json';
+import election, { jurisdictions } from '../../config/election.js';
 import { classifyPlace, locate } from './locate.js';
 
 const PRECINCTS = `${election.serviceRoot}/${election.layers.precincts}/query`;
 const BOUNDARY = `${election.serviceRoot}/${election.layers.countyBoundary}/query`;
+const CITY_PRECINCTS = `${jurisdictions.city.serviceRoot}/${jurisdictions.city.layers.precincts}/query`;
 
 // 1200 Market St, St. Louis, MO 63103 (City Hall).
 const CITY = { lat: 38.62741, lng: -90.19843, state: 'MO', county: 'St. Louis city' };
@@ -24,6 +27,8 @@ const ST_CHARLES = { lat: 38.78267, lng: -90.48187, state: 'MO', county: 'St. Ch
 const OUT_OF_STATE = { lat: 38.51368, lng: -89.98831, state: 'IL', county: 'St. Clair County' };
 // A point inside the county (precinct HAD023).
 const INSIDE = { lat: 38.62, lng: -90.33, state: 'MO', county: 'St. Louis County' };
+// A county point near the City line (Clayton), inside the City's extent.
+const NEAR_CITY = { lat: 38.6493, lng: -90.3239 };
 
 const RESPONSES = {
   [`${PRECINCTS} ${CITY.lng},${CITY.lat}`]: precinctAtCity,
@@ -34,6 +39,8 @@ const RESPONSES = {
   [`${BOUNDARY} ${OUT_OF_STATE.lng},${OUT_OF_STATE.lat}`]: boundaryAtOutOfState,
   [`${PRECINCTS} ${INSIDE.lng},${INSIDE.lat}`]: atPoint,
   [`${BOUNDARY} ${INSIDE.lng},${INSIDE.lat}`]: boundaryInside,
+  [`${CITY_PRECINCTS} ${CITY.lng},${CITY.lat}`]: cityPrecinctAtPoint,
+  [`${PRECINCTS} ${NEAR_CITY.lng},${NEAR_CITY.lat}`]: atPoint,
 };
 
 const EMPTY = { features: [] };
@@ -74,8 +81,10 @@ afterEach(() => {
 });
 
 describe('locate, with the three test addresses', () => {
-  it('sends a St. Louis City address to the City', async () => {
-    expect(await locate(CITY)).toEqual({ kind: 'stl-city' });
+  it('finds a St. Louis City address in its City precinct (#88)', async () => {
+    const result = await locate(CITY);
+    expect(result).toMatchObject({ kind: 'precinct', jurisdiction: 'city' });
+    expect(result.precinct.code).toMatch(/^W\d{2}P\d{2}$/);
   });
 
   it('sends a St. Charles County address to the Missouri Voter Outreach Center', async () => {
@@ -86,8 +95,13 @@ describe('locate, with the three test addresses', () => {
     expect(await locate(OUT_OF_STATE)).toEqual({ kind: 'out-of-state' });
   });
 
-  it('checks the precinct layer first, then the boundary', async () => {
+  it('asks only the City precinct layer for a place the geocoder names as the City', async () => {
     await locate(CITY);
+    expect(requestedLayers()).toEqual([CITY_PRECINCTS]);
+  });
+
+  it('checks the county precinct layer first, then the boundary, far from the City', async () => {
+    await locate(ST_CHARLES);
     expect(requestedLayers()).toEqual([PRECINCTS, BOUNDARY]);
   });
 });
@@ -95,7 +109,7 @@ describe('locate, with the three test addresses', () => {
 describe('locate, inside the county', () => {
   it('resolves to the precinct and skips the boundary query', async () => {
     const result = await locate(INSIDE);
-    expect(result.kind).toBe('precinct');
+    expect(result).toMatchObject({ kind: 'precinct', jurisdiction: 'county' });
     expect(result.precinct.precinct).toBe('HAD023');
     expect(requestedLayers()).toEqual([PRECINCTS]);
   });
@@ -116,7 +130,10 @@ describe('locate, inside the county', () => {
 
   it('trusts the boundary over a geocoder that names another county', async () => {
     fetchMock.mockImplementation(
-      recorded({ [`${PRECINCTS} ${INSIDE.lng},${INSIDE.lat}`]: () => respond(EMPTY) }),
+      recorded({
+        [`${PRECINCTS} ${INSIDE.lng},${INSIDE.lat}`]: () => respond(EMPTY),
+        [`${CITY_PRECINCTS} ${INSIDE.lng},${INSIDE.lat}`]: () => respond(EMPTY),
+      }),
     );
     expect(await locate({ ...INSIDE, county: 'St. Louis city' })).toEqual({
       kind: 'county-unmatched',
@@ -135,17 +152,17 @@ describe('locate, when the geocoder and the map disagree', () => {
 describe('locate, when a query fails', () => {
   it('rejects when the precinct query fails, without a boundary query', async () => {
     fetchMock.mockImplementation(
-      recorded({ [`${PRECINCTS} ${CITY.lng},${CITY.lat}`]: () => respond({}, 404) }),
+      recorded({ [`${PRECINCTS} ${INSIDE.lng},${INSIDE.lat}`]: () => respond({}, 404) }),
     );
-    await expect(locate(CITY)).rejects.toMatchObject({ name: 'ServiceError', status: 404 });
+    await expect(locate(INSIDE)).rejects.toMatchObject({ name: 'ServiceError', status: 404 });
     expect(requestedLayers()).toEqual([PRECINCTS]);
   });
 
   it('falls back to the geocoder fields when the boundary query fails', async () => {
     fetchMock.mockImplementation(
-      recorded({ [`${BOUNDARY} ${CITY.lng},${CITY.lat}`]: () => respond({}, 404) }),
+      recorded({ [`${BOUNDARY} ${ST_CHARLES.lng},${ST_CHARLES.lat}`]: () => respond({}, 404) }),
     );
-    expect(await locate(CITY)).toEqual({ kind: 'stl-city' });
+    expect(await locate(ST_CHARLES)).toEqual({ kind: 'missouri' });
   });
 
   it('treats a geocoder that says St. Louis County as in the county when the boundary fails', async () => {
@@ -165,6 +182,123 @@ describe('locate, when a query fails', () => {
       expect(fetchMock).not.toHaveBeenCalled();
     },
   );
+});
+
+describe('locate, in St. Louis City (#88)', () => {
+  const cityFails = { [`${CITY_PRECINCTS} ${CITY.lng},${CITY.lat}`]: () => respond({}, 500) };
+  const cityEmpty = { [`${CITY_PRECINCTS} ${CITY.lng},${CITY.lat}`]: () => respond(EMPTY) };
+
+  it('works from coordinates alone, as from "Use my location"', async () => {
+    const result = await locate({ lat: CITY.lat, lng: CITY.lng });
+    expect(result).toMatchObject({ kind: 'precinct', jurisdiction: 'city' });
+    expect(requestedLayers()).toEqual([PRECINCTS, CITY_PRECINCTS]);
+  });
+
+  it('gives the City precinct the code the layer ID reads as', async () => {
+    const result = await locate(CITY);
+    const id = cityPrecinctAtPoint.features[0].attributes[jurisdictions.city.precinctField];
+    const [, ward, precinct] = id.match(/^W (\d+) P (\d+)$/);
+    expect(result.precinct.code).toBe(`W${ward.padStart(2, '0')}P${precinct.padStart(2, '0')}`);
+  });
+
+  it('a county point near the City line stays in its county precinct, without the City', async () => {
+    const result = await locate(NEAR_CITY);
+    expect(result).toMatchObject({ kind: 'precinct', jurisdiction: 'county' });
+    expect(requestedLayers()).toEqual([PRECINCTS]);
+  });
+
+  it('a county point the county layer misses near the City asks the City layer', async () => {
+    fetchMock.mockImplementation(
+      recorded({
+        [`${PRECINCTS} ${NEAR_CITY.lng},${NEAR_CITY.lat}`]: () => respond(EMPTY),
+        [`${CITY_PRECINCTS} ${NEAR_CITY.lng},${NEAR_CITY.lat}`]: () =>
+          respond(cityPrecinctAtCounty),
+        [`${BOUNDARY} ${NEAR_CITY.lng},${NEAR_CITY.lat}`]: () => respond(boundaryInside),
+      }),
+    );
+    expect(await locate(NEAR_CITY)).toEqual({ kind: 'county-unmatched' });
+    expect(requestedLayers()).toEqual([PRECINCTS, CITY_PRECINCTS, BOUNDARY]);
+  });
+
+  it('never sends a point far from the City to the City layer', async () => {
+    await locate(OUT_OF_STATE);
+    await locate({ lat: ST_CHARLES.lat, lng: ST_CHARLES.lng });
+    expect(requestedLayers()).not.toContain(CITY_PRECINCTS);
+  });
+
+  it('a City place gets the City referral when the City layer fails', async () => {
+    fetchMock.mockImplementation(recorded(cityFails));
+    expect(await locate(CITY)).toEqual({ kind: 'stl-city' });
+  });
+
+  it('a City place gets the City referral when the City layer finds nothing', async () => {
+    fetchMock.mockImplementation(recorded(cityEmpty));
+    expect(await locate(CITY)).toEqual({ kind: 'stl-city' });
+  });
+
+  it('a City place gets the City referral when both precinct layers fail', async () => {
+    fetchMock.mockImplementation(
+      recorded({
+        ...cityFails,
+        [`${PRECINCTS} ${CITY.lng},${CITY.lat}`]: () => respond({}, 500),
+      }),
+    );
+    expect(await locate(CITY)).toEqual({ kind: 'stl-city' });
+  });
+
+  it('a point near the City gets the City referral when the City layer and the boundary both fail', async () => {
+    fetchMock.mockImplementation(
+      recorded({ ...cityFails, [`${BOUNDARY} ${CITY.lng},${CITY.lat}`]: () => respond({}, 500) }),
+    );
+    expect(await locate({ lat: CITY.lat, lng: CITY.lng })).toEqual({ kind: 'stl-city' });
+  });
+
+  it('a point near the City, outside the county, gets the City referral when the City layer fails', async () => {
+    fetchMock.mockImplementation(recorded(cityFails));
+    expect(await locate({ lat: CITY.lat, lng: CITY.lng })).toEqual({ kind: 'stl-city' });
+  });
+
+  // Review finding: a place the geocoder puts in the county, at a point in the
+  // City, is never told it is outside the City and County when the City
+  // layer fails.
+  it('a county-named place near the City, outside the county, gets the City referral when the City layer fails', async () => {
+    fetchMock.mockImplementation(recorded(cityFails));
+    const place = { lat: CITY.lat, lng: CITY.lng, state: 'Missouri', county: 'Saint Louis County' };
+    expect(await locate(place)).toEqual({ kind: 'stl-city' });
+  });
+
+  // On the Illinois bank, inside the City's extent box (finder report, #88).
+  const EAST_ST_LOUIS = { lat: 38.6285, lng: -90.172, state: 'IL', county: 'St. Clair County' };
+
+  it('never asks the City layer for a place the geocoder puts out of state', async () => {
+    fetchMock.mockImplementation(
+      recorded({
+        [`${PRECINCTS} ${EAST_ST_LOUIS.lng},${EAST_ST_LOUIS.lat}`]: () => respond(EMPTY),
+        [`${BOUNDARY} ${EAST_ST_LOUIS.lng},${EAST_ST_LOUIS.lat}`]: () => respond(EMPTY),
+      }),
+    );
+    expect(await locate(EAST_ST_LOUIS)).toEqual({ kind: 'out-of-state' });
+    expect(requestedLayers()).not.toContain(CITY_PRECINCTS);
+  });
+
+  it('a place the geocoder puts in another Missouri county is not asked of the City', async () => {
+    fetchMock.mockImplementation(
+      recorded({
+        [`${PRECINCTS} ${CITY.lng},${CITY.lat}`]: () => respond(EMPTY),
+        [`${BOUNDARY} ${CITY.lng},${CITY.lat}`]: () => respond(EMPTY),
+      }),
+    );
+    await locate({ lat: CITY.lat, lng: CITY.lng, state: 'MO', county: 'Jefferson County' });
+    expect(requestedLayers()).not.toContain(CITY_PRECINCTS);
+  });
+
+  it('a City place in a county precinct is that county precinct (the point decides)', async () => {
+    fetchMock.mockImplementation(
+      recorded({ [`${CITY_PRECINCTS} ${INSIDE.lng},${INSIDE.lat}`]: () => respond(EMPTY) }),
+    );
+    const result = await locate({ ...INSIDE, county: 'St. Louis city' });
+    expect(result).toMatchObject({ kind: 'precinct', jurisdiction: 'county' });
+  });
 });
 
 describe('classifyPlace', () => {

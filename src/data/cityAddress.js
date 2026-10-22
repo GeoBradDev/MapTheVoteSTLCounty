@@ -1,14 +1,28 @@
-// The City check (issue #58): asks the City of St. Louis's own geocoder
-// whether St. Louis City has the address the lookup found in the county. The
+// The City of St. Louis's own geocoder, as a check (issue #58) and as an
+// address source (#88). The check asks whether St. Louis City has the address
+// the lookup found in the county; as a source, lookup() finds a City address
+// for typed text the county does not have, and suggest() offers City
+// addresses as the voter types. The
 // county's address points leave out almost every City address and
 // OpenStreetMap misses many City house numbers, so without this a City voter
 // whose house number and street also exist in the county could get a county
 // precinct. Called straight from the browser: no proxy, no server of ours, no
-// key. Only the house number and street go, in a POST body (never a URL), with
+// key. The check sends the house number and street of the found place;
+// lookup() and suggest() send cityStreetOf the typed text (the text before its
+// first comma, without a unit or a St. Louis town, state or ZIP after it, so
+// another town typed without a comma goes too), each in a POST body (never a URL), with
 // no cookies, no referrer and no browser cache. Every failure becomes a
 // GeocoderUnavailableError; src/data/geocoder.js then answers no match (or,
 // with reportUnavailable, rejects as unavailable, #18), never the county place.
-import { CITY_COUNTY, labelOf, matchesStreet, typedZip, UNIT } from './addressMatch.js';
+import {
+  CITY_COUNTY,
+  labelOf,
+  matchesStreet,
+  matchesTyped,
+  typedZip,
+  UNIT,
+  words,
+} from './addressMatch.js';
 import { GeocoderUnavailableError } from './geocoderError.js';
 
 /** The City of St. Louis's composite geocoder (parcels, then streets). */
@@ -46,13 +60,15 @@ export const COUNTY_ONLY_ZIPS = Object.freeze(
 );
 
 /**
- * Whether typed text needs the City check: unless it holds a ZIP that is
- * entirely outside the City. A typed town does not skip it.
+ * Whether typed text needs the City check, or the City as a source (#88):
+ * unless it holds a ZIP that is entirely outside the City, one of
+ * COUNTY_ONLY_ZIPS or any ZIP that does not start 631, as every City ZIP
+ * does. A typed town does not skip it.
  * @param {string} text
  */
 export function needsCityCheck(text) {
   const zip = typedZip(String(text ?? ''));
-  return !zip || !COUNTY_ONLY_ZIPS.has(zip);
+  return !zip || (zip.startsWith('631') && !COUNTY_ONLY_ZIPS.has(zip));
 }
 
 /**
@@ -117,6 +133,36 @@ function cityAddressOf(candidate) {
   const bare = [...rest, suffix].filter(Boolean).join(' ');
   return { props, direction, bare, lat: y, lng: x };
 }
+
+// What a voter sees for a City parcel: "St. Louis City", so a City address
+// reads apart from its county twin (6135 Washington Ave 63112 in the City,
+// 63134 in the county), whose label names its own town.
+const cityLabel = (props) => labelOf({ ...props, city: 'St. Louis City' });
+
+// A St. Louis town, the state, the country or a ZIP at the end of the text.
+const CITY_TAIL =
+  /(?:[\s,]+(?:\d{5}(?:-\d{4})?|mo|missouri|usa|us|united states|(?:city of )?(?:st\.?|saint) louis(?: city)?))+\s*$/i;
+
+/**
+ * The house number and street of typed text, for the City geocoder, which
+ * finds nothing when a town or state follows the street: the part before the
+ * first comma (streetOf), without a unit, and without a St. Louis town, the
+ * state, the country or a ZIP after it, commas or not. "5010 Nottingham Ave
+ * St. Louis, MO 63109" gives "5010 Nottingham Ave". Another town is left in:
+ * the strict rules turn that text away whatever the City answers.
+ * @param {string} typed
+ */
+export function cityStreetOf(typed) {
+  return streetOf(typed).replace(CITY_TAIL, '').trim();
+}
+
+// Text worth a suggestion request: a house number, then a street word of at
+// least two letters or digits ("12th", "Oz"), as the geocoder matches whole
+// words only; a lone letter ("6135 W") is not yet a street.
+const SUGGESTIBLE = /^\s*\d+[a-z]?\s+(?:\S+\s+)*[a-z0-9]{2}/i;
+
+/** The most City suggestions offered at once. */
+const MAX_SUGGESTIONS = 5;
 
 /**
  * @typedef {{ status: 'city', place: import('./geocoder.js').GeocodedPlace }
@@ -219,6 +265,79 @@ export function createCityAddressCheck({
         (c) => c.direction && matchesStreet(input, { ...c.props, street: c.bare }),
       );
       return loose ? { status: 'ambiguous' } : { status: 'none' };
+    },
+
+    /**
+     * The City address typed text names, as an address source (#88), by the
+     * strict rules every source shares (matchesTyped): the house number and
+     * whole street, and any typed ZIP or town must agree. Only a parcel
+     * (PointAddress) counts.
+     * - `city`: one City address fits. Its place, labeled as the City.
+     * - `ambiguous`: two fit, or one the text could mean but not exactly
+     *   (its street has a direction the text left out).
+     * - `none`: no City parcel fits.
+     * Rejects with a GeocoderUnavailableError when the City cannot answer.
+     * @param {string} typed The text the voter typed or picked.
+     * @param {{ signal?: AbortSignal }} [options]
+     * @returns {Promise<CityResult>}
+     */
+    async lookup(typed, { signal } = {}) {
+      const input = String(typed ?? '').trim();
+      const query = cityStreetOf(input);
+      if (!/^\d/.test(query) || !/[a-z]/i.test(query)) {
+        if (signal?.aborted) throw abortError();
+        return { status: 'none' };
+      }
+      const found = (await candidates(query, signal)).map(cityAddressOf).filter(Boolean);
+      const exact = found.filter((c) => matchesTyped(input, c.props));
+      const labels = new Set(exact.map((c) => cityLabel(c.props)));
+      if (labels.size > 1) return { status: 'ambiguous' };
+      if (exact.length) {
+        const [{ props, lat, lng }] = exact;
+        return {
+          status: 'city',
+          place: { lat, lng, state: props.state, county: props.county, label: cityLabel(props) },
+        };
+      }
+      // The same rules with the parcel's direction left out.
+      const loose = found.some(
+        (c) => c.direction && matchesTyped(input, { ...c.props, street: c.bare }),
+      );
+      return loose ? { status: 'ambiguous' } : { status: 'none' };
+    },
+
+    /**
+     * City parcels whose house number and street start with the typed words
+     * (the last one as a prefix), labeled as the City. Asked only once a
+     * house number and a street word are typed, and never for text with a
+     * ZIP entirely outside the City. A pick is found again by its label.
+     * Rejects with a GeocoderUnavailableError when the City cannot answer.
+     * @param {string} typed
+     * @param {{ signal?: AbortSignal }} [options]
+     * @returns {Promise<Array<{ id: string, label: string }>>}
+     */
+    async suggest(typed, { signal } = {}) {
+      const input = String(typed ?? '').trim();
+      const query = cityStreetOf(input);
+      if (!SUGGESTIBLE.test(query) || !needsCityCheck(input)) {
+        if (signal?.aborted) throw abortError();
+        return [];
+      }
+      const want = words(query);
+      const last = want.length - 1;
+      const suggestions = [];
+      for (const c of (await candidates(query, signal)).map(cityAddressOf)) {
+        if (!c) continue;
+        const have = words(`${c.props.housenumber} ${c.props.street}`);
+        const fits = want.every((word, i) =>
+          i === last ? have[i]?.startsWith(word) : have[i] === word,
+        );
+        const label = cityLabel(c.props);
+        if (!fits || suggestions.some((s) => s.label === label)) continue;
+        suggestions.push({ id: `city-${suggestions.length}`, label });
+        if (suggestions.length === MAX_SUGGESTIONS) break;
+      }
+      return suggestions;
     },
   });
 }

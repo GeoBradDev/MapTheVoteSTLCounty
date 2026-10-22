@@ -287,6 +287,10 @@ describe('needsCityCheck', () => {
     // Not listed: checked.
     ['1 Main St 63199', true],
     ['6135 Washington Ave, Saint Louis, MO 63134', false],
+    // Every City ZIP starts 631 (#88): any other ZIP is entirely outside it.
+    ['1200 Market St, Philadelphia, PA 19107', false],
+    ['350 5th Ave New York NY 10118', false],
+    ['200 N 2nd St, St. Charles, MO 63301', false],
     ['1318 Ross Ave, Saint Louis, MO 63146', false],
     ['1318 Ross Ave 63146-1234', false],
   ])('%s: %s', (text, want) => {
