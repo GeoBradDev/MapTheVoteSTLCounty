@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'wouter';
 import { usePageTitle } from '../../components/usePageTitle.js';
 import election from '../../config/election.js';
@@ -251,6 +251,10 @@ function Sources() {
         <a href={county.sourceUrl} rel="noreferrer" className={linkClass}>
           {copy.countyLink(county.source)}
         </a>
+        ,{' '}
+        <a href={city.sourceUrl} rel="noreferrer" className={linkClass}>
+          {copy.cityLink(city.source)}
+        </a>
         .
       </p>
     </section>
@@ -285,6 +289,12 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
   // Set when the map fails: the page then offers no map, as without WebGL.
   const [mapFailed, setMapFailed] = useState(false);
   const canShowMap = mapSupported && !mapFailed;
+  const mapFocusRef = useRef(false);
+  useLayoutEffect(() => {
+    if (!mapFailed || !mapFocusRef.current) return;
+    mapFocusRef.current = false;
+    targetRef.current?.focus();
+  }, [mapFailed, targetRef]);
 
   const rows = result?.rows;
   const shown = useMemo(() => {
@@ -354,7 +364,12 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
           <p className="text-sm text-muted">{copy.refresh(refreshSeconds)}</p>
 
           <SortControls sort={sort} onSort={setSort} withDistance={origin !== null} />
-          <LocationButton onLocate={setOrigin} />
+          <LocationButton
+            onLocate={(place) => {
+              setOrigin(place);
+              setSort('nearest');
+            }}
+          />
 
           <div ref={targetRef} tabIndex={-1} className="mt-4">
             {!result && (
@@ -393,7 +408,17 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
                   </button>
                 )}
                 {canShowMap && showMap && (
-                  <WaitTimesMap sites={mapSites} onFail={() => setMapFailed(true)} />
+                  <WaitTimesMap
+                    sites={mapSites}
+                    onFail={() => {
+                      // The focused "Hide map" button goes with the map: put
+                      // focus on the list's container instead of the page.
+                      const focused = document.activeElement;
+                      const hadFocus = targetRef.current?.contains(focused);
+                      setMapFailed(true);
+                      if (hadFocus) mapFocusRef.current = true;
+                    }}
+                  />
                 )}
                 <ol
                   aria-labelledby="wait-sites-heading"
@@ -407,13 +432,7 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
             )}
           </div>
 
-          <p className="mt-6">
-            {copy.city}{' '}
-            <a href={city.sourceUrl} rel="noreferrer" className={linkClass}>
-              {copy.cityLink(city.source)}
-            </a>
-            .
-          </p>
+          <p className="mt-6">{copy.city}</p>
         </>
       )}
 

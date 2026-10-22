@@ -7,8 +7,8 @@
 
 /**
  * The MapLibre style URL. Positron is light gray; its water labels are blue
- * and its interstate shields slate blue, so precinctMapView.js draws every
- * label in the muted token and interstates with the gray road shield. When
+ * and its interstate shields slate blue, so mapStyle.js (for both maps) draws
+ * every label in the muted token and interstates with the gray road shield. When
  * changing the style, check its fill, line and text colors and its sprite
  * icons for red or blue.
  */

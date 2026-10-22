@@ -1,5 +1,6 @@
 // axe on the pages outside /learn (#26), rendered in the whole app: home, the
-// privacy notice, the not-found page and a precinct code that is not found.
+// early voting wait times page (#104), the privacy notice, the not-found page
+// and a precinct code that is not found.
 // learnA11y.test.jsx covers /learn. jsdom has no layout, so contrast is not
 // checked here; the Playwright run in e2e/ checks every route in Chromium.
 import { render, screen } from '@testing-library/react';

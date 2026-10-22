@@ -150,6 +150,9 @@ services:
       - path: /early-voting
         name: Cache-Control
         value: no-cache
+      - path: /early-voting/*
+        name: Cache-Control
+        value: no-cache
       - path: /learn
         name: Cache-Control
         value: no-cache

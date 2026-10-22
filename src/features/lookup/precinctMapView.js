@@ -1,6 +1,8 @@
-// The precinct map itself: the only module that imports MapLibre GL JS, so the
-// library and its worker load only when PrecinctMap imports this file on the
-// results screen. Nothing here is focusable or read out except MapLibre's own
+// The precinct map itself. It and the wait times map's view
+// (src/features/waitTimes/waitTimesMapView.js, #104) are the only modules that
+// import MapLibre GL JS, so the library and its worker load only when
+// PrecinctMap imports this file on the results screen (or the wait times page
+// shows its map). Nothing here is focusable or read out except MapLibre's own
 // canvas: the polling places list is the accessible version of the markers.
 import { Map as MapLibreMap, Marker, setWorkerUrl } from 'maplibre-gl';
 // Bundled by Vite as a same-origin file, so the Content-Security-Policy needs

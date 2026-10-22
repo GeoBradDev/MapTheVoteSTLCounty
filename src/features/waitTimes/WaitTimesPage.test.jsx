@@ -153,9 +153,10 @@ describe('WaitTimesPage', () => {
     renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
     await screen.findByRole('list', { name: copy.listLabel });
     await user.click(screen.getByRole('button', { name: copy.location.button }));
+    // Finding the location switches to the nearest-first sort.
     const nearest = await screen.findByRole('radio', { name: copy.sort.nearest });
+    expect(nearest).toBeChecked();
     expect(screen.getByRole('radio', { name: copy.sort.nearby(5) })).toBeInTheDocument();
-    await user.click(nearest);
     // The location is at the Board of Elections office.
     expect(names()[0]).toBe('Board of Elections');
     expect(items()[0]).toHaveTextContent(/Less than 0\.1 miles away/);
@@ -254,6 +255,9 @@ describe('WaitTimesPage', () => {
     await user.click(screen.getByRole('button', { name: copy.map.show }));
     await waitFor(() => expect(screen.queryByRole('button', { name: copy.map.hide })).toBeNull());
     expect(screen.queryByRole('button', { name: copy.map.show })).toBeNull();
+    // Focus moves to the list rather than falling to the page.
+    expect(document.activeElement).not.toBe(document.body);
+    expect(document.activeElement).toContainElement(list());
     expect(screen.queryByRole('region', { name: copy.map.label })).toBeNull();
     createWaitTimesMap.mockReset();
   });
@@ -341,6 +345,15 @@ describe('WaitTimesPage', () => {
     renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
     await screen.findByRole('list', { name: copy.listLabel });
     expect(screen.queryByRole('button', { name: copy.map.show })).toBeNull();
+  });
+
+  it('still links both boards once early voting has ended', () => {
+    vi.setSystemTime(Date.UTC(2026, 10, 3, 18, 0));
+    renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
+    expect(screen.getByRole('link', { name: copy.countyLink(county.source) })).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: copy.cityLink(election.waitTimes.city.source) }),
+    ).toBeInTheDocument();
   });
 
   it('uses no ranking words', () => {

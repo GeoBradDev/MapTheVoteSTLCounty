@@ -173,3 +173,8 @@ Chosen not to do: City rows (#91), the results page origin (#105), Election Day 
   once and shared by every mount; an unchanged marker list is not redrawn; the Lighthouse
   check accepts the "has ended" page after the config's last day; the City note shows only
   while early voting has not ended.
+- Review (finder 2): a found location switches the sort to "Nearest to you"; when the map
+  fails with focus on its button, focus moves to the list's container; both boards' pages
+  are linked under "Official sources" in every season (the City note names the link there);
+  `/early-voting/*` gets its own `no-cache` rule; comments that said `precinctMapView.js`
+  alone imports MapLibre or recolors the basemap now say otherwise.
