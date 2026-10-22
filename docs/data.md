@@ -382,8 +382,8 @@ puts it out of state or in another county, so a point far from the City is never
 it. A place named as the City whose point is in a county precinct gets that precinct: the
 point decides, as for every place. A City precinct opens `/p/<City code>`. With no
 precinct at the point, a place in St. Louis City (its precinct layer found nothing or
-failed), or coordinates alone near the City and outside the county when the City's layer
-failed, is sent to the City's Board of Election Commissioners and its polling place lookup,
+failed), or coordinates alone near the City that are not known to be in the county (the
+boundary says outside, or cannot answer) when the City's layer failed, is sent to the City's Board of Election Commissioners and its polling place lookup,
 one elsewhere in Missouri to the Secretary of State Voter Outreach Center (the
 county apps' own no-results link), and one outside Missouri gets a generic
 message. A point inside the boundary with no precinct goes to the county's

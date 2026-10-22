@@ -34,8 +34,8 @@ dataviz, django, fastapi, expo (not applicable because no charts, no backend, no
    `jurisdiction: 'county'`.
 6. `stl-city` stays only as the fallback when the City precinct layer finds nothing or
    fails for a place the geocoder names as the City and the county layer has no precinct
-   there (the point decides, as today), or fails for coordinates alone near the City outside
-   the county; its notice links the City Board and the City's own polling place lookup.
+   there (the point decides, as today), or fails for coordinates alone near the City that are
+   not known to be in the county; its notice links the City Board and the City's own polling place lookup.
 7. A point in neither precinct layer keeps today's Missouri and out-of-state answers.
 8. Use my location (coordinates only) in the City opens the City precinct, under the #83
    accuracy rule (unchanged).
@@ -132,7 +132,7 @@ error line (#93), the Clayton municipality no match (opened as #143, unrelated).
   is typed, not for `5010 Notting`.
 - `locate()` also returns `stl-city` for a point near the City, outside the county, when the
   City layer fails (coordinates only, Use my location), so a City voter is never told the
-  location is outside both (also when the county boundary query fails too).
+  location is outside both (also when the county boundary query fails).
 - Review round 1: the City is asked for the house number and street only (`cityStreetOf`),
   since it finds nothing with a town after the street; `locate()` asks the City layer only for
   coordinates alone or a place the geocoder puts in St. Louis County, and falls back to

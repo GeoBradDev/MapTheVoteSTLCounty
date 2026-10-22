@@ -90,7 +90,7 @@ describe('PrivacyPage', () => {
       'It also goes to Photon by komoot (photon.komoot.io) when neither has a match or the county cannot be reached;',
     );
     expect(item).toHaveTextContent(
-      "its house number and street (not the town, ZIP code or unit) also go to the City's address search, in the body of the request, to check that the City does not have the same address. The City is skipped when you typed a ZIP code that is entirely outside the City, or when the address was found in another county.",
+      "its house number and street (not the town, ZIP code or unit) also go to the City's address search, in the body of the request, to check that the City does not have the same address. The City is skipped when you typed a ZIP code that is entirely outside the City (the ZIP code of a suggestion you picked does not count: it is the search's own), or when the address was found in another county.",
     );
     // City suggestions (#88): the City gets the text as it is typed too.
     expect(item).toHaveTextContent(
