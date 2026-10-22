@@ -22,10 +22,16 @@ describe('City precinct codes (#86, #87)', () => {
   it("turn the layer's ID into the URL code", () => {
     expect(cityPrecinctCode('W 1 P 12')).toBe('W01P12');
     expect(cityPrecinctCode('W 14 P 5')).toBe('W14P05');
-    // Extra or missing spaces, as a hand-edited row might have.
-    expect(cityPrecinctCode('  W 3  P 7 ')).toBe('W03P07');
-    expect(cityPrecinctCode('W3P7')).toBe('W03P07');
   });
+
+  // A code is looked up by the exact ID cityPrecinctId writes, so an ID in any
+  // other form would give a code that opens no precinct (#87 review).
+  it.each(['W3P7', 'W 3  P 7', ' W 3 P 7', 'W 3 P 7 ', 'W 03 P 7'])(
+    'gives no code for %j, which cityPrecinctId would not write',
+    (id) => {
+      expect(cityPrecinctCode(id)).toBeNull();
+    },
+  );
 
   it('round-trips every code', () => {
     for (let ward = 1; ward <= 14; ward += 1) {

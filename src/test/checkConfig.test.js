@@ -1311,6 +1311,11 @@ describe('the City layers (#87)', () => {
     expect(status).toBe('fail');
     expect(detail).toBe('"Ward 1 Precinct 4" is not a City precinct ID; W01P06 appears twice');
 
+    // An ID the app's lookup by code would not find (#87 review).
+    const loose = healthyWorld();
+    loose.city.precincts[0] = { [cityConfig.precinctField]: 'W1P1' };
+    expect((await run(loose))['city precincts'].detail).toBe('"W1P1" is not a City precinct ID');
+
     const few = healthyWorld();
     few.city.precincts = few.city.precincts.slice(0, 20);
     const { min, max } = CITY_PRECINCT_RANGE;
