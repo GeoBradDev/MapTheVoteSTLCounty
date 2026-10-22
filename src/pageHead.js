@@ -24,11 +24,15 @@ const DESCRIPTION_MAX = 155;
 /**
  * The path a page is known by: no query string or hash, and no trailing
  * slash except on the home page (the host serves /learn/ the same as /learn).
+ * One trailing slash only, as wouter's routes match: /learn// is not /learn,
+ * and the app shows it the not-found page.
  * @param {string} route
  */
 export function normalizePath(route) {
-  const pathOnly = route.split(/[?#]/)[0].replace(/\/+$/, '');
-  return pathOnly === '' ? '/' : pathOnly;
+  const pathOnly = route.split(/[?#]/)[0];
+  if (pathOnly === '') return '/';
+  const trimmed = pathOnly.replace(/\/$/, '');
+  return trimmed === '' || trimmed.endsWith('/') ? pathOnly : trimmed;
 }
 
 /**
@@ -140,8 +144,8 @@ const MANAGED = 'meta[name="description"], link[rel="canonical"], meta[property^
 
 /**
  * Replaces the description, canonical and Open Graph tags in `doc`'s head
- * with `head`'s, or with the shell's when `head` is null. The title is left to
- * the pages, which set it themselves.
+ * with `head`'s, or with the shell's when `head` is null. It leaves the title
+ * alone: the pages set theirs, and App.jsx's PageHead sets a public page's.
  * @param {Document} doc
  * @param {{ title: string, description: string, canonical?: string } | null} head
  */

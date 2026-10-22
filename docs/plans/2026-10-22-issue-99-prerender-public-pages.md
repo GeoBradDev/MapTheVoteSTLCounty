@@ -169,6 +169,14 @@ build its head hook on the `pageHead()` function added here.
   `noindex`, the Lighthouse SEO category (all #98); the service worker precache (#25);
   per-locale pages (#19).
 
+## Revisions during review
+
+- Criterion 6 says titles stay managed by the pages. They still are, and `PageHead` in
+  `App.jsx` also sets a public page's title (the same value the page sets), because a
+  pre-rendered page's title starts each page's restore chain; see Files that change.
+- `normalizePath()` strips one trailing slash only, as wouter's routes match, so `/learn//`
+  is neither hydrated as `/learn` nor given its head (review finding).
+
 ## Proof
 
 - Criterion 1, 2, 3: `src/test/build.test.js` against a real build (files, head tags, root

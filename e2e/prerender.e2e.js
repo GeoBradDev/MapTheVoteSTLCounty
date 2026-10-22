@@ -181,6 +181,16 @@ test.describe('reading before the script arrives', () => {
   });
 });
 
+test('a path with two trailing slashes is the not-found page, with no error', async ({ page }) => {
+  const problems = collectProblems(page);
+  await answerFromFixtures(page);
+  await page.goto('/learn/voter-id//');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Page not found');
+  await expect(page).toHaveTitle('Page not found | St. Louis County Voter Guide');
+  await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
+  expect(problems).toEqual([]);
+});
+
 test.describe('precinct pages', () => {
   test('are served the empty shell, with no page baked in', async ({ request }) => {
     const body = await (await request.get(`/p/${CODE}`)).text();

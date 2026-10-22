@@ -268,7 +268,8 @@ Every build writes `robots.txt`, and a production build writes `sitemap.xml`, bo
   keep the shell's head; what they and the not-found page carry is #98.
 - **PR previews:** Render sets `IS_PULL_REQUEST=true` in a preview build. The build then
   writes a `robots.txt` of `User-agent: *` / `Disallow: /`, adds
-  `<meta name="robots" content="noindex">` to `index.html` and writes no sitemap. A local
+  `<meta name="robots" content="noindex">` to `index.html` (and so to the shell and every
+  pre-rendered page, which are built from it) and writes no sitemap. A local
   build and CI build as production.
 - **The `onrender.com` copy:** the service also answers at its default `onrender.com`
   address. Render can turn that address off once a service has a custom domain (it then
