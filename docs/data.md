@@ -656,8 +656,8 @@ The county board's website is now a page on the county's own site:
   page directly. `stlouiscovotes.gov` (from the project brief) does not resolve.
 - The page answers `403` to scripts (curl, WebFetch, headless Chromium): a Cloudflare bot
   challenge. Browsers load it. Check links to it by hand in a browser, and do not cite its
-  text unless someone has read it there. The daily content link check sees the `403` too;
-  #74 tracks reporting it as a skip instead of a failure.
+  text unless someone has read it there. The daily content link check reports it as a skip
+  (bot challenge, check by hand) rather than a failure (#74).
 - The board's current contact details come from its November 3, 2026 Instant Apps (Polling
   Place Lookup `13fb36e7...` and Absentee Voting Lookup `9301b459...`, read 2026-10-21):
   314-615-1800, Relay Missouri 711 or 800-735-2966, and `vote@stlouiscountymo.gov`. Both apps

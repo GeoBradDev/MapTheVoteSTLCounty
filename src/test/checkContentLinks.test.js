@@ -181,17 +181,13 @@ describe('checkLinks with page bodies', () => {
 
   it('fails a 200 page with a meta refresh to another host', async () => {
     const [result] = await run(
-      page(
-        html(
-          '<meta http-equiv="refresh" content="0; URL=https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/" />',
-        ),
-        { url: 'https://a.gov/page/' },
-      ),
+      page(html('<meta http-equiv="refresh" content="0; URL=https://board.gov/elections/" />'), {
+        url: 'https://a.gov/page/',
+      }),
     );
     expect(result).toMatchObject({
       status: 'fail',
-      detail:
-        'meta refresh to https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/',
+      detail: 'meta refresh to https://board.gov/elections/',
     });
   });
 

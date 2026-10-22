@@ -38,6 +38,8 @@ because no UI changes. django, fastapi, expo: not applicable because the repo us
   body)`, a capped body reader, `configLinks(config)`, `skip` status, `--skipped <file>` flag
   that writes one skipped URL per line.
 - `src/test/checkContentLinks.test.js`: fixtures from the issue.
+- `src/test/checkConfig.test.js`: the data health workflow test also checks that skipped links
+  reach the job summary and the failure issue.
 - `.github/workflows/data-health.yml`: pass `--skipped "$RUNNER_TEMP/skipped-links.txt"`,
   write skipped URLs to `$GITHUB_STEP_SUMMARY`, and add them to the issue body.
 - `README.md`, `docs/data.md`: describe the new checks; drop "#74 tracks".
@@ -70,3 +72,8 @@ because no UI changes. django, fastapi, expo: not applicable because the repo us
   failure (criterion 2).
 - `.github/workflows/ci.yml` unchanged and the data health workflow keeps no pull_request or
   push trigger (criterion 6).
+
+Revision: the red test first used the real `countySiteUrl` as a fixture target, which
+`src/test/election-hardcoding.test.js` forbids outside the config. The fixture now uses
+`https://board.gov/elections/`; what it asserts is unchanged. At the merge base the rewritten
+test still fails (the exports it imports do not exist there, and the meta refresh is passed).

@@ -77,13 +77,30 @@ jobs:
         timeout-minutes: 20
         run: node scripts/check-geocoder.mjs
 
-      # Every source and link in content/<locale>/learn/ (#21). Each dead URL
-      # can take about 51 s (3 tries of 15 s plus waits).
+      # Every source and link in content/<locale>/learn/ (#21) and every page
+      # the election config links (#74). Each dead URL can take about 51 s
+      # (3 tries of 15 s plus waits). A page behind a bot challenge is skipped,
+      # not failed, and listed for a person to open in a browser.
       - name: Content link check
         id: links
         if: ${{ !cancelled() && steps.window.outputs.active == 'true' }}
         timeout-minutes: 12
-        run: node scripts/check-content-links.mjs
+        run: node scripts/check-content-links.mjs --skipped "$RUNNER_TEMP/skipped-links.txt"
+
+      # A skip never fails the run, so list it on the run's summary every day.
+      - name: List skipped links
+        if: ${{ !cancelled() && steps.window.outputs.active == 'true' }}
+        run: |
+          file="$RUNNER_TEMP/skipped-links.txt"
+          if [ -s "$file" ]; then
+            {
+              echo "### Links to check by hand"
+              echo
+              echo "These answered with a bot challenge. Open each in a browser before Election Day."
+              echo
+              sed 's/^/- /' "$file"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Report the failure as an issue
         if: failure()
@@ -101,6 +118,13 @@ jobs:
           - Content link check (scripts/check-content-links.mjs): $LINKS_OUTCOME
 
           Log: $run_url"
+          skipped_file="$RUNNER_TEMP/skipped-links.txt"
+          if [ -s "$skipped_file" ]; then
+            body="$body
+
+          Skipped behind a bot challenge, so check each by hand in a browser before Election Day:
+          $(sed 's/^/- /' "$skipped_file")"
+          fi
           gh label create "data health" --repo "$GITHUB_REPOSITORY" --color fbca04 \
             --description "Failures from the scheduled data health check" 2>/dev/null || true
           open=$(gh issue list --repo "$GITHUB_REPOSITORY" --label "data health" --state open \
