@@ -443,6 +443,26 @@ describe('PollsCard', () => {
       expect(rowNames(await list())).not.toContain(nearest.name);
     });
 
+    it('keeps focus in the card when the refresh removes the row that had it', async () => {
+      const user = userEvent.setup();
+      render(<PollsCard code="CC007" origin={ORIGIN} />);
+      await list();
+      await user.click(screen.getByRole('button', { name: copy.polls.showMore }));
+      const focused = within(await list()).getAllByRole('heading', { level: 3 })[COUNT];
+      await waitFor(() => expect(focused).toHaveFocus());
+      getPolls.mockResolvedValue({ ...moved, loadedAt: stale });
+      await leaveAndReturn(stale);
+      await waitFor(() =>
+        expect(rowNames(screen.getByRole('list', { name: copy.polls.listLabel }))).not.toContain(
+          nearest.name,
+        ),
+      );
+      expect(document.activeElement).not.toBe(document.body);
+      expect(
+        screen.getByRole('list', { name: copy.polls.listLabel }).closest('[tabindex="-1"]'),
+      ).toContainElement(document.activeElement);
+    });
+
     it('names the day as well when the list loaded on an earlier day', async () => {
       render(<PollsCard code="CC007" origin={ORIGIN} />);
       await list();
