@@ -79,7 +79,10 @@ style changes. dataviz, django and the rest: not applicable because no charts or
 - `src/data/cityArcgis.js` (new) and `src/data/cityArcgis.test.js` (new).
 - `src/data/interiorPoint.js` (new, with a test): a point inside a GeoJSON polygon.
 - `src/data/jurisdictions.js` and its test: the City adapter.
-- `src/test/election-hardcoding.test.js`: collect City `*Where` filters.
+- `src/test/election-hardcoding.test.js`: collect City `*Where` filters and the City layer
+  field names (except common words like `name`; added after review).
+- `src/test/build.test.js`: the City client stays out of the first load (added after review).
+- `src/features/lookup/PrecinctPage.test.jsx`: a comment naming #89 as the stub's end.
 - `src/config/election.test.js`: City block shape.
 - `scripts/check-config.mjs`, `src/test/checkConfig.test.js`: City checks.
 - `scripts/record-fixtures.mjs`, `docs/raw/fixtures/city-*.json`.

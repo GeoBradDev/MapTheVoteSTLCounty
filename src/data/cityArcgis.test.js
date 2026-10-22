@@ -81,10 +81,11 @@ describe('fields', () => {
     expect(client.CITY_DISTRICT_FIELDS).toEqual(Object.values(city.districtLayerFields));
   });
 
-  // The layer's officeholder fields carry a number (repname1 to repname7), and
-  // its contact fields would put a person's details on the page (#87).
-  const OFFICEHOLDER =
-    /^(repname|repimageurl|party|phone|email|facebook|twitter|fulladdr|districturl)/i;
+  // The layer's officeholder fields: a name, photo, party, web page, phone,
+  // email, social accounts and address per seat, each ending in its seat
+  // number (repname1 to repname7). Any of them would put a person's details on
+  // the page (#87).
+  const OFFICEHOLDER = /^(repname|repimageurl|party|districturl|phone|email|facebook|twitter)|\d$/i;
 
   it('never asks the districts layer for an officeholder, party or contact field', () => {
     expect(client.CITY_DISTRICT_FIELDS.filter((f) => OFFICEHOLDER.test(f))).toEqual([]);
@@ -384,6 +385,13 @@ describe.each([
       address: raw.properties[siteFields.address],
       zipcode: raw.properties[siteFields.zip],
     });
+    expect(typeof result.loadedAt).toBe('number');
+  });
+
+  it('resolves to an empty list when the filter finds no site', async () => {
+    fetchMock.mockResolvedValue(respond({ ...fixture, features: [] }));
+    const result = await client[name]();
+    expect(result.features).toEqual([]);
     expect(typeof result.loadedAt).toBe('number');
   });
 

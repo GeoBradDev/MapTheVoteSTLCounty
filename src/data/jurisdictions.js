@@ -43,13 +43,14 @@ export const county = Object.freeze({
   getOutline: (code) => arcgis.getPrecinctGeometry(code),
 });
 
+let cityClient;
+
 /**
  * The City's data code (./cityArcgis.js, #87), loaded on first use so it stays
  * out of the first load. A failed load is not kept, so the next call tries
  * again.
  * @returns {Promise<typeof import('./cityArcgis.js')>}
  */
-let cityClient;
 export function loadCityClient() {
   cityClient ??= import('./cityArcgis.js').catch((error) => {
     cityClient = undefined;

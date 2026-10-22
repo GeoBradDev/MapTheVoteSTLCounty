@@ -189,7 +189,8 @@ function toSite(properties) {
 /**
  * The City's Election Day voting locations (`pollsWhere`), shared by all
  * callers until older than the max age (#84), like the County's `getPolls`.
- * Any City voter may vote at any of them on November 3, 2026 (docs/data.md).
+ * The City Board's page says any City voter may vote at any of them on
+ * Election Day (docs/data.md).
  * @returns {Promise<object>} A GeoJSON FeatureCollection in lat/lng, with
  *   `loc`, `name`, `address` and `zipcode` properties, and `loadedAt`.
  */

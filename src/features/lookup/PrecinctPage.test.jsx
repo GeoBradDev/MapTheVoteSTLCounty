@@ -417,7 +417,7 @@ describe('PrecinctPage', () => {
   });
 
   // City codes (#86): one route, the code's shape picks the City adapter, a
-  // stub until #87.
+  // stub until the City results page (#89).
   describe('a City precinct code', () => {
     it('reaches the City adapter, which asks no County layer', async () => {
       renderAt('W01P12');

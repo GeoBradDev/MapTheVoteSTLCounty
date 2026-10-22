@@ -789,7 +789,7 @@ The City's precincts are layer 1 of `ElectionGeography_public_4533ffc5e0c84851a3
 in the City Board's ArcGIS org (`HZXbCkpCSqbGd0vK`). Its `precinctid` reads
 `W <ward> P <precinct>` with no zero padding, like `W 1 P 12`. Checked on 2026-10-22: 207
 precincts, every one in that form, wards 1 to 14, precincts 1 to 21 within a ward, no
-duplicates. So `W01P12` is `W 1 P 12` (`cityPrecinctId` in `src/data/jurisdictions.js`).
+duplicates. So `W01P12` is `W 1 P 12` (`cityPrecinctId` in `src/data/cityPrecinctCode.js`).
 Two digits each leaves room for a ward or precinct number up to 99. The conversion both ways
 is `src/data/cityPrecinctCode.js`. The rest of the City layers are under St. Louis City below.
 

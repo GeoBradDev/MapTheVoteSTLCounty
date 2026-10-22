@@ -340,8 +340,8 @@ const shared = {
       enabled: true,
       serviceRoot: 'https://services6.arcgis.com/HZXbCkpCSqbGd0vK/ArcGIS/rest/services',
       layer: 'VotingLocations_currentwait_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/0',
-      // The dashboard's own filter.
-      where: "publicview = 'Yes' AND earlyvoting = 'Yes'",
+      // The dashboard's own filter: the City's early voting sites.
+      where: city.earlyVotingWhere,
       // The site key in the owner's City query (#103 comment, 2026-10-22).
       siteField: 'name',
       // People in line, not minutes (owner decision, 2026-10-22): the City
