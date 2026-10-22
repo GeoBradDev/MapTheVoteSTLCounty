@@ -213,7 +213,8 @@ Translations (#19): put a topic with the same `id` under another locale, such as
 `node scripts/check-content-links.mjs` requests every source and link in every topic, and every
 page `src/config/election.js` links (each `sources` entry and each value whose key ends in `Url`
 or `Source`), and prints PASS, FAIL or SKIP per URL. It fails a URL on an error status, on a
-redirect that lands off the official hosts, and on an HTML page whose
+request that fails or times out after its retries, on a redirect that lands off the official
+hosts, and on an HTML page whose
 `<meta http-equiv="refresh">` sends the browser to a different page (#74). A `403` bot
 challenge, which only a browser gets past, is a SKIP: it does not fail the run, and a person
 must open the URL in a browser. Any other `403` fails. It exits 1 on any failure;
