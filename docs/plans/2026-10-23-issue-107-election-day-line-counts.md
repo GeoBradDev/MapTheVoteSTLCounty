@@ -99,6 +99,11 @@ Domain skills:
 - `src/i18n/en.json` and `src/features/privacy/privacyCopy.js`: the privacy notice says the
   polling places card and the wait times page ask the line count layers on Election Day,
   each precinct's results only its own board's, with the Election Day layer's host.
+- `src/features/lookup/HomePage.jsx`, `homeCopy.js`: the home page's wait times link reads
+  "See Election Day line counts" on Election Day, switched after hydration (the page is
+  pre-rendered).
+- `src/features/lookup/mapBounds.js`: `placesKey`, order-independent, so a reorder on a
+  count refresh keeps the precinct map's camera.
 - Docs: `README.md`, `docs/data.md` where their text becomes wrong.
 
 ## Order of work

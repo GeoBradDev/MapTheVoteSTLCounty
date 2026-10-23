@@ -9,7 +9,7 @@ import { Map as MapLibreMap, Marker, setWorkerUrl } from 'maplibre-gl';
 // no blob: worker source.
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { BASEMAP_STYLE_URL } from './basemap.js';
-import { mapBounds, oklchToRgb } from './mapBounds.js';
+import { mapBounds, oklchToRgb, placesKey } from './mapBounds.js';
 import { NO_COUNT_CLASS, WAIT_BIN_CLASSES } from '../waitTimes/waitColors.js';
 import { neutralizeBasemap } from './mapStyle.js';
 import './precinctMap.css';
@@ -30,9 +30,6 @@ function pollMarkerClass(bin) {
   if (bin === undefined) return POLL_MARKER;
   return `${COUNT_MARKER} ${bin === null ? NO_COUNT_CLASS : WAIT_BIN_CLASSES[bin]}`;
 }
-
-// Where the places are, so a change of bins alone keeps the camera.
-const placesKey = (places) => places.map((p) => `${p.lat},${p.lng}`).join(';');
 
 // Under the numbered markers (added first), so their numbers stay readable
 // even when a polling place is at the searched address.

@@ -73,3 +73,17 @@ export function oklchToRgb(value) {
   const bl = -0.0041960863 * l - 0.7034186147 * mm + 1.707614701 * s;
   return `rgb(${encode(r)}, ${encode(g)}, ${encode(bl)})`;
 }
+
+/**
+ * Which places a map shows, whatever their order, so a list that only
+ * reorders (a line count refresh under the shortest line sort, #107) keeps
+ * the camera where the voter left it.
+ * @param {{ lat: number, lng: number }[]} places
+ * @returns {string}
+ */
+export function placesKey(places) {
+  return places
+    .map((p) => `${p.lat},${p.lng}`)
+    .sort()
+    .join(';');
+}

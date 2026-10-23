@@ -42,17 +42,24 @@ function staleCopy(body, timeField, shiftMs) {
 }
 const STALE_SHIFT_MS = (election.waitTimes.maxAgeMinutes + 60) * 60_000;
 
-// Election Day (#107): no Election Day report has been published, so these are
-// the fresh recordings moved to 9:00 a.m. on Election Day, the County's
-// renamed from each site's absentee username to its Election Day one
-// (asElectionDay in src/data/waitTimes.fixtures.js).
+// Election Day (#107): no Election Day report has been published. The County's
+// is the fresh recording moved to 9:00 a.m. on Election Day and renamed from
+// each site's absentee username to its Election Day one (asElectionDay in
+// src/data/waitTimes.fixtures.js). Most City reports in its fresh recording are
+// from the evening before, so moved by the same span they would be a day old:
+// the City's keeps each site's recorded count and reports it at 8:50 a.m. on
+// Election Day instead, so City counts show too.
+const CITY_DAY_REPORT = Date.UTC(2026, 10, 3, 14, 50);
 function electionDayCopy(body, jurisdiction) {
-  const rows = asElectionDay(
-    body.features.map((f) => f.attributes),
-    jurisdiction,
-    FIXTURES.polls.features,
-  );
-  return { ...body, features: rows.map((attributes) => ({ attributes })) };
+  const attributes = body.features.map((f) => f.attributes);
+  const { timeField, valueField } = election.waitTimes[jurisdiction];
+  const rows =
+    jurisdiction === 'county'
+      ? asElectionDay(attributes, jurisdiction, FIXTURES.polls.features)
+      : attributes.map((row) =>
+          row[valueField] === null ? row : { ...row, [timeField]: CITY_DAY_REPORT },
+        );
+  return { ...body, features: rows.map((row) => ({ attributes: row })) };
 }
 
 /**

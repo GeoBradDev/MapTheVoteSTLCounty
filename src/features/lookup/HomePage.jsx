@@ -1,14 +1,24 @@
+import { useSyncExternalStore } from 'react';
 import { Link } from 'wouter';
 import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
 import AddressLookup from './AddressLookup.jsx';
 import CountyElectionDayRule from './CountyElectionDayRule.jsx';
+import { isElectionDay } from './electionDay.js';
 import { copy } from './homeCopy.js';
+
+// Whether it is Election Day, read after hydration: the page is pre-rendered
+// (#99) with the early voting label, and a client on Election Day then
+// switches it (#107) without a hydration mismatch.
+const noSubscribe = () => () => {};
+const electionDayNow = () => isElectionDay(Date.now());
+const notElectionDay = () => false;
 
 const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
 
 // The first screen. One job: get an address (or the device's location).
 export default function HomePage() {
+  const electionDay = useSyncExternalStore(noSubscribe, electionDayNow, notElectionDay);
   return (
     <>
       <header>
@@ -29,7 +39,7 @@ export default function HomePage() {
       {/* The first action, next to the address search (#104): no address needed. */}
       <p className="mt-3">
         <Link href="/early-voting" className={`${linkClass} font-semibold`}>
-          {copy.waitTimes}
+          {electionDay ? copy.waitTimesElectionDay : copy.waitTimes}
         </Link>
       </p>
 
