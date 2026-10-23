@@ -454,6 +454,29 @@ for (const [code, width] of [
   });
 }
 
+// The results page's largest text needs no data (#156): at the Lighthouse
+// run's 360 x 640, every LCP entry is painted before the layers answer,
+// whatever font the system has (with some, the share note is larger than the
+// Election Day line). A taller or wider screen shows more of the loaded
+// summary, whose data driven text can be larger still.
+for (const code of [CODE, CITY_CODE]) {
+  test(`/p/${code} paints its largest text before the data answers`, async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 640 });
+    await page.addInitScript(() => {
+      window.lcpEntries = [];
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) window.lcpEntries.push(entry.startTime);
+      }).observe({ type: 'largest-contentful-paint', buffered: true });
+    });
+    await answerFromFixtures(page, { delayMs: 1500 });
+    await page.goto(`/p/${code}`);
+    await expect(page.getByRole('list', { name: 'Nearest polling places' })).toBeVisible();
+    const entries = await page.evaluate(() => window.lcpEntries);
+    expect(entries.length).toBeGreaterThan(0);
+    for (const time of entries) expect(time).toBeLessThan(1500);
+  });
+}
+
 test.describe('with reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
 

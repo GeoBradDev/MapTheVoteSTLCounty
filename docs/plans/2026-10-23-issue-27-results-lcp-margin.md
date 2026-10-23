@@ -63,7 +63,8 @@ request answers, so the simulated new connection to the ArcGIS host counts towar
 - `e2e/lighthouse.js` (revision, see below): the local fixture server waits 600 ms before it
   answers any request.
 - `src/features/lookup/ShareLink.jsx` (review revision): `ShareLinkPlaceholder`, the share
-  row laid out with the same classes, invisible and hidden from screen readers.
+  row laid out with the same classes: the button's place invisible and hidden from screen
+  readers, the share note shown (revision after CI).
 - `src/features/lookup/PrecinctPage.jsx` (review revision): until the precinct loads, the
   header renders `ShareLinkPlaceholder` in the one slot `ShareLink` replaces (holding the
   share row's place while a code-shaped precinct loads), so "Search another address" keeps
@@ -102,10 +103,24 @@ address").
 
 ## Revision after CI
 
-CI's first run measured /p/CC007 at 2541 ms and /p/W01P12 at 2522 ms: on its slower runner
-the first frame painted after the 100 ms answers, so the run measured main's behavior again.
-The wait is now four round trips at the run's own 150 ms RTT (600 ms), the cost of a new
-connection on a phone, still well under the app's 3 s slow notice and 8 s timeout.
+CI's first run measured /p/CC007 at 2541 ms and /p/W01P12 at 2522 ms. The review rerun's
+finder read CI's report: the first frame painted before the answers (111 ms against about
+210 ms), but CI's font (Liberation Sans or Arial metrics) fits the date line on one line
+(288 x 17), so the share note under the heading (303 x 30), which the header showed only
+once the precinct loaded, was the largest text and painted with the data. With the local
+fonts (Noto Sans, DejaVu Sans) the date line wraps to two lines and wins. Fixes:
+
+- `ShareLinkPlaceholder` shows the share note while loading (it needs only the code), so it
+  paints with the first frame and the loaded note repaints it at the same size. A Playwright
+  probe with each of Liberation Sans, Arial, DejaVu Sans and Noto Sans forced on the page
+  now records one LCP entry, at the first paint, for both test precincts.
+- `e2e/a11y.e2e.js` "paints its largest text before the data answers": at 360 x 640, every
+  LCP entry comes before the layers answer, on whatever font the runner has. A taller or
+  wider screen shows more of the loaded summary (during early voting, its "See wait times"
+  link; on desktop, the City's sample ballot paragraph), whose data driven text can be
+  larger: accepted, outside the Lighthouse run's viewport.
+- The fixture server's wait is four simulated round trips (600 ms) rather than 100 ms, for
+  margin on slower runners (CI painted at 111 ms against 100 ms answers).
 
 ## Order of work
 
