@@ -1,17 +1,43 @@
 import { act, render, screen } from '@testing-library/react';
+import ErrorBoundary from '../../components/ErrorBoundary.jsx';
 import userEvent from '@testing-library/user-event';
 import { Route, Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import { learnCopy } from './learnCopy.js';
 import LearnTopicPage from './LearnTopicPage.jsx';
 
+// The fixtures carry their bodies, so they count as loaded. `slow` is only a
+// summary, as the first load has (#147): its body comes from `body.load`.
+const body = vi.hoisted(() => ({ load: null, lookups: null }));
 vi.mock('./topics.js', async (importOriginal) => {
   const actual = await importOriginal();
   const { fixtureTopics: topics } = await import('../../test/learnFixtures.js');
+  const slow = { id: 'slow', locale: 'en', title: 'Fixture slow topic', group: 'get-help' };
+  // A translation of voter-id whose body is not loaded yet.
+  const translated = { id: 'voter-id', locale: 'es', title: 'Fixture ID topic', group: 'get-help' };
+  const make = () =>
+    actual.topicLookups(
+      actual.indexTopics([...topics, slow, translated]),
+      new Map([
+        ['en/slow', () => body.load()],
+        ['es/voter-id', () => body.load()],
+      ]),
+    );
+  body.reset = () => {
+    body.lookups = make();
+  };
+  body.reset();
   return {
     ...actual,
-    getTopic: (id, locale) => actual.topicLookups(actual.indexTopics(topics)).getTopic(id, locale),
+    getTopic: (id, locale) => body.lookups.getTopic(id, body.locale ?? locale),
+    loadedTopic: (topic) => body.lookups.loadedTopic(topic),
+    loadTopic: (topic) => body.lookups.loadTopic(topic),
   };
+});
+
+beforeEach(() => {
+  body.reset();
+  body.locale = null;
 });
 
 const copy = learnCopy.en;
@@ -109,5 +135,67 @@ describe('LearnTopicPage', () => {
     );
     expect(container.querySelector('details').open).toBe(false);
     expect(screen.getByRole('heading', { level: 1 })).toHaveFocus();
+  });
+
+  // The body loads with the page (#147): a placeholder holds the page's height
+  // meanwhile, so the footer does not show and then jump down.
+  describe('while the body loads', () => {
+    async function slowBody() {
+      const { fixtureTopics } = await import('../../test/learnFixtures.js');
+      const fixture = fixtureTopics.find((t) => t.id === 'voter-id');
+      return { ...fixture, id: 'slow', title: 'Fixture slow topic' };
+    }
+
+    it('holds the page height, then shows the topic with focus on its title', async () => {
+      let resolve;
+      body.load = () => new Promise((r) => (resolve = r));
+      const { container } = renderTopic('slow');
+      expect(screen.queryByRole('heading', { level: 1 })).toBeNull();
+      expect(container.querySelector('.min-h-screen')).not.toBeNull();
+      await act(async () => resolve(await slowBody()));
+      expect(screen.getByRole('heading', { level: 1, name: 'Fixture slow topic' })).toHaveFocus();
+      expect(screen.getByRole('region', { name: 'Sources' })).toBeInTheDocument();
+      expect(document.title).toBe(copy.pageTitle('Fixture slow topic'));
+    });
+
+    // A new language is not a new page (#19): the topic stays, and focus stays
+    // where the voter left it, while the translation's body loads.
+    it('keeps the topic and focus while a translation loads', async () => {
+      let resolve;
+      body.load = () => new Promise((r) => (resolve = r));
+      const { rerender, location } = renderTopic('voter-id');
+      const heading = screen.getByRole('heading', { level: 1 });
+      heading.blur();
+      body.locale = 'es';
+      rerender(
+        <Router hook={location.hook}>
+          <Route path="/learn/:topic" component={LearnTopicPage} />
+        </Router>,
+      );
+      expect(screen.getByRole('heading', { level: 1 })).not.toHaveFocus();
+      expect(screen.getByRole('region', { name: 'Sources' })).toBeInTheDocument();
+      const { fixtureTopics } = await import('../../test/learnFixtures.js');
+      const fixture = fixtureTopics.find((t) => t.id === 'voter-id');
+      await act(async () => resolve({ ...fixture, locale: 'es', title: 'Fixture ID topic es' }));
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Fixture ID topic es');
+      expect(screen.getByRole('heading', { level: 1 })).not.toHaveFocus();
+    });
+
+    it('shows the error screen when the body cannot load', async () => {
+      body.load = () => Promise.reject(new Error('offline'));
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const location = memoryLocation({ path: '/learn/slow' });
+      render(
+        <Router hook={location.hook}>
+          <ErrorBoundary>
+            <Route path="/learn/:topic" component={LearnTopicPage} />
+          </ErrorBoundary>
+        </Router>,
+      );
+      expect(
+        await screen.findByRole('heading', { level: 1, name: 'Something went wrong' }),
+      ).toBeInTheDocument();
+      error.mockRestore();
+    });
   });
 });

@@ -2,7 +2,7 @@
 // under src/ may not repeat election dates (election-hardcoding.test.js).
 import election from '../../../config/election.js';
 import { isOfficialUrl } from './officialSources.js';
-import { addDays, parseTopic, readTopicFile } from './topic.js';
+import { addDays, parseTopic, readTopicFile, topicSummary } from './topic.js';
 
 const ELECTION = election.electionDate;
 const FILE = '/repo/content/en/learn/voter-id.md';
@@ -300,5 +300,47 @@ describe('isOfficialUrl', () => {
     '',
   ])('rejects %s', (url) => {
     expect(isOfficialUrl(url)).toBe(false);
+  });
+});
+
+// What the first load carries for each topic (#147): the body loads with its page.
+describe('topicSummary', () => {
+  const text = (value) => ({ type: 'text', value });
+  const base = { id: 'a', locale: 'en', title: 'A', group: 'get-help', sources: [], blocks: [] };
+
+  it('keeps the fields the first load reads and none of the body', () => {
+    const summary = topicSummary(parseTopic(topicText(), { file: FILE, electionDate: ELECTION }));
+    expect(summary).toEqual({
+      id: 'voter-id',
+      locale: 'en',
+      title: 'What ID to bring',
+      group: 'before-you-vote',
+      intro: 'Bring an ID.',
+    });
+  });
+
+  it('takes the first paragraph before any heading, as plain text without citations', () => {
+    const blocks = [
+      { type: 'list', ordered: false, items: [[text('One')]] },
+      {
+        type: 'paragraph',
+        children: [
+          text('Bring '),
+          { type: 'strong', children: [text('an ID')] },
+          { type: 'cite', source: 'x' },
+          text('.'),
+        ],
+      },
+    ];
+    expect(topicSummary({ ...base, blocks }).intro).toBe('Bring an ID.');
+  });
+
+  it('has no intro when the first paragraph comes after a heading', () => {
+    const blocks = [
+      { type: 'list', ordered: false, items: [[text('One')]] },
+      { type: 'heading', level: 2, children: [text('Later')] },
+      { type: 'paragraph', children: [text('Under the heading.')] },
+    ];
+    expect(topicSummary({ ...base, blocks }).intro).toBeNull();
   });
 });

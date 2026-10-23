@@ -3,6 +3,8 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { siteUrl } from './config/site.js';
+// The build makes each topic's summary with topicSummary (#147).
+import { topicSummary } from './features/learn/content/topic.js';
 import { getTopic, getTopics } from './features/learn/topics.js';
 import {
   applyHead,
@@ -76,7 +78,7 @@ describe('topicDescription', () => {
         { type: 'paragraph', children: [{ type: 'text', value: 'Second.' }] },
       ],
     };
-    expect(topicDescription(topic)).toBe('Bring a photo ID. See the list.');
+    expect(topicDescription(topicSummary(topic))).toBe('Bring a photo ID. See the list.');
   });
 
   // A paragraph under a heading describes that section, not the page (owner
@@ -92,7 +94,7 @@ describe('topicDescription', () => {
         { type: 'paragraph', children: text('A later section.') },
       ],
     };
-    expect(topicDescription(topic)).toBe(LEARN_INTRO);
+    expect(topicDescription(topicSummary(topic))).toBe(LEARN_INTRO);
   });
 
   it('takes a paragraph that follows a list, while still before the first heading', () => {
@@ -103,7 +105,7 @@ describe('topicDescription', () => {
         { type: 'heading', level: 2, children: text('Later') },
       ],
     };
-    expect(topicDescription(topic)).toBe('Before any heading.');
+    expect(topicDescription(topicSummary(topic))).toBe('Before any heading.');
   });
 
   it('is the learn intro when the topic has no paragraph before a heading', () => {
@@ -114,7 +116,7 @@ describe('topicDescription', () => {
         { type: 'paragraph', children: text('Under the heading.') },
       ],
     };
-    expect(topicDescription(topic)).toBe(LEARN_INTRO);
+    expect(topicDescription(topicSummary(topic))).toBe(LEARN_INTRO);
   });
 
   it('never describes your rights with a later, conditional section', () => {

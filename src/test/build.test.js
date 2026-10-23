@@ -9,6 +9,8 @@ import { gzipSync } from 'node:zlib';
 import { build } from 'vite';
 import cityResults from '../config/cityResults.js';
 import election from '../config/election.js';
+import { parseTopic } from '../features/learn/content/topic.js';
+import { topicFiles } from '../features/learn/content/vitePlugin.js';
 import {
   colorLiterals,
   declarations,
@@ -199,6 +201,30 @@ describe('production build', () => {
     const chunk = Object.keys(js).find((f) => f.startsWith('cityChunk-'));
     expect(chunk).toBeDefined();
     for (const mark of marks) expect(js[chunk].includes(mark), mark).toBe(true);
+  });
+
+  // The learn topics' bodies load with their pages, not the first load (owner
+  // decision on #147): the first load has each topic's summary only. The text
+  // that starts each topic's last block marks its body.
+  it('keeps the learn topic bodies out of the first load, each in its own chunk', async () => {
+    const firstLoad = [...html.matchAll(/(?:src|href)="\/assets\/([\w-]+\.js)"/g)].map((m) => m[1]);
+    const files = await topicFiles(ROOT);
+    expect(files.length).toBeGreaterThan(0);
+    const firstText = (nodes) =>
+      nodes.map((n) => (n.type === 'text' ? n.value : firstText(n.children ?? []))).find(Boolean);
+    for (const file of files) {
+      const topic = parseTopic(await readFile(file, 'utf8'), {
+        file,
+        electionDate: election.electionDate,
+      });
+      const last = topic.blocks.at(-1);
+      const mark = firstText(last.type === 'list' ? last.items.at(-1) : last.children);
+      expect(mark.length, topic.id).toBeGreaterThan(20);
+      const chunk = Object.keys(js).find((f) => f.startsWith(`${topic.id}-`));
+      expect(chunk, topic.id).toBeDefined();
+      expect(js[chunk].includes(mark), `${chunk}: ${mark}`).toBe(true);
+      for (const f of firstLoad) expect(js[f].includes(mark), `${f}: ${mark}`).toBe(false);
+    }
   });
 
   // Performance budget (#27): every script the first load fetches (the entry

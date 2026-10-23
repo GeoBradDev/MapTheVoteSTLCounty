@@ -49,29 +49,17 @@ export function describe(text) {
   return `${cut.replace(/[\s,;:.]+$/, '')}…`;
 }
 
-function inlineText(nodes) {
-  return nodes
-    .map((node) => {
-      if (node.type === 'text') return node.value;
-      if (node.type === 'cite') return '';
-      return inlineText(node.children ?? []);
-    })
-    .join('');
-}
-
 /**
- * A topic's description: its first paragraph as plain text, without citation
- * marks, cut like describe(), but only a paragraph that comes before the
- * topic's first heading. A paragraph under a heading describes that section,
- * not the page, and can read broader than the page does, so a topic without
- * one gets the "How to vote" intro instead (owner decision on #99).
- * @param {import('./features/learn/content/topic.js').Topic} topic
+ * A topic's description: its intro, the first paragraph as plain text, cut
+ * like describe(), but only a paragraph that comes before the topic's first
+ * heading (the build finds it: topicSummary in content/topic.js). A paragraph
+ * under a heading describes that section, not the page, and can read broader
+ * than the page does, so a topic without one gets the "How to vote" intro
+ * instead (owner decision on #99).
+ * @param {{ intro?: string | null }} topic A topic's summary (#147).
  */
 export function topicDescription(topic) {
-  const firstHeading = topic.blocks.findIndex((block) => block.type === 'heading');
-  const intro = firstHeading === -1 ? topic.blocks : topic.blocks.slice(0, firstHeading);
-  const first = intro.find((block) => block.type === 'paragraph');
-  return describe(first ? inlineText(first.children) : learnCopy.intro);
+  return describe(topic.intro ?? learnCopy.intro);
 }
 
 /** The shell's head: the title and description index.html has. */

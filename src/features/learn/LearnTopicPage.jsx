@@ -1,20 +1,53 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'wouter';
 import NotFoundPage from '../../components/NotFoundPage.jsx';
 import { getLocale, useLocale } from '../../i18n/index.js';
 import { copy } from './learnCopy.js';
 import TopicArticle from './TopicArticle.jsx';
-import { getTopic } from './topics.js';
+import { getTopic, loadedTopic, loadTopic } from './topics.js';
 import { focusHeadingOnArrival } from '../../hydrate.js';
 
 const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
 
+/**
+ * The whole topic once its body has loaded (#147), else null; throws, for the
+ * error boundary (#18), when it cannot load. While another language's body of
+ * the same topic loads, the one shown stays, so a new language is not a new
+ * page (#19): focus, the title and the folded sections stay as they are.
+ * @param {import('./content/topic.js').TopicSummary | null} summary
+ */
+function useTopicBody(summary) {
+  const [shown, setShown] = useState(null);
+  const [error, setError] = useState(null);
+  const ready = summary ? loadedTopic(summary) : null;
+  // Remembers the topic last shown, as React's "adjusting state when a prop
+  // changes" pattern does: during render, not in an effect.
+  if (ready && ready !== shown) setShown(ready);
+  const topic = ready ?? (summary && shown?.id === summary.id ? shown : null);
+  useEffect(() => {
+    if (!summary || ready) return undefined;
+    let live = true;
+    loadTopic(summary).then(
+      (loaded) => live && setShown(loaded),
+      (failure) => live && setError(failure),
+    );
+    return () => {
+      live = false;
+    };
+  }, [summary, ready]);
+  if (error) throw error;
+  return topic;
+}
+
 // One "How to vote" topic (#23) at /learn/<id>, or the not-found page for an
-// id with no topic.
+// id with no topic. The first load has only the topic's summary; its body
+// loads with this page (#147), already loaded when the page is pre-rendered
+// or hydrated (src/main.jsx).
 export default function LearnTopicPage() {
   const { topic: id } = useParams();
   const locale = useLocale();
-  const topic = getTopic(id, getLocale());
+  const summary = getTopic(id, getLocale());
+  const topic = useTopicBody(summary);
   const headingRef = useRef(null);
   const articleRef = useRef(null);
   const found = topic?.id;
@@ -58,7 +91,10 @@ export default function LearnTopicPage() {
     };
   }, []);
 
-  if (!topic) return <NotFoundPage />;
+  if (!summary) return <NotFoundPage />;
+  // Holds the page's height while the body loads, so the footer does not show
+  // and then jump down (#27). No heading yet: the topic's own takes focus.
+  if (!topic) return <div className="min-h-screen" />;
 
   return (
     <>

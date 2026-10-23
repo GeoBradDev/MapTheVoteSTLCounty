@@ -1,5 +1,12 @@
 // Whether the browser hydrates the root (#99) or renders it fresh.
-import { endHydration, focusHeadingOnArrival, shouldHydrate, startHydration } from './hydrate.js';
+import { getTopic, loadedTopic } from './features/learn/topics.js';
+import {
+  endHydration,
+  focusHeadingOnArrival,
+  loadForHydration,
+  shouldHydrate,
+  startHydration,
+} from './hydrate.js';
 
 function root(path, html = '<div><h1>Page</h1></div>') {
   const element = document.createElement('div');
@@ -87,4 +94,21 @@ describe('focusHeadingOnArrival', () => {
     focusHeadingOnArrival(heading);
     expect(heading).toHaveFocus();
   });
+});
+
+// A topic's body loads on demand (#147); a pre-rendered topic hydrates with it.
+describe('loadForHydration', () => {
+  it("loads a topic page's body before it hydrates", async () => {
+    const topic = getTopic('voter-id');
+    expect(loadedTopic(topic)).toBeNull();
+    await loadForHydration('/learn/voter-id/');
+    expect(loadedTopic(topic).blocks.length).toBeGreaterThan(0);
+  });
+
+  it.each(['/', '/learn', '/privacy', '/learn/no-such-topic'])(
+    'needs nothing for %s',
+    async (pathname) => {
+      await expect(loadForHydration(pathname)).resolves.toBeUndefined();
+    },
+  );
 });

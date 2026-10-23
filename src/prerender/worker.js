@@ -19,7 +19,9 @@ const server = await createServer({
   server: { middlewareMode: true, hmr: false, ws: false, watch: null },
 });
 try {
-  const { prerenderPaths, renderRoute } = await server.ssrLoadModule('/src/entry-server.jsx');
+  const { prepare, prerenderPaths, renderRoute } =
+    await server.ssrLoadModule('/src/entry-server.jsx');
+  await prepare();
   for (const route of prerenderPaths()) {
     const file = path.join(outDir, outputFile(route));
     await mkdir(path.dirname(file), { recursive: true });
