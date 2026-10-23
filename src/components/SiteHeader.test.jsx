@@ -46,9 +46,13 @@ describe('SiteHeader (#79)', () => {
     expect(copy.howToVote).toBe('How to vote');
   });
 
+  // A trailing slash or other case is the same page, as the routes match it
+  // and the pre-rendered /learn page hydrates at /learn/ (#99).
   it.each([
     ['/', 'Look up'],
     ['/learn', 'How to vote'],
+    ['/learn/', 'How to vote'],
+    ['/Learn', 'How to vote'],
   ])('marks the current page on %s', (path, current) => {
     renderAt(path);
     const links = within(nav()).getAllByRole('link');
