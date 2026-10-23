@@ -10,6 +10,7 @@ import { Map as MapLibreMap, Marker, setWorkerUrl } from 'maplibre-gl';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { BASEMAP_STYLE_URL } from './basemap.js';
 import { mapBounds, oklchToRgb } from './mapBounds.js';
+import { NO_COUNT_CLASS, WAIT_BIN_CLASSES } from '../waitTimes/waitColors.js';
 import { neutralizeBasemap } from './mapStyle.js';
 import './precinctMap.css';
 
@@ -20,6 +21,18 @@ const FIT = { padding: 40, maxZoom: 16, animate: false };
 
 const POLL_MARKER =
   'flex size-7 items-center justify-center rounded-full border-2 border-surface bg-primary text-sm font-semibold text-on-primary shadow';
+// On Election Day (#107): filled by the place's line count bin, as on the wait
+// times map (#104), or plain without a count.
+const COUNT_MARKER =
+  'flex size-7 items-center justify-center rounded-full border-2 text-sm font-semibold shadow';
+
+function pollMarkerClass(bin) {
+  if (bin === undefined) return POLL_MARKER;
+  return `${COUNT_MARKER} ${bin === null ? NO_COUNT_CLASS : WAIT_BIN_CLASSES[bin]}`;
+}
+
+// Where the places are, so a change of bins alone keeps the camera.
+const placesKey = (places) => places.map((p) => `${p.lat},${p.lng}`).join(';');
 
 // Under the numbered markers (added first), so their numbers stay readable
 // even when a polling place is at the searched address.
@@ -39,9 +52,9 @@ function markerElement(className, text) {
  * @param {HTMLElement} container An element whose className React never changes:
  *   MapLibre adds its own classes to it.
  * @param {{ geometry: object, origin: { lat: number, lng: number } | null,
- *   polls: { lat: number, lng: number }[], onReady: () => void,
+ *   polls: { lat: number, lng: number, bin?: number | null }[], onReady: () => void,
  *   onFail: (error: unknown) => void }} options `polls` are numbered from 1 in
- *   order, as in the list. `onFail` is called at most once, when anything fails
+ *   order, as in the list; a place with a `bin` (#107) is filled by it. `onFail` is called at most once, when anything fails
  *   before the map first finishes rendering; the map is already removed then.
  *   The caller owns the load time limit and calls `remove()` when it passes.
  * @returns {{ setPolls: (polls: { lat: number, lng: number }[]) => void,
@@ -81,6 +94,7 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
   // 'loading', then 'ready' or 'failed'; 'removed' once the page drops it.
   let state = 'loading';
   let markers = [];
+  let drawnPlaces = placesKey(polls);
 
   function fail(error) {
     if (state !== 'loading') return;
@@ -123,7 +137,7 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
   function setPolls(places) {
     markers.forEach((marker) => marker.remove());
     markers = places.map((place, i) =>
-      new Marker({ element: markerElement(POLL_MARKER, String(i + 1)) })
+      new Marker({ element: markerElement(pollMarkerClass(place.bin), String(i + 1)) })
         .setLngLat([place.lng, place.lat])
         .addTo(map),
     );
@@ -148,6 +162,9 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
     setPolls(places) {
       if (state === 'failed' || state === 'removed') return;
       setPolls(places);
+      const key = placesKey(places);
+      if (key === drawnPlaces) return;
+      drawnPlaces = key;
       const next = boundsOf(places);
       if (next) map.fitBounds(next, FIT);
     },

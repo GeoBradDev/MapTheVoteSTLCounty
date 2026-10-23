@@ -141,6 +141,11 @@ export const copy = translated((t) => ({
     /** @param {string} name For screen readers: which place the link is for. */
     linkTarget: (name) => t('results.polls.linkTarget', { name }),
     showMore: t('results.polls.showMore'),
+    // Election Day line counts (#107).
+    waits: {
+      none: t('results.polls.waits.none'),
+      seeAll: t('results.polls.waits.seeAll'),
+    },
     hoursLabel: t('results.polls.hoursLabel'),
     /** @param {string} open HH:MM @param {string} close HH:MM */
     // No closing period: every time already ends in "a.m." or "p.m.".

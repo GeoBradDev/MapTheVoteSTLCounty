@@ -7,6 +7,7 @@
 import election from '../config/election.js';
 import { isFresh, layerMaxAgeMs } from './freshness.js';
 import { selectCityWaits, selectCountyWaits } from './waitTimes.js';
+import { isElectionDay } from '../features/lookup/electionDay.js';
 
 // This module is the County's data adapter (#86): it reads the County block.
 const countyConfig = election.jurisdictions.county;
@@ -30,8 +31,9 @@ export const PRECINCT_FIELDS = Object.freeze([
 ]);
 
 /**
- * The polling place fields the app reads (#27). The last is the early voting
- * site's key in the County's wait time reports (#103).
+ * The polling place fields the app reads (#27). The last two are the site's
+ * key in the County's early voting (#103) and Election Day (#107) wait time
+ * reports.
  */
 export const POLL_FIELDS = Object.freeze([
   'loc',
@@ -41,6 +43,7 @@ export const POLL_FIELDS = Object.freeze([
   'abs_type',
   'notes_abs',
   election.waitTimes.county.pollsField,
+  election.waitTimes.county.electionDay.pollsField,
 ]);
 
 /** How long one attempt may take before it is aborted. */
@@ -401,35 +404,42 @@ async function waitRows(source, params) {
 }
 
 /**
- * The County's current early voting line counts (#103): the newest fresh
- * report per absentee site that is open now. The County's view holds only the
- * last 2 hours of early voting reports, so it is empty while the sites are
- * closed.
+ * The County's current line counts: during early voting (#103) the newest
+ * fresh report per absentee site that is open now, and on Election Day (#107)
+ * per polling place while the polls are open, from the Election Day source in
+ * the config. The County's early voting view holds only the last 2 hours of
+ * early voting reports, so it is empty while the sites are closed.
  * @returns {Promise<import('./waitTimes.js').WaitEntry[]>}
  */
 export async function getCountyWaits() {
   const county = election.waitTimes.county;
+  const electionDay = isElectionDay(Date.now());
+  const source = electionDay ? { ...county, ...county.electionDay } : county;
+  if (!source.enabled) return [];
   const [reports, sites] = await Promise.all([
-    waitRows(county, {
-      where: county.where,
+    waitRows(source, {
+      where: source.where,
       outFields: [county.siteField, county.timeField, county.valueField].join(','),
       orderByFields: `${county.timeField} DESC`,
     }),
-    getAbsenteeSites(),
+    electionDay ? getPolls() : getAbsenteeSites(),
   ]);
-  return selectCountyWaits(reports, sites.features, Date.now());
+  return selectCountyWaits(reports, sites.features, Date.now(), { electionDay });
 }
 
 /**
- * The City's current early voting line counts (#103), by the City Board's
- * own dashboard rules. Never `outFields=*`: the layer also holds staff
- * contact fields.
+ * The City's current line counts (#103), by the City Board's own dashboard
+ * rules: its early voting sites, or on Election Day (#107) its Election Day
+ * polling places while the polls are open. Never `outFields=*`: the layer
+ * also holds staff contact fields.
  * @returns {Promise<import('./waitTimes.js').WaitEntry[]>}
  */
 export async function getCityWaits() {
   const city = election.waitTimes.city;
+  const electionDay = isElectionDay(Date.now());
+  if (electionDay && !city.electionDay.enabled) return [];
   const rows = await waitRows(city, {
-    where: city.where,
+    where: electionDay ? city.electionDay.where : city.where,
     outFields: [
       city.siteField,
       city.valueField,
@@ -439,5 +449,5 @@ export async function getCityWaits() {
     ].join(','),
     orderByFields: `${city.timeField} DESC`,
   });
-  return selectCityWaits(rows, Date.now());
+  return selectCityWaits(rows, Date.now(), { electionDay });
 }

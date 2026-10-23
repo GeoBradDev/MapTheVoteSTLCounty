@@ -75,6 +75,9 @@ describe('a card failure', () => {
         throw new Error('HTTP 503');
       }),
       getPrecinctGeometry: vi.fn(),
+      // The card's Election Day line counts (#107) import these.
+      getCountyWaits: vi.fn(),
+      getCityWaits: vi.fn(),
     }));
     vi.doMock('./precinctMapView.js', () => ({ createPrecinctMap: vi.fn() }));
     const PollsCard = (await import('./PollsCard.jsx')).default;

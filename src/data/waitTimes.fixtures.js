@@ -2,6 +2,7 @@
 // County and City layers, recorded on 2026-10-22 by #102 and trimmed to the
 // fields the client asks for. #102 adds the full recorded responses under
 // docs/raw/fixtures/; these may be replaced by them.
+import election from '../config/election.js';
 
 /** The County layer at 9:00 a.m. Central, 2026-10-22, newest first. */
 export const countyFresh = [
@@ -177,3 +178,39 @@ export const cityStale = [
     created_date_1740505041182: null,
   },
 ];
+
+/**
+ * How far the Election Day fixtures move the recorded reports: from 9:00 a.m.
+ * Central on 2026-10-22 to 9:00 a.m. Central on Election Day, November 3, 2026.
+ */
+export const ELECTION_DAY_SHIFT_MS = Date.UTC(2026, 10, 3, 15) - Date.UTC(2026, 9, 22, 14);
+
+/**
+ * No Election Day report has been published yet (#107), so the Election Day
+ * fixtures are derived from the recorded early voting rows: each County report
+ * moved to Election Day and renamed from its site's absentee username to the
+ * same site's Election Day username (`absentee` to `username` on the polls
+ * layer), as the County's Polling Place Lookup app joins them; each City
+ * report moved to Election Day. A report whose site the polls rows do not know
+ * keeps its name, so it still matches nothing.
+ * @param {object[]} rows Report rows (attributes).
+ * @param {'county' | 'city'} jurisdiction
+ * @param {object[]} [sites] For the County: polls features with `absentee`
+ *   and `username` in `properties`.
+ * @returns {object[]}
+ */
+export function asElectionDay(rows, jurisdiction, sites = []) {
+  const source = election.waitTimes[jurisdiction];
+  const rename = new Map(
+    sites.map(({ properties: p }) => [p[source.pollsField], p[source.electionDay?.pollsField]]),
+  );
+  return rows.map((row) => {
+    const moved = { ...row };
+    if (typeof moved[source.timeField] === 'number')
+      moved[source.timeField] += ELECTION_DAY_SHIFT_MS;
+    if (jurisdiction === 'county' && rename.get(row[source.siteField])) {
+      moved[source.siteField] = rename.get(row[source.siteField]);
+    }
+    return moved;
+  });
+}

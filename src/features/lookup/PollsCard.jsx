@@ -6,6 +6,12 @@ import { getLocale } from '../../i18n/index.js';
 import { getTopic } from '../learn/topics.js';
 import CountyElectionDayRule from './CountyElectionDayRule.jsx';
 import { cityComponent } from './cityComponent.js';
+import { orderSites, waitBin } from '../waitTimes/siteOrder.js';
+import { boardWaits, OFF_WAITS, useWaitTimes } from '../waitTimes/useWaitTimes.js';
+import WaitReport from '../waitTimes/WaitReport.jsx';
+import { electionDayStatus } from './electionDay.js';
+import NearbySortControls from './NearbySortControls.jsx';
+import { useHeldOrder, withKeys } from './nearbySort.js';
 import { directionsLinks, isAppleMobile } from './nearbyPolls.js';
 import PrecinctMap from './PrecinctMap.jsx';
 import RetryButton from './RetryButton.jsx';
@@ -13,6 +19,7 @@ import { copy, sourceName } from './resultsCopy.js';
 import StaleNote from './StaleNote.jsx';
 import { useJurisdiction } from './jurisdictionContext.js';
 import { useNearestSites } from './useNearestSites.js';
+import { useNow } from './useNow.js';
 
 // In the City chunk (#147).
 const CityElectionDayRule = cityComponent('CityElectionDayRule');
@@ -107,7 +114,11 @@ function ListSkeleton() {
   );
 }
 
-function PollRow({ poll, apple, headingRef }) {
+// A place's key in its board's Election Day line counts (#107): the County's
+// polls layer `username`, the City site's name (waitTimes.city.siteField).
+const waitKeyOf = { county: (poll) => poll.dayKey, city: (poll) => poll.name };
+
+function PollRow({ poll, apple, headingRef, now }) {
   const name = poll.name ?? copy.polls.unnamed(poll.loc);
   const links = directionsLinks(poll);
   const target = <span className="sr-only">{copy.polls.linkTarget(name)}</span>;
@@ -116,6 +127,7 @@ function PollRow({ poll, apple, headingRef }) {
       <h3 ref={headingRef} tabIndex={headingRef ? -1 : undefined} className="font-semibold">
         {name}
       </h3>
+      <WaitReport wait={poll.wait} now={now} />
       <p>{copy.polls.address(poll.address, poll.zip)}</p>
       <Entrances entry={poll.entry} accessibleEntry={poll.accessibleEntry} />
       <p className="text-muted">{copy.polls.distance(poll.miles)}</p>
@@ -138,11 +150,15 @@ function PollRow({ poll, apple, headingRef }) {
  * polling places, Election Day hours, and the jurisdiction's Election Day
  * rule: in the County a registered voter may vote at any County polling place
  * (#152); in the City any City voter may vote at any listed location (#89).
- * @param {{ code: string, origin: { lat: number, lng: number } | null }} props
+ * While the polls are open on Election Day (#107), each place's current line
+ * count from its own board only, a sort by shortest line nearby, and a link to
+ * the line counts at every polling place.
+ * @param {{ code: string, origin: { lat: number, lng: number } | null,
+ *   waitSource?: Parameters<typeof useWaitTimes>[0] }} props
  *   `origin` is the looked-up point, held in memory only; without one,
- *   distances are from the precinct's center.
+ *   distances are from the precinct's center. `waitSource` is for tests.
  */
-export default function PollsCard({ code, origin }) {
+export default function PollsCard({ code, origin, waitSource }) {
   // { rows, loadedAt } once loaded, { error: true, attempt } on failure. A
   // failed load can be tried again; it stays shown while it is (#18). A list
   // left open past the max age refreshes when the tab is shown again (#84).
@@ -158,9 +174,49 @@ export default function PollsCard({ code, origin }) {
     if (focusFrom !== null) focusRef.current?.focus();
   }, [focusFrom]);
 
-  const rows = result?.rows;
-  // One array per change, so the map redraws its markers only when the list does.
-  const shownRows = useMemo(() => rows?.slice(0, shown), [rows, shown]);
+  const now = useNow();
+  const board = isCity ? 'city' : 'county';
+  const pollsOpen = electionDayStatus(now).kind === 'openNow';
+  // Only this board's loop, and only while the polls are open: a County page
+  // never asks the City's layer, nor a City page the County's.
+  const waits = useWaitTimes(pollsOpen ? (waitSource ?? boardWaits[board]) : OFF_WAITS)[board];
+  const waitsOn = pollsOpen && waits.status !== 'off';
+  const [sort, setSort] = useState('nearest');
+
+  const loaded = result?.rows;
+  const siteWaits = waits.waits;
+  const ordered = useMemo(() => {
+    if (!loaded) return loaded;
+    const keyOf = waitKeyOf[board];
+    const byKey = new Map(siteWaits.map((entry) => [entry.siteId, entry]));
+    const keyed = withKeys(loaded, keyOf).map((row) => {
+      const key = keyOf(row);
+      return { ...row, wait: (waitsOn && key && byKey.get(key)) || null };
+    });
+    if (!waitsOn || sort !== 'nearby') return keyed;
+    // Every polling place is open while the polls are.
+    return orderSites(keyed, {
+      sort,
+      waitOf: (row) => row.wait?.value ?? null,
+      isOpen: () => true,
+    });
+  }, [loaded, siteWaits, waitsOn, sort, board]);
+  // While focus is in the list, its order holds (#27).
+  const { rows, listRef, listProps } = useHeldOrder(ordered);
+  const shownRows = rows?.slice(0, shown);
+  // The map's places, with their line count bins on Election Day. The map
+  // compares them with what it drew, so a render with the same places and
+  // bins redraws nothing.
+  const mapPolls = (shownRows ?? []).map((poll) =>
+    waitsOn
+      ? { lat: poll.lat, lng: poll.lng, bin: poll.wait ? waitBin(poll.wait.value) : null }
+      : { lat: poll.lat, lng: poll.lng },
+  );
+  const noCounts =
+    waitsOn &&
+    waits.status !== 'loading' &&
+    shownRows?.length > 0 &&
+    !shownRows.some((p) => p.wait);
   const apple = isAppleMobile(globalThis.navigator);
 
   function showMore() {
@@ -202,16 +258,24 @@ export default function PollsCard({ code, origin }) {
 
       {rows && rows.length > 0 && (
         <>
-          <ol aria-label={copy.polls.listLabel} className="mt-3 list-decimal space-y-3 pl-6">
+          {waitsOn && <NearbySortControls sort={sort} onSort={setSort} />}
+          <ol
+            ref={listRef}
+            aria-label={copy.polls.listLabel}
+            className="mt-3 list-decimal space-y-3 pl-6"
+            {...listProps}
+          >
             {shownRows.map((poll, i) => (
               <PollRow
-                key={`${poll.loc}:${i}`}
+                key={poll.key}
                 poll={poll}
                 apple={apple}
+                now={now}
                 headingRef={i === focusFrom ? focusRef : undefined}
               />
             ))}
           </ol>
+          {noCounts && <p className="mt-3 text-muted">{copy.polls.waits.none}</p>}
           {result.refreshFailed && <StaleNote loadedAt={result.loadedAt} />}
           {shown < rows.length && (
             <button
@@ -224,8 +288,16 @@ export default function PollsCard({ code, origin }) {
           )}
           {/* After the list, which holds everything on it, so on a phone the
               list comes first and the map loads only when scrolled to (#27). */}
-          <PrecinctMap code={code} origin={origin} polls={shownRows} />
+          <PrecinctMap code={code} origin={origin} polls={mapPolls} />
         </>
+      )}
+
+      {waitsOn && (
+        <p className="mt-3">
+          <Link href="/early-voting" className={tapLinkClass}>
+            {copy.polls.waits.seeAll}
+          </Link>
+        </p>
       )}
 
       <Hours />

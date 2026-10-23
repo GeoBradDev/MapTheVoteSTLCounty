@@ -11,7 +11,12 @@ import byId from '../../docs/raw/fixtures/precinct-by-id.json';
 import geometry from '../../docs/raw/fixtures/precinct-geometry.json';
 import nonresidential from '../../docs/raw/fixtures/precinct-nonresidential.json';
 import election from '../config/election.js';
-import { cityFresh, countyFresh } from './waitTimes.fixtures.js';
+import {
+  asElectionDay,
+  cityFresh,
+  countyFresh,
+  ELECTION_DAY_SHIFT_MS,
+} from './waitTimes.fixtures.js';
 
 const PRECINCTS = `${election.serviceRoot}/${election.layers.precincts}/query`;
 const BOUNDARY = `${election.serviceRoot}/${election.layers.countyBoundary}/query`;
@@ -317,7 +322,7 @@ describe('getPolls', () => {
     expect(base).toBe(POLLS);
     expect(params).toEqual({
       where: '1=1',
-      outFields: 'loc,name,address,zipcode,abs_type,notes_abs,absentee',
+      outFields: 'loc,name,address,zipcode,abs_type,notes_abs,absentee,username',
       outSR: '4326',
       geometryPrecision: '6',
       f: 'geojson',
@@ -464,7 +469,7 @@ describe('getAbsenteeSites', () => {
     expect(base).toBe(POLLS);
     expect(params).toEqual({
       where: election.absenteeWhere,
-      outFields: 'loc,name,address,zipcode,abs_type,notes_abs,absentee',
+      outFields: 'loc,name,address,zipcode,abs_type,notes_abs,absentee,username',
       outSR: '4326',
       geometryPrecision: '6',
       f: 'geojson',
@@ -790,6 +795,59 @@ describe('wait times (#103)', () => {
     const entries = await client.getCityWaits();
     expect(entries.map((e) => e.siteId)).toEqual(['St. Louis City Board of Elections']);
     expect(entries[0]).toMatchObject({ jurisdiction: 'city', unit: city.unit, value: 0 });
+  });
+
+  describe('on Election Day (#107)', () => {
+    const ed = county.electionDay;
+    const ED_COUNTY = `${ed.serviceRoot}/${ed.layer}/query`;
+    const edRows = asElectionDay(countyFresh, 'county', polls.features);
+
+    beforeEach(() => {
+      vi.setSystemTime(NOW + ELECTION_DAY_SHIFT_MS);
+    });
+
+    it('asks the polls layer for the Election Day join field too', () => {
+      expect(client.POLL_FIELDS).toContain(ed.pollsField);
+    });
+
+    it('getCountyWaits asks the Election Day layer with its own filter', async () => {
+      routeLayers({ [ED_COUNTY]: rows(edRows), [POLLS]: polls });
+      await client.getCountyWaits();
+      expect(requestTo(ED_COUNTY)).toEqual({
+        where: ed.where,
+        outFields: [county.siteField, county.timeField, county.valueField].join(','),
+        orderByFields: `${county.timeField} DESC`,
+        returnGeometry: 'false',
+        f: 'json',
+      });
+    });
+
+    it('getCountyWaits joins each report to a polling place, not an absentee site', async () => {
+      routeLayers({ [ED_COUNTY]: rows(edRows), [POLLS]: polls });
+      const entries = await client.getCountyWaits();
+      expect(entries).toHaveLength(19);
+      expect(entries.every((e) => !e.siteId.startsWith('abs'))).toBe(true);
+      const pollsQuery = fetchMock.mock.calls
+        .map(([input]) => new URL(input))
+        .find((url) => String(url).startsWith(`${POLLS}?`));
+      expect(pollsQuery.searchParams.get('where')).not.toBe(election.absenteeWhere);
+    });
+
+    it('getCountyWaits finds nothing in a view of absentee reports', async () => {
+      const shifted = countyFresh.map((r) => ({
+        ...r,
+        CreationDate: r.CreationDate + ELECTION_DAY_SHIFT_MS,
+      }));
+      routeLayers({ [ED_COUNTY]: rows(shifted), [POLLS]: polls });
+      expect(await client.getCountyWaits()).toEqual([]);
+    });
+
+    it("getCityWaits asks for the City's Election Day polling places", async () => {
+      routeLayers({ [CITY]: rows(asElectionDay(cityFresh, 'city')) });
+      const entries = await client.getCityWaits();
+      expect(requestTo(CITY).where).toBe(city.electionDay.where);
+      expect(entries.map((e) => e.siteId)).toEqual(['St. Louis City Board of Elections']);
+    });
   });
 
   it('retries a 5xx once, like the other queries', async () => {

@@ -166,6 +166,30 @@ const store = createWaitTimesStore({
 });
 
 /**
+ * One board's loop each, for the polling places card on Election Day (#107):
+ * a County precinct's page asks only the County's layer, a City precinct's
+ * only the City's.
+ */
+export const boardWaits = {
+  county: createWaitTimesStore({
+    county: enabled && county.enabled ? getCountyWaits : null,
+    city: null,
+  }),
+  city: createWaitTimesStore({ county: null, city: enabled && city.enabled ? getCityWaits : null }),
+};
+
+const OFF_STATE = createWaitTimesStore({ county: null, city: null }).getServerSnapshot();
+/**
+ * A source that never asks anything, read instead of a loop while no count
+ * can show, so a page asks the line count layers only while they can.
+ */
+export const OFF_WAITS = Object.freeze({
+  subscribe: () => () => {},
+  getSnapshot: () => OFF_STATE,
+  getServerSnapshot: () => OFF_STATE,
+});
+
+/**
  * The current early voting waits, shared by every component that reads them.
  * @param {ReturnType<typeof createWaitTimesStore>} [source] For tests.
  * @returns {WaitTimesState}

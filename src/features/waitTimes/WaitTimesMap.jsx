@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { BASEMAP_ATTRIBUTION } from '../lookup/basemap.js';
 import { copy as resultsCopy } from '../lookup/resultsCopy.js';
-import { WAIT_BINS } from './siteOrder.js';
-import { NO_COUNT_CLASS, WAIT_BIN_CLASSES } from './waitColors.js';
+import WaitLegend from './WaitLegend.jsx';
 import { copy } from './waitTimesCopy.js';
 
 const linkClass = 'text-primary underline';
-const SWATCH = 'inline-block size-4 shrink-0 rounded-full border-2';
 
 // How long the map may take to first render before it is dropped.
 const LOAD_TIMEOUT_MS = 15_000;
@@ -21,28 +19,6 @@ function loadView() {
     throw error;
   });
   return viewModule;
-}
-
-function Legend() {
-  return (
-    <div className="mt-2 text-sm">
-      <p id="wait-map-legend" className="font-semibold">
-        {copy.map.legend}
-      </p>
-      <ul aria-labelledby="wait-map-legend" className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
-        {WAIT_BINS.map((bin, i) => (
-          <li key={bin.min} className="flex items-center gap-2">
-            <span aria-hidden="true" className={`${SWATCH} ${WAIT_BIN_CLASSES[i]}`} />
-            {copy.map.bin(bin)}
-          </li>
-        ))}
-        <li className="flex items-center gap-2">
-          <span aria-hidden="true" className={`${SWATCH} ${NO_COUNT_CLASS}`} />
-          {copy.map.noCount}
-        </li>
-      </ul>
-    </div>
-  );
 }
 
 /**
@@ -129,7 +105,7 @@ export default function WaitTimesMap({ sites, onFail }) {
         )}
       </div>
       <p className="mt-2 text-sm text-muted">{copy.map.numbers}</p>
-      {hasCounts && <Legend />}
+      {hasCounts && <WaitLegend />}
       <p className="mt-1 text-xs text-muted">
         {resultsCopy.map.basemap}{' '}
         {BASEMAP_ATTRIBUTION.map(({ label, href }, i) => (

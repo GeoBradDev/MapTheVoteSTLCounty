@@ -1,20 +1,21 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'wouter';
 import election from '../../config/election.js';
 import { CARD_TOPICS } from '../learn/cardTopics.js';
 import { getLocale, translated } from '../../i18n/index.js';
 import { getTopic } from '../learn/topics.js';
 import { earlyVotingSeason } from '../waitTimes/earlyVotingSeason.js';
-import { NEARBY_MILES, orderSites } from '../waitTimes/siteOrder.js';
-import { createWaitTimesStore, useWaitTimes } from '../waitTimes/useWaitTimes.js';
+import { orderSites } from '../waitTimes/siteOrder.js';
+import { OFF_WAITS, useWaitTimes } from '../waitTimes/useWaitTimes.js';
 import WaitReport from '../waitTimes/WaitReport.jsx';
-import { copy as waitCopy } from '../waitTimes/waitTimesCopy.js';
 import { earlyVotingStatus, formatLongDate, scheduleLines } from './earlyVoting.js';
 import { directionsLinks, isAppleMobile } from './nearbyPolls.js';
 import { copy, sourceName } from './resultsCopy.js';
 import RetryButton from './RetryButton.jsx';
 import StaleNote from './StaleNote.jsx';
 import { useJurisdiction } from './jurisdictionContext.js';
+import NearbySortControls from './NearbySortControls.jsx';
+import { useHeldOrder, withKeys } from './nearbySort.js';
 import { Entrances, OfficialLookupLink } from './PollsCard.jsx';
 import { useNearestSites } from './useNearestSites.js';
 import { useNow } from './useNow.js';
@@ -28,71 +29,6 @@ const t = translated(() => copy.earlyVoting);
 const { schedules, sources, lastVerified } = election.earlyVoting;
 // The groups the config has hours for, in config order, that have a label.
 const groupKeys = Object.keys(schedules).filter((key) => t.groups[key]);
-
-// Read instead of the shared loop outside early voting, so the results page
-// asks the line count layers only while early voting runs.
-const OFF_STATE = createWaitTimesStore({ county: null, city: null }).getServerSnapshot();
-const OFF_SOURCE = {
-  subscribe: () => () => {},
-  getSnapshot: () => OFF_STATE,
-  getServerSnapshot: () => OFF_STATE,
-};
-
-/**
- * A key per row that stays the same when the rows are reordered or a count
- * changes, so a refresh never remounts the row that has focus. Rows that
- * share a location number and wait key get a running suffix, in the
- * nearest-first order the rows arrive in.
- */
-function withKeys(rows) {
-  const seen = new Map();
-  return rows.map((row) => {
-    const base = `${row.loc}:${row.waitKey}`;
-    const n = seen.get(base) ?? 0;
-    seen.set(base, n + 1);
-    return { ...row, key: n === 0 ? base : `${base}:${n}` };
-  });
-}
-
-// The rows in the held order: rows it does not know go last, in their order.
-function inHeldOrder(rows, held) {
-  const rank = new Map(held.map((key, i) => [key, i]));
-  const at = (row, i) => rank.get(row.key) ?? held.length + i;
-  return rows
-    .map((row, i) => [at(row, i), row])
-    .sort((x, y) => x[0] - y[0])
-    .map(([, row]) => row);
-}
-
-function SortControls({ sort, onSort }) {
-  const id = useId();
-  const options = [
-    ['nearest', t.waits.nearest],
-    ['nearby', waitCopy.sort.nearby(NEARBY_MILES)],
-  ];
-  return (
-    <fieldset role="radiogroup" aria-labelledby={`${id}-legend`} className="mt-3">
-      <legend id={`${id}-legend`} className="font-semibold">
-        {waitCopy.sort.legend}
-      </legend>
-      <div className="mt-1 flex flex-col">
-        {options.map(([value, label]) => (
-          <label key={value} className="flex min-h-11 items-center gap-3">
-            <input
-              type="radio"
-              name={`${id}-sort`}
-              value={value}
-              checked={sort === value}
-              onChange={() => onSort(value)}
-              className="size-5 accent-primary"
-            />
-            {label}
-          </label>
-        ))}
-      </div>
-    </fieldset>
-  );
-}
 
 function statusText(key, now) {
   return t.status(earlyVotingStatus(schedules[key], now, election.timeZone), formatLongDate);
@@ -218,13 +154,10 @@ export function EarlyVotingSites({
   const now = useNow();
   const season = earlyVotingSeason(all, now, election.timeZone).kind;
   const during = season === 'during';
-  const waits = useWaitTimes(during ? waitSource : OFF_SOURCE)[waitsKey];
+  // Read instead of the shared loop outside early voting, so the results
+  // page asks the line count layers only while early voting runs.
+  const waits = useWaitTimes(during ? waitSource : OFF_WAITS)[waitsKey];
   const [sort, setSort] = useState('nearest');
-  // The row keys in the order shown when focus entered the list. While focus
-  // is in it the order holds, so a refresh never moves (and so blurs) the
-  // focused row; the current order applies once focus leaves (#27).
-  const [held, setHeld] = useState(null);
-  const listRef = useRef(null);
   useEffect(() => {
     if (showAll) focusRef.current?.focus();
   }, [showAll]);
@@ -236,7 +169,7 @@ export function EarlyVotingSites({
   const ordered = useMemo(() => {
     if (!loaded) return loaded;
     const byKey = new Map(siteWaits.map((entry) => [entry.siteId, entry]));
-    const rows = withKeys(loaded).map((row) => {
+    const rows = withKeys(loaded, (row) => row.waitKey).map((row) => {
       const waitKey = waitKeyOf(row);
       return { ...row, wait: (waitsOn && waitKey && byKey.get(waitKey)) || null };
     });
@@ -248,13 +181,8 @@ export function EarlyVotingSites({
         earlyVotingStatus(scheduleOf(row), now, election.timeZone).kind === 'openNow',
     });
   }, [loaded, siteWaits, waitsOn, sort, now, scheduleOf, waitKeyOf]);
-  const rows = held && ordered ? inHeldOrder(ordered, held) : ordered;
-  // Focus can leave the list with no blur reaching it (the focused row was
-  // removed, #84): when the rows change, let go of the held order if focus is
-  // elsewhere.
-  useEffect(() => {
-    if (held && !listRef.current?.contains(document.activeElement)) setHeld(null);
-  }, [held, ordered]);
+  // While focus is in the list, its order holds (#27).
+  const { rows, listRef, listProps } = useHeldOrder(ordered);
   const first = election.nearbyPollCount;
   const shownRows = showAll ? rows : rows?.slice(0, first);
   const noCounts =
@@ -296,20 +224,12 @@ export function EarlyVotingSites({
       {rows && rows.length > 0 && (
         <>
           {!origin && <p className="mt-3 text-muted">{copy.polls.fromCenter(code)}</p>}
-          {waitsOn && <SortControls sort={sort} onSort={setSort} />}
+          {waitsOn && <NearbySortControls sort={sort} onSort={setSort} />}
           <ol
             ref={listRef}
             aria-label={t.listLabel}
             className="mt-3 list-decimal space-y-3 pl-6"
-            onFocus={() => setHeld((keys) => keys ?? rows.map((row) => row.key))}
-            onBlur={(event) => {
-              // Focus moved outside the list. Not when the window lost focus:
-              // the row link is then still the active element.
-              const list = event.currentTarget;
-              if (!list.contains(event.relatedTarget) && !list.contains(document.activeElement)) {
-                setHeld(null);
-              }
-            }}
+            {...listProps}
           >
             {shownRows.map((site, i) => (
               <SiteRow

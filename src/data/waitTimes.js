@@ -3,19 +3,21 @@
 // src/features/waitTimes/ refreshes them.
 //
 // One shape for both boards, read by the wait times page (#104), the early
-// voting card (#105) and later Election Day counts (#107):
+// voting card (#105) and the polling places card on Election Day (#107):
 //   { siteId, jurisdiction: 'county' | 'city', unit, value, reportedAt: Date,
 //     source, openUntil: Date }
 // A site with no fresh report while it is open has no entry. The unit stays
 // with the value and is never converted.
 import election from '../config/election.js';
 import { earlyVotingStatus, zonedNow } from '../features/lookup/earlyVoting.js';
+import { electionDayStatus } from '../features/lookup/electionDay.js';
 import { isFresh } from './freshness.js';
 
 /**
  * @typedef {object} WaitEntry
  * @property {string} siteId The County site's absentee username (the polls
- *   layer's `absentee`) or the City site's `name`.
+ *   layer's `absentee`; on Election Day its `username`, #107) or the City
+ *   site's `name`.
  * @property {'county' | 'city'} jurisdiction
  * @property {'people' | 'minutes'} unit
  * @property {number} value A whole number, 0 or more.
@@ -62,33 +64,46 @@ function newestPerSite(rows, siteOf, timeOf, knownSite, now) {
 }
 
 /**
- * The County's current line counts: each early voting site's newest report,
- * when it has a count, is fresh and the site is open now by its schedule. A report whose site key matches no
- * site is dropped, never guessed.
+ * The County's current line counts: each site's newest report, when it has a
+ * count, is fresh and the site is open now. During early voting the sites are
+ * the absentee sites, open by their schedule, and reports join on
+ * `pollsField`; with `electionDay` (#107) they are the polling places, open by
+ * Election Day hours, and reports join on `electionDay.pollsField`. A report
+ * whose site key matches no site is dropped, never guessed.
  * @param {object[]} reports The County layer's rows (attributes).
- * @param {object[]} sites Absentee site features from getAbsenteeSites, with
- *   the polls join field and `abs_type` in `properties`.
+ * @param {object[]} sites Site features (absentee sites from getAbsenteeSites,
+ *   or on Election Day the polling places from getPolls), with the join field
+ *   and `abs_type` in `properties`.
  * @param {Date | number} [now]
+ * @param {{ electionDay?: boolean }} [options]
  * @returns {WaitEntry[]}
  */
-export function selectCountyWaits(reports, sites, now = Date.now()) {
+export function selectCountyWaits(reports, sites, now = Date.now(), { electionDay = false } = {}) {
   const county = election.waitTimes.county;
+  const joinField = electionDay ? county.electionDay.pollsField : county.pollsField;
   const siteKind = new Map();
   for (const { properties } of sites) {
-    const key = properties?.[county.pollsField];
+    const key = properties?.[joinField];
     if (typeof key === 'string' && key) siteKind.set(key, properties.abs_type);
   }
   const timeOf = (row) => row[county.timeField];
   const siteOf = (row) => row[county.siteField];
   const knownSite = (site) => siteKind.has(site);
+  const statusOf = (siteId) =>
+    electionDay
+      ? electionDayStatus(now)
+      : earlyVotingStatus(
+          election.earlyVoting.schedules[siteKind.get(siteId)],
+          now,
+          election.timeZone,
+        );
 
   const entries = [];
   for (const row of newestPerSite(reports, siteOf, timeOf, knownSite, now)) {
     if (!isCount(row[county.valueField])) continue;
     if (!isFresh(timeOf(row), maxAgeMs(), now, skewMs())) continue;
     const siteId = siteOf(row);
-    const schedule = election.earlyVoting.schedules[siteKind.get(siteId)];
-    const status = earlyVotingStatus(schedule, now, election.timeZone);
+    const status = statusOf(siteId);
     if (status.kind !== 'openNow') continue;
     entries.push({
       siteId,
@@ -151,12 +166,14 @@ const weekdayOf = (date) => new Date(`${date}T00:00:00Z`).getUTCDay();
  * The City's current line counts, by the rules of the City Board's own
  * dashboard: a site open now by its hours field, a report from today in the
  * election's time zone, and no "poll closed" comment. The report must also
- * be fresh by `maxAgeMinutes`.
+ * be fresh by `maxAgeMinutes`. With `electionDay` (#107), a site is open by
+ * Election Day hours instead of its hours field.
  * @param {object[]} rows The City layer's rows (attributes).
  * @param {Date | number} [now]
+ * @param {{ electionDay?: boolean }} [options]
  * @returns {WaitEntry[]}
  */
-export function selectCityWaits(rows, now = Date.now()) {
+export function selectCityWaits(rows, now = Date.now(), { electionDay = false } = {}) {
   const city = election.waitTimes.city;
   const today = zonedNow(now, election.timeZone);
   const timeOf = (row) => row[city.timeField];
@@ -174,8 +191,11 @@ export function selectCityWaits(rows, now = Date.now()) {
   const entries = [];
   for (const row of newestPerSite(rows, siteOf, timeOf, knownSite, now)) {
     if (!usable(row)) continue;
-    const hours = parseCityHours(row[city.hoursField])?.[weekdayOf(today.date)];
+    const hours = electionDay
+      ? election.electionDayHours
+      : parseCityHours(row[city.hoursField])?.[weekdayOf(today.date)];
     if (!hours) continue;
+    if (electionDay && electionDayStatus(now).kind !== 'openNow') continue;
     if (today.minutes < toMinutes(hours.open) || today.minutes >= toMinutes(hours.close)) continue;
     entries.push({
       siteId: row[city.siteField],

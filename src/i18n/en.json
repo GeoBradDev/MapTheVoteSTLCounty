@@ -186,6 +186,10 @@
       "appleMaps": "Apple Maps",
       "linkTarget": "to {name}",
       "showMore": "Show more polling places",
+      "waits": {
+        "none": "No current line count for these polling places.",
+        "seeAll": "See line counts at every polling place"
+      },
       "hoursLabel": "Election Day hours:",
       "hours": "{open} to {close}",
       "inLine": "If you are in line at {close}, you can still vote.",
@@ -349,7 +353,17 @@
     "disclaimer": "Each board's staff report these counts, and lines change quickly. A count is a guide, not a promise of how long you will wait.",
     "sources": "Official sources:",
     "countyLink": "{board} absentee voting lookup",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "electionDay": {
+      "heading": "Election Day line counts",
+      "intro": "How many people are in line right now at each St. Louis County and St. Louis City polling place, as each board's staff report it. No address needed.",
+      "city": "Each board's polling places are for its own voters: a St. Louis County voter may vote at any St. Louis County polling place, and a St. Louis City voter at any City polling place.",
+      "listLabel": "Polling places",
+      "closed": "Polls closed at {close}.",
+      "failed": "We could not load polling places right now. Find them with the",
+      "none": "We could not find polling places. Find them with the",
+      "mapLabel": "Map of polling places"
+    }
   },
   "learn": {
     "pageHeading": "How to vote",

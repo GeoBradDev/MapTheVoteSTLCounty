@@ -135,10 +135,19 @@ export function expectedLayers(config) {
   ];
   return {
     precincts: { geometryType: 'esriGeometryPolygon', fields: [...new Set(precinctFields)] },
-    // The wait time join field (#103): the County's reports name a site by it.
+    // The wait time join fields (#103, #107): the County's early voting and
+    // Election Day reports name a site by them.
     polls: {
       geometryType: 'esriGeometryPoint',
-      fields: [...POLL_FIELDS, config.waitTimes.county.pollsField],
+      fields: [
+        ...new Set([
+          ...POLL_FIELDS,
+          config.waitTimes.county.pollsField,
+          ...(config.waitTimes.county.electionDay
+            ? [config.waitTimes.county.electionDay.pollsField]
+            : []),
+        ]),
+      ],
     },
     countyBoundary: { geometryType: 'esriGeometryPolygon', fields: BOUNDARY_FIELDS },
   };

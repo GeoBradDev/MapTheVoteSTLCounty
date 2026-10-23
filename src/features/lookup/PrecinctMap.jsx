@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import WaitLegend from '../waitTimes/WaitLegend.jsx';
 import { BASEMAP_ATTRIBUTION } from './basemap.js';
 import { useJurisdiction } from './jurisdictionContext.js';
 import { copy } from './resultsCopy.js';
@@ -48,8 +49,10 @@ function Attribution() {
  * everything on it is also in the list, so it is removed whenever anything
  * fails, and its markers are hidden from assistive technology.
  * @param {{ code: string, origin: { lat: number, lng: number } | null,
- *   polls: { lat: number, lng: number }[] }} props `origin` is the looked-up
- *   point, in memory only. `polls` are the places the list shows, in order.
+ *   polls: { lat: number, lng: number, bin?: number | null }[] }} props
+ *   `origin` is the looked-up point, in memory only. `polls` are the places
+ *   the list shows, in order; on Election Day (#107) each has its line count
+ *   bin, or null without a count, and the map shows the legend once any has one.
  */
 export default function PrecinctMap({ code, origin, polls }) {
   const { getOutline } = useJurisdiction();
@@ -62,11 +65,17 @@ export default function PrecinctMap({ code, origin, polls }) {
   const containerRef = useRef(null);
   const viewRef = useRef(null);
   const pollsRef = useRef(polls);
+  // The markers drawn last, so a new list with the same places and bins (every
+  // count refresh) redraws nothing.
+  const drawnRef = useRef(JSON.stringify(polls));
 
   // Declared before the effect that creates the map, so a map created later
   // starts from the latest places.
   useEffect(() => {
     pollsRef.current = polls;
+    const key = JSON.stringify(polls);
+    if (key === drawnRef.current) return;
+    drawnRef.current = key;
     viewRef.current?.setPolls(polls);
   }, [polls]);
 
@@ -130,6 +139,7 @@ export default function PrecinctMap({ code, origin, polls }) {
     Promise.all([import('./precinctMapView.js'), getOutline(code)])
       .then(([{ createPrecinctMap }, feature]) => {
         if (!current || !loading) return;
+        drawnRef.current = JSON.stringify(pollsRef.current);
         viewRef.current = createPrecinctMap(containerRef.current, {
           geometry: feature.geometry,
           origin,
@@ -148,6 +158,7 @@ export default function PrecinctMap({ code, origin, polls }) {
   }, [supported, inView, code, origin, getOutline]);
 
   if (!supported || state === 'failed') return null;
+  const hasCounts = polls.some((poll) => poll.bin !== null && poll.bin !== undefined);
 
   return (
     <div ref={regionRef} role="region" aria-label={copy.map.label(code)} className="mt-3">
@@ -169,6 +180,7 @@ export default function PrecinctMap({ code, origin, polls }) {
       <p className="mt-2 text-sm text-muted">
         {copy.map.legend(code)} {origin && copy.map.origin}
       </p>
+      {hasCounts && <WaitLegend />}
       <Attribution />
     </div>
   );

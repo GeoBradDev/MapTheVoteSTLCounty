@@ -50,7 +50,8 @@
  * @property {{ minutes: number, electionDayMinutes: number }} layerMaxAge How
  *   long a loaded layer, such as the polling places, is reused before the app
  *   fetches it again, and the shorter limit on Election Day (#84).
- * @property {WaitTimesConfig} waitTimes Early voting line counts (#103).
+ * @property {WaitTimesConfig} waitTimes Early voting line counts (#103) and
+ *   Election Day line counts (#107).
  * @property {{ county: JurisdictionConfig, city: JurisdictionConfig }}
  *   jurisdictions Each jurisdiction's own block (#86).
  */
@@ -110,11 +111,16 @@
  * @property {number} skewMinutes How far in the future a report time may be.
  * @property {string[]} sources
  * @property {string} lastVerified
- * @property {WaitTimesSource & { pollsField: string }} county `pollsField` is
- *   the polls layer field `siteField` matches.
+ * @property {WaitTimesSource & { pollsField: string, electionDay: {
+ *   enabled: boolean, serviceRoot: string, layer: string, where: string,
+ *   pollsField: string } }} county `pollsField` is the polls layer field
+ *   `siteField` matches. `electionDay` replaces those values on the election
+ *   date (#107).
  * @property {WaitTimesSource & { hoursField: string, commentsField: string,
- *   closedText: string }} city The site's hours text, its comments field, and
- *   the comment text that marks a site closed.
+ *   closedText: string, electionDay: { enabled: boolean, where: string } }}
+ *   city The site's hours text, its comments field, and the comment text that
+ *   marks a site closed. `electionDay.where` replaces `where` on the election
+ *   date (#107), when Election Day hours replace the hours field.
  */
 
 // The boards' own public pages for the early voting line counts (#102).
@@ -361,12 +367,26 @@ const shared = {
       siteField: 'Creator',
       valueField: 'linecount',
       timeField: 'CreationDate',
-      // Early voting reports come from the site's absentee username; Election
-      // Day reports would join on `username` (#107).
+      // Early voting reports come from the site's absentee username.
       pollsField: 'absentee',
       unit: 'people',
       source: 'St. Louis County Board of Elections',
       sourceUrl: countyWaitSource,
+      // Election Day counts (#107), read instead of the values above on the
+      // election date; every other field is the block's own. The County's
+      // Polling Place Lookup app joins Election Day reports on the polls
+      // layer's `username` (like `loc019boec`), but on 2026-10-22 this view
+      // kept only `username LIKE 'abs%'` reports, so no Election Day report
+      // reaches it and every polling place shows no count. When the County
+      // widens the view or publishes another, point `layer` (and `where`) at
+      // it: a config change, nothing else.
+      electionDay: {
+        enabled: true,
+        serviceRoot: 'https://services6.arcgis.com/IeWM0VelvUwce9qE/ArcGIS/rest/services',
+        layer: 'Voters_in_Line_View/FeatureServer/0',
+        where: '1=1',
+        pollsField: 'username',
+      },
     },
     city: {
       enabled: true,
@@ -389,6 +409,13 @@ const shared = {
       unit: 'people',
       source: 'St. Louis City Board of Election Commissioners',
       sourceUrl: cityWaitSource,
+      // Election Day counts (#107): the same layer, filtered to the City's
+      // Election Day polling places, open by `electionDayHours` rather than
+      // the early voting hours field.
+      electionDay: {
+        enabled: true,
+        where: city.pollsWhere,
+      },
     },
   },
 
