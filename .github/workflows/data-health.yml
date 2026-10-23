@@ -1,9 +1,9 @@
 # Checks the live election layers, the geocoder, the learn topics' source
 # links and the pages the election config links every day through Election
 # Day, and opens an issue (or comments on the open one) when a check fails.
-# During early voting it also checks the election layers, wait time layers
-# included, every 2 hours of the voting day, so a board that starts or stops
-# reporting line counts is noticed the same day (#106).
+# During early voting and on Election Day it also checks the election layers,
+# wait time layers included, every 2 hours of the voting day, so a board that
+# starts or stops reporting line counts is noticed the same day (#106, #107).
 # It has no pull_request or push trigger, so a live outage can never block a
 # merge: the CI workflow (ci.yml) never calls a live service.
 
@@ -15,9 +15,14 @@ on:
     - cron: '0 12 * * *'
     # Every 2 hours from 14:00 to 22:00 UTC: 9 a.m. to 5 p.m. in Chicago in
     # daylight time, 8 a.m. to 4 p.m. after. Only on days inside the config's
-    # early voting dates (scripts/electionWindow.mjs), so these stop after the
-    # last early voting day with no edit. Keep it equal to WAITS_CRON there.
+    # early voting dates and on Election Day (scripts/electionWindow.mjs), so
+    # these stop after the election with no edit. Keep it equal to WAITS_CRON
+    # there.
     - cron: '0 14-22/2 * * *'
+    # 00:00 UTC: 6 p.m. in Chicago on Election Day, in standard time, the last
+    # check before the polls close at 7 (#107). Only when that is Election Day
+    # in the config's time zone. Keep it equal to ELECTION_DAY_CRON there.
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 permissions:
@@ -46,7 +51,8 @@ jobs:
           persist-credentials: false
 
       # What this run checks: everything (`full`), the election config check
-      # only (`waits`, the open-hours runs during early voting) or nothing
+      # only (`waits`, the open-hours runs during early voting and on Election
+      # Day) or nothing
       # (`off`). The daily run stops once Election Day is over in the config's
       # time zone; a manual run always checks everything. This runs first, on
       # the runner's own Node, so a failing install after the election cannot

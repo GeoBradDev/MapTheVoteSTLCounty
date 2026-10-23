@@ -5,6 +5,7 @@
 // service, so an outage cannot fail a pull request.
 import { readFileSync } from 'node:fs';
 import election from '../src/config/election.js';
+import { asElectionDay } from '../src/data/waitTimes.fixtures.js';
 import { BASEMAP_STYLE_URL } from '../src/features/lookup/basemap.js';
 
 const fixture = (name) =>
@@ -41,6 +42,19 @@ function staleCopy(body, timeField, shiftMs) {
 }
 const STALE_SHIFT_MS = (election.waitTimes.maxAgeMinutes + 60) * 60_000;
 
+// Election Day (#107): no Election Day report has been published, so these are
+// the fresh recordings moved to 9:00 a.m. on Election Day, the County's
+// renamed from each site's absentee username to its Election Day one
+// (asElectionDay in src/data/waitTimes.fixtures.js).
+function electionDayCopy(body, jurisdiction) {
+  const rows = asElectionDay(
+    body.features.map((f) => f.attributes),
+    jurisdiction,
+    FIXTURES.polls.features,
+  );
+  return { ...body, features: rows.map((attributes) => ({ attributes })) };
+}
+
 /**
  * The early voting line counts (#102, #104, #106) for each board, by state.
  * Recorded on 2026-10-22: the County at 9:00 a.m. Central (fresh) and while
@@ -55,22 +69,32 @@ const WAIT_FIXTURES = {
     fresh: countyFresh,
     stale: staleCopy(countyFresh, election.waitTimes.county.timeField, STALE_SHIFT_MS),
     empty: fixture('county-waits-empty'),
+    electionDay: electionDayCopy(countyFresh, 'county'),
   },
   city: {
     fresh: fixture('city-waits-fresh'),
     stale: cityStale,
     empty: { ...cityStale, features: [] },
+    electionDay: electionDayCopy(fixture('city-waits-fresh'), 'city'),
   },
 };
 
 /**
  * Which wait fixture each board answers with, unless a call picks another.
- * @typedef {{ county?: 'fresh' | 'stale' | 'empty', city?: 'fresh' | 'stale' | 'empty' }} WaitStates
+ * `electionDay` (#107) is the fresh recording moved to Election Day morning.
+ * @typedef {{ county?: 'fresh' | 'stale' | 'empty' | 'electionDay',
+ *   city?: 'fresh' | 'stale' | 'empty' | 'electionDay' }} WaitStates
  */
 export const DEFAULT_WAITS = Object.freeze({ county: 'fresh', city: 'stale' });
 
 /** A time just after the wait fixtures were recorded: 9:05 a.m. Central, 2026-10-22. */
 export const WAITS_RECORDED_AT = new Date(Date.UTC(2026, 9, 22, 14, 5));
+
+/** 9:05 a.m. Central on Election Day, just after the Election Day wait fixtures (#107). */
+export const ELECTION_DAY_AT = new Date(Date.UTC(2026, 10, 3, 15, 5));
+
+/** The wait fixtures for Election Day: both boards' Election Day states. */
+export const ELECTION_DAY_WAITS = Object.freeze({ county: 'electionDay', city: 'electionDay' });
 
 const waitLayer = (source) => `${source.serviceRoot}/${source.layer}/`;
 
@@ -94,8 +118,10 @@ const cityBlock = election.jurisdictions.city;
 export function isCityElectionLayer(href, params) {
   if (!href.startsWith(`${cityBlock.serviceRoot}/`)) return false;
   const wait = href.startsWith(waitLayer(election.waitTimes.city));
+  // The early voting or, on Election Day (#107), the Election Day filter.
+  const { where, electionDay } = election.waitTimes.city;
   const waitQuery =
-    params.get('where') === election.waitTimes.city.where && params.get('f') !== 'geojson';
+    [where, electionDay.where].includes(params.get('where')) && params.get('f') !== 'geojson';
   return !(wait && waitQuery);
 }
 
@@ -181,7 +207,10 @@ export function fixtureBody(href, form = null, { waits = {} } = {}) {
   if (isCityElectionLayer(href, params))
     return JSON.stringify(shape(cityBody(url, params), params));
   for (const key of ['county', 'city']) {
-    if (!href.startsWith(waitLayer(election.waitTimes[key]))) continue;
+    const source = election.waitTimes[key];
+    // The County's Election Day layer (#107) may be another view.
+    const day = source.electionDay?.layer ? { ...source, ...source.electionDay } : source;
+    if (!href.startsWith(waitLayer(source)) && !href.startsWith(waitLayer(day))) continue;
     const body = WAIT_FIXTURES[key][states[key]];
     if (!body) throw new Error(`No ${key} wait fixture ${JSON.stringify(states[key])}`);
     return JSON.stringify(shape(body, params));

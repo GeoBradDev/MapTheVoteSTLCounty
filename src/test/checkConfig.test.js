@@ -7,13 +7,20 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { parse } from 'yaml';
 import absenteeSites from '../../docs/raw/fixtures/absentee-sites.json';
+import pollsFixture from '../../docs/raw/fixtures/polls.json';
 import { POLL_FIELDS, PRECINCT_FIELDS } from '../data/arcgis.js';
 import {
   CITY_DISTRICT_FIELDS,
   CITY_POLL_FIELDS,
   CITY_PRECINCT_FIELDS,
 } from '../data/cityArcgis.js';
-import { cityFresh, cityStale, countyFresh } from '../data/waitTimes.fixtures.js';
+import {
+  asElectionDay,
+  cityFresh,
+  cityStale,
+  countyFresh,
+  ELECTION_DAY_SHIFT_MS,
+} from '../data/waitTimes.fixtures.js';
 import election from '../config/election.js';
 import {
   BALLOT_SAMPLE_SIZE,
@@ -32,7 +39,13 @@ import {
   runHealthCheck,
   warningLines,
 } from '../../scripts/check-config.mjs';
-import { WAITS_CRON, isEarlyVotingPeriod, windowFor } from '../../scripts/electionWindow.mjs';
+import {
+  ELECTION_DAY_CRON,
+  WAITS_CRON,
+  isEarlyVotingPeriod,
+  isElectionDay,
+  windowFor,
+} from '../../scripts/electionWindow.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 
@@ -100,6 +113,11 @@ function healthyWorld() {
       name: p.name,
       abs_type: p.abs_type,
       [countyWait.pollsField]: p[countyWait.pollsField],
+    })),
+    // Every polling place with its Election Day join field (#107).
+    dayPolls: pollsFixture.features.map(({ properties: p }) => ({
+      loc: p.loc,
+      [countyWait.electionDay.pollsField]: p[countyWait.electionDay.pollsField],
     })),
     // The wait time layers (#106), as recorded at 9:00 a.m. on 2026-10-22.
     waits: {
@@ -281,6 +299,11 @@ function stubFetch(world) {
         : features(world.precincts);
     }
     if (layerPath === election.layers.polls) {
+      // Every polling place, for the County's Election Day reports (#107).
+      if (params.get('where') === '1=1') {
+        world.dayPollsAsked = true;
+        return features(world.dayPolls);
+      }
       expect(params.get('where')).toBe(election.absenteeWhere);
       return features(world.absentee);
     }
@@ -812,6 +835,50 @@ describe('wait time checks', () => {
     });
   });
 
+  describe('on Election Day (#107)', () => {
+    const ED_NOW = NOW + ELECTION_DAY_SHIFT_MS;
+    const dayWorld = () => {
+      const world = healthyWorld();
+      world.waits[county].rows = asElectionDay(countyFresh, 'county', pollsFixture.features);
+      world.waits[city].rows = asElectionDay(cityFresh, 'city');
+      return world;
+    };
+
+    it("judges each board's Election Day reports against its polling places", async () => {
+      const world = dayWorld();
+      const results = await run(world, election, { now: ED_NOW });
+      expect(world.dayPollsAsked).toBe(true);
+      expect(results['election day polling places'].status).toBe('pass');
+      expect(results['wait reports county']).toMatchObject({
+        status: 'pass',
+        detail: expect.stringContaining(
+          `fresh. 19 of ${pollsFixture.features.length} open sites have a current count`,
+        ),
+      });
+      expect(results['wait reports city'].detail).toContain('1 with a current count');
+      const [countyQuery, cityQuery] = world.waitQueries;
+      expect(countyQuery.get('where')).toBe(countyWait.electionDay.where);
+      expect(cityQuery.get('where')).toBe(cityWait.electionDay.where);
+    });
+
+    it("warns while the polls are open and today's view has only absentee reports", async () => {
+      const world = dayWorld();
+      world.waits[county].rows = countyFresh.map((r) => ({
+        ...r,
+        [countyWait.timeField]: r[countyWait.timeField] + ELECTION_DAY_SHIFT_MS,
+      }));
+      const results = await run(world, election, { now: ED_NOW });
+      expect(results['wait reports county'].status).toBe('warn');
+      expect(results['wait reports county'].detail).toContain('not fresh. 0 of');
+    });
+
+    it('says closed after the polls close', async () => {
+      const results = await run(dayWorld(), election, { now: ED_NOW + 11 * 60 * 60_000 });
+      expect(results['wait reports county'].detail).toContain('closed');
+      expect(results['wait reports city'].detail).toContain('closed');
+    });
+  });
+
   it('asks each layer for its own fields, filter and newest first', async () => {
     const world = healthyWorld();
     await run(world);
@@ -1155,10 +1222,26 @@ describe('the election window (scripts/electionWindow.mjs)', () => {
     expect(windowFor(config, daily, noon('2030-11-06'))).toBe('off');
   });
 
-  it('runs the open-hours wait checks only during early voting', () => {
+  it('runs the open-hours wait checks during early voting and on Election Day (#107)', () => {
     expect(windowFor(config, waits, noon('2030-09-23'))).toBe('off');
     expect(windowFor(config, waits, noon('2030-10-15'))).toBe('waits');
-    expect(windowFor(config, waits, noon('2030-11-05'))).toBe('off');
+    expect(windowFor(config, waits, noon('2030-11-05'))).toBe('waits');
+    expect(windowFor(config, waits, noon('2030-11-06'))).toBe('off');
+  });
+
+  it("knows Election Day in the config's time zone", () => {
+    expect(isElectionDay(config, noon('2030-11-05'))).toBe(true);
+    // 6 p.m. on Election Day in Chicago is already the next day in UTC.
+    expect(isElectionDay(config, new Date('2030-11-06T00:00:00Z'))).toBe(true);
+    expect(isElectionDay(config, noon('2030-11-04'))).toBe(false);
+  });
+
+  it('runs the evening wait check on Election Day only (#107)', () => {
+    const evening = { event: 'schedule', schedule: ELECTION_DAY_CRON };
+    // 00:00 UTC is 6 p.m. Central the day before, in standard time.
+    expect(windowFor(config, evening, new Date('2030-11-06T00:00:00Z'))).toBe('waits');
+    expect(windowFor(config, evening, new Date('2030-11-05T00:00:00Z'))).toBe('off');
+    expect(windowFor(config, evening, new Date('2030-10-16T00:00:00Z'))).toBe('off');
   });
 
   it('always runs everything by hand', () => {
@@ -1246,8 +1329,13 @@ describe('data health workflow', () => {
 
   it('runs on a schedule and by hand, never on pull requests or pushes', () => {
     expect(Object.keys(workflow.on).sort()).toEqual(['schedule', 'workflow_dispatch']);
-    // Daily, plus every 2 hours of the voting day for the wait checks (#106).
-    expect(workflow.on.schedule.map((s) => s.cron)).toEqual(['0 12 * * *', WAITS_CRON]);
+    // Daily, plus every 2 hours of the voting day for the wait checks (#106),
+    // plus Election Day evening (#107).
+    expect(workflow.on.schedule.map((s) => s.cron)).toEqual([
+      '0 12 * * *',
+      WAITS_CRON,
+      ELECTION_DAY_CRON,
+    ]);
   });
 
   // The window step runs before npm ci: check-config.mjs imports the app,

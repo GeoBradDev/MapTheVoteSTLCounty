@@ -6,7 +6,14 @@
 // navigation and reduced motion while the results load.
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { CITY_CODE, CODE, fixtureBody, WAITS_RECORDED_AT } from './fixtures.js';
+import {
+  CITY_CODE,
+  CODE,
+  ELECTION_DAY_AT,
+  ELECTION_DAY_WAITS,
+  fixtureBody,
+  WAITS_RECORDED_AT,
+} from './fixtures.js';
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'];
 
@@ -18,11 +25,11 @@ const TEXT_SPACING = `
 
 // ArcGIS from the fixtures, the app's own origin as is, everything else
 // (geocoders, map tiles) blocked.
-async function answerFromFixtures(page, { delayMs = 0 } = {}) {
+async function answerFromFixtures(page, { delayMs = 0, waits } = {}) {
   await page.route('**/*', async (route) => {
     const href = route.request().url();
     if (new URL(href).hostname === 'localhost') return route.continue();
-    const body = fixtureBody(href);
+    const body = fixtureBody(href, null, { waits });
     if (body === null) return route.abort();
     if (delayMs) await new Promise((resolve) => setTimeout(resolve, delayMs));
     return route.fulfill({ contentType: 'application/json', body });
@@ -85,6 +92,40 @@ const ROUTES = [
     },
   },
   {
+    // Election Day (#107): the polling places card's line counts, sort and
+    // link, and the map's legend once it draws, from the Election Day fixtures.
+    name: `/p/${CODE} on Election Day`,
+    path: `/p/${CODE}`,
+    at: ELECTION_DAY_AT,
+    waits: ELECTION_DAY_WAITS,
+    ready: async (page) => {
+      await expect(page.getByText(`Results for precinct ${CODE} are ready.`)).toBeAttached();
+      const polls = page.getByRole('list', { name: 'Nearest polling places' });
+      await expect(polls).toBeVisible();
+      await page.getByRole('radio', { name: 'Shortest line within 5 miles' }).check();
+      await expect(polls.getByText(/in line, reported/).first()).toBeVisible();
+      await expect(
+        page.getByRole('link', { name: 'See line counts at every polling place' }),
+      ).toBeVisible();
+    },
+  },
+  {
+    // Election Day (#107): every polling place of both boards with its count.
+    name: '/early-voting on Election Day',
+    path: '/early-voting',
+    at: ELECTION_DAY_AT,
+    waits: ELECTION_DAY_WAITS,
+    ready: async (page) => {
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Election Day line counts');
+      const list = page.getByRole('list', { name: 'Polling places' });
+      await expect(list).toBeVisible();
+      await expect(list.getByText(/in line, reported/).first()).toBeVisible();
+      await expect(
+        list.getByRole('heading', { name: '12th & Park Recreation Center' }),
+      ).toBeVisible();
+    },
+  },
+  {
     path: '/learn',
     ready: (page) => expect(page.getByRole('heading', { level: 1 })).toBeVisible(),
   },
@@ -107,11 +148,11 @@ async function horizontalOverflow(page) {
   });
 }
 
-for (const { path, ready, at } of ROUTES) {
-  test.describe(path, () => {
+for (const { name, path, ready, at, waits } of ROUTES) {
+  test.describe(name ?? path, () => {
     test.beforeEach(async ({ page }) => {
       if (at) await page.clock.setFixedTime(at);
-      await answerFromFixtures(page);
+      await answerFromFixtures(page, { waits });
       await page.goto(path);
       await ready(page);
     });
