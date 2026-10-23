@@ -43,19 +43,20 @@ request answers, so the simulated new connection to the ArcGIS host counts towar
    (the hours note and its source link come with the loaded summary).
 2. The loaded summary renders the same Election Day text with the same classes (one shared
    component, so they cannot drift).
-6. The date line does not move when the results replace the skeleton (County and City, at
-   360 px and 1280 px, for an In Election precinct): the header holds the share row's place
-   and, on a phone, two lines for the precinct line while loading.
 3. `npm run test:perf`: /p/CC007 and /p/W01P12 median LCP under about 2200 ms; every route
    still passes its budgets; CLS not worse than main.
 4. First-load JS stays under the 120 KB budget (`src/test/build.test.js`).
 5. No budget is loosened; the full gate is green.
+6. The date line does not move when the results replace the skeleton (County and City, at
+   360 px and 1280 px, for an In Election precinct): the header holds the share row's place
+   and, on a phone, two lines for the precinct line while loading.
 
 ## Files that change
 
 - `src/features/lookup/ResultsSummary.jsx`: export `ElectionDayPart` (the Part with the
-  heading, the date and hours line and the hours note, then children) and `PlaceSkeleton`;
-  `ElectionDay` uses `ElectionDayPart`.
+  heading and the date and hours line, then children), `PlaceSkeleton` and `SUMMARY_BOX` (the
+  summary box's classes); `ElectionDay` uses `ElectionDayPart` and passes the hours note and
+  the nearest polling place as its children.
 - `src/features/lookup/ResultsCards.jsx`: `ResultsSkeleton`'s summary box renders
   `ElectionDayPart` with a `PlaceSkeleton`, then the remaining placeholder bars
   (`aria-hidden`), with the loaded summary's box classes.
@@ -63,8 +64,10 @@ request answers, so the simulated new connection to the ArcGIS host counts towar
   answers any request.
 - `src/features/lookup/ShareLink.jsx` (review revision): `ShareLinkPlaceholder`, the share
   row laid out with the same classes, invisible and hidden from screen readers.
-- `src/features/lookup/PrecinctPage.jsx` (review revision): while a code-shaped precinct
-  loads, the header renders `ShareLinkPlaceholder` and holds two lines for the precinct line
+- `src/features/lookup/PrecinctPage.jsx` (review revision): until the precinct loads, the
+  header renders `ShareLinkPlaceholder` in the one slot `ShareLink` replaces (holding the
+  share row's place while a code-shaped precinct loads), so "Search another address" keeps
+  focus through a "not found" answer; while loading it holds two lines for the precinct line
   below `sm`, in place of the old placeholder line.
 - `e2e/a11y.e2e.js` (review revision): the date line stays put on load, County and City.
 - `src/features/lookup/PrecinctPage.test.jsx`: the loading test asserts the Election Day
@@ -89,12 +92,15 @@ does not hide the old cause.
 The first finder found that the now visible date line moved 32 px down at 360 px (8 px up at
 1024 px) when the results arrived, and that the hours note's source link in the skeleton
 could be focused and then lost with it on a "not found" answer. Fixed as criterion 1 and 6
-now say.
+now say. The second finder found that the first version of that fix moved "Search another
+address" between two slots, so a keyboard user focused on it lost focus on a "not found"
+answer; it now stays in one slot (`PrecinctPage.test.jsx`, "keeps focus on Search another
+address").
 
 ## Order of work
 
-1. Red: change the loading test to expect the Election Day heading, line and source link
-   while the precinct request hangs. Run it, see it fail.
+1. Red: change the loading test to expect the Election Day heading and line while the
+   precinct request hangs (later revised: nothing focusable in the skeleton). Run it, see it fail.
 2. Green: the two component changes.
 3. Gate, build, `npm run test:perf` and compare.
 

@@ -17,27 +17,34 @@ const BUTTON =
 const NOTE = 'mt-1 text-xs text-muted';
 
 /**
- * The share row's place while the precinct loads (#27): `children` (the
- * header's other links) as they will be, and the button and its note laid out
- * as ShareLink lays them out but invisible and hidden from screen readers, so
- * nothing below moves when the loaded row replaces it. Nothing to press: a
- * code that turns out not to exist has no link to share.
- * @param {{ code: string, children?: import('react').ReactNode }} props
+ * The header's row before the precinct loads: `children` (the header's other
+ * links) as ShareLink places them. With `hold`, while a code-shaped precinct
+ * loads (#27), the button and its note are laid out as ShareLink lays them
+ * out but invisible and hidden from screen readers, so nothing below moves
+ * when the loaded row replaces it. Nothing to press: a code that turns out
+ * not to exist has no link to share.
+ * @param {{ code: string, hold: boolean, children?: import('react').ReactNode }} props
  */
-export function ShareLinkPlaceholder({ code, children }) {
+export function ShareLinkPlaceholder({ code, hold, children }) {
   return (
     <div className="mt-2">
       <div className={ROW}>
         {children}
-        <span aria-hidden="true" className={`invisible ${BUTTON}`}>
-          <span className="size-4" />
-          {copy.share.short}
-        </span>
+        {hold && (
+          <span aria-hidden="true" className={`invisible ${BUTTON}`}>
+            <span className="size-4" />
+            {copy.share.short}
+          </span>
+        )}
       </div>
-      <p aria-hidden="true" className={`invisible ${NOTE}`}>
-        {copy.share.note(code)}
-      </p>
-      <p className="mt-1" />
+      {hold && (
+        <>
+          <p aria-hidden="true" className={`invisible ${NOTE}`}>
+            {copy.share.note(code)}
+          </p>
+          <p className="mt-1" />
+        </>
+      )}
     </div>
   );
 }

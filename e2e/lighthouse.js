@@ -126,8 +126,8 @@ const ROUTES = [
 ];
 
 /**
- * How long the local server waits before it answers a layer or the basemap
- * style, in ms. The real ArcGIS hosts never answer within a frame: a new
+ * How long the local server waits before it answers any request (a layer,
+ * the basemap style or a 404), in ms. The real ArcGIS hosts never answer within a frame: a new
  * connection alone is several round trips. Answering at once let the data
  * arrive before the first frame painted, so the run saw data driven content
  * as the page's first paint and Lighthouse counted the layers' connections

@@ -177,12 +177,16 @@ function PrecinctResults({ code }) {
         )}
         {/* While a code-shaped precinct loads, the share row's place is
             held, so the summary's Election Day line, shown meanwhile, does
-            not move when the results arrive (#27, #156). */}
-        {precinct && <ShareLink code={code}>{searchLink}</ShareLink>}
-        {!precinct && !result && titled && (
-          <ShareLinkPlaceholder code={code}>{searchLink}</ShareLinkPlaceholder>
+            not move when the results arrive (#27, #156). One slot until the
+            precinct loads, so a focused link stays focused through a "not
+            found" answer. */}
+        {precinct ? (
+          <ShareLink code={code}>{searchLink}</ShareLink>
+        ) : (
+          <ShareLinkPlaceholder code={code} hold={!result && titled}>
+            {searchLink}
+          </ShareLinkPlaceholder>
         )}
-        {!precinct && (result || !titled) && <p className="mt-2">{searchLink}</p>}
       </header>
 
       <p aria-live="polite" className="sr-only">

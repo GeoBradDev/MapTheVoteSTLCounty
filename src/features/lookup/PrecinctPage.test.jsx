@@ -651,6 +651,22 @@ describe('PrecinctPage', () => {
     expect(document.title).toBe('Before');
   });
 
+  it('keeps focus on "Search another address" when a load it was focused during ends in not found', async () => {
+    let answer;
+    fetchMock.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          answer = () => resolve(respond({ ...byId, features: [] }));
+        }),
+    );
+    renderAt('ZZ999');
+    const link = screen.getByRole('link', { name: copy.searchAnother });
+    link.focus();
+    answer();
+    await screen.findByRole('region', { name: copy.searchInstead });
+    expect(screen.getByRole('link', { name: copy.searchAnother })).toHaveFocus();
+  });
+
   it('titles URL text that is not a precinct code as not found, never echoing it', async () => {
     document.title = 'Before';
     renderAt('Polls%20moved');

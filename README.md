@@ -396,7 +396,9 @@ called: Chromium resolves the county's ArcGIS host (the City Board's layers are 
 server, and every other host except `localhost` to nothing. That server answers the County
 and City layers (GET, or a point query's POST) from `docs/raw/fixtures/` (shaped to the query's `outFields` and `geometryPrecision`, gzipped
 like the county's service) and the basemap style with a blank style (`BLANK_STYLE` in
-`e2e/fixtures.js`). It needs `openssl` for the local server's throwaway certificate, and
+`e2e/fixtures.js`), each after a 100 ms wait: no real ArcGIS host answers within a frame,
+and an answer that arrived before the first paint made Lighthouse count the layers'
+connections toward LCP even for text that needs no data (#156). It needs `openssl` for the local server's throwaway certificate, and
 Playwright's Chromium (`npx playwright install chromium`).
 
 `src/test/build.test.js` keeps the JavaScript the first load fetches under 120 KB gzipped and
@@ -404,6 +406,9 @@ fails on any web font: the app uses the system font stack. Rules the scores rely
 
 - Load anything large or slow to start only when it is needed, as the map is (see Map).
 - Give a loading placeholder at least the size of what replaces it, so the page does not jump.
+- Show text that needs no data while the data loads, in the place and at the size the loaded
+  page shows it, so the page's largest text paints without waiting for a request (#151,
+  #156).
 - Start the requests a page needs together, not one after another: the results page asks for
   the polling places, the early voting sites, the County's polling place rooms and (without a
   looked-up point) the outline while the precinct loads.
