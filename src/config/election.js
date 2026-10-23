@@ -16,7 +16,8 @@
 /**
  * @typedef {object} ElectionConfig
  * @property {string} electionDate Election Day, YYYY-MM-DD.
- * @property {string} electionName Display name of the election.
+ * @property {string} electionName Name of the election, for the health check's
+ *   log (the home page shows only the date, #80).
  * @property {string} timeZone IANA zone for every time in this file.
  * @property {string} serviceRoot ArcGIS REST services root, no trailing slash.
  * @property {{ precincts: string, polls: string, countyBoundary: string,

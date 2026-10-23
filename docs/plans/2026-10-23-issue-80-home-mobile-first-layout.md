@@ -35,7 +35,7 @@ Coordinator notes that override the issue text: no Election Day rule on the home
 
 ## Risks
 - Height at 360 x 640: the wait times link above the search pushes the actions down. Riskiest step; measured in the e2e test. If it does not fit, tighten the hero type before moving the link.
-- Moving the attribution in `AddressLookup` changes the precinct and not-found pages too; that is intended (same component, same order) and their tests are checked.
+- Moving the attribution in `AddressLookup` and restyling "Use my location" change the precinct and not-found pages too; that is intended (same components, same order) and their tests are checked. Code comments that said the credits sit "next to the address box" are corrected.
 - `aria-describedby` on "Use my location" still points at its notes; unchanged.
 - The pre-rendered HTML must match the client render (no time-dependent text in the hero other than the existing #107 label switch).
 - The election's display name (`electionName`) is no longer rendered: the pill's "Election Day: <date>" replaces the eyebrow, as the issue proposes; `electionName` stays in the config for the health check.
