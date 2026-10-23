@@ -14,10 +14,10 @@ import { JurisdictionContext } from './jurisdictionContext.js';
 import { lookupPointFor } from './lookupPoint.js';
 import { precinctStatus } from './precinctStatus.js';
 import PrecinctStatusBanner from './PrecinctStatusBanner.jsx';
-import ResultsCards, { ResultsSkeleton, SkeletonLine } from './ResultsCards.jsx';
+import ResultsCards, { ResultsSkeleton } from './ResultsCards.jsx';
 import { copy } from './resultsCopy.js';
 import RetryButton from './RetryButton.jsx';
-import ShareLink from './ShareLink.jsx';
+import ShareLink, { ShareLinkPlaceholder } from './ShareLink.jsx';
 import { useSlowNotice } from './slowNotice.js';
 
 const linkClass = 'text-primary underline';
@@ -162,8 +162,10 @@ function PrecinctResults({ code }) {
         </h1>
         {/* Only a code-shaped value is shown: a link could otherwise put any
             text there. */}
+        {/* While loading, two lines are held on a phone, where the code and
+            the municipality or ward usually take two (#27). */}
         {titled && (
-          <p className="mt-1 sm:text-lg">
+          <p className={`mt-1 sm:text-lg ${result ? '' : 'min-h-12 sm:min-h-0'}`}>
             {copy.precinct(code)}
             {municipality && (
               <>
@@ -173,12 +175,14 @@ function PrecinctResults({ code }) {
             )}
           </p>
         )}
-        {!result && <SkeletonLine className="mt-2 h-5 w-48" />}
-        {precinct ? (
-          <ShareLink code={code}>{searchLink}</ShareLink>
-        ) : (
-          <p className="mt-2">{searchLink}</p>
+        {/* While a code-shaped precinct loads, the share row's place is
+            held, so the summary's Election Day line, shown meanwhile, does
+            not move when the results arrive (#27, #156). */}
+        {precinct && <ShareLink code={code}>{searchLink}</ShareLink>}
+        {!precinct && !result && titled && (
+          <ShareLinkPlaceholder code={code}>{searchLink}</ShareLinkPlaceholder>
         )}
+        {!precinct && (result || !titled) && <p className="mt-2">{searchLink}</p>}
       </header>
 
       <p aria-live="polite" className="sr-only">

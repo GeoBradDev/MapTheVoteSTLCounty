@@ -123,11 +123,13 @@ function HoursNote() {
 }
 
 /**
- * The summary's Election Day part: its heading, Election Day's date and
- * hours, and the hours note, then `children`. Data independent, so the results
- * skeleton shows it too while the precinct loads (#27, #156): the date line is
- * the page's largest text, and the loaded summary repaints it at the same
- * size, so LCP does not wait for the precinct request.
+ * The summary's Election Day part: its heading and Election Day's date and
+ * hours, then `children`. Data independent, so the results skeleton shows it
+ * too while the precinct loads (#27, #156): the date line is the page's
+ * largest text, and the loaded summary repaints it at the same size and
+ * place, so LCP does not wait for the precinct request. The hours note, with
+ * its link, is the loaded summary's own child: the skeleton holds nothing that
+ * takes focus.
  */
 export function ElectionDayPart({ children }) {
   const { open, close } = election.electionDayHours;
@@ -140,7 +142,6 @@ export function ElectionDayPart({ children }) {
           formatTime(close),
         )}
       </p>
-      <HoursNote />
       {children}
     </Part>
   );
@@ -155,6 +156,7 @@ function ElectionDay({ code, origin }) {
   const nearest = result?.rows?.[0];
   return (
     <ElectionDayPart>
+      <HoursNote />
       {!result && <PlaceSkeleton testId="summary-poll-skeleton" />}
       {nearest && <Place label={copy.summary.nearestPoll} place={nearest} />}
     </ElectionDayPart>

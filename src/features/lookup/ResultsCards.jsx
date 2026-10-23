@@ -80,11 +80,6 @@ export default function ResultsCards({ code, origin, showBallot, ballotHtml, pre
 
 const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
 
-/** One placeholder line, hidden from screen readers. */
-export function SkeletonLine({ className }) {
-  return <div aria-hidden="true" className={`${className} ${bar}`} />;
-}
-
 /**
  * While the precinct loads: the summary's Election Day part for real, as the
  * summary renders it (it needs no data, and its date line is the page's
@@ -98,6 +93,10 @@ export function ResultsSkeleton() {
     <div data-testid="results-skeleton" className="min-h-screen">
       <div data-testid="summary-skeleton" className={SUMMARY_BOX}>
         <ElectionDayPart>
+          {/* The hours note's line. */}
+          <div aria-hidden="true" className="flex h-4 items-center">
+            <div className={`h-3 w-2/3 ${bar}`} />
+          </div>
           <PlaceSkeleton />
         </ElectionDayPart>
         <div aria-hidden="true" className="border-t border-border pt-3">

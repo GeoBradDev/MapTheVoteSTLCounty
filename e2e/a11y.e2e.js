@@ -423,6 +423,27 @@ test('Election Day with no Election Day reports shows only the no-data state', a
   await expect(polls.getByText(/in line, reported/)).toHaveCount(0);
 });
 
+// While a precinct loads, the summary's Election Day line already shows (its
+// largest text, #156). The header holds the share row's place, so the line
+// does not move when the results replace the skeleton (#27).
+for (const code of [CODE, CITY_CODE]) {
+  test(`the Election Day line stays put when /p/${code} loads`, async ({ page }) => {
+    await answerFromFixtures(page, { delayMs: 1500 });
+    await page.goto(`/p/${code}`);
+    const line = page
+      .getByRole('heading', { level: 2, name: 'Election Day' })
+      .locator('xpath=following-sibling::p[1]');
+    await expect(page.getByTestId('results-skeleton')).toBeVisible();
+    await expect(line).toBeVisible();
+    const before = await line.boundingBox();
+    await expect(page.getByTestId('results-skeleton')).toHaveCount(0);
+    await expect(page.getByRole('list', { name: 'Nearest polling places' })).toBeVisible();
+    const after = await line.boundingBox();
+    expect(Math.abs(after.y - before.y)).toBeLessThan(1);
+    expect(after.height).toBe(before.height);
+  });
+}
+
 test.describe('with reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
 

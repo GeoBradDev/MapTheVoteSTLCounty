@@ -37,12 +37,15 @@ request answers, so the simulated new connection to the ArcGIS host counts towar
 ## Acceptance criteria
 
 1. While a precinct loads, the results skeleton shows the summary's Election Day part for
-   real: its "Election Day" heading, the date and hours line and the hours note with its
-   source link, with the same classes as the loaded summary, inside a box styled as the
-   loaded summary's box. The rest of the skeleton stays placeholders hidden from screen
-   readers.
+   real: its "Election Day" heading and the date and hours line, with the same classes as
+   the loaded summary, inside a box styled as the loaded summary's box. The rest of the
+   skeleton stays placeholders hidden from screen readers, and nothing in it takes focus
+   (the hours note and its source link come with the loaded summary).
 2. The loaded summary renders the same Election Day text with the same classes (one shared
    component, so they cannot drift).
+6. The date line does not move when the results replace the skeleton (County and City, at
+   360 px and 1280 px, for an In Election precinct): the header holds the share row's place
+   and, on a phone, two lines for the precinct line while loading.
 3. `npm run test:perf`: /p/CC007 and /p/W01P12 median LCP under about 2200 ms; every route
    still passes its budgets; CLS not worse than main.
 4. First-load JS stays under the 120 KB budget (`src/test/build.test.js`).
@@ -57,7 +60,13 @@ request answers, so the simulated new connection to the ArcGIS host counts towar
   `ElectionDayPart` with a `PlaceSkeleton`, then the remaining placeholder bars
   (`aria-hidden`), with the loaded summary's box classes.
 - `e2e/lighthouse.js` (revision, see below): the local fixture server waits 100 ms before it
-  answers a layer or the basemap style.
+  answers any request.
+- `src/features/lookup/ShareLink.jsx` (review revision): `ShareLinkPlaceholder`, the share
+  row laid out with the same classes, invisible and hidden from screen readers.
+- `src/features/lookup/PrecinctPage.jsx` (review revision): while a code-shaped precinct
+  loads, the header renders `ShareLinkPlaceholder` and holds two lines for the precinct line
+  below `sm`, in place of the old placeholder line.
+- `e2e/a11y.e2e.js` (review revision): the date line stays put on load, County and City.
 - `src/features/lookup/PrecinctPage.test.jsx`: the loading test asserts the Election Day
   heading and line show while loading, and the placeholders stay hidden.
 
@@ -75,6 +84,13 @@ slower, never faster. Control: main's code with this harness change measures /p/
 2520 ms and /p/W01P12 at 2513 ms (both fail the unchanged 2500 ms budget), so the harness
 does not hide the old cause.
 
+## Revision after the first review
+
+The first finder found that the now visible date line moved 32 px down at 360 px (8 px up at
+1024 px) when the results arrived, and that the hours note's source link in the skeleton
+could be focused and then lost with it on a "not found" answer. Fixed as criterion 1 and 6
+now say.
+
 ## Order of work
 
 1. Red: change the loading test to expect the Election Day heading, line and source link
@@ -86,7 +102,12 @@ does not hide the old cause.
 
 - A later, larger LCP candidate: the loaded summary's line is a new node of the same size,
   which does not create a new LCP entry; checked with Lighthouse.
-- Layout shift between skeleton and summary: the box keeps the same classes; Lighthouse CLS.
+- Layout shift between skeleton and summary: Lighthouse CLS cannot see it (the skeleton's
+  nodes are replaced, not moved), so an e2e test measures the line before and after.
+  Residual, accepted: a precinct with a status banner (Not In Election, Nonresidential,
+  unknown status) gets the banner above the summary, which pushes the line down once; the
+  banner depends on the precinct's data. A municipality short enough for one line on a
+  phone moves the line up 24 px.
 - A not-found or failed code shows the Election Day line for the moment before its error:
   the line is true for every St. Louis City and County voter, and the error replaces it.
 - First-load JS: a few bytes; checked by the build test.
@@ -94,6 +115,7 @@ does not hide the old cause.
 ## Proof
 
 - `PrecinctPage.test.jsx` loading test: criterion 1.
+- `e2e/a11y.e2e.js` "the Election Day line stays put": criterion 6.
 - Existing summary tests (`ResultsSummary.test.jsx`, `PrecinctPage.test.jsx`): criterion 2.
 - `npm run test:perf` output: criterion 3, plus the control run of main with the revised
   harness. `npm test` build test: criterion 4.

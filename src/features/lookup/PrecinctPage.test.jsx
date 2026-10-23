@@ -17,7 +17,7 @@ import referrals from '../../config/referrals.js';
 import { createFakeGeocoder } from '../../test/fakeGeocoder.js';
 import { nearestPolls, polygonCenter } from './nearbyPolls.js';
 import { formatLongDate } from './earlyVoting.js';
-import { copy, formatTime, sourceName } from './resultsCopy.js';
+import { copy, formatTime } from './resultsCopy.js';
 
 let fetchMock;
 let PrecinctPage;
@@ -211,12 +211,9 @@ describe('PrecinctPage', () => {
         ),
       ),
     ).toBeVisible();
-    for (const url of election.electionDayHours.sources) {
-      expect(within(skeleton).getByRole('link', { name: sourceName(url) })).toHaveAttribute(
-        'href',
-        url,
-      );
-    }
+    // Nothing in it takes focus: a link focused there would be lost, focus
+    // and all, when the skeleton goes.
+    expect(skeleton.querySelectorAll('a, button, input, [tabindex]')).toHaveLength(0);
     expect(screen.getByRole('link', { name: copy.searchAnother })).toHaveAttribute('href', '/');
   });
 
