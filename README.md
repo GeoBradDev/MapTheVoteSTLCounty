@@ -467,6 +467,7 @@ The tokens (#76), each with its role and minimum contrast beside it in `src/inde
   colors (the icon then in the system text color), and its text stays `ink`.
   The home page's election date pill also uses the `info` pair, its ink as text on its fill.
 - The wait time ramp, `wait-1` to `wait-5`, for map markers and their legend only (see Map).
+- `shadow`: `ink` at 12%, the one color the `shadow-card` and `shadow-popover` shadows use.
 
 `src/test/contrast.test.js` checks every text and control pair the tokens make against WCAG
 2.1 AA (the wait markers are checked in `mapColors.test.js`): text 4.5:1 on
