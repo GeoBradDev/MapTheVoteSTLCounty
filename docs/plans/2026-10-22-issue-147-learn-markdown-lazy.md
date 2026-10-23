@@ -26,9 +26,9 @@ e2e axe run already covers /learn/voter-id after hydration; focus behavior is un
    loads (no footer jump), then the topic, with focus on its heading.
 7. A body that fails to load on in-app navigation shows the error screen (#18), not a blank
    page.
+8. /learn, the cards' topic links and the page heads work with no body loaded.
 9. Switching language on a topic page keeps the topic and focus while the translation's
    body loads (#19).
-8. /learn, the cards' topic links and the page heads work with no body loaded.
 
 ## Files that change
 
@@ -48,7 +48,7 @@ e2e axe run already covers /learn/voter-id after hydration; focus behavior is un
   pageHead.test.js, entry-server.test.jsx, hydrate.test.js, build.test.js and
   e2e/prerender.e2e.js (in-app navigation with the chunk held back; a failed chunk on a hard
   load).
-- README Performance / Learn content: the rule that topic bodies load with their page.
+- README Learn content: the rule that topic bodies load with their page.
 
 ## Order of work
 
