@@ -1,11 +1,8 @@
 import { Link, useLocation } from 'wouter';
 import { normalizePath } from '../pageHead.js';
 import SiteMark from './SiteMark.jsx';
+import TextLink from './TextLink.jsx';
 import { copy } from './siteHeaderCopy.js';
-
-// Local styling until the shared components of #78.
-const navLink =
-  'inline-flex min-h-11 items-center px-1 text-primary underline-offset-4 hover:underline aria-[current=page]:font-semibold aria-[current=page]:underline';
 
 /**
  * On every page, above main (#79): the site name, which links home, and the
@@ -36,14 +33,14 @@ export default function SiteHeader() {
         <nav aria-label={copy.nav}>
           <ul className="flex items-center gap-x-3 text-sm">
             <li className="hidden sm:block">
-              <Link href="/" className={navLink} aria-current={current('/')}>
+              <TextLink to="/" variant="nav" aria-current={current('/')}>
                 {copy.lookUp}
-              </Link>
+              </TextLink>
             </li>
             <li>
-              <Link href="/learn" className={navLink} aria-current={current('/learn')}>
+              <TextLink to="/learn" variant="nav" aria-current={current('/learn')}>
                 {copy.howToVote}
-              </Link>
+              </TextLink>
             </li>
           </ul>
         </nav>

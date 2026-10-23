@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import TextLink from '../../components/TextLink.jsx';
 import { BASEMAP_ATTRIBUTION } from '../lookup/basemap.js';
 import { copy as resultsCopy } from '../lookup/resultsCopy.js';
 import WaitLegend from './WaitLegend.jsx';
 import { copy } from './waitTimesCopy.js';
-
-const linkClass = 'text-primary underline';
 
 // How long the map may take, from when it starts loading (once in view), to
 // first render before it is dropped. Time while the page is hidden does not
@@ -151,7 +150,7 @@ export default function WaitTimesMap({ sites, classes, onFail, label = copy.map.
 
   return (
     <div ref={regionRef} role="region" aria-label={label} className="mt-3">
-      <div className="relative h-72 overflow-hidden rounded-md border border-border">
+      <div className="relative h-72 overflow-hidden rounded-card border border-border">
         {/* MapLibre adds its own classes to this element: React never changes its className. */}
         <div ref={containerRef} className="isolate h-full w-full" />
         {state === 'loading' && (
@@ -168,9 +167,9 @@ export default function WaitTimesMap({ sites, classes, onFail, label = copy.map.
         {BASEMAP_ATTRIBUTION.map(({ label, href }, i) => (
           <span key={href}>
             {i > 0 && ', '}
-            <a href={href} rel="noreferrer" className={linkClass}>
+            <TextLink href={href} rel="noreferrer">
               {label}
-            </a>
+            </TextLink>
           </span>
         ))}
         .

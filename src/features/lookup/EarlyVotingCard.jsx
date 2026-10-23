@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'wouter';
+import Button from '../../components/Button.jsx';
+import Disclosure from '../../components/Disclosure.jsx';
+import Notice from '../../components/Notice.jsx';
+import TextLink from '../../components/TextLink.jsx';
 import election from '../../config/election.js';
 import { CARD_TOPICS } from '../learn/cardTopics.js';
 import { getLocale, translated } from '../../i18n/index.js';
@@ -17,14 +20,11 @@ import { useJurisdiction } from './jurisdictionContext.js';
 import NearbySortControls from './NearbySortControls.jsx';
 import { useHeldOrder, withKeys } from './nearbySort.js';
 import { countySchedule, countyWaitKey } from './countyEarlyVoting.js';
-import Disclosure from './Disclosure.jsx';
 import { Entrances, NameAndDistance, OfficialLookupLink, Room, RoomSource } from './PollsCard.jsx';
 import { usePollRooms } from './usePollRooms.js';
 import { useNearestSites } from './useNearestSites.js';
 import { useNow } from './useNow.js';
 
-const linkClass = 'text-primary underline';
-const tapLinkClass = `inline-flex min-h-11 items-center ${linkClass}`;
 const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
 
 // The early voting text in the current language.
@@ -66,13 +66,13 @@ function SiteRow({ site, room, now, apple, headingRef, Detail }) {
         </p>
       )}
       <p className="flex flex-wrap gap-x-4">
-        <a href={links.google} rel="noreferrer" className={tapLinkClass}>
+        <TextLink href={links.google} rel="noreferrer" variant="tap">
           {copy.polls.directions} {target}
-        </a>
+        </TextLink>
         {apple && (
-          <a href={links.apple} rel="noreferrer" className={tapLinkClass}>
+          <TextLink href={links.apple} rel="noreferrer" variant="tap">
             {copy.polls.appleMaps} {target}
-          </a>
+          </TextLink>
         )}
       </p>
     </li>
@@ -102,9 +102,9 @@ function Schedules({ now }) {
         {sources.map((url, i) => (
           <span key={url}>
             {i > 0 && ', '}
-            <a href={url} rel="noreferrer" className={linkClass}>
+            <TextLink href={url} rel="noreferrer">
               {sourceName(url)}
-            </a>
+            </TextLink>
           </span>
         ))}
         . {t.lastVerified(formatLongDate(lastVerified, { year: true }))}
@@ -207,12 +207,12 @@ export function EarlyVotingSites({
 
       {result?.error && (
         <>
-          <p role="alert" className="mt-3">
+          <Notice role="alert" variant="danger" className="mt-3">
             {/* A new node per attempt, so a repeated failure is announced again. */}
             <span key={result.attempt}>
               {t.failed} <OfficialLookupLink />.
             </span>
-          </p>
+          </Notice>
           <RetryButton onRetry={retry} busy={loading} className="mt-2" />
         </>
       )}
@@ -252,13 +252,9 @@ export function EarlyVotingSites({
           {noCounts && <p className="mt-3 text-muted">{t.waits.none}</p>}
           {result.refreshFailed && <StaleNote loadedAt={result.loadedAt} />}
           {!showAll && rows.length > first && (
-            <button
-              type="button"
-              onClick={() => setShowAll(true)}
-              className="mt-3 min-h-11 rounded-md border border-border px-4 font-semibold text-primary"
-            >
+            <Button variant="quiet" onClick={() => setShowAll(true)} className="mt-3">
               {t.showAll(rows.length)}
-            </button>
+            </Button>
           )}
         </>
       )}
@@ -266,9 +262,9 @@ export function EarlyVotingSites({
       {/* While early voting runs, the summary at the top has this link (#81). */}
       {season === 'before' && (
         <p className="mt-3">
-          <Link href="/early-voting" className={tapLinkClass}>
+          <TextLink to="/early-voting" variant="tap">
             {t.waits.seeAll}
-          </Link>
+          </TextLink>
         </p>
       )}
 
@@ -287,13 +283,13 @@ export function MailLine({ href, label }) {
   return (
     <p className="mt-3">
       {t.mail}{' '}
-      <Link href={absentee ? `/learn/${absentee.id}` : '/learn'} className={linkClass}>
+      <TextLink to={absentee ? `/learn/${absentee.id}` : '/learn'}>
         {absentee ? absentee.title : t.howToVote}
-      </Link>{' '}
+      </TextLink>{' '}
       {t.or}{' '}
-      <a href={href} rel="noreferrer" className={linkClass}>
+      <TextLink href={href} rel="noreferrer">
         {label}
-      </a>
+      </TextLink>
       .
     </p>
   );

@@ -1,4 +1,5 @@
-import { Suspense, useEffect, useId, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import Card, { CARD } from '../../components/Card.jsx';
 import election from '../../config/election.js';
 import { loadCityClient, loadedCityClient } from '../../data/jurisdictions.js';
 import { earlyVotingSeason } from '../waitTimes/earlyVotingSeason.js';
@@ -24,18 +25,6 @@ const CityDistrictsCard = cityComponent('CityDistrictsCard');
 
 // The card order #11 set. The sample ballot moved up into the summary (#81).
 const CARDS = ['polls', 'earlyVoting', 'districts'];
-
-function Card({ title, children }) {
-  const headingId = useId();
-  return (
-    <section aria-labelledby={headingId} className="rounded-md border border-border p-4">
-      <h2 id={headingId} className="text-xl font-semibold">
-        {title}
-      </h2>
-      {children}
-    </section>
-  );
-}
 
 /**
  * The summary (#81), then the result cards, in order.
@@ -160,8 +149,8 @@ export function ResultsSkeleton() {
       {schedules && (
         <div aria-hidden="true" className="mt-6 flex flex-col gap-4">
           {CARDS.map((key) => (
-            <div key={key} className="rounded-md border border-border p-4">
-              <div className={`h-6 w-40 ${bar}`} />
+            <div key={key} className={CARD}>
+              <div className={`h-7.5 w-40 ${bar}`} />
               <div className={`mt-3 h-4 w-full ${bar}`} />
               <div className={`mt-2 h-4 w-2/3 ${bar}`} />
             </div>

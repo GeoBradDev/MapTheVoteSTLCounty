@@ -74,8 +74,10 @@ describe('CountyElectionDayRule', () => {
     }
   });
 
-  it('uses the link class it is given', () => {
-    render(<CountyElectionDayRule linkClass="custom-link" />);
-    for (const link of screen.getAllByRole('link')) expect(link).toHaveClass('custom-link');
+  it('draws its links with the shared link look (#78)', () => {
+    render(<CountyElectionDayRule />);
+    for (const link of screen.getAllByRole('link')) {
+      expect(link).toHaveClass('text-primary', 'underline');
+    }
   });
 });

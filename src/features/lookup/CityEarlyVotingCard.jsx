@@ -1,3 +1,5 @@
+import Disclosure from '../../components/Disclosure.jsx';
+import TextLink from '../../components/TextLink.jsx';
 import cityResults from '../../config/cityResults.js';
 import election from '../../config/election.js';
 import { getCityWaits } from '../../data/arcgis.js';
@@ -8,8 +10,6 @@ import { earlyVotingStatus, formatLongDate } from './earlyVoting.js';
 import { EarlyVotingSites } from './EarlyVotingCard.jsx';
 import { EarlyVoteSummary } from './ResultsSummary.jsx';
 import { copy, sourceName } from './resultsCopy.js';
-
-const linkClass = 'text-primary underline';
 
 const t = translated(() => copy.earlyVoting);
 
@@ -34,10 +34,7 @@ function CityDetail({ site, now }) {
   return (
     <>
       <p>{t.status(earlyVotingStatus(schedule, now, election.timeZone), formatLongDate)}</p>
-      <details>
-        <summary className="min-h-11 cursor-pointer py-2 font-semibold text-primary">
-          {t.groupsLabel}
-        </summary>
+      <Disclosure summary={t.groupsLabel}>
         <p>{t.days({ weekdaysOnly: false, from: hours.from, to: hours.to })}</p>
         <ul className="list-disc pl-6">
           {hours.lines.map((line) => (
@@ -46,7 +43,7 @@ function CityDetail({ site, now }) {
             </li>
           ))}
         </ul>
-      </details>
+      </Disclosure>
     </>
   );
 }
@@ -80,20 +77,20 @@ export default function CityEarlyVotingCard({ code, origin, waitSource = cityWai
     >
       <p className="mt-3 text-sm">
         {copy.polls.source}:{' '}
-        <a href={hoursSource} rel="noreferrer" className={linkClass}>
+        <TextLink href={hoursSource} rel="noreferrer">
           {sourceName(hoursSource)}
-        </a>
+        </TextLink>
         ,{' '}
-        <a href={noExcuseUrl} rel="noreferrer" className={linkClass}>
+        <TextLink href={noExcuseUrl} rel="noreferrer">
           {message('results.earlyVoting.noExcuseCity')}
-        </a>
+        </TextLink>
         . {t.lastVerified(formatLongDate(lastVerified, { year: true }))}
       </p>
       <p className="mt-3">
         {message('results.earlyVoting.mailCity')}{' '}
-        <a href={absenteeUrl} rel="noreferrer" className={linkClass}>
+        <TextLink href={absenteeUrl} rel="noreferrer">
           {sourceName(absenteeUrl)}
-        </a>
+        </TextLink>
         .
       </p>
     </EarlyVotingSites>

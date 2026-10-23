@@ -1,5 +1,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'wouter';
+import Button from '../../components/Button.jsx';
+import Notice from '../../components/Notice.jsx';
+import TextLink from '../../components/TextLink.jsx';
 import election from '../../config/election.js';
 import { CARD_TOPICS } from '../learn/cardTopics.js';
 import { getLocale } from '../../i18n/index.js';
@@ -26,8 +28,6 @@ import { useNow } from './useNow.js';
 // In the City chunk (#147).
 const CityElectionDayRule = cityComponent('CityElectionDayRule');
 
-const linkClass = 'text-primary underline';
-const tapLinkClass = `inline-flex min-h-11 items-center ${linkClass}`;
 const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
 
 // The board's own lookup for this precinct's jurisdiction (#89); the early
@@ -35,9 +35,9 @@ const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
 export function OfficialLookupLink() {
   const { id, officialLookupUrl } = useJurisdiction();
   return (
-    <a href={officialLookupUrl} rel="noreferrer" className={linkClass}>
+    <TextLink href={officialLookupUrl} rel="noreferrer">
       {copy.officialLookupFor(id)}
-    </a>
+    </TextLink>
   );
 }
 
@@ -69,10 +69,7 @@ function VoterIdLink() {
   if (!topic) return null;
   return (
     <p className="mt-3">
-      {copy.polls.beforeYouGo}{' '}
-      <Link href={`/learn/${topic.id}`} className={linkClass}>
-        {topic.title}
-      </Link>
+      {copy.polls.beforeYouGo} <TextLink to={`/learn/${topic.id}`}>{topic.title}</TextLink>
     </p>
   );
 }
@@ -132,13 +129,13 @@ function PollRow({ poll, room, apple, headingRef, now }) {
       <Room room={room} />
       <Entrances entry={poll.entry} accessibleEntry={poll.accessibleEntry} />
       <p className="flex flex-wrap gap-x-4">
-        <a href={links.google} rel="noreferrer" className={tapLinkClass}>
+        <TextLink href={links.google} rel="noreferrer" variant="tap">
           {copy.polls.directions} {target}
-        </a>
+        </TextLink>
         {apple && (
-          <a href={links.apple} rel="noreferrer" className={tapLinkClass}>
+          <TextLink href={links.apple} rel="noreferrer" variant="tap">
             {copy.polls.appleMaps} {target}
-          </a>
+          </TextLink>
         )}
       </p>
     </li>
@@ -255,12 +252,12 @@ export default function PollsCard({ code, origin, waitSource, electionDayOn }) {
 
       {result?.error && (
         <>
-          <p role="alert">
+          <Notice role="alert" variant="danger">
             {/* A new node per attempt, so a repeated failure is announced again. */}
             <span key={result.attempt}>
               {copy.polls.failed} <OfficialLookupLink />.
             </span>
-          </p>
+          </Notice>
           <RetryButton onRetry={retry} busy={loading} className="mt-2" />
         </>
       )}
@@ -295,13 +292,9 @@ export default function PollsCard({ code, origin, waitSource, electionDayOn }) {
           {noCounts && <p className="mt-3 text-muted">{copy.polls.waits.none}</p>}
           {result.refreshFailed && <StaleNote loadedAt={result.loadedAt} />}
           {shown < rows.length && (
-            <button
-              type="button"
-              onClick={showMore}
-              className="mt-3 min-h-11 rounded-md border border-border px-4 font-semibold text-primary"
-            >
+            <Button variant="quiet" onClick={showMore} className="mt-3">
               {copy.polls.showMore}
-            </button>
+            </Button>
           )}
           {/* After the list, which holds everything on it, so on a phone the
               list comes first and the map loads only when scrolled to (#27). */}
@@ -311,9 +304,9 @@ export default function PollsCard({ code, origin, waitSource, electionDayOn }) {
 
       {waitsOn && (
         <p className="mt-3">
-          <Link href="/early-voting" className={tapLinkClass}>
+          <TextLink to="/early-voting" variant="tap">
             {copy.polls.waits.seeAll}
-          </Link>
+          </TextLink>
         </p>
       )}
 
@@ -322,10 +315,10 @@ export default function PollsCard({ code, origin, waitSource, electionDayOn }) {
       <div className="mt-3">
         {isCity ? (
           <Suspense fallback={null}>
-            <CityElectionDayRule linkClass={linkClass} />
+            <CityElectionDayRule />
           </Suspense>
         ) : (
-          <CountyElectionDayRule linkClass={linkClass} />
+          <CountyElectionDayRule />
         )}
       </div>
     </div>

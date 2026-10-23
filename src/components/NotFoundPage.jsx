@@ -1,6 +1,6 @@
-import { Link } from 'wouter';
 import AddressLookup from '../features/lookup/AddressLookup.jsx';
 import { t } from '../i18n/index.js';
+import TextLink from './TextLink.jsx';
 import { usePageTitle } from './usePageTitle.js';
 
 // The host rewrites every path with no file to the app shell (shell.html),
@@ -12,14 +12,14 @@ export default function NotFoundPage() {
   return (
     <>
       {/* Focusable from script: the app moves focus here after an in-app link. */}
-      <h1 tabIndex={-1} className="text-2xl font-semibold">
+      <h1 tabIndex={-1} className="text-title font-bold">
         {heading}
       </h1>
       <p className="mt-4">{t('notFound.body')}</p>
       <p className="mt-4">
-        <Link href="/" className="inline-flex min-h-11 items-center text-primary underline">
+        <TextLink to="/" variant="tap">
           {t('notFound.home')}
-        </Link>
+        </TextLink>
       </p>
       <div className="mt-6">
         <AddressLookup />

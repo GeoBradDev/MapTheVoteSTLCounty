@@ -1,4 +1,4 @@
-import { Link } from 'wouter';
+import TextLink from '../../components/TextLink.jsx';
 import { formatCalendarDate } from '../../i18n/index.js';
 import { learnCopy } from './learnCopy.js';
 
@@ -11,8 +11,6 @@ import { learnCopy } from './learnCopy.js';
 // <details>/<summary>, with its heading in the summary, so a voter can scan the
 // headings first; the browser does the folding, and screen readers announce it.
 // LearnTopicPage opens every one before printing.
-
-const linkClass = 'text-primary underline';
 
 /** A `##` section with at least this many characters of text is folded. */
 export const LONG_SECTION_CHARS = 600;
@@ -52,26 +50,29 @@ function Inline({ nodes, topic, copy }) {
         );
       case 'link':
         return node.href.startsWith('/') ? (
-          <Link key={i} href={node.href} className={linkClass}>
+          <TextLink key={i} to={node.href}>
             <Inline nodes={node.children} topic={topic} copy={copy} />
-          </Link>
+          </TextLink>
         ) : (
-          <a key={i} href={node.href} className={`${linkClass} print-href`}>
+          <TextLink key={i} href={node.href} className="print-href">
             <Inline nodes={node.children} topic={topic} copy={copy} />
-          </a>
+          </TextLink>
         );
       case 'cite': {
         const index = topic.sources.findIndex((s) => s.id === node.source);
         const source = topic.sources[index];
         return (
           <sup key={i}>
-            <a
+            {/* Still inline in the sentence, with vertical padding only: it
+                makes the tap area taller without moving the line, and does
+                not reach over the next marker of a run like [1][2] (#26, #78). */}
+            <TextLink
               href={source.url}
-              className={linkClass}
+              className="py-1"
               aria-label={copy.citationLabel(index + 1, source.label)}
             >
               [{index + 1}]
-            </a>
+            </TextLink>
           </sup>
         );
       }
@@ -86,7 +87,7 @@ function Block({ block, topic, copy }) {
   switch (block.type) {
     case 'heading':
       return block.level === 2 ? (
-        <h2 className="mt-8 text-xl font-semibold">{inline(block.children)}</h2>
+        <h2 className="mt-8 text-heading font-semibold">{inline(block.children)}</h2>
       ) : (
         <h3 className="mt-6 font-semibold">{inline(block.children)}</h3>
       );
@@ -143,26 +144,22 @@ export default function TopicArticle({ topic, headingRef }) {
   const sourcesId = `${topic.id}-sources`;
   return (
     <article lang={topic.locale}>
-      <h1
-        ref={headingRef}
-        tabIndex={headingRef ? -1 : undefined}
-        className="text-2xl font-semibold"
-      >
+      <h1 ref={headingRef} tabIndex={headingRef ? -1 : undefined} className="text-title font-bold">
         {topic.title}
       </h1>
       {sections(topic.blocks).map((section, i) => (
         <Section key={i} section={section} topic={topic} copy={copy} />
       ))}
       <section aria-labelledby={sourcesId} className="mt-8">
-        <h2 id={sourcesId} className="text-xl font-semibold">
+        <h2 id={sourcesId} className="text-heading font-semibold">
           {copy.sourcesHeading}
         </h2>
         <ol className="mt-2 list-decimal pl-6">
           {topic.sources.map((source) => (
             <li key={source.id}>
-              <a href={source.url} className={`${linkClass} print-href block py-2.5`}>
+              <TextLink href={source.url} className="print-href block py-2.5">
                 {source.label}
-              </a>
+              </TextLink>
             </li>
           ))}
         </ol>

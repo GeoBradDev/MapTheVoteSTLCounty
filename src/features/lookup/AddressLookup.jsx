@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
+import Notice from '../../components/Notice.jsx';
 import OfficialLookups from '../../components/OfficialLookups.jsx';
 import { GeocoderUnavailableError } from '../../data/geocoder.js';
 import {
@@ -162,15 +163,16 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
   return (
     <div>
       <AddressSearch onSubmit={handleAddress} onEdit={handleEdit} busy={busy} inputRef={inputRef} />
-      <p role="alert" className="mt-2">
+      {/* The live region stays mounted; the notice shows only with an error. */}
+      <div role="alert" className="mt-2">
         {outcome?.error && (
-          <span key={outcome.run}>
+          <Notice variant="danger" key={outcome.run}>
             <span>{copy.errors[outcome.error]}</span> {copy.errorAfterLink}{' '}
             {/* The address could be in either, so both boards' (#93). */}
-            <OfficialLookups className="text-primary underline" />.
-          </span>
+            <OfficialLookups />.
+          </Notice>
         )}
-      </p>
+      </div>
       {outcome?.canRetry && <RetryButton onRetry={handleRetry} busy={retrying} className="mt-2" />}
       {/* Right under "Find my precinct": the other way in (#80). */}
       <div className="mt-2">
@@ -188,7 +190,7 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
         {slow ? errorCopy.slow : ''}
       </p>
       {outcome?.kind && (
-        <div ref={outcomeRef} tabIndex={-1} className="mt-6 rounded-md border border-border p-4">
+        <div ref={outcomeRef} tabIndex={-1} className="mt-6">
           <OutOfCountyNotice kind={outcome.kind} headingLevel={noticeHeadingLevel} />
         </div>
       )}

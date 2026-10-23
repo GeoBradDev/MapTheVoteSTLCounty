@@ -40,6 +40,39 @@
   --color-wait-3: oklch(0.86 0.1 87.5);
   --color-wait-4: oklch(0.67 0.12 65);
   --color-wait-5: oklch(0.47 0.11 55);
+  /*
+    The Notice component's three kinds (#78), as aliases of the palette above,
+    so the palette work (#76) can retune them here without touching a page.
+  */
+  --color-notice-info: var(--color-primary);
+  --color-notice-warning: var(--color-accent);
+  --color-notice-danger: var(--color-ink);
+  /* Ink at low opacity, the one color the shadows below are drawn in. */
+  --color-shadow: color-mix(in oklch, var(--color-ink) 12%, transparent);
+
+  /*
+    Type scale (#78), tuned for a 360 px phone: 14 (text-sm, fine print), 16
+    (text-base, body), 18 (text-subheading), 22 (text-heading, a section's h2)
+    and 28 px (text-title, the page's h1). text-xs (12 px) is kept for the
+    smallest notes only: map credits, the Election Day hours' source line and
+    the share note. Spacing keeps Tailwind's 4 px step (mt-1 is 4 px): stay on
+    it, and prefer 2, 3, 4, 6 and 8 steps between blocks.
+  */
+  --text-subheading: 1.125rem;
+  --text-subheading--line-height: 1.75rem;
+  --text-heading: 1.375rem;
+  --text-heading--line-height: 1.875rem;
+  --text-title: 1.75rem;
+  --text-title--line-height: 2.25rem;
+  --spacing: 0.25rem;
+
+  /* Two radii: controls (buttons, fields), and cards and notices. */
+  --radius-control: 0.375rem;
+  --radius-card: 0.5rem;
+
+  /* Two shadows, both in --color-shadow: a card's lift, and a popup's. */
+  --shadow-card: 0 1px 2px 0 var(--color-shadow);
+  --shadow-popover: 0 4px 12px -2px var(--color-shadow);
 }
 
 /*
@@ -51,6 +84,16 @@
   :focus-visible {
     outline: 3px solid var(--color-ink);
     outline-offset: 2px;
+  }
+
+  /*
+    A heading the app focuses from script (tabindex="-1": after an in-app
+    link, or the first row a "Show more" revealed) is not a control, so it
+    draws no ring (#78): focus still moves, so a screen reader still announces
+    it. Everything a voter can operate keeps the ring above.
+  */
+  :is(h1, h2, h3)[tabindex='-1']:focus {
+    outline: none;
   }
 }
 

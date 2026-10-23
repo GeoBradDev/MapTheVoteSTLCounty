@@ -30,7 +30,7 @@ function WaitTimesFallbackText() {
   const text = electionDay ? waitCopy.electionDay : waitCopy;
   return (
     <>
-      <h1 className="text-2xl font-semibold">{text.heading}</h1>
+      <h1 className="text-title font-bold">{text.heading}</h1>
       <p className="mt-2">{text.intro}</p>
       <p className="mt-2">{text.city}</p>
     </>

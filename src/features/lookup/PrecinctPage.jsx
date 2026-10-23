@@ -1,6 +1,8 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import { Link, useLocation, useParams } from 'wouter';
+import { useLocation, useParams } from 'wouter';
+import Notice from '../../components/Notice.jsx';
 import OfficialLookups from '../../components/OfficialLookups.jsx';
+import TextLink from '../../components/TextLink.jsx';
 import { NotFound } from '../../data/arcgis.js';
 import {
   cityWardPrecinct,
@@ -19,8 +21,6 @@ import { copy } from './resultsCopy.js';
 import RetryButton from './RetryButton.jsx';
 import ShareLink, { ShareLinkPlaceholder } from './ShareLink.jsx';
 import { useSlowNotice } from './slowNotice.js';
-
-const linkClass = 'text-primary underline';
 
 const ignore = () => {};
 
@@ -148,9 +148,9 @@ function PrecinctResults({ code }) {
   if (precinct) status = isCity ? CITY_STATUS : precinctStatus(precinct);
   const municipality = placeLine(jurisdiction, code, precinct);
   const searchLink = (
-    <Link href="/" className={`inline-flex min-h-11 items-center ${linkClass}`}>
+    <TextLink to="/" variant="tap">
       {copy.searchAnother}
-    </Link>
+    </TextLink>
   );
 
   return (
@@ -158,7 +158,7 @@ function PrecinctResults({ code }) {
       <header>
         {/* The answer first (#81): what the page is for, then the precinct
             as the line under it. */}
-        <h1 ref={headingRef} tabIndex={-1} className="text-2xl font-semibold sm:text-3xl">
+        <h1 ref={headingRef} tabIndex={-1} className="text-title font-bold">
           {titled ? copy.heading : copy.notFoundHeading}
         </h1>
         {/* Only a code-shaped value is shown: a link could otherwise put any
@@ -169,7 +169,7 @@ function PrecinctResults({ code }) {
             (Ward 28, Precinct 10). Narrower widths with a shorter line still
             move it once (#27). */}
         {titled && (
-          <p className={`mt-1 sm:text-lg ${result ? '' : placeHold}`}>
+          <p className={`mt-1 sm:text-subheading ${result ? '' : placeHold}`}>
             {copy.precinct(code)}
             {municipality && (
               <>
@@ -200,23 +200,24 @@ function PrecinctResults({ code }) {
       {!result && <ResultsSkeleton />}
 
       <div ref={errorRef} tabIndex={-1} className={result?.error ? 'mt-6' : undefined}>
-        <p role="alert" className="empty:hidden">
+        {/* The live region stays mounted; the notice shows only with an error. */}
+        <div role="alert" className="empty:hidden">
           {result?.error && (
             // A new node per attempt, so a repeated failure is announced again.
-            <span key={result.attempt ?? 0}>
+            <Notice variant="danger" key={result.attempt ?? 0}>
               {copy.errors[result.error]}{' '}
               {known ? (
-                <a href={jurisdiction.officialLookupUrl} rel="noreferrer" className={linkClass}>
+                <TextLink href={jurisdiction.officialLookupUrl} rel="noreferrer">
                   {copy.officialLookupFor(jurisdiction.id)}
-                </a>
+                </TextLink>
               ) : (
                 // Not a precinct code, so either board's (#93).
-                <OfficialLookups className={linkClass} />
+                <OfficialLookups />
               )}
               .
-            </span>
+            </Notice>
           )}
-        </p>
+        </div>
         {retryable && <RetryButton onRetry={retry} busy={loading} className="mt-3" />}
       </div>
 
@@ -228,7 +229,7 @@ function PrecinctResults({ code }) {
 
       {result?.error === 'notFound' && (
         <section aria-labelledby={searchHeadingId} className="mt-6">
-          <h2 id={searchHeadingId} className="text-xl font-semibold">
+          <h2 id={searchHeadingId} className="text-heading font-semibold">
             {copy.searchInstead}
           </h2>
           <div className="mt-4">

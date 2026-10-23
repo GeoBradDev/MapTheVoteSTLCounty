@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 
 /**
  * A native disclosure: a summary line that shows or hides what follows, with
- * a 44 px tap target. It opens for printing and folds back after, as the topic
- * pages' sections do, so a printed page holds everything. Local to the results
- * page until the shared components (#78) take it over.
+ * a 44 px tap target, for secondary detail such as long hour lists and source
+ * notes (#81, #78). It opens for printing and folds back after, as the topic
+ * pages' sections do, so a printed page holds everything.
  * @param {{ summary: import('react').ReactNode, defaultOpen?: boolean,
  *   className?: string, children: import('react').ReactNode }} props
  *   `defaultOpen` is read once: the voter's own toggle wins after that.

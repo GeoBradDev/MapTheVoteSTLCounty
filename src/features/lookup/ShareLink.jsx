@@ -1,4 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import Button from '../../components/Button.jsx';
+import { buttonClass } from '../../components/buttonClass.js';
 import { shareUrl } from '../../config/site.js';
 import { copy } from './resultsCopy.js';
 
@@ -12,8 +14,8 @@ function ShareIcon() {
 }
 
 const ROW = 'flex flex-wrap items-center gap-x-4 gap-y-1';
-const BUTTON =
-  'inline-flex min-h-11 items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-primary';
+// The share button's look, for its held place too.
+const SHARE = { variant: 'quiet', size: 'sm' };
 const NOTE = 'mt-1 text-xs text-muted';
 
 /**
@@ -34,7 +36,7 @@ export function ShareLinkPlaceholder({ code, hold, children }) {
       <div className={ROW}>
         {children}
         {hold && (
-          <span aria-hidden="true" className={`invisible ${BUTTON}`}>
+          <span aria-hidden="true" className={`invisible ${buttonClass(SHARE)}`}>
             <span className="size-4" />
             {copy.share.short}
           </span>
@@ -105,16 +107,15 @@ export default function ShareLink({ code, children }) {
     <div className="mt-2">
       <div className={ROW}>
         {children}
-        <button
-          type="button"
+        <Button
+          {...SHARE}
           onClick={handleClick}
           aria-label={copy.share.button}
           aria-describedby={noteId}
-          className={BUTTON}
         >
           <ShareIcon />
           {copy.share.short}
-        </button>
+        </Button>
       </div>
       <p id={noteId} className={NOTE}>
         {copy.share.note(code)}
@@ -134,7 +135,7 @@ export default function ShareLink({ code, children }) {
             readOnly
             value={url}
             onFocus={(event) => event.target.select()}
-            className="mt-1 min-h-11 w-full rounded-md border border-ink bg-surface px-3 py-2 text-base text-ink"
+            className="mt-1 min-h-11 w-full rounded-control border border-ink bg-surface px-3 py-2 text-base text-ink"
           />
         </div>
       )}

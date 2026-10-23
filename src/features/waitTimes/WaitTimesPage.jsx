@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'wouter';
+import Button from '../../components/Button.jsx';
+import Notice from '../../components/Notice.jsx';
+import TextLink from '../../components/TextLink.jsx';
 import { usePageTitle } from '../../components/usePageTitle.js';
 import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
@@ -25,11 +27,7 @@ import WaitReport from './WaitReport.jsx';
 import WaitTimesMap from './WaitTimesMap.jsx';
 import { copy } from './waitTimesCopy.js';
 
-const linkClass = 'text-primary underline';
-const tapLinkClass = `inline-flex min-h-11 items-center ${linkClass}`;
 const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
-const buttonClass =
-  'min-h-11 rounded-md border border-primary px-4 py-2 font-semibold text-primary aria-disabled:cursor-wait aria-disabled:opacity-70';
 
 /**
  * The live region's "checked at" time moves on at most this often, so a
@@ -238,9 +236,9 @@ const lookupUrls = { county: election.officialLookupUrl, city: referrals.stlCity
 
 function OfficialLookupLink({ id = 'county' }) {
   return (
-    <a href={lookupUrls[id]} rel="noreferrer" className={linkClass}>
+    <TextLink href={lookupUrls[id]} rel="noreferrer">
       {resultsCopy.officialLookupFor(id)}
-    </a>
+    </TextLink>
   );
 }
 
@@ -282,13 +280,13 @@ function SiteRow({ site, now, apple }) {
         </p>
       )}
       <p className="flex flex-wrap gap-x-4">
-        <a href={links.google} rel="noreferrer" className={tapLinkClass}>
+        <TextLink href={links.google} rel="noreferrer" variant="tap">
           {resultsCopy.polls.directions} {target}
-        </a>
+        </TextLink>
         {apple && (
-          <a href={links.apple} rel="noreferrer" className={tapLinkClass}>
+          <TextLink href={links.apple} rel="noreferrer" variant="tap">
             {resultsCopy.polls.appleMaps} {target}
-          </a>
+          </TextLink>
         )}
       </p>
     </li>
@@ -368,21 +366,25 @@ function LocationButton({ onLocate }) {
 
   return (
     <div className="mt-3">
-      <button
-        type="button"
+      <Button
+        variant="secondary"
         onClick={handleClick}
-        aria-disabled={busy || undefined}
+        busy={busy}
         aria-describedby="wait-location-note"
-        className={buttonClass}
       >
         {busy ? copy.location.busy : copy.location.button}
-      </button>
+      </Button>
       <p id="wait-location-note" className="mt-2 text-sm text-muted">
         {copy.location.privacy}
       </p>
-      <p role="alert" className="mt-2">
-        {error && <span key={error.press}>{copy.location.errors[error.reason]}</span>}
-      </p>
+      {/* The live region stays mounted; the notice shows only with an error. */}
+      <div role="alert" className="mt-2">
+        {error && (
+          <Notice variant="danger" key={error.press}>
+            {copy.location.errors[error.reason]}
+          </Notice>
+        )}
+      </div>
     </div>
   );
 }
@@ -396,13 +398,13 @@ function Sources({ electionDay }) {
       <p>{copy.disclaimer}</p>
       <p id="wait-sources" className="mt-2">
         {copy.sources}{' '}
-        <a href={countyUrl} rel="noreferrer" className={linkClass}>
+        <TextLink href={countyUrl} rel="noreferrer">
           {countyLink(county.source)}
-        </a>
+        </TextLink>
         ,{' '}
-        <a href={city.sourceUrl} rel="noreferrer" className={linkClass}>
+        <TextLink href={city.sourceUrl} rel="noreferrer">
           {copy.cityLink(city.source)}
-        </a>
+        </TextLink>
         .
       </p>
     </section>
@@ -555,7 +557,7 @@ export default function WaitTimesPage({
     <>
       {/* The route's loading fallback in src/App.jsx repeats this heading and
           the two paragraphs, text and classes (#151): change both together. */}
-      <h1 ref={headingRef} tabIndex={-1} className="text-2xl font-semibold">
+      <h1 ref={headingRef} tabIndex={-1} className="text-title font-bold">
         {text.heading}
       </h1>
       <p className="mt-2">{text.intro}</p>
@@ -563,18 +565,14 @@ export default function WaitTimesPage({
 
       {season.kind === 'ended' ? (
         <p className="mt-4">
-          {copy.season.ended}{' '}
-          <Link href="/" className={linkClass}>
-            {copy.season.findPollingPlace}
-          </Link>
-          .
+          {copy.season.ended} <TextLink to="/">{copy.season.findPollingPlace}</TextLink>.
         </p>
       ) : (
         <>
           {season.kind === 'before' && (
             <p className="mt-4 font-semibold">{copy.season.before(season.from, season.to)}</p>
           )}
-          <h2 id="wait-sites-heading" className="mt-6 text-xl font-semibold">
+          <h2 id="wait-sites-heading" className="mt-6 text-heading font-semibold">
             {text.listLabel}
           </h2>
           <p data-testid="wait-status" aria-live="polite" className="sr-only">
@@ -604,22 +602,22 @@ export default function WaitTimesPage({
             )}
             {result?.error && (
               <>
-                <p role="alert">
+                <Notice role="alert" variant="danger">
                   <span key={result.attempt}>
                     {text.failed} <OfficialLookupLink /> {resultsCopy.earlyVoting.or}{' '}
                     <OfficialLookupLink id="city" />.
                   </span>
-                </p>
+                </Notice>
                 <RetryButton onRetry={retry} busy={loading} className="mt-2" />
               </>
             )}
             {result?.failed && (
               <>
-                <p role="alert">
+                <Notice role="alert" variant="danger">
                   <span key={result.attempt}>
                     {text.failed} <OfficialLookupLink id={result.failed} />.
                   </span>
-                </p>
+                </Notice>
                 <RetryButton onRetry={retry} busy={loading} className="mt-2 mb-4" />
               </>
             )}
@@ -632,14 +630,13 @@ export default function WaitTimesPage({
             {shown && shown.length > 0 && (
               <>
                 {canShowMap && (
-                  <button
-                    type="button"
+                  <Button
+                    variant="secondary"
                     aria-expanded={showMap}
                     onClick={() => setShowMap((on) => !on)}
-                    className={buttonClass}
                   >
                     {showMap ? copy.map.hide : copy.map.show}
-                  </button>
+                  </Button>
                 )}
                 {canShowMap && showMap && (
                   <WaitTimesMap
@@ -666,9 +663,9 @@ export default function WaitTimesPage({
       <Sources electionDay={electionDay} />
 
       <p className="mt-8">
-        <Link href="/" className={tapLinkClass}>
+        <TextLink to="/" variant="tap">
           {copy.backHome}
-        </Link>
+        </TextLink>
       </p>
     </>
   );

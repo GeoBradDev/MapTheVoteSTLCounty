@@ -1,4 +1,6 @@
 import { useId } from 'react';
+import Notice from '../../components/Notice.jsx';
+import TextLink from '../../components/TextLink.jsx';
 import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
 import { copy } from './outOfCountyCopy.js';
@@ -24,8 +26,8 @@ export default function OutOfCountyNotice({ kind, headingLevel = 2 }) {
   const { heading, paragraphs } = copy[kind];
   const Heading = headingLevel === 3 ? 'h3' : 'h2';
   return (
-    <section aria-labelledby={headingId}>
-      <Heading id={headingId} className="text-xl font-semibold">
+    <Notice as="section" variant="info" aria-labelledby={headingId}>
+      <Heading id={headingId} className="text-heading font-semibold">
         {heading}
       </Heading>
       {paragraphs.map(({ text, link, after }) => (
@@ -34,14 +36,14 @@ export default function OutOfCountyNotice({ kind, headingLevel = 2 }) {
           {link && (
             <>
               {' '}
-              <a href={HREFS[link.href]} rel="noreferrer" className="text-primary underline">
+              <TextLink href={HREFS[link.href]} rel="noreferrer">
                 {link.label}
-              </a>
+              </TextLink>
               {after}
             </>
           )}
         </p>
       ))}
-    </section>
+    </Notice>
   );
 }
