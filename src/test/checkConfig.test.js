@@ -872,6 +872,31 @@ describe('wait time checks', () => {
       expect(results['wait reports county'].detail).toContain('not fresh. 0 of');
     });
 
+    it('checks a separate Election Day layer every day, before Election Day too', async () => {
+      const world = healthyWorld();
+      const dayLayer = 'Voters_in_Line_ElectionDay/FeatureServer/0';
+      const config = structuredClone({ ...election, sampleBallotUrlPattern: undefined });
+      config.sampleBallotUrlPattern = election.sampleBallotUrlPattern;
+      config.waitTimes.county.electionDay.layer = dayLayer;
+      world.waits[`${countyWait.serviceRoot}/${dayLayer}`] = {
+        info: { name: 'Voters_in_Line_ElectionDay', fields: waitFields(countyWait) },
+        rows: [],
+      };
+      const results = await run(world, config);
+      expect(results['wait layer county election day']).toMatchObject({ status: 'pass' });
+      world.waits[`${countyWait.serviceRoot}/${dayLayer}`].info.fields = [];
+      const broken = await run(world, config);
+      expect(broken['wait layer county election day'].status).toBe('fail');
+    });
+
+    it('warns when no polling place has the Election Day join field', async () => {
+      const world = dayWorld();
+      for (const row of world.dayPolls) row[countyWait.electionDay.pollsField] = '';
+      const results = await run(world, election, { now: ED_NOW });
+      expect(results['election day polling places'].status).toBe('warn');
+      expect(results['wait reports county'].status).toBe('warn');
+    });
+
     it('says closed after the polls close', async () => {
       const results = await run(dayWorld(), election, { now: ED_NOW + 11 * 60 * 60_000 });
       expect(results['wait reports county'].detail).toContain('closed');
@@ -1240,6 +1265,10 @@ describe('the election window (scripts/electionWindow.mjs)', () => {
     const evening = { event: 'schedule', schedule: ELECTION_DAY_CRON };
     // 00:00 UTC is 6 p.m. Central the day before, in standard time.
     expect(windowFor(config, evening, new Date('2030-11-06T00:00:00Z'))).toBe('waits');
+    // 23:00 UTC is 6 p.m. in daylight time (Election Day 2027 is November 2,
+    // before daylight time ends) and 5 p.m. in standard time.
+    expect(ELECTION_DAY_CRON.split(' ')[1].split(',').sort()).toEqual(['0', '23']);
+    expect(windowFor(config, evening, new Date('2030-11-05T23:00:00Z'))).toBe('waits');
     expect(windowFor(config, evening, new Date('2030-11-05T00:00:00Z'))).toBe('off');
     expect(windowFor(config, evening, new Date('2030-10-16T00:00:00Z'))).toBe('off');
   });

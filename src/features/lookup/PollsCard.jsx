@@ -114,6 +114,14 @@ function ListSkeleton() {
   );
 }
 
+// Whether config lets each board's Election Day counts show (#107).
+const electionDayEnabled = Object.fromEntries(
+  ['county', 'city'].map((key) => {
+    const source = election.waitTimes[key];
+    return [key, election.waitTimes.enabled && source.enabled && source.electionDay.enabled];
+  }),
+);
+
 // A place's key in its board's Election Day line counts (#107): the County's
 // polls layer `username`, the City site's name (waitTimes.city.siteField).
 const waitKeyOf = { county: (poll) => poll.dayKey, city: (poll) => poll.name };
@@ -154,11 +162,13 @@ function PollRow({ poll, apple, headingRef, now }) {
  * count from its own board only, a sort by shortest line nearby, and a link to
  * the line counts at every polling place.
  * @param {{ code: string, origin: { lat: number, lng: number } | null,
- *   waitSource?: Parameters<typeof useWaitTimes>[0] }} props
+ *   waitSource?: Parameters<typeof useWaitTimes>[0], electionDayOn?: boolean }} props
  *   `origin` is the looked-up point, held in memory only; without one,
- *   distances are from the precinct's center. `waitSource` is for tests.
+ *   distances are from the precinct's center. `waitSource` and
+ *   `electionDayOn` (whether config turns the board's Election Day counts on)
+ *   are for tests.
  */
-export default function PollsCard({ code, origin, waitSource }) {
+export default function PollsCard({ code, origin, waitSource, electionDayOn }) {
   // { rows, loadedAt } once loaded, { error: true, attempt } on failure. A
   // failed load can be tried again; it stays shown while it is (#18). A list
   // left open past the max age refreshes when the tab is shown again (#84).
@@ -176,7 +186,8 @@ export default function PollsCard({ code, origin, waitSource }) {
 
   const now = useNow();
   const board = isCity ? 'city' : 'county';
-  const pollsOpen = electionDayStatus(now).kind === 'openNow';
+  const pollsOpen =
+    (electionDayOn ?? electionDayEnabled[board]) && electionDayStatus(now).kind === 'openNow';
   // Only this board's loop, and only while the polls are open: a County page
   // never asks the City's layer, nor a City page the County's.
   const waits = useWaitTimes(pollsOpen ? (waitSource ?? boardWaits[board]) : OFF_WAITS)[board];

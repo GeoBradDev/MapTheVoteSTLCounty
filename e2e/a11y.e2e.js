@@ -105,7 +105,9 @@ const ROUTES = [
       await page.getByRole('radio', { name: 'Shortest line within 5 miles' }).check();
       await expect(polls.getByText(/in line, reported/).first()).toBeVisible();
       await expect(
-        page.getByRole('link', { name: 'See line counts at every polling place' }),
+        page.getByRole('link', {
+          name: 'See line counts at every St. Louis County and City polling place',
+        }),
       ).toBeVisible();
     },
   },

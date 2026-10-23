@@ -188,7 +188,7 @@
       "showMore": "Show more polling places",
       "waits": {
         "none": "No current line count for these polling places.",
-        "seeAll": "See line counts at every polling place"
+        "seeAll": "See line counts at every St. Louis County and City polling place"
       },
       "hoursLabel": "Election Day hours:",
       "hours": "{open} to {close}",

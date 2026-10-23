@@ -220,6 +220,15 @@ describe('PollsCard on Election Day (#107)', () => {
     expect(getCountyWaits).not.toHaveBeenCalled();
   });
 
+  it('shows none of it when config turns the Election Day source off', async () => {
+    // The config is frozen, so the test passes what it would say.
+    render(<PollsCard code="CC007" origin={ORIGIN} electionDayOn={false} />);
+    await list();
+    expect(sortGroup()).toBeNull();
+    expect(noCounts()).toBeNull();
+    expect(getCountyWaits).not.toHaveBeenCalled();
+  });
+
   it('shows none of it on another day', async () => {
     vi.setSystemTime(Date.UTC(2026, 9, 22, 14));
     render(<PollsCard code="CC007" origin={ORIGIN} />);

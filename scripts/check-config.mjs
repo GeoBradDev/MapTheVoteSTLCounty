@@ -561,12 +561,9 @@ export async function runHealthCheck(
     };
     const sources = Object.entries(WAIT_SOURCES).filter(([key]) => sourceOf(key)?.enabled);
     const waitLayerOk = {};
-    for (const [key, { extraFields }] of sources) {
-      const source = sourceOf(key);
-      const where = `waitTimes.${key} (${source.layer})`;
-      const want = [source.siteField, source.valueField, source.timeField];
-      for (const field of extraFields) want.push(source[field]);
-      waitLayerOk[key] = await check(`wait layer ${key}`, async () => {
+    // One wait layer answers with the fields the app reads.
+    const layerFields = (name, source, where, want) =>
+      check(name, async () => {
         let info;
         try {
           info = await request(`${source.serviceRoot}/${source.layer}?f=json`);
@@ -580,6 +577,31 @@ export async function runHealthCheck(
         if (missing.length) throw new CheckError(`${where}: missing fields ${missing.join(', ')}`);
         return `${where}: ${info.name ?? 'unnamed'}, expected fields present (${want.length})`;
       });
+    for (const [key, { extraFields }] of sources) {
+      const source = sourceOf(key);
+      const where = `waitTimes.${key}${electionDay && source !== waitTimes[key] ? '.electionDay' : ''} (${source.layer})`;
+      const want = [source.siteField, source.valueField, source.timeField];
+      for (const field of extraFields) want.push(source[field]);
+      waitLayerOk[key] = await layerFields(`wait layer ${key}`, source, where, want);
+    }
+    // Before Election Day, a separate County Election Day layer (#107) is
+    // checked too, so a new view is checked the day it goes in the config,
+    // not first at 6 a.m. on Election Day.
+    const countyDay = waitTimes.county?.electionDay;
+    if (
+      !electionDay &&
+      waitTimes.county?.enabled &&
+      countyDay?.enabled &&
+      `${countyDay.serviceRoot}/${countyDay.layer}` !==
+        `${waitTimes.county.serviceRoot}/${waitTimes.county.layer}`
+    ) {
+      const { siteField, valueField, timeField } = waitTimes.county;
+      await layerFields(
+        'wait layer county election day',
+        countyDay,
+        `waitTimes.county.electionDay (${countyDay.layer})`,
+        [siteField, valueField, timeField],
+      );
     }
 
     // The rows of one wait layer. Any failure names the config key and layer;
@@ -646,7 +668,11 @@ export async function runHealthCheck(
           ),
         );
         const keyed = dayPolls.filter((row) => row[field]).length;
-        return `${rows.length} polling places, ${keyed} with a ${field}`;
+        const detail = `${rows.length} polling places, ${keyed} with a ${field}`;
+        // No key at all: no Election Day report can match a polling place.
+        return keyed === 0
+          ? { warn: `${detail}. No Election Day report can match a polling place.` }
+          : detail;
       });
     }
     const dayOpen = () => {
@@ -700,6 +726,13 @@ export async function runHealthCheck(
           if (unmatched.length) {
             warnings.push(
               `${unmatched.length} reports match no site's ${source.pollsField} on the polls layer.`,
+            );
+          }
+          // On Election Day (#107) the polls are open, but no polling place has
+          // the join field, so the check cannot call it closed and pass.
+          if (electionDay && dayOpen() && keys.size === 0) {
+            warnings.push(
+              `The polls are open and no polling place has a ${source.pollsField}, so no count can show.`,
             );
           }
           let detail;
@@ -767,7 +800,8 @@ export async function runHealthCheck(
           // all means the filter no longer matches, and every count is gone.
           if (rows.length === 0) {
             warnings.push(
-              `No row matches waitTimes.${key}.where (${source.where}): check the filter ` +
+              `No row matches waitTimes.${key}${electionDay ? '.electionDay' : ''}.where ` +
+                `(${source.where}): check the filter ` +
                 "against the City board's dashboard.",
             );
           }

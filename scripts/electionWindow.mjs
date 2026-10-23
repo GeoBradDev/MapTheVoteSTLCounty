@@ -7,12 +7,13 @@
 export const WAITS_CRON = '0 14-22/2 * * *';
 
 /**
- * The workflow's Election Day evening cron (#107): 00:00 UTC, 6 p.m. Central
- * in standard time, which Election Day always falls in. With the daily run at
- * 6 a.m. and WAITS_CRON, Election Day is checked every 2 hours from 6 a.m. to
- * 6 p.m., before the polls close at 7.
+ * The workflow's Election Day evening cron (#107): 23:00 and 00:00 UTC, so one
+ * run lands at 6 p.m. Central whether Election Day is in standard time (00:00,
+ * as in 2026) or daylight time (23:00, as on November 2, 2027). With the daily
+ * run and WAITS_CRON, Election Day is checked about every 2 hours from opening
+ * to 6 p.m., before the polls close at 7.
  */
-export const ELECTION_DAY_CRON = '0 0 * * *';
+export const ELECTION_DAY_CRON = '0 0,23 * * *';
 
 /** Today's date (YYYY-MM-DD) in the config's time zone. */
 function today(config, now) {
