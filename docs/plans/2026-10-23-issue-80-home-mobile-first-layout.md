@@ -19,9 +19,9 @@ Coordinator notes that override the issue text: no Election Day rule on the home
 - `src/features/lookup/HomePage.jsx`: header with the date pill, heading, intro, nonpartisan line; wait times link; nav as rows.
 - `src/features/lookup/homeCopy.js`: `electionDay` formats the short date.
 - `src/i18n/en.json`: `home.electionDay` becomes "Election Day: {date}".
-- `src/features/lookup/HomePage.test.jsx`: header test for the pill (no eyebrow), short date format, nav rows order test, DOM order test of the actions and the fine print.
+- `src/features/lookup/HomePage.test.jsx`: header test for the pill (no eyebrow), short date format, nav rows order test, the wait times link between the header and the address box.
 - `src/features/lookup/AddressLookup.jsx`: order becomes search, error, retry, Use my location, attribution, slow notice, outcome.
-- `src/features/lookup/AddressLookup.test.jsx`: test that the attribution follows the "Use my location" button.
+- `src/features/lookup/AddressLookup.test.jsx`: DOM order test: "Use my location" is the button right after "Find my precinct", and the attribution follows both.
 - `src/features/lookup/UseMyLocation.jsx`: button styling (full width at phone width, 2px border, semibold).
 - `e2e/a11y.e2e.js`: the #71 above-the-fold test also asserts the heading, "Find my precinct" and "Use my location".
 - Docs only where now wrong (Phase 8).
@@ -38,6 +38,7 @@ Coordinator notes that override the issue text: no Election Day rule on the home
 - Moving the attribution in `AddressLookup` changes the precinct and not-found pages too; that is intended (same component, same order) and their tests are checked.
 - `aria-describedby` on "Use my location" still points at its notes; unchanged.
 - The pre-rendered HTML must match the client render (no time-dependent text in the hero other than the existing #107 label switch).
+- The election's display name (`electionName`) is no longer rendered: the pill's "Election Day: <date>" replaces the eyebrow, as the issue proposes; `electionName` stays in the config for the health check.
 - Not done: a disclosure for the fine print (attribution must stay visible), shared components (#78), any Election Day rule (#165).
 
 ## Proof

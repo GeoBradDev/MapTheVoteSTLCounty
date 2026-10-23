@@ -20,13 +20,14 @@ function renderHome() {
 
 describe('HomePage', () => {
   it('names the guide and Election Day from the config, as one compact line (#80)', () => {
-    renderHome();
+    const { container } = renderHome();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(copy.heading);
     const date = screen.getByText(copy.electionDay(election.electionDate, election.timeZone));
     expect(date.closest('time')).toHaveAttribute('datetime', election.electionDate);
     // One date line: no separate eyebrow repeating the date.
     expect(screen.queryByText(election.electionName)).toBeNull();
-    const header = screen.getByRole('banner');
+    // The page's own header: inside the app's main it has no banner role.
+    const header = container.querySelector('header');
     expect(header.querySelectorAll('time')).toHaveLength(1);
   });
 
@@ -88,8 +89,8 @@ describe('HomePage', () => {
   // #80: the hero is the date, the heading, the intro and the nonpartisan
   // line, then the wait times link and the address search.
   it('puts the wait times link between the header and the address box', () => {
-    renderHome();
-    const header = screen.getByRole('banner');
+    const { container } = renderHome();
+    const header = container.querySelector('header');
     const link = screen.getByRole('link', { name: copy.waitTimes });
     expect(header.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(header.contains(link)).toBe(false);
