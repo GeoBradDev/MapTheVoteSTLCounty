@@ -1,8 +1,9 @@
 // Accessibility checks in a real browser (#26), on the production build. For
 // each key route at the project's width: axe-core (WCAG 2.1 A and AA plus best
 // practice, contrast included), no horizontal scroll with or without the WCAG
-// 1.4.12 text spacing override, one h1, the page language, and a skip link as
-// the first tab stop that moves focus to main. Then focus after in-app
+// 1.4.12 text spacing override, one h1, the page language, a skip link as
+// the first tab stop that moves focus to main, and every standalone control at
+// least 44 px tall. Then focus after in-app
 // navigation and reduced motion while the results load.
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
@@ -153,6 +154,37 @@ const ROUTES = [
     },
   },
   {
+    // A City precinct on Election Day (#107): its polling places with the
+    // City's line counts, and the map's legend once it draws.
+    name: `/p/${CITY_CODE} on Election Day`,
+    path: `/p/${CITY_CODE}`,
+    at: ELECTION_DAY_AT,
+    waits: ELECTION_DAY_WAITS,
+    basemap: true,
+    ready: async (page) => {
+      await expect(page.getByText(`Results for precinct ${CITY_CODE} are ready.`)).toBeAttached();
+      const polls = page.getByRole('list', { name: 'Nearest polling places' });
+      await expect(polls).toBeVisible();
+      await page.getByRole('radio', { name: 'Shortest line within 5 miles' }).check();
+      await expect(polls.getByText(/in line, reported/).first()).toBeVisible();
+      const map = page.getByRole('region', { name: /^Map of precinct / });
+      await map.scrollIntoViewIfNeeded();
+      await expect(map.getByRole('list', { name: 'People in line' })).toBeVisible();
+    },
+  },
+  {
+    // The wait times page with its map hidden (#172).
+    name: '/early-voting with the map hidden',
+    path: '/early-voting',
+    at: WAITS_RECORDED_AT,
+    basemap: true,
+    ready: async (page) => {
+      await page.getByRole('button', { name: 'Hide map' }).click();
+      await expect(page.getByRole('button', { name: 'Show map' })).toBeVisible();
+      await expect(page.getByRole('region', { name: 'Map of early voting sites' })).toHaveCount(0);
+    },
+  },
+  {
     // Election Day (#107): every polling place of both boards with its count.
     name: '/early-voting on Election Day',
     path: '/early-voting',
@@ -178,11 +210,58 @@ const ROUTES = [
     ready: (page) => expect(page.getByRole('heading', { level: 1 })).toBeVisible(),
   },
   {
+    // A topic with St. Louis City sections (#94), its folded sections open.
+    path: '/learn/who-to-contact',
+    ready: async (page) => {
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      for (const line of await page.locator('details:not([open]) > summary').all()) {
+        await line.click();
+      }
+    },
+  },
+  {
     path: '/privacy',
     ready: (page) => expect(page.getByRole('heading', { level: 1 })).toBeVisible(),
   },
   { path: '/nope', ready: (page) => expect(page.getByRole('combobox')).toBeVisible() },
+  // An unknown topic renders the not-found page.
+  { path: '/learn/nope', ready: (page) => expect(page.getByRole('combobox')).toBeVisible() },
 ];
+
+// Controls under 44 px tall (#26), by their text. Exempt, as WCAG's target
+// size criteria exempt them: a link inside a sentence or a comma list (its
+// nearest block holds other text), and the skip link while it is hidden.
+async function smallTargets(page) {
+  return page.evaluate(() => {
+    const MIN = 44;
+    const BLOCK = 'p, li, dd, dt, td, h1, h2, h3, h4, figcaption, div';
+    const shown = (el) => {
+      const box = el.getBoundingClientRect();
+      return box.width > 1 && box.height > 1 && getComputedStyle(el).visibility !== 'hidden';
+    };
+    const inline = (el) => {
+      if (el.tagName !== 'A') return false;
+      const block = el.parentElement.closest(BLOCK);
+      return Boolean(block) && block.textContent.trim() !== el.textContent.trim();
+    };
+    const controls = document.querySelectorAll(
+      'a[href], button, summary, select, textarea, input:not([type="hidden"])',
+    );
+    return [...controls]
+      .filter((el) => shown(el) && !el.closest('.maplibregl-map') && !inline(el))
+      .map((el) => {
+        // A radio or checkbox is tapped through its label.
+        const target = el.matches('input[type="radio"], input[type="checkbox"]')
+          ? (el.closest('label') ?? el)
+          : el;
+        const { height } = target.getBoundingClientRect();
+        const name = (el.getAttribute('aria-label') || target.textContent).trim().slice(0, 60);
+        return { name: `${el.tagName.toLowerCase()} "${name}"`, height: Math.round(height) };
+      })
+      .filter(({ height }) => height < MIN)
+      .map(({ name, height }) => `${name}: ${height} px`);
+  });
+}
 
 async function horizontalOverflow(page) {
   return page.evaluate(() => {
@@ -212,6 +291,10 @@ for (const { name, path, ready, at, waits, basemap } of ROUTES) {
       expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
       await page.addStyleTag({ content: TEXT_SPACING });
       expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
+    });
+
+    test('has no control under 44 px tall', async ({ page }) => {
+      expect(await smallTargets(page)).toEqual([]);
     });
 
     test('has one h1 and the page language', async ({ page }) => {
