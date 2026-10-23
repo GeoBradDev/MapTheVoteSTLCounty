@@ -59,6 +59,10 @@ vercel-react-best-practices: not applicable because no React code changes.
 ## Files that change
 
 - `e2e/lighthouse.js`: a City route entry; `measure` passes each route's own code to `shows`.
+  Revision during implementation: the local fixture server answered only GET, so the City
+  districts card's point query (a POST, #38) got a 404 and the card showed its error state.
+  The server now reads a POST's form body and hands it to `fixtureBody(href, form)`, as the
+  Playwright specs already do. The body is never logged.
 - `scripts/smoke.mjs`: `CITY_DEEP_LINK = '/p/W01P12'` and its check after the County one.
 - `src/test/smoke.test.js`: the expected check list gains the City line; a stub option
   `cityDeepLink: 'home'` and a test that only the City check fails.
