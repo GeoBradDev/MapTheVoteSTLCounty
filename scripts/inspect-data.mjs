@@ -40,16 +40,24 @@ async function getJson(url) {
  * The City layers to inspect, one per layer path, each with the fields the
  * app reads from it. The outline (`layers.boundary`) is a filter on the
  * districts layer, so it is not inspected twice. The voting locations layer is
- * also the City wait layer: its line count, report time and hours fields are
- * sampled, its free-text comments are not.
+ * also the City wait layer: its site, line count, report time and hours fields
+ * are sampled, its free-text comments (which the app reads) are not: they can
+ * name people.
  */
 export function cityLayerRequests(config) {
   const city = config.jurisdictions.city;
   const wait = config.waitTimes.city;
+  // The wait fields only while the wait layer is the voting locations layer;
+  // check-config.mjs checks the wait layer's fields wherever it is.
+  const waitIsSites =
+    `${wait.serviceRoot}/${wait.layer}` === `${city.serviceRoot}/${city.layers.sites}`;
   const fields = {
     precincts: [city.precinctField],
     districts: Object.values(city.districtLayerFields),
-    sites: [...Object.values(city.siteFields), wait.valueField, wait.timeField, wait.hoursField],
+    sites: [
+      ...Object.values(city.siteFields),
+      ...(waitIsSites ? [wait.siteField, wait.valueField, wait.timeField, wait.hoursField] : []),
+    ],
   };
   return Object.entries(fields).map(([key, names]) => ({
     key,

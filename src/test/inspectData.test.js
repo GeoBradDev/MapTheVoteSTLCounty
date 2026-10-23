@@ -29,7 +29,16 @@ describe('cityLayerRequests', () => {
     }
   });
 
-  it('asks each layer for exactly the fields the app reads', () => {
+  it('leaves the wait fields out when the wait layer moves', () => {
+    const moved = {
+      ...election,
+      waitTimes: { ...election.waitTimes, city: { ...wait, layer: 'Other/FeatureServer/0' } },
+    };
+    const sites = cityLayerRequests(moved).find((r) => r.key === 'sites');
+    expect(sites.outFields.split(',')).toEqual(Object.values(city.siteFields));
+  });
+
+  it('asks each layer for the fields the app reads, less free text', () => {
     const fields = Object.fromEntries(requests.map((r) => [r.key, r.outFields.split(',')]));
     expect(fields.precincts).toEqual([city.precinctField]);
     expect(fields.districts).toEqual(Object.values(city.districtLayerFields));
@@ -39,6 +48,9 @@ describe('cityLayerRequests', () => {
       wait.timeField,
       wait.hoursField,
     ]);
+    // The config's wait layer is the voting locations layer, so its fields are
+    // sampled there.
+    expect(`${wait.serviceRoot}/${wait.layer}`).toBe(`${city.serviceRoot}/${city.layers.sites}`);
     // Free text from the sites, which can name people: never sampled.
     expect(fields.sites).not.toContain(wait.commentsField);
   });

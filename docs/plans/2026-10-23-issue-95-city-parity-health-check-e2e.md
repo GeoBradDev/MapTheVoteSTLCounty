@@ -47,6 +47,9 @@ vercel-react-best-practices: not applicable because no React code changes.
    `election.jurisdictions.city.layers` (and the City wait layer is the sites layer): each
    layer's schema, count and 3 sample rows, asking only for the fields the app reads,
    never `*` (the districts and sites layers hold officeholder and staff contact details).
+   The sites layer is also the City wait layer, so its wait fields are sampled while the two
+   are the same layer; its free-text comments, which the app reads, are left out on purpose
+   because they can name people.
    A test checks the City requests never ask for `*` and ask for exactly the configured
    fields. It writes `docs/raw/city_<key>.json`.
 4. README: the Performance section lists the City route and its content check; the Smoke
