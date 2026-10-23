@@ -7,8 +7,8 @@ import { copy, sourceName } from './resultsCopy.js';
  * The Election Day rule for St. Louis City (#89), in the City Board's own
  * words from its polling places page, with that page as the source (named in
  * the config, its URL kept in referrals.js) and the date it was last checked.
- * Unlike the County (AssignedPollingPlace), any City voter may vote at any of
- * the City's listed locations. The quote is shown as published, from the
+ * Any City voter may vote at any of the City's listed locations. The County
+ * has its own rule (CountyElectionDayRule). The quote is shown as published, from the
  * config.
  * @param {{ linkClass: string }} props
  */

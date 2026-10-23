@@ -310,16 +310,23 @@ describe('Election Day hours', () => {
 describe('the Election Day polling place rule', () => {
   const rule = election.electionDayPollingPlace;
 
-  // Owner decision on #72: the rule follows RSMo 115.430 and the Secretary of
-  // State, not the county's old "vote at any polling place" FAQ line.
-  it('cites RSMo 115.430 and the Secretary of State, and a verified date', () => {
+  // Owner decision on #152 (2026-10-22), reversing #72: a registered County
+  // voter may vote at any polling place in the County. The rule cites the
+  // County Board's own Polling Places page, not RSMo 115.430 or the Secretary
+  // of State, whose pages say "assigned polling place".
+  it("cites the County Board's Polling Places page, and a verified date", () => {
     expectSources(rule.sources);
-    expect(rule.sources).toContain('https://revisor.mo.gov/main/OneSection.aspx?section=115.430');
-    expect(rule.sources.some((url) => new URL(url).host === 'www.sos.mo.gov')).toBe(true);
+    // The board's own site (countySiteUrl), its Polling Places page.
+    expect(rule.sources).toEqual([`${election.countySiteUrl}elections/polling-places/`]);
     expect(rule.lastVerified).toMatch(ISO_DATE);
+    expect(rule.lastVerified >= '2026-10-22').toBe(true);
   });
 
-  it('never cites the county FAQ that said any polling place works', () => {
+  it('cites neither the statute nor the state page that say "assigned polling place"', () => {
+    expect(rule.sources).not.toContain(
+      'https://revisor.mo.gov/main/OneSection.aspx?section=115.430',
+    );
+    expect(rule.sources.some((url) => new URL(url).host === 'www.sos.mo.gov')).toBe(false);
     expect(rule.sources.some((url) => new URL(url).host === 'stlouiscovotes.info')).toBe(false);
   });
 
@@ -349,6 +356,18 @@ describe("the City's Election Day rule (#89)", () => {
     expect(referrals[rule.source].url).toBe(referrals.stlCityLookup.url);
     expect(new URL(referrals[rule.source].url).host).toBe('www.stlouis-mo.gov');
     expect(rule.lastVerified).toMatch(ISO_DATE);
+  });
+
+  // #152 changed only the County's rule: the City keeps the City Board's own
+  // words and source, and shares nothing with the County rule.
+  it("is untouched by the County's rule (#152)", () => {
+    expect(rule.quote).toBe(
+      'Any voter who is registered to vote at an address within the boundaries of St. Louis City can vote at any of the listed locations on November 3, 2026.',
+    );
+    expect(rule.source).toBe('stlCityLookup');
+    for (const url of election.electionDayPollingPlace.sources) {
+      expect(new URL(url).host).not.toBe(new URL(referrals[rule.source].url).host);
+    }
   });
 });
 

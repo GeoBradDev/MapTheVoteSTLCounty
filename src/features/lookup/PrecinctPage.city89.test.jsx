@@ -15,6 +15,7 @@ import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
 import { formatLongDate } from './earlyVoting.js';
 import { copy as errorCopy } from './errorCopy.js';
+import { copy as countyRuleCopy } from './countyElectionDayRuleCopy.js';
 import { nearestPolls, polygonCenter } from './nearbyPolls.js';
 import { copy } from './resultsCopy.js';
 
@@ -152,6 +153,12 @@ describe('a City precinct page (#89)', () => {
     expect(card).not.toHaveTextContent(election.electionDayPollingPlace.phone);
     expect(within(card).queryByRole('link', { name: /secretary of state/i })).toBeNull();
     expect(card.querySelector(`a[href="${referrals.moVoterOutreach.url}"]`)).toBeNull();
+    // Nor the County's own rule or its source (#152).
+    expect(card).not.toHaveTextContent(countyRuleCopy.rule);
+    expect(card).not.toHaveTextContent(countyRuleCopy.cityNote);
+    for (const url of election.electionDayPollingPlace.sources) {
+      expect(card.querySelector(`a[href="${url}"]`)).toBeNull();
+    }
   });
 
   it('shows no County text, and links only City and statewide sources', async () => {

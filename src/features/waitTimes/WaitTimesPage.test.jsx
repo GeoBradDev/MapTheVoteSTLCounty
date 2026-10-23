@@ -368,6 +368,13 @@ describe('WaitTimesPage', () => {
     vi.setSystemTime(Date.UTC(2026, 10, 3, 18, 0));
     renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
     expect(screen.getByText(copy.season.ended, { exact: false })).toBeInTheDocument();
+    // The County's Election Day rule (#152), never "assigned". The City's
+    // rule is on each City precinct page, which the link below reaches.
+    const ended = screen.getByText(copy.season.ended, { exact: false });
+    expect(ended).toHaveTextContent(
+      /St\. Louis County voter may vote at any polling place in St\. Louis County/,
+    );
+    expect(ended).not.toHaveTextContent(/assigned/i);
     expect(screen.getByRole('link', { name: copy.season.findPollingPlace })).toHaveAttribute(
       'href',
       '/',

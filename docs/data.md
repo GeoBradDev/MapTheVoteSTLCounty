@@ -71,26 +71,35 @@ Do not use `lookup_view_sample_ballot`. Despite its name, it is a stale view of
 
 ### 2. Polling place join: there is none
 
-**On Election Day, a voter must vote at their assigned polling place** (owner decision on
-#72, 2026-10-21, replacing the #1 decision below). RSMo 115.430
-(https://revisor.mo.gov/main/OneSection.aspx?section=115.430, read 2026-10-21): "The voter
-shall have the duty to appear and vote at the correct polling place" and "Provisional ballots
-voted in the wrong polling place shall not be counted." A voter at the wrong place is sent to
-the correct one or a central polling place. The Secretary of State's On Election Day page
-(https://www.sos.mo.gov/elections/goVoteMissouri/electionday, read 2026-10-21) says the same:
-"You can only vote at your assigned polling place or, if there is a problem at your assigned
-polling place, you may be eligible to vote at the central polling place."
+**On Election Day, a registered St. Louis County voter may vote at any polling place in St.
+Louis County** (owner decision on #152, 2026-10-22, reversing the #72 decision). The owner's
+words: "Registered voters may vote at any polling place within St. Louis County. This does not
+apply to the separate City of St. Louis election jurisdiction." The County Board's own Polling
+Places page
+(https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/elections/polling-places/,
+read in a browser on 2026-10-22; scripts get the Cloudflare 403, see Official website domain)
+says: "Voters in Saint Louis County may vote at any polling place in the County on Election
+Day." The April 7, 2026 FAQ PDF (https://extcontent.stlouisco.com/BOE/2026/FAQ.pdf, read
+2026-10-22) answers "Yes." to "Can I vote at any polling place in St. Louis County?". The rule
+(`electionDayPollingPlace` in `src/config/election.js`) cites the Polling Places page, and
+`src/config/election.test.js` holds it there.
 
-The #1 decision followed the county FAQ ("Voters in Saint Louis County may vote at any
-polling place."), a source retired on 2026-10-21 when the board's old site began redirecting
-(see Official website domain); the April 7, 2026 FAQ PDF
-(https://extcontent.stlouisco.com/BOE/2026/FAQ.pdf) still says yes to "Can I vote at any
-polling place in St. Louis County?". It conflicts with the statute, so the app no longer
-says it. The City of St. Louis Board says City voters may vote at any of its listed
-locations
+The #72 decision (2026-10-21) had followed RSMo 115.430
+(https://revisor.mo.gov/main/OneSection.aspx?section=115.430): "The voter shall have the duty
+to appear and vote at the correct polling place" and "Provisional ballots voted in the wrong
+polling place shall not be counted", and the Secretary of State's On Election Day page
+(https://www.sos.mo.gov/elections/goVoteMissouri/electionday), which says a voter can only
+vote at their assigned polling place. The County Board's page quoted above says County voters
+may vote at any polling place in the County, so the app no longer cites either for the County
+rule and no longer says "assigned polling place" to County voters. The provisional ballots topic still
+cites RSMo 115.430, which applies statewide, for what happens at the wrong polling place,
+after the County rule says any County polling place is a County voter's right one.
+
+The City of St. Louis Board says City voters may vote at any of its listed locations
 (https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/polling-places/index.cfm,
-read 2026-10-21, re-read 2026-10-22); that is the City's own rule. A City results page quotes
-it (`electionDayRule` in `src/config/cityResults.js`, #89).
+read 2026-10-21, re-read 2026-10-22); that is the City's own rule, unchanged by #152. A City
+results page quotes it (`electionDayRule` in `src/config/cityResults.js`, #89), and shows none
+of the County rule.
 
 The data assigns no polling place to a precinct (checked again 2026-10-21):
 - No precinct field exists on `polls_2026_11_view`, and no polling place field
@@ -100,15 +109,15 @@ The data assigns no polling place to a precinct (checked again 2026-10-21):
   Esri "Nearby" app: "locate Election Day polling places that are closest to the
   address you enter."
 
-**Design consequence:** the app cannot name a voter's assigned polling place. The "Polling
-places near you" card lists the closest N (suggest 3 to 5) by straight-line distance from the
-looked-up point (geocoded address or "Use my location"), or from the precinct's center
-when the page was opened without a lookup (a reload or a shared link). It says the nearest
-may not be the voter's assigned polling place, and, like the home page, states the rule with
-its sources and how to confirm the assigned place: the county board's number, 314-615-1800,
-from the county's Polling Place Lookup app (`13fb36e7...`, whose live config says "call
-314.615.1800", read 2026-10-21; the Contact Us page that listed it was retired, see Official
-website domain), or the Secretary of State's Voter Outreach Center, which voters "may be able" to use for it.
+**Design consequence:** the app does not name one polling place for a precinct, and a County
+voter needs none: any County polling place will do. The "Polling places near you" card lists
+the closest N (suggest 3 to 5) by straight-line distance from the looked-up point (geocoded
+address or "Use my location"), or from the precinct's center when the page was opened without
+a lookup (a reload or a shared link). It says the voter may vote at any polling place in St.
+Louis County, and, like the home page, states the rule with its source and the county board's
+number for help, 314-615-1800, from the county's Polling Place Lookup app (`13fb36e7...`,
+whose live config says "call 314.615.1800", read 2026-10-21; the Contact Us page that listed it
+was retired, see Official website domain).
 The layer has only 200 points, so load it whole (about 85 KB GeoJSON with all
 fields), keep it in memory up to its max age (README, Election config), and sort on the client.
 No extra query per lookup.
@@ -830,15 +839,16 @@ The county board's website is now a page on the county's own site:
   survives. The app no longer links or cites it, the learn topics may not cite it
   (`officialSources.js`), and `src/test/retired-sites.test.js` keeps it and
   `stlouiscountymovotes.gov` out of `content/`, `render.yaml`, `index.html` and the code under
-  `src/` (comment lines and tests may name them). Sources retired with it: the FAQ (the "vote at
-  any polling place" line and the Election Day hours), the Contact Us page (the phone number,
+  `src/` (comment lines and tests may name them). Sources retired with it: the FAQ (its "vote at
+  any polling place" line is now on the board's Polling Places page, #152; the Election Day
+  hours), the Contact Us page (the phone number,
   office address and hours) and the Registration page.
 - The board's `.gov` domain, `stlouiscountymovotes.gov`, still answers `301` to
   `https://stlouiscovotes.info/`, which then refreshes to the page above: two hops. Link the
   page directly. `stlouiscovotes.gov` (from the project brief) does not resolve.
 - The page answers `403` to scripts (curl, WebFetch, headless Chromium): a Cloudflare bot
   challenge. Browsers load it. Check links to it by hand in a browser, and do not cite its
-  text unless someone has read it there. The daily content link check reports it as a skip
+  text unless someone has read it there (the Election Day rule's quote was, on 2026-10-22, #152). The daily content link check reports it as a skip
   (bot challenge, check by hand) rather than a failure (#74).
 - The board's current contact details come from its November 3, 2026 Instant Apps (Polling
   Place Lookup `13fb36e7...` and Absentee Voting Lookup `9301b459...`, read 2026-10-21):
@@ -853,7 +863,7 @@ The county board's website is now a page on the county's own site:
 The election-specific values this inspection found, including the early voting
 hours above, are in `src/config/election.js`, along with the decisions recorded
 in issue #1 (Election Day hours and their sources, the 3 to 5 range for
-nearby polling places, the county site URL, moved in #73) and in issue #72 (the Election Day polling place
+nearby polling places, the county site URL, moved in #73) and in issue #152 (the Election Day polling place
 rule, its sources and the county board's phone number).
 When the next election's inspection changes them, edit that file; this doc
 records what the inspection found and why.

@@ -147,7 +147,7 @@ export const copy = translated((t) => ({
       t('results.polls.hours', { open: formatTime(open), close: formatTime(close) }),
     /** @param {string} close HH:MM */
     inLine: (close) => t('results.polls.inLine', { close: formatTime(close) }),
-    // County data assigns no polling place to a precinct (#72).
+    // Any County polling place will do on Election Day (#152).
     nearestNote: t('results.polls.nearestNote'),
     // The City's (#89): its rule, in the City Board's words, is below the list.
     nearestNoteCity: t('results.polls.nearestNoteCity'),

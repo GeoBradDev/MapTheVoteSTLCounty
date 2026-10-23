@@ -26,6 +26,9 @@ sources:
   - id: sos-other-questions
     label: Missouri Secretary of State, Other Voting Questions
     url: https://www.sos.mo.gov/elections/goVoteMissouri/votingquestions
+  - id: county-polling-places
+    label: St. Louis County Board of Elections, Polling Places
+    url: https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/elections/polling-places/
 ---
 
 ## When
@@ -36,8 +39,10 @@ the polls close, you cannot vote.[^sos-election-day]
 
 ## Where
 
-Check where to vote before Election Day.[^sos-election-day] The county board can tell you your polling place;
-checking ahead helps you avoid problems.[^sos-election-day] Call 314-615-1800.[^county-polls-app]
+Check where to vote before Election Day.[^sos-election-day] In St. Louis County, a registered
+voter may vote at any polling place in St. Louis County on Election Day.[^county-polling-places]
+This does not apply in the City of St. Louis, which has its own rule. Call 314-615-1800 for
+help.[^county-polls-app]
 
 To find polling places near you, look up your address on the [home page](/) or use the
 county's

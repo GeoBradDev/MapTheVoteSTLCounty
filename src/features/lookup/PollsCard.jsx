@@ -4,7 +4,7 @@ import election from '../../config/election.js';
 import { CARD_TOPICS } from '../learn/cardTopics.js';
 import { getLocale } from '../../i18n/index.js';
 import { getTopic } from '../learn/topics.js';
-import AssignedPollingPlace from './AssignedPollingPlace.jsx';
+import CountyElectionDayRule from './CountyElectionDayRule.jsx';
 import { cityComponent } from './cityComponent.js';
 import { directionsLinks, isAppleMobile } from './nearbyPolls.js';
 import PrecinctMap from './PrecinctMap.jsx';
@@ -136,8 +136,8 @@ function PollRow({ poll, apple, headingRef }) {
 /**
  * The body of the "Polling places near you" card: the closest Election Day
  * polling places, Election Day hours, and the jurisdiction's Election Day
- * rule: in the County a voter must use their assigned polling place (#72); in
- * the City any City voter may vote at any listed location (#89).
+ * rule: in the County a registered voter may vote at any County polling place
+ * (#152); in the City any City voter may vote at any listed location (#89).
  * @param {{ code: string, origin: { lat: number, lng: number } | null }} props
  *   `origin` is the looked-up point, held in memory only; without one,
  *   distances are from the precinct's center.
@@ -172,8 +172,7 @@ export default function PollsCard({ code, origin }) {
     <div ref={targetRef} tabIndex={-1} className="mt-2">
       {/* Said while loading too, so the lines do not push the card down when
           the list arrives (#27). The nearest note comes before the list, so it
-          is read first: county data assigns no polling place to a precinct
-          (#72). */}
+          is read first: it says the voter may vote at any of them (#152). */}
       {!result?.error && !(rows && rows.length === 0) && (
         <>
           <p>{isCity ? copy.polls.nearestNoteCity : copy.polls.nearestNote}</p>
@@ -239,7 +238,7 @@ export default function PollsCard({ code, origin }) {
             <CityElectionDayRule linkClass={linkClass} />
           </Suspense>
         ) : (
-          <AssignedPollingPlace linkClass={linkClass} />
+          <CountyElectionDayRule linkClass={linkClass} />
         )}
       </div>
 

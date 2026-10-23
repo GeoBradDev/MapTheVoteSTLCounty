@@ -1,7 +1,7 @@
 // The polling places nearest a point, for the "Polling places near you" card.
-// County data assigns no polling place to a precinct, so the card lists the
-// closest ones by straight-line distance and says the voter must confirm their
-// assigned one (issue #72).
+// County data assigns no polling place to a precinct, and a registered County
+// voter may vote at any County polling place (#152), so the card lists the
+// closest ones by straight-line distance.
 import election from '../../config/election.js';
 
 /** Mean Earth radius in miles (IUGG mean radius, 6371.0088 km). */

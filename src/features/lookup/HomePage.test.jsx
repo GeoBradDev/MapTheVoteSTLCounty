@@ -3,7 +3,7 @@ import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import election from '../../config/election.js';
 import { copy as searchCopy } from './addressSearchCopy.js';
-import { copy as ruleCopy } from './assignedPollingPlaceCopy.js';
+import { copy as ruleCopy } from './countyElectionDayRuleCopy.js';
 import { copy } from './homeCopy.js';
 import HomePage from './HomePage.jsx';
 
@@ -51,7 +51,7 @@ describe('HomePage', () => {
     expect(screen.getByRole('button', { name: /use my location/i })).toBeInTheDocument();
   });
 
-  it('says Election Day voters must use their assigned polling place, with sources (#72)', () => {
+  it('says a County voter may vote at any County polling place, with sources (#152)', () => {
     const { container } = renderHome();
     const box = screen.getByText(ruleCopy.rule).closest('div');
     expect(
@@ -62,7 +62,8 @@ describe('HomePage', () => {
         within(box).getByRole('link', { name: ruleCopy.sourceNames[new URL(url).host] }),
       ).toHaveAttribute('href', url);
     }
-    expect(container).not.toHaveTextContent(/any polling place/i);
+    expect(within(box).getByText(ruleCopy.cityNote)).toBeInTheDocument();
+    expect(container).not.toHaveTextContent(/assigned polling place/i);
   });
 
   it('links to "How to vote" and the official county election site', () => {

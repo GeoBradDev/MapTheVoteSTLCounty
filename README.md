@@ -103,8 +103,8 @@ against, and why. In short:
   the
   [county boundary layer](https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services/St_Louis_County_Boundary/FeatureServer/0).
   The polls layer holds both Election Day and in-person absentee sites; no layer assigns a
-  polling place to a precinct, so the app lists the nearest and says how to confirm the
-  assigned one.
+  polling place to a precinct, so the app lists the nearest: a registered County voter may vote
+  at any County polling place on Election Day (#152), as the board's Polling Places page says.
 - **St. Louis City:** the City Board of Election Commissioners' layers in the City's ArcGIS org
   (the one its polling places page's map comes from): precincts, districts (names and numbers only),
   the 56 Election Day sites and 8 early voting sites, and the City outline. See the St. Louis
@@ -113,6 +113,7 @@ against, and why. In short:
   [ArcGIS portal](https://stlouiscovotes.maps.arcgis.com). The app shows the link only when it
   matches the config's pattern and names the precinct.
 - **Dates, hours and rules:** not in any layer. They come from the board's own Instant Apps,
+  the County Board's Polling Places page (the County's Election Day rule),
   the City Board's polling places page (the City's Election Day rule, quoted),
   the [Missouri Secretary of State](https://www.sos.mo.gov) and the
   [Revised Statutes of Missouri](https://revisor.mo.gov), and live in `src/config/election.js`
@@ -152,7 +153,9 @@ may need new values too. Work on a branch and merge through the usual pull reque
    changes between elections is in one of them (the second holds what only the City's results
    cards read, see [Election config](#election-config)), including every link to that
    election's own Instant Apps, each with its `sources` and `lastVerified` where it has them.
-   Re-read every source; do not copy a value forward unchecked. That includes the City Board's
+   Re-read every source; do not copy a value forward unchecked. That includes the County's
+   Election Day rule (`electionDayPollingPlace`), from the County Board's Polling Places page,
+   which scripts cannot read: open it in a browser. It also includes the City Board's
    Election Day rule (`electionDayRule` in `cityResults.js`), quoted from its polling places
    page (its URL is in `src/config/referrals.js`, named by the rule's `source`): re-quote it
    from the page and set its `lastVerified` (a test fails while the quote names another
