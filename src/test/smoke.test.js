@@ -36,6 +36,9 @@ const SITEMAP =
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' +
   '<url><loc>https://mapthevotestl.com/</loc></url></urlset>\n';
 
+// The web app manifest (#25), as public/manifest.webmanifest ships it.
+const MANIFEST = JSON.stringify({ name: 'St. Louis Voter Guide', start_url: '/', icons: [] });
+
 const GOOD_HEADERS = {
   'referrer-policy': 'no-referrer',
   'x-content-type-options': 'nosniff',
@@ -50,8 +53,11 @@ const GOOD_HEADERS = {
 // pre-rendered pages out, so the shell answers them too; `deepLink` set to
 // 'home' answers a precinct link with the pre-rendered home page, and
 // 'indexable' with a production shell (no noindex). `cityDeepLink` does the
-// same for the City precinct link (#95): 'shell', '404' or 'home'.
+// same for the City precinct link (#95): 'shell', '404' or 'home'. `manifest`
+// set to 'missing' leaves the web app manifest out (#25), so the shell answers
+// it, and 'nameless' serves JSON with no name.
 function stubHost({
+  manifest = 'json',
   deepLink = 'shell',
   cityDeepLink = 'shell',
   pages = 'prerendered',
@@ -72,6 +78,10 @@ function stubHost({
     if (req.url === '/sitemap.xml' && sitemap !== 'missing') {
       res.writeHead(200, { ...common, 'content-type': 'application/xml' });
       return res.end(SITEMAP);
+    }
+    if (req.url === '/manifest.webmanifest' && manifest !== 'missing') {
+      res.writeHead(200, { ...common, 'content-type': 'application/manifest+json' });
+      return res.end(manifest === 'nameless' ? '{"icons":[]}' : MANIFEST);
     }
     if (req.url === '/assets/index-abc123.js') {
       if (asset === 'html') {
@@ -176,6 +186,7 @@ describe('smoke test against stub hosts', () => {
       'hard load of /learn/voter-id returns the pre-rendered page',
       '/robots.txt is text naming the sitemap',
       '/sitemap.xml is XML, not the app shell',
+      '/manifest.webmanifest is the web app manifest, not the app shell',
       'headers on /',
       'headers on the hashed asset',
     ]);
@@ -202,6 +213,23 @@ describe('smoke test against stub hosts', () => {
     expect(failedChecks(results)).toEqual(['/sitemap.xml is XML, not the app shell']);
   });
 
+  it.each(['missing', 'nameless'])(
+    'fails when the web app manifest is %s, on production and previews',
+    async (manifest) => {
+      for (const preview of [false, true]) {
+        server = stubHost({ manifest, preview });
+        const results = await runSmoke(await listen(server), { preview });
+        server.close();
+        await once(server, 'close');
+        server = undefined;
+
+        expect(failedChecks(results)).toEqual([
+          '/manifest.webmanifest is the web app manifest, not the app shell',
+        ]);
+      }
+    },
+  );
+
   it('checks a pull request preview for disallow-all and noindex with preview: true', async () => {
     server = stubHost({ preview: true });
     const results = await runSmoke(await listen(server), { preview: true });
@@ -218,6 +246,7 @@ describe('smoke test against stub hosts', () => {
       'hard load of /learn/voter-id returns the pre-rendered page',
       '/robots.txt keeps every crawler out',
       'the home page and the app shell are marked noindex',
+      '/manifest.webmanifest is the web app manifest, not the app shell',
       'headers on /',
       'headers on the hashed asset',
     ]);
@@ -329,7 +358,7 @@ describe('smoke test against stub hosts', () => {
     const results = await runSmoke(await listen(server), { checkHeaders: false });
 
     expect(failedChecks(results)).toEqual([]);
-    expect(results).toHaveLength(10);
+    expect(results).toHaveLength(11);
   });
 
   it('fails instead of throwing when the host is unreachable', async () => {
@@ -357,7 +386,7 @@ describe('smoke test CLI', () => {
     server = stubHost();
     const { stdout } = await promisify(execFile)('node', [SCRIPT, await listen(server)]);
 
-    expect(stdout).toContain('12 of 12 checks passed');
+    expect(stdout).toContain('13 of 13 checks passed');
   });
 
   it('runs the preview checks with --preview', async () => {
@@ -369,7 +398,7 @@ describe('smoke test CLI', () => {
     ]);
 
     expect(stdout).toContain('PASS /robots.txt keeps every crawler out');
-    expect(stdout).toContain('12 of 12 checks passed');
+    expect(stdout).toContain('13 of 13 checks passed');
   });
 
   it('exits 1 and prints the failure when a check fails', async () => {

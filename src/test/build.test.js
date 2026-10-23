@@ -269,12 +269,18 @@ describe('production build', () => {
 
   // The site's mark (#79), at the root paths browsers ask for on their own:
   // /favicon.ico once the page has loaded, /apple-touch-icon.png when a page
-  // is added to an iPhone's home screen, so no page needs to link them.
-  // public/favicon.svg is the mark the others are drawn from (and the source
-  // for the PWA's icons, #25).
-  it('ships the icons at the root paths, linked from no page', async () => {
+  // is added to an iPhone's home screen. Every page links the touch icon
+  // (#25, owner decision): without the link, iOS first asks for the
+  // -precomposed variants, which Render answers with the app shell. The
+  // favicon needs no link. public/favicon.svg is the mark the others, and the
+  // manifest's icons, are drawn from.
+  it('ships the icons at the root paths, linking only the touch icon', async () => {
     const shell = await readFile(path.join(outDir, 'shell.html'), 'utf8');
-    for (const doc of [html, shell]) expect(doc).not.toMatch(/<link[^>]+rel="[^"]*icon/);
+    for (const doc of [html, shell]) {
+      const icons = [...doc.matchAll(/<link\b[^>]*\brel="([^"]*icon[^"]*)"[^>]*>/g)];
+      expect(icons.map((m) => m[1])).toEqual(['apple-touch-icon']);
+      expect(icons[0][0]).toContain('href="/apple-touch-icon.png"');
+    }
     for (const file of ['favicon.ico', 'apple-touch-icon.png', 'favicon.svg']) {
       expect((await stat(path.join(outDir, file))).size, file).toBeGreaterThan(0);
     }
@@ -282,6 +288,30 @@ describe('production build', () => {
     const colors = [...svg.matchAll(/#[0-9a-f]{6}\b/gi)].map((m) => m[0]);
     expect(colors.length).toBeGreaterThan(0);
     for (const color of colors) expect(partyColor(toOklch(color)), color).toBeNull();
+  });
+
+  // Installable (#25): every page links the manifest, which ships with its
+  // icons. src/test/manifest.test.js checks its content.
+  it('links the web app manifest from every page and ships its icons', async () => {
+    const shell = await readFile(path.join(outDir, 'shell.html'), 'utf8');
+    for (const doc of [html, shell]) {
+      expect(doc).toMatch(/<link\s+rel="manifest"\s+href="\/manifest\.webmanifest"\s*\/?>/);
+    }
+    const manifest = JSON.parse(await readFile(path.join(outDir, 'manifest.webmanifest'), 'utf8'));
+    for (const icon of manifest.icons) {
+      expect((await stat(path.join(outDir, icon.src))).size, icon.src).toBeGreaterThan(0);
+    }
+  });
+
+  // No service worker yet (#25 shipped the manifest only; offline support is
+  // #183). A worker is sticky and could keep voters on stale hours, polling
+  // places or wait times, so it must come with its own caching tests and its
+  // kill switch. #183 replaces this check with those.
+  it('ships no service worker and registers none', async () => {
+    await expect(stat(path.join(outDir, 'sw.js'))).rejects.toThrow();
+    for (const [file, source] of Object.entries(js)) {
+      expect(source, file).not.toMatch(/serviceWorker\s*\.\s*register\b/);
+    }
   });
 
   it('ships no red or blue color', () => {

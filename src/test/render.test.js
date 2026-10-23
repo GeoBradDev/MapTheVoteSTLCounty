@@ -47,6 +47,7 @@ const PROBE_PATHS = [
   '/robots.txt',
   '/sitemap.xml',
   '/manifest.webmanifest',
+  '/icons/icon-192.png',
   '/favicon.ico',
   '/favicon.svg',
   '/apple-touch-icon.png',
@@ -214,6 +215,12 @@ describe('render.yaml headers', () => {
 
   it('always revalidates the service worker', () => {
     expect(headersFor(site.headers, '/sw.js').get('cache-control')).toBe('no-cache');
+  });
+
+  // The web app manifest (#25): a changed name, color or icon list reaches
+  // installed copies at the next launch, not after a CDN expiry.
+  it('always revalidates the web app manifest', () => {
+    expect(headersFor(site.headers, '/manifest.webmanifest').get('cache-control')).toBe('no-cache');
   });
 
   // Short enough that a fix reaches crawlers within the hour; not no-cache,

@@ -275,8 +275,20 @@ headers and the cache rules. `src/test/render.test.js` checks it.
   network does not credit a preconnect, so the Lighthouse run cannot measure its gain.
 - **Cache-Control:** no two header rules may match the same path; Render does not document
   how they combine. The app shell and the pre-rendered pages send `no-cache` and hashed `/assets/` files are
-  `immutable`; `/robots.txt` and `/sitemap.xml` are cached for an hour. A new route needs its
-  own `no-cache` rule.
+  `immutable`; `/robots.txt` and `/sitemap.xml` are cached for an hour; `/manifest.webmanifest`
+  and `/sw.js` send `no-cache`. A new route needs its own `no-cache` rule.
+- **Installable app, no service worker (#25):** every page links `/manifest.webmanifest`
+  (`public/`, with its icons in `public/icons/`) and `/apple-touch-icon.png`, so Chrome, Edge
+  and Android can install the site and iOS Add to Home Screen gets the site's icon.
+  `e2e/install.e2e.js` runs Chromium's own installability check on the build. The site
+  registers no service worker and works offline no better than before; offline support is
+  #183, deferred past the November 2026 election because a worker that served old hours,
+  polling places or wait times on Election Day would be worse than none. A build test fails if
+  a `sw.js` or a `serviceWorker.register` call appears before #183 replaces it with that
+  worker's own tests. With no worker, there is nothing to unregister; #183 adds the kill
+  switch (a self-destroying `/sw.js`, which `no-cache` lets a revert ship in one deploy)
+  before its worker. Before each election, check Add to Home Screen on a real iPhone (the
+  icon, the name and that it opens the home page) and install on an Android phone in Chrome.
 - **Rollback:** in the Render Dashboard, open the service's **Deploys** page, find an earlier
   successful deploy and click **Rollback**. This redeploys that build's files only: headers,
   redirects and rewrites are not rolled back, so a bad header change needs a fix in
@@ -301,7 +313,8 @@ npm run smoke -- https://<site-or-preview-url>
 It checks that `/` returns the home page and a hard load of `/p/CC007` and of the City
 precinct `/p/W01P12` the app shell (with nothing pre-rendered in it), that a hashed asset is served as JavaScript, that a hard load of `/`,
 `/learn` and `/learn/voter-id` returns the page pre-rendered, with its `h1` and canonical, that `/robots.txt` is a text file with a `Sitemap:` line and
-`/sitemap.xml` is XML (not the app shell), and that the expected security and cache headers are
+`/sitemap.xml` is XML (not the app shell), that `/manifest.webmanifest` is the web app manifest's
+JSON (not the app shell), and that the expected security and cache headers are
 present. It exits 1 and lists what failed. Against a host that sets no headers, such as
 `npm run preview`, add `--skip-headers`. Against a PR preview, add `--preview`: it then checks
 that `/robots.txt` says `Disallow: /` and the home page and the shell carry `noindex`, instead of the sitemap. The expected headers are a table at the top of `scripts/smoke.mjs`; change it
@@ -451,9 +464,14 @@ SVG components that use `currentColor`). Only CSS is checked: a color written an
 there instead of color values. Two exceptions are checked on their own: the `theme-color` metas in
 `index.html` (#76, #77, below) and the site icons in `public/` (#79): a favicon
 cannot read the page's CSS, so `favicon.svg` writes the light `--color-primary` and
-`--color-on-primary` as hex (one icon for both schemes), and `favicon.ico` and `apple-touch-icon.png` are drawn from it. A build test fails on
-red or blue in `favicon.svg` (not in the two raster icons); when those tokens change, redraw all
-three.
+`--color-on-primary` as hex (one icon for both schemes), and `favicon.ico`, `apple-touch-icon.png`
+and the web app manifest's icons in `public/icons/` (#25) are drawn from it. A build test fails on
+red or blue in `favicon.svg` (not in the raster icons); when those tokens change, redraw them all.
+The maskable icons fill their square with `--color-primary` and keep the mark at 80% of its size,
+inside the central circle a launcher never crops. The manifest's `theme_color` and
+`background_color` are the light `theme-color` meta's value (a manifest has one color, so an
+installed app's launch screen is light in dark mode too); `src/test/manifest.test.js` checks the
+colors and the maskable icons' safe zone.
 
 The tokens (#76), each with its role and minimum contrast beside it in `src/index.css`:
 
@@ -561,7 +579,7 @@ any later refreshed layer (wait times, City layers) uses them rather than its ow
 polling places and early voting cards fetch again when the tab is shown after the max age, so a
 tab left in the background for days shows a moved polling place when the voter returns to it
 (not while the tab stays visible); a refresh that fails keeps the rows shown and says when they
-were loaded. The service worker (#25) must not keep serving an answer older than this max age.
+were loaded. A service worker (#183) must not keep serving an answer older than this max age.
 
 ### Wait times: the first day counts appear
 
@@ -842,7 +860,7 @@ itself, #13); a failed page load moves focus to its message. A failed refresh of
 shown keeps its rows and says when they were loaded instead (#84).
 After `SLOW_MS` (`src/features/lookup/slowNotice.js`), the lookup and the precinct page say
 they are still working. When the browser reports no connection, the lookup's and the precinct
-page's messages say the voter appears to be offline (cached polling places wait for the PWA, #25). A page that throws
+page's messages say the voter appears to be offline (cached polling places wait for offline support, #183). A page that throws
 while rendering shows a plain error screen (`src/components/ErrorBoundary.jsx`) with the
 precinct's own board's lookup on a precinct page, and both boards' lookups anywhere else (#93), and
 `src/main.jsx` keeps React from logging caught errors. `e2e/failures.e2e.js` breaks each
@@ -857,7 +875,7 @@ no cookies and no referrer, and sends them in a POST body, never the URL, where 
 accepts one (#38): the county's address layers, the City geocoder and the County and City
 precinct and boundary point queries. Photon has no POST endpoint, so it gets the typed text in a GET query string;
 the notice says so. A new request that carries either must do the same, and a service worker
-(#25) must not put those requests in Cache Storage, which `no-store` does not cover. The plain-language
+(#183) must not put those requests in Cache Storage, which `no-store` does not cover. The plain-language
 notice at `/privacy` (`src/features/privacy/privacyCopy.js`, its text under `privacy` in
 `src/i18n/en.json` and every other language's file) says what each third party gets;
 change it in the same change as any new service or any change to what is sent. `src/test/no-storage.test.js` fails

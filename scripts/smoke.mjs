@@ -2,7 +2,8 @@
 // home page and the shell, survives a hard load of a County and a City
 // precinct link and of the wait times page, serves its hashed assets, serves
 // robots.txt and sitemap.xml as real files (#97), serves the public pages
-// pre-rendered (#99), and sends the expected headers.
+// pre-rendered (#99), serves the web app manifest (#25), and sends the
+// expected headers.
 // Usage: node scripts/smoke.mjs <base-url> [--skip-headers] [--preview]
 // Use --skip-headers against hosts that set none, such as `npm run preview`.
 // Use --preview against a pull request preview, whose build keeps crawlers
@@ -194,6 +195,21 @@ export async function runSmoke(baseUrl, { checkHeaders = true, preview = false }
       }),
     );
   }
+
+  // The web app manifest (#25), on production and previews alike. Browsers
+  // read a manifest whatever its content type, so only the JSON is checked.
+  results.push(
+    await check('/manifest.webmanifest is the web app manifest, not the app shell', async () => {
+      const body = await fileBody(baseUrl, '/manifest.webmanifest', '');
+      let manifest;
+      try {
+        manifest = JSON.parse(body);
+      } catch {
+        throw new Error('not JSON');
+      }
+      if (!manifest.name) throw new Error('no name');
+    }),
+  );
 
   if (checkHeaders) {
     for (const [name, res, expected] of [

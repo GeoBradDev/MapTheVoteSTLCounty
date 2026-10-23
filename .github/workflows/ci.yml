@@ -32,14 +32,19 @@ jobs:
       - run: npm test
       - run: npm run build
 
-      # The header and cache rules in render.yaml match these paths.
-      # When the PWA (#25) lands, also check dist/sw.js and dist/manifest.webmanifest.
+      # The header and cache rules in render.yaml match these paths. The web
+      # app manifest and its icons (#25); no service worker until #183, which
+      # adds dist/sw.js here.
       - name: Check build output
         run: |
           test -f dist/index.html
           ls dist/assets/index-*.js dist/assets/index-*.css
           grep -q 'src="/assets/index-' dist/index.html
           grep -q 'href="/assets/index-' dist/index.html
+          test -f dist/manifest.webmanifest
+          ls dist/icons/icon-192.png dist/icons/icon-512.png dist/icons/maskable-192.png dist/icons/maskable-512.png
+          grep -q 'rel="manifest" href="/manifest.webmanifest"' dist/index.html
+          test ! -e dist/sw.js
 
       # Accessibility in a real browser (#26): axe, reflow, skip link and focus
       # on the key routes at 360 and 1280 px, against the build above. The
