@@ -1,5 +1,5 @@
 // The wait times map itself (#104): the second module that imports MapLibre
-// GL JS, so the library loads only when the voter presses "Show map". Its
+// GL JS, so the library loads only when the map scrolls into view (#172). Its
 // markers are hidden from assistive technology: the list is the accessible
 // version of everything on the map.
 import { Map as MapLibreMap, Marker, setWorkerUrl } from 'maplibre-gl';
@@ -9,7 +9,7 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { BASEMAP_STYLE_URL } from '../lookup/basemap.js';
 import { mapBounds, oklchToRgb } from '../lookup/mapBounds.js';
 import { neutralizeBasemap } from '../lookup/mapStyle.js';
-import { NO_COUNT_CLASS, WAIT_BIN_CLASSES } from './waitColors.js';
+import { NO_COUNT_CLASS, WAIT_COLOR_CLASSES } from './waitColors.js';
 import '../lookup/precinctMap.css';
 
 setWorkerUrl(workerUrl);
@@ -20,7 +20,7 @@ const MARKER =
 
 function markerElement(bin, number) {
   const element = document.createElement('div');
-  const fill = bin === null ? NO_COUNT_CLASS : WAIT_BIN_CLASSES[bin];
+  const fill = bin === null ? NO_COUNT_CLASS : WAIT_COLOR_CLASSES[bin];
   element.className = `${MARKER} ${fill}`;
   element.setAttribute('aria-hidden', 'true');
   element.textContent = String(number);
@@ -29,8 +29,8 @@ function markerElement(bin, number) {
 
 /**
  * Draws numbered markers for the sites on a map in `container`, filled by
- * their line count bin, plain when they have no count. The camera never
- * animates.
+ * their line count's color step (`bin`, an index into WAIT_COLOR_CLASSES,
+ * #172), plain when they have no count. The camera never animates.
  * @param {HTMLElement} container An element whose className React never changes.
  * @param {{ sites: { lat: number, lng: number, bin: number | null }[],
  *   onReady: () => void, onFail: (error: unknown) => void }} options `sites`

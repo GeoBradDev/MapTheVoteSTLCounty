@@ -17,7 +17,8 @@ import RetryButton from '../lookup/RetryButton.jsx';
 import { useNow } from '../lookup/useNow.js';
 import { useRetry } from '../lookup/useRetry.js';
 import { earlyVotingSeason } from './earlyVotingSeason.js';
-import { NEARBY_MILES, orderSites, waitBin } from './siteOrder.js';
+import { waitClasses, waitColor } from './jenks.js';
+import { NEARBY_MILES, orderSites } from './siteOrder.js';
 import { useWaitTimes } from './useWaitTimes.js';
 import { canDrawMap } from './canDrawMap.js';
 import WaitReport from './WaitReport.jsx';
@@ -480,7 +481,8 @@ export default function WaitTimesPage({
   // The device's position, in memory only.
   const [origin, setOrigin] = useState(null);
   const [sort, setSort] = useState('line');
-  const [showMap, setShowMap] = useState(false);
+  // Open on arrival (#172); the voter may hide it.
+  const [showMap, setShowMap] = useState(true);
   const [mapSupported] = useState(canDrawMap);
   // Set when the map fails: the page then offers no map, as without WebGL.
   const [mapFailed, setMapFailed] = useState(false);
@@ -533,15 +535,21 @@ export default function WaitTimesPage({
   const statusText = statusFor(checkedAt);
   const shownStatusText = statusFor(lastSuccess);
 
-  const mapSites = useMemo(
-    () =>
-      (shown ?? []).map((site) => ({
+  // The map's classes (#172): Jenks natural breaks over the fresh counts of
+  // the sites listed, both boards on one scale (both count people in line),
+  // recomputed whenever the counts change.
+  const { mapSites, mapClasses } = useMemo(() => {
+    const sites = shown ?? [];
+    const classes = waitClasses(sites.filter((site) => site.wait).map((site) => site.wait.value));
+    return {
+      mapClasses: classes,
+      mapSites: sites.map((site) => ({
         lat: site.lat,
         lng: site.lng,
-        bin: site.wait ? waitBin(site.wait.value) : null,
+        bin: site.wait ? waitColor(site.wait.value, classes) : null,
       })),
-    [shown],
-  );
+    };
+  }, [shown]);
 
   return (
     <>
@@ -636,6 +644,7 @@ export default function WaitTimesPage({
                 {canShowMap && showMap && (
                   <WaitTimesMap
                     sites={mapSites}
+                    classes={mapClasses}
                     label={electionDay ? copy.electionDay.mapLabel : copy.map.label}
                     onFail={() => setMapFailed(true)}
                   />

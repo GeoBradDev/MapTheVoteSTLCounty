@@ -49,12 +49,15 @@ function Attribution() {
  * everything on it is also in the list, so it is removed whenever anything
  * fails, and its markers are hidden from assistive technology.
  * @param {{ code: string, origin: { lat: number, lng: number } | null,
- *   polls: { lat: number, lng: number, bin?: number | null }[] }} props
+ *   polls: { lat: number, lng: number, bin?: number | null }[],
+ *   classes?: { min: number, max: number }[] }} props
  *   `origin` is the looked-up point, in memory only. `polls` are the places
  *   the list shows, in order; on Election Day (#107) each has its line count
- *   bin, or null without a count, and the map shows the legend once any has one.
+ *   color step (waitColor), or null without a count, and `classes` are the
+ *   counts' classes (#172): the map shows their legend once a place it
+ *   shows has a count.
  */
-export default function PrecinctMap({ code, origin, polls }) {
+export default function PrecinctMap({ code, origin, polls, classes = [] }) {
   const { getOutline } = useJurisdiction();
   const [supported] = useState(canDrawMap);
   // 'loading', 'ready' or 'failed'.
@@ -158,7 +161,8 @@ export default function PrecinctMap({ code, origin, polls }) {
   }, [supported, inView, code, origin, getOutline]);
 
   if (!supported || state === 'failed') return null;
-  const hasCounts = polls.some((poll) => poll.bin !== null && poll.bin !== undefined);
+  const hasCounts =
+    classes.length > 0 && polls.some((poll) => poll.bin !== null && poll.bin !== undefined);
 
   return (
     <div ref={regionRef} role="region" aria-label={copy.map.label(code)} className="mt-3">
@@ -180,7 +184,7 @@ export default function PrecinctMap({ code, origin, polls }) {
       <p className="mt-2 text-sm text-muted">
         {copy.map.legend(code)} {origin && copy.map.origin}
       </p>
-      {hasCounts && <WaitLegend />}
+      {hasCounts && <WaitLegend classes={classes} />}
       <Attribution />
     </div>
   );

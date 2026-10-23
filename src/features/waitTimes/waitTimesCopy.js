@@ -63,9 +63,11 @@ export const copy = translated((t) => ({
     label: t('waitTimes.map.label'),
     numbers: t('waitTimes.map.numbers'),
     legend: t('waitTimes.map.legend'),
-    /** @param {{ min: number, max: number | null }} bin */
+    /** A class of line counts (#172). @param {{ min: number, max: number }} range */
     bin: ({ min, max }) =>
-      max === null ? t('waitTimes.map.binOpen', { min }) : t('waitTimes.map.bin', { min, max }),
+      min === max
+        ? t('waitTimes.map.binOne', { count: min })
+        : t('waitTimes.map.bin', { min, max }),
     noCount: t('waitTimes.map.noCount'),
   },
   city: t('waitTimes.city'),

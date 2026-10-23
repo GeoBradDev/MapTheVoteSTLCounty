@@ -6,8 +6,16 @@ import { copy } from './waitTimesCopy.js';
 
 const linkClass = 'text-primary underline';
 
-// How long the map may take to first render before it is dropped.
+// How long the map may take, from when it starts loading (once in view), to
+// first render before it is dropped. Time while the page is hidden does not
+// count.
 const LOAD_TIMEOUT_MS = 15_000;
+
+// The map is open on arrival (#172) but waits until its box scrolls into
+// view, as the precinct map does (#27): MapLibre is a large chunk and hundreds
+// of milliseconds of main-thread work on a mid-range phone, and the list holds
+// everything the map shows. Without IntersectionObserver it loads at once.
+const canWaitForView = () => typeof globalThis.IntersectionObserver === 'function';
 
 // One import of the map module, shared by every mount (StrictMode mounts
 // twice), so each gets the same module. A failed import is tried again on the
@@ -22,16 +30,23 @@ function loadView() {
 }
 
 /**
- * The wait times map (#104), shown when the voter asks for it. Extra help
- * only: everything on it is in the list, so it is removed whenever anything
- * fails. The legend shows only when some site has a count.
+ * The wait times map (#104), open on arrival (#172). Extra help only:
+ * everything on it is in the list, so it is removed whenever anything fails.
+ * The legend shows only when there are classes, that is when some site has a
+ * count.
  * @param {{ sites: { lat: number, lng: number, bin: number | null }[],
- *   onFail?: () => void, label?: string }} props `sites` in list order;
- *   markers are numbered to match. `onFail` is called once if the map fails.
- *   `label` names the map region (the polling places on Election Day, #107).
+ *   classes: { min: number, max: number }[], onFail?: () => void,
+ *   label?: string }} props `sites` in list order; markers are numbered to
+ *   match, and `bin` is the color step of the site's count (waitColor).
+ *   `classes` are the counts' classes (waitClasses), for the legend. `onFail`
+ *   is called once if the map fails. `label` names the map region (the
+ *   polling places on Election Day, #107).
  */
-export default function WaitTimesMap({ sites, onFail, label = copy.map.label }) {
+export default function WaitTimesMap({ sites, classes, onFail, label = copy.map.label }) {
   const [state, setState] = useState('loading');
+  // Whether the map's box has come into view, so it may load.
+  const [inView, setInView] = useState(() => !canWaitForView());
+  const regionRef = useRef(null);
   const containerRef = useRef(null);
   const viewRef = useRef(null);
   const sitesRef = useRef(sites);
@@ -53,24 +68,66 @@ export default function WaitTimesMap({ sites, onFail, label = copy.map.label }) 
   }, [sites]);
 
   useEffect(() => {
+    if (inView) return undefined;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        observer.disconnect();
+        setInView(true);
+      }
+    });
+    observer.observe(regionRef.current);
+    return () => observer.disconnect();
+  }, [inView]);
+
+  useEffect(() => {
+    if (!inView) return undefined;
+    // `current` turns false on cleanup; `loading` once the map rendered or failed.
     let current = true;
     let loading = true;
+    // Opened on arrival (#172), the map may load in a tab the voter leaves: a
+    // hidden tab draws nothing, so the clock pauses while it is hidden and
+    // resumes with the time it had left, as on the precinct map.
+    let timer;
+    let remaining = LOAD_TIMEOUT_MS;
+    let startedAt = null;
+
+    function pauseClock() {
+      if (startedAt === null) return;
+      clearTimeout(timer);
+      remaining -= performance.now() - startedAt;
+      startedAt = null;
+    }
+    function runClock() {
+      if (startedAt !== null) return;
+      startedAt = performance.now();
+      timer = setTimeout(fail, Math.max(0, remaining));
+    }
+    function stopClock() {
+      pauseClock();
+      document.removeEventListener('visibilitychange', onVisibility);
+    }
+    function onVisibility() {
+      if (document.visibilityState === 'hidden') pauseClock();
+      else runClock();
+    }
     function ready() {
       if (!current || !loading) return;
       loading = false;
-      clearTimeout(timer);
+      stopClock();
       setState('ready');
     }
     function fail() {
       if (!current || !loading) return;
       loading = false;
-      clearTimeout(timer);
+      stopClock();
       viewRef.current?.remove();
       viewRef.current = null;
       setState('failed');
       onFailRef.current?.();
     }
-    const timer = setTimeout(fail, LOAD_TIMEOUT_MS);
+
+    if (document.visibilityState !== 'hidden') runClock();
+    document.addEventListener('visibilitychange', onVisibility);
     loadView()
       .then(({ createWaitTimesMap }) => {
         if (!current || !loading) return;
@@ -84,17 +141,16 @@ export default function WaitTimesMap({ sites, onFail, label = copy.map.label }) 
       .catch(fail);
     return () => {
       current = false;
-      clearTimeout(timer);
+      stopClock();
       viewRef.current?.remove();
       viewRef.current = null;
     };
-  }, []);
+  }, [inView]);
 
   if (state === 'failed') return null;
-  const hasCounts = sites.some((site) => site.bin !== null);
 
   return (
-    <div role="region" aria-label={label} className="mt-3">
+    <div ref={regionRef} role="region" aria-label={label} className="mt-3">
       <div className="relative h-72 overflow-hidden rounded-md border border-border">
         {/* MapLibre adds its own classes to this element: React never changes its className. */}
         <div ref={containerRef} className="isolate h-full w-full" />
@@ -106,7 +162,7 @@ export default function WaitTimesMap({ sites, onFail, label = copy.map.label }) 
         )}
       </div>
       <p className="mt-2 text-sm text-muted">{copy.map.numbers}</p>
-      {hasCounts && <WaitLegend />}
+      {classes.length > 0 && <WaitLegend classes={classes} />}
       <p className="mt-1 text-xs text-muted">
         {resultsCopy.map.basemap}{' '}
         {BASEMAP_ATTRIBUTION.map(({ label, href }, i) => (

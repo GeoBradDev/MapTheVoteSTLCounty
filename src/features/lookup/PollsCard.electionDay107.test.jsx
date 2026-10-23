@@ -17,6 +17,7 @@ import {
   ELECTION_DAY_SHIFT_MS,
 } from '../../data/waitTimes.fixtures.js';
 import { selectCityWaits, selectCountyWaits } from '../../data/waitTimes.js';
+import { waitClasses, waitColor } from '../waitTimes/jenks.js';
 import { createWaitTimesStore } from '../waitTimes/useWaitTimes.js';
 import { copy as waitCopy } from '../waitTimes/waitTimesCopy.js';
 import { JurisdictionContext } from './jurisdictionContext.js';
@@ -208,6 +209,25 @@ describe('PollsCard on Election Day (#107)', () => {
     const last = () =>
       view.setPolls.mock.calls.at(-1)?.[0] ?? createPrecinctMap.mock.calls[0][1].polls;
     await waitFor(() => expect(last().some((p) => p.bin !== null)).toBe(true));
+
+    // The classes are the Jenks classes of the counts listed (#172), and each
+    // marker's color is its count's class.
+    const counts = (await items()).map((item) => {
+      if (item.textContent.includes('No one in line')) return 0;
+      const m = item.textContent.match(/About (\d+) (?:person|people) in line/);
+      return m ? Number(m[1]) : null;
+    });
+    const classes = waitClasses(counts.filter((c) => c !== null));
+    expect(classes.length).toBeGreaterThan(0);
+    const legend = screen.getByRole('list', { name: waitCopy.map.legend });
+    expect(
+      within(legend)
+        .getAllByRole('listitem')
+        .map((li) => li.textContent),
+    ).toEqual([...classes.map((range) => waitCopy.map.bin(range)), waitCopy.map.noCount]);
+    expect(last().map((p) => p.bin)).toEqual(
+      counts.map((c) => (c === null ? null : waitColor(c, classes))),
+    );
   });
 
   it('shows no counts, sort, legend or link before the polls open, and asks nothing', async () => {

@@ -10,7 +10,7 @@ import { Map as MapLibreMap, Marker, setWorkerUrl } from 'maplibre-gl';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { BASEMAP_STYLE_URL } from './basemap.js';
 import { mapBounds, oklchToRgb, placesKey } from './mapBounds.js';
-import { NO_COUNT_CLASS, WAIT_BIN_CLASSES } from '../waitTimes/waitColors.js';
+import { NO_COUNT_CLASS, WAIT_COLOR_CLASSES } from '../waitTimes/waitColors.js';
 import { neutralizeBasemap } from './mapStyle.js';
 import './precinctMap.css';
 
@@ -21,14 +21,15 @@ const FIT = { padding: 40, maxZoom: 16, animate: false };
 
 const POLL_MARKER =
   'flex size-7 items-center justify-center rounded-full border-2 border-surface bg-primary text-sm font-semibold text-on-primary shadow';
-// On Election Day (#107): filled by the place's line count bin, as on the wait
-// times map (#104), or plain without a count.
+// On Election Day (#107): filled by the place's line count color step (an
+// index into WAIT_COLOR_CLASSES, #172), as on the wait times map (#104), or
+// plain without a count.
 const COUNT_MARKER =
   'flex size-7 items-center justify-center rounded-full border-2 text-sm font-semibold shadow';
 
 function pollMarkerClass(bin) {
   if (bin === undefined) return POLL_MARKER;
-  return `${COUNT_MARKER} ${bin === null ? NO_COUNT_CLASS : WAIT_BIN_CLASSES[bin]}`;
+  return `${COUNT_MARKER} ${bin === null ? NO_COUNT_CLASS : WAIT_COLOR_CLASSES[bin]}`;
 }
 
 // Under the numbered markers (added first), so their numbers stay readable

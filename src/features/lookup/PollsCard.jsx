@@ -6,7 +6,8 @@ import { getLocale } from '../../i18n/index.js';
 import { getTopic } from '../learn/topics.js';
 import CountyElectionDayRule from './CountyElectionDayRule.jsx';
 import { cityComponent } from './cityComponent.js';
-import { orderSites, waitBin } from '../waitTimes/siteOrder.js';
+import { orderSites } from '../waitTimes/siteOrder.js';
+import { useWaitScale } from '../waitTimes/useWaitScale.js';
 import { boardWaits, OFF_WAITS, useWaitTimes } from '../waitTimes/useWaitTimes.js';
 import WaitReport from '../waitTimes/WaitReport.jsx';
 import { electionDayCountsOn, electionDayStatus } from './electionDay.js';
@@ -222,12 +223,23 @@ export default function PollsCard({ code, origin, waitSource, electionDayOn }) {
   // While focus is in the list, its order holds (#27).
   const { rows, listRef, listProps } = useHeldOrder(ordered);
   const shownRows = rows?.slice(0, shown);
-  // The map's places, with their line count bins on Election Day. The map
-  // compares them with what it drew, so a render with the same places and
-  // bins redraws nothing.
+  // The map's line count classes on Election Day (#172): Jenks natural breaks
+  // over this board's fresh counts at the polling places listed (and so on the
+  // map), by the same rule as the wait times map. The module loads only then.
+  const scale = useWaitScale(waitsOn);
+  const mapClasses = scale
+    ? scale.waitClasses((shownRows ?? []).filter((p) => p.wait).map((p) => p.wait.value))
+    : [];
+  // The map's places, with their line count color steps on Election Day. The
+  // map compares them with what it drew, so a render with the same places and
+  // colors redraws nothing.
   const mapPolls = (shownRows ?? []).map((poll) =>
     waitsOn
-      ? { lat: poll.lat, lng: poll.lng, bin: poll.wait ? waitBin(poll.wait.value) : null }
+      ? {
+          lat: poll.lat,
+          lng: poll.lng,
+          bin: scale && poll.wait ? scale.waitColor(poll.wait.value, mapClasses) : null,
+        }
       : { lat: poll.lat, lng: poll.lng },
   );
   const noCounts =
@@ -308,7 +320,7 @@ export default function PollsCard({ code, origin, waitSource, electionDayOn }) {
           )}
           {/* After the list, which holds everything on it, so on a phone the
               list comes first and the map loads only when scrolled to (#27). */}
-          <PrecinctMap code={code} origin={origin} polls={mapPolls} />
+          <PrecinctMap code={code} origin={origin} polls={mapPolls} classes={mapClasses} />
         </>
       )}
 

@@ -1,6 +1,6 @@
 // The sort orders of the wait times page (#104) and the early voting card's
-// nearby sort (#105), and the map's line count bins. A sort is a sort, not
-// advice: no order is named or shown as a recommendation.
+// nearby sort (#105); the maps' line count classes are in jenks.js (#172). A
+// sort is a sort, not advice: no order is named or shown as a recommendation.
 
 /** How far "Shortest line within N miles" reaches, in miles. */
 export const NEARBY_MILES = 5;
@@ -10,24 +10,6 @@ export const NEARBY_MILES = 5;
  * the page offers them only after "Use my location".
  * @typedef {'line' | 'name' | 'nearest' | 'nearby'} SiteSort
  */
-
-/**
- * The map's people-in-line bins, smallest first. `max` is inclusive; null for
- * the last bin. The legend lists them in this order.
- */
-export const WAIT_BINS = Object.freeze([
-  Object.freeze({ min: 0, max: 4 }),
-  Object.freeze({ min: 5, max: 14 }),
-  Object.freeze({ min: 15, max: null }),
-]);
-
-/**
- * The bin a line count falls in, an index into WAIT_BINS.
- * @param {number} value A whole number, 0 or more.
- */
-export function waitBin(value) {
-  return WAIT_BINS.findIndex((bin) => bin.max === null || value <= bin.max);
-}
 
 // Named sites by name, then unnamed ones; ties by location number.
 function byName(a, b) {

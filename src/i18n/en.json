@@ -349,8 +349,8 @@
       "label": "Map of early voting sites",
       "numbers": "Each marker's number matches the list.",
       "legend": "People in line",
-      "bin": "{min} to {max}",
-      "binOpen": "{min} or more",
+      "bin": "{min} to {max, plural, one {# person} other {# people}}",
+      "binOne": "{count, plural, one {# person} other {# people}}",
       "noCount": "No current count"
     },
     "city": "Each board's sites are for its own voters: St. Louis County voters vote at County sites, and St. Louis City voters at City sites.",
