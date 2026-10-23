@@ -84,6 +84,7 @@ describe('cityDistrictRows', () => {
   it('drops a value that names a party', () => {
     expect(cityDistrictRows([row('Alderman', 'Ward 14 (D)')])).toEqual([]);
     expect(cityDistrictRows([row('Alderman', 'Republican Ward 14')])).toEqual([]);
+    expect(cityDistrictRows([row('Alderman', 'Ward 14 Democrats')])).toEqual([]);
     expect(
       cityDistrictRows([row('State Senate', 'Missouri Senate District 5 Democratic')]),
     ).toEqual([]);
