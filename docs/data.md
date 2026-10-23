@@ -431,6 +431,18 @@ is the main sign a point is outside the county; `isInCountyBoundary` in
 `src/data/arcgis.js` confirms it with a point query on this layer. Use the
 boundary for the map outline too.
 
+The home page's line count dot map (#184) draws this outline and the City's
+(City boundary, below) from a committed module,
+`src/features/waitTimes/outline.js`, which `node scripts/build-outline.mjs`
+writes: it asks each layer for its first feature's outline (`outSR=4326`,
+GeoJSON), simplifies it with Douglas-Peucker (0.6 view units), projects it
+(longitude scaled by cos(38.6 deg), latitude as is) into a 300 x 300 view and
+rounds to tenths. On 2026-10-23 the County ring had 7,321 points and the City
+ring 326; the module is about 1.4 KB gzipped for both. The County outline leaves
+the City out, so a City point falls outside it (`outline.test.js` checks known
+points of each). The daily data health check runs `--check`, which rebuilds the
+module and fails when it no longer matches the committed one.
+
 Out of county: `locate` in `src/features/lookup/locate.js` takes a place,
 `{ lat, lng, state?, county? }`, so it works with any geocoder and with
 coordinates alone. Photon returns `state` and `county` (for example `Missouri`,
@@ -1129,4 +1141,6 @@ layer are the City outline: 9 rows (mayor, comptroller and the other citywide of
 about 281.41 million m² in Web Mercator (within 60 m² of each other), within 300 m² of
 the 207 precincts' total area (about 66 square miles on the ground). `isInCityBoundary` asks with `boundaryWhere` for `OBJECTID` only; any row
 means inside. A backup to the precinct point query, as the county boundary is for the County.
+The first row by `OBJECTID` is the outline the home page's dot map draws (#184; County
+boundary, above).
 

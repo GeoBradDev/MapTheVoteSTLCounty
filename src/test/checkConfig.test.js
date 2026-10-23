@@ -1524,9 +1524,11 @@ describe('data health workflow', () => {
     expect(runs).toContain('node scripts/check-config.mjs');
     expect(runs).toContain('node scripts/check-geocoder.mjs');
     expect(runs).toContain('node scripts/check-content-links.mjs');
+    // The home page dot map's outlines (#184).
+    expect(runs).toContain('node scripts/build-outline.mjs --check');
     // A timed-out step fails and still gets reported; a timed-out job does not.
-    const live = steps.filter((s) => /^node scripts\/check-/.test(s.run ?? ''));
-    expect(live).toHaveLength(3);
+    const live = steps.filter((s) => /^node scripts\/(check-|build-outline)/.test(s.run ?? ''));
+    expect(live).toHaveLength(4);
     for (const step of live) expect(step['timeout-minutes']).toBeGreaterThan(0);
     const total = live.reduce((sum, step) => sum + step['timeout-minutes'], 0);
     expect(Object.values(workflow.jobs)[0]['timeout-minutes']).toBeGreaterThan(total);

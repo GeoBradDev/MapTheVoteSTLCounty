@@ -86,6 +86,7 @@ node scripts/record-fixtures.mjs      # re-record the live responses the tests u
 node scripts/check-config.mjs         # check the layers src/config/election.js names (Data health check)
 node scripts/check-geocoder.mjs       # check address search end to end (Address search)
 node scripts/check-content-links.mjs  # request every source and link (Learn content)
+node scripts/build-outline.mjs        # rebuild the home dot map's County and City outlines (Map)
 npm run smoke -- <url>                # check a deploy (Smoke test)
 ```
 
@@ -415,6 +416,7 @@ zoom on a desktop; and Windows High Contrast (forced colors).
 The target is a mid-range phone on a weak signal (#27). `npm run test:perf` runs
 `e2e/lighthouse.js`: Lighthouse's mobile emulation at 360 x 640 px on simulated slow 4G with a
 4x CPU slowdown, three runs each of `/`, `/p/CC007`, the City precinct `/p/W01P12` (#95), `/early-voting` and `/learn` against the production build
+(`/` and the two results pages at a pinned clock during early voting, the evening after it closes and Election Day morning, so the home page's dot map, #184, is measured)
 (`vite preview`). It fails when a page's median performance score is under 90, its median LCP
 is 2.5 s or more, or any run reports no LCP or ends without the page's own content (its
 heading, and on the results page the precinct line under it, the municipality, districts, sample ballot link and each
@@ -966,6 +968,32 @@ credits; to change the basemap, change that file and the origin in `render.yaml`
 dark mode each marker keeps its ink outline, light there, and the ramp is the same but for a
 deeper pale tan, so the light ink outline of the precinct stays apart from every step
 (`mapColors.test.js` checks both themes, each on its basemap's land).
+
+During early voting and on Election Day the home page opens with a small line count dot map
+(#184), above the address search: every County and City site (on Election Day, every polling
+place) on an inline SVG of the County and City outlines, with no map library and no tiles. It
+uses the wait times page's sites and counts, Jenks classes and ramp; each dot also grows with
+its class, and a closed site or one with no current count is a hollow gray ring. Under it are
+the legend, the three open sites with the fewest people in line (with their board) or when
+sites open again, and each board's rule that its sites are for its own voters. The whole map is
+one link to `/early-voting`; the drawing is hidden from screen readers and the text carries the
+data. Its code loads on demand with the wait times page's chunk, after the page's text paints.
+
+It shows from midnight of the first early voting day (County or City) to Election Day's poll
+close, in the config's time zone (`src/features/waitTimes/homeMapWindow.js`), and
+`waitTimes.homeMap: false` in the config turns it off. The pages are pre-rendered before the
+date is known, so the build writes a few hundred bytes of plain script from those dates,
+`/assets/home-map-<hash>.js`, loaded first in every page's head (`src/prerender/homeMapScript.js`;
+same origin, so the Content-Security-Policy allows it). While the window is open it marks
+`<html>` with `data-home-map`, and `src/index.css` then reserves the map's box at the height of
+its tallest state before the first paint, so nothing below it moves when the map arrives (the
+e2e checks hold the app's script and compare the address search's position). Outside the
+window, and with JavaScript off, the box takes no space. The box closes, leaving the home page
+as it was, only when the map cannot be drawn (its chunk or a board's site list fails); stale or
+missing counts keep it, with every site a ring and a line saying so, since closing it then would
+move the page. The outlines are a committed module, `src/features/waitTimes/outline.js`, built
+from the County's and the City's own boundary layers by `node scripts/build-outline.mjs`
+(docs/data.md, County boundary); the daily data health check runs it with `--check`.
 
 ## Contributing
 

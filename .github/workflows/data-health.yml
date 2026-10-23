@@ -39,11 +39,12 @@ jobs:
     runs-on: ubuntu-latest
     # Worst case with every request slow: about 26 minutes for the config check
     # (30 requests with the wait time layers, 3 tries of 15 s each, about 51 s
-    # each with the waits) and 16 for the geocoder check. A job
+    # each with the waits), 16 for the geocoder check and under 1 for the
+    # outline check (two requests, #184). A job
     # that hits its limit is cancelled and reports nothing, so each live check
     # has its own step limit, which fails that step and still opens the issue.
     # The job limit is the step limits plus setup.
-    timeout-minutes: 78
+    timeout-minutes: 83
     steps:
       # The token may write issues: do not leave it in .git/config, where
       # dependency install scripts could read it.
@@ -112,6 +113,14 @@ jobs:
 
       # These run even when an earlier check failed, so one issue reports all.
       # The open-hours runs (mode `waits`) skip them: once a day is enough.
+      # The home page's dot map outlines (#184): the County's and the City's
+      # boundary layers still answer and still match the committed module.
+      - name: Outline check
+        id: outline
+        if: ${{ !cancelled() && steps.window.outputs.active == 'true' && steps.window.outputs.mode == 'full' }}
+        timeout-minutes: 5
+        run: node scripts/build-outline.mjs --check
+
       - name: Geocoder check
         id: geocoder
         if: ${{ !cancelled() && steps.window.outputs.active == 'true' && steps.window.outputs.mode == 'full' }}
@@ -153,6 +162,7 @@ jobs:
           CONFIG_OUTCOME: ${{ steps.config.outcome }}
           GEOCODER_OUTCOME: ${{ steps.geocoder.outcome }}
           LINKS_OUTCOME: ${{ steps.links.outcome }}
+          OUTLINE_OUTCOME: ${{ steps.outline.outcome }}
         run: |
           run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           body="The data health check failed on $(date -u +%Y-%m-%d).
@@ -160,6 +170,7 @@ jobs:
           - Election config check (scripts/check-config.mjs): $CONFIG_OUTCOME
           - Geocoder check (scripts/check-geocoder.mjs): $GEOCODER_OUTCOME
           - Content link check (scripts/check-content-links.mjs): $LINKS_OUTCOME
+          - Outline check (scripts/build-outline.mjs --check): $OUTLINE_OUTCOME
 
           Log: $run_url"
           warnings_file="$RUNNER_TEMP/wait-warnings.txt"
