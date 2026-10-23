@@ -7,6 +7,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { build } from 'vite';
+import cityResults from '../config/cityResults.js';
+import election from '../config/election.js';
 import {
   colorLiterals,
   declarations,
@@ -178,6 +180,25 @@ describe('production build', () => {
   it('keeps the City data client out of the first load', () => {
     const firstLoad = [...html.matchAll(/(?:src|href)="\/assets\/([\w-]+\.js)"/g)].map((m) => m[1]);
     for (const f of firstLoad) expect(js[f], f).not.toContain('has no inside to ask at');
+  });
+
+  // The City-only results UI and its config (#91, #147) come with the City
+  // chunk, never the first load: the City's early voting site ids and its
+  // quoted Election Day rule mark them.
+  it('keeps the City-only results UI and its config out of the first load', () => {
+    const firstLoad = [...html.matchAll(/(?:src|href)="\/assets\/([\w-]+\.js)"/g)].map((m) => m[1]);
+    // Not the Board office's id: the Election Day filter in the first load names it.
+    const { pollsWhere } = election.jurisdictions.city;
+    const marks = [
+      ...Object.keys(cityResults.earlyVoting.sites).filter((id) => !pollsWhere.includes(id)),
+      cityResults.electionDayRule.quote.slice(0, 40),
+    ];
+    for (const f of firstLoad) {
+      for (const mark of marks) expect(js[f].includes(mark), `${f}: ${mark}`).toBe(false);
+    }
+    const chunk = Object.keys(js).find((f) => f.startsWith('cityChunk-'));
+    expect(chunk).toBeDefined();
+    for (const mark of marks) expect(js[chunk].includes(mark), mark).toBe(true);
   });
 
   // Performance budget (#27): every script the first load fetches (the entry

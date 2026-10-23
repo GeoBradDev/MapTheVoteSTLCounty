@@ -105,17 +105,27 @@ describe('adapters', () => {
     }
   });
 
-  it('the City early voting sites answer not found without a request (until #91)', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+  it('the City early voting sites come from the City client, with its filter (#91)', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(() =>
+        Promise.resolve(new Response(JSON.stringify({ features: [] }), { status: 200 })),
+      );
     try {
-      await expect(city.getEarlyVotingSites()).rejects.toBeInstanceOf(arcgis.NotFound);
-      expect(fetchSpy).not.toHaveBeenCalled();
+      await city.getEarlyVotingSites();
+      const urls = fetchSpy.mock.calls.map(([input]) =>
+        decodeURIComponent(String(input).replace(/\+/g, ' ')),
+      );
+      const { city: block } = config;
+      expect(urls).toHaveLength(1);
+      expect(urls[0].startsWith(`${block.serviceRoot}/${block.layers.sites}/query`)).toBe(true);
+      expect(urls[0]).toContain(block.earlyVotingWhere);
     } finally {
       fetchSpy.mockRestore();
     }
   });
 
-  it('loads the City data client on demand, once (#87)', async () => {
+  it('loads the City chunk on demand, once: the data client and the City UI (#87, #147)', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
     try {
       const client = await loadCityClient();
@@ -129,6 +139,9 @@ describe('adapters', () => {
         'getCityPolls',
         'getCityEarlyVotingSites',
         'isInCityBoundary',
+        'CityEarlyVotingCard',
+        'CityElectionDayRule',
+        'cityScheduleFor',
       ]) {
         expect(typeof client[name], name).toBe('function');
       }

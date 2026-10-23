@@ -17,6 +17,7 @@ import { realpathSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse as parseHtml } from 'parse5';
+import cityResults from '../src/config/cityResults.js';
 import election from '../src/config/election.js';
 import { isOfficialUrl } from '../src/features/learn/content/officialSources.js';
 import { readTopicFile } from '../src/features/learn/content/topic.js';
@@ -93,14 +94,15 @@ const CONFIG_FILE = 'src/config/election.js';
  * `serviceRoot` and the layer paths are not pages; check-config.mjs checks
  * them.
  * @param {object} config An election config, like src/config/election.js.
+ * @param {string} [file] The file it is in, for the report.
  * @returns {{ url: string, files: string[] }[]}
  */
-export function configLinks(config) {
+export function configLinks(config, file = CONFIG_FILE) {
   const byUrl = new Map();
   const add = (url, key) => {
     if (typeof url !== 'string' || !/^https?:\/\//.test(url)) return;
     if (!byUrl.has(url)) byUrl.set(url, []);
-    const label = `${CONFIG_FILE} (${key})`;
+    const label = `${file} (${key})`;
     if (!byUrl.get(url).includes(label)) byUrl.get(url).push(label);
   };
   const walk = (value, prefix) => {
@@ -423,7 +425,12 @@ async function main(args) {
   }
   const topics = await collectLinks(ROOT);
   const { unreadable } = topics;
-  const links = mergeLinks(topics.links, configLinks(election));
+  const links = mergeLinks(
+    topics.links,
+    configLinks(election),
+    // The City's results page values, in their own file (#91).
+    configLinks(cityResults, 'src/config/cityResults.js'),
+  );
   for (const { file, detail } of unreadable) console.log(`FAIL ${file}: cannot read it: ${detail}`);
   // The skipped list is kept current after every URL, so a step that times out
   // still reports the skips it found.

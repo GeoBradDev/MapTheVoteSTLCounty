@@ -21,6 +21,7 @@ const FIXTURES = {
 // The City precinct the fixtures hold (#89), and its layers.
 const CITY_FIXTURES = {
   polls: fixture('city-polls'),
+  earlyVoting: fixture('city-early-voting-sites'),
   byId: fixture('city-precinct-by-id'),
   geometry: fixture('city-precinct-geometry'),
 };
@@ -43,10 +44,10 @@ const STALE_SHIFT_MS = (election.waitTimes.maxAgeMinutes + 60) * 60_000;
  * The early voting line counts (#102, #104, #106) for each board, by state.
  * Recorded on 2026-10-22: the County at 9:00 a.m. Central (fresh) and while
  * closed (empty); the City at 9:26 a.m. (fresh) and 7:44 a.m. (stale: every
- * report from the day before). The fresh City recording has no hours field,
- * the stale one's reports are a day old, and the page lists no City sites yet
- * (#91), so no City count shows in any state; the City states prove the page
- * does not depend on them.
+ * report from the day before). The fresh City recording has no hours field and
+ * the stale one's reports are a day old, so no City count shows in any state,
+ * although the page lists the City's sites (#91); the City states prove the
+ * page does not depend on them.
  */
 const WAIT_FIXTURES = {
   county: {
@@ -83,21 +84,27 @@ const cityBlock = election.jurisdictions.city;
 /**
  * Whether a request is for one of the City Board's election layers (its
  * precincts, districts or voting locations), not its wait time query, which
- * asks the voting locations layer too.
+ * asks the voting locations layer too, with the early voting sites' own
+ * filter: the wait query asks for rows (f=json), the sites query (#91) for
+ * GeoJSON.
  * @param {string} href
  * @param {URLSearchParams} params The URL's and a POST body's parameters.
  */
 export function isCityElectionLayer(href, params) {
   if (!href.startsWith(`${cityBlock.serviceRoot}/`)) return false;
   const wait = href.startsWith(waitLayer(election.waitTimes.city));
-  return !(wait && params.get('where') === election.waitTimes.city.where);
+  const waitQuery =
+    params.get('where') === election.waitTimes.city.where && params.get('f') !== 'geojson';
+  return !(wait && waitQuery);
 }
 
-// The City layers' answer: the voting locations, or CITY_CODE's precinct and
+// The City layers' answer: the Election Day or early voting locations, or CITY_CODE's precinct and
 // outline; nothing for any other precinct or layer.
 function cityBody(url, params) {
   if (url.pathname.includes(cityBlock.layers.sites)) {
-    return params.get('where') === cityBlock.pollsWhere ? CITY_FIXTURES.polls : { features: [] };
+    const where = params.get('where');
+    if (where === cityBlock.pollsWhere) return CITY_FIXTURES.polls;
+    return where === cityBlock.earlyVotingWhere ? CITY_FIXTURES.earlyVoting : { features: [] };
   }
   const id = CITY_FIXTURES.byId.features[0].attributes[cityBlock.precinctField];
   const ours = params.get('where') === `${cityBlock.precinctField}='${id}'`;

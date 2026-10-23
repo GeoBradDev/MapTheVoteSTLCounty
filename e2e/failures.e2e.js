@@ -449,10 +449,14 @@ test.describe('early voting wait times', () => {
     await expectNoCounts(page, list);
   });
 
-  test('City line counts failing leaves the County counts shown', async ({ page }) => {
+  // The page lists the City's sites too (#91), so the City's counts failing is
+  // said, and the County's counts stay shown.
+  test('City line counts failing: the page says so and keeps the County counts', async ({
+    page,
+  }) => {
     await services(page, { cityWaits: 503 });
     const list = await open(page);
     await expect(list.getByText(COUNT).first()).toBeVisible();
-    await expect(page.getByTestId('wait-status-shown')).toHaveText(/^Line counts checked at /);
+    await expect(page.getByTestId('wait-status-shown')).toHaveText(waitCopy.status.unavailable);
   });
 });

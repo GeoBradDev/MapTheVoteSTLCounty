@@ -51,28 +51,23 @@ export const county = Object.freeze({
 let cityClient;
 
 /**
- * The City's data code (./cityArcgis.js, #87), loaded on first use so it stays
- * out of the first load. A failed load is not kept, so the next call tries
- * again.
- * @returns {Promise<typeof import('./cityArcgis.js')>}
+ * The City chunk (src/cityChunk.js): the City's data code (./cityArcgis.js,
+ * #87), the City-only results UI and src/config/cityResults.js (#91), loaded
+ * on first use so they stay out of the first load (#147). A failed load is not
+ * kept, so the next call tries again.
+ * @returns {Promise<typeof import('../cityChunk.js')>}
  */
 export function loadCityClient() {
-  cityClient ??= import('./cityArcgis.js').catch((error) => {
+  cityClient ??= import('../cityChunk.js').catch((error) => {
     cityClient = undefined;
     throw error;
   });
   return cityClient;
 }
 
-// The City early voting card is not built yet (#91), so its sites are "not
-// found" without a request: the page asks for them before the precinct
-// answers, and fetching them would load a layer no card shows.
-const earlyVotingNotYet = () =>
-  Promise.reject(new arcgis.NotFound('City early voting sites are not served yet (#91)'));
-
 /**
- * @type {Jurisdiction} The City (#89): its data code in ./cityArcgis.js, loaded
- * on first use.
+ * @type {Jurisdiction} The City (#89): its data code in ./cityArcgis.js, from
+ * the City chunk, loaded on first use.
  */
 export const city = Object.freeze({
   id: 'city',
@@ -83,7 +78,7 @@ export const city = Object.freeze({
   boardSiteUrl: referrals.stlCityBoard.url,
   getPrecinct: (code) => loadCityClient().then((c) => c.getCityPrecinctById(code)),
   getPolls: () => loadCityClient().then((c) => c.getCityPolls()),
-  getEarlyVotingSites: earlyVotingNotYet,
+  getEarlyVotingSites: () => loadCityClient().then((c) => c.getCityEarlyVotingSites()),
   getOutline: (code) => loadCityClient().then((c) => c.getCityPrecinctGeometry(code)),
 });
 

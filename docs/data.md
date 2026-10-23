@@ -90,7 +90,7 @@ says it. The City of St. Louis Board says City voters may vote at any of its lis
 locations
 (https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/polling-places/index.cfm,
 read 2026-10-21, re-read 2026-10-22); that is the City's own rule. A City results page quotes
-it (`electionDayRule` in the City block, #89).
+it (`electionDayRule` in `src/config/cityResults.js`, #89).
 
 The data assigns no polling place to a precinct (checked again 2026-10-21):
 - No precinct field exists on `polls_2026_11_view`, and no polling place field
@@ -268,6 +268,12 @@ nearest few sites, so it shows no per-row "no count" text: when none of the site
 a current count, one line under the list says so. That 2-hour rule applies to both
 jurisdictions; the City dashboard's own 1-hour "may be out of date" mark (below) is the City's
 display, not this app's cutoff.
+
+The wait times page lists both boards' sites (#91), each row naming the board that runs it, since
+each board's sites are for its own voters (a County voter votes absentee with the County board,
+a City voter with the City board). Its "Line counts checked at" line says the counts are
+unavailable when either board's cannot be loaded. A City precinct's early voting card asks the
+City's wait time layer only, through its own loop on the same rules.
 
 The real responses are in `docs/raw/fixtures/` (`county-waits-*.json`,
 `city-waits-*.json`), and `src/data/waitFixtures.test.js` checks the join and freshness
@@ -876,9 +882,11 @@ City block holds only what is confirmed. The City board's site and lookup page (
 places page, with the Assigned Polling Place Lookup) do not change between elections, so they
 are in `src/config/referrals.js`. `src/data/jurisdictions.js` pairs each block with its data:
 the County's is `src/data/arcgis.js`. The City's data client is `src/data/cityArcgis.js`
-(#87), loaded on demand through `loadCityClient()`. The City adapter (#89) reads the
-precinct, its outline and the Election Day voting locations through it; it answers "not
-found" for the early voting sites, without a request, until the City early voting card (#91).
+(#87), loaded on demand through `loadCityClient()` in the City chunk (`src/cityChunk.js`, #147),
+with the City-only results UI and `src/config/cityResults.js`, the values only the City's cards
+read (its early voting hours, #91, and its Election Day rule, #89). The City adapter (#89, #91)
+reads the precinct, its outline, the Election Day voting locations and the early voting sites
+through it.
 
 ## St. Louis City
 
@@ -988,7 +996,23 @@ fields (`pocname`, `pocemail`, `pocphone`).
   Carpenter, Julia Davis, Kingshighway, Schlafly and Walnut Park libraries, St. Joan of Arc, and
   the Board office). Their `earlyvotingoperhours` match the page's hours, except that the Board
   office's `Mo-Fr (08:00-17:00)` leaves out the page's "Last Saturday Before Election Day: 9
-  AM-1 PM" (#91 decides how hours are shown).
+  AM-1 PM". The text is hand-typed and uneven (a stray `)`, missing spaces), so the app does not
+  parse it for the hours it shows (#91): `earlyVoting` in `src/config/cityResults.js` holds each
+  site's hours by weekday, from the page (re-read 2026-10-22: the Buder, Schlafly and Julia Davis
+  libraries Monday 1 to 4 p.m., Tuesday 11 to 5, Wednesday and Thursday 11 to 7, Friday and
+  Saturday 11 to 4:30; the Carpenter, Kingshighway and Walnut Park libraries the same but 11 to 5
+  Tuesday to Thursday; St. Joan of Arc as Buder, October 27 to November 2 only; the Board office
+  weekdays 8 to 5 and Saturday, October 31, 9 to 1; all closed Sundays), and the dates from the
+  City Board's No Excuse Absentee page ("the two weeks prior to each election": October 20 to
+  November 2), which match the layer's `earlyvotingstartdate` and `earlyvotingenddate`. Only
+  the wait time selection reads `earlyvotingoperhours`, to show a count only while a site is
+  open, as the City Board's dashboard does. `node scripts/check-config.mjs` fails while a site the
+  filter returns has no hours in the config. The City early voting card and the wait times page
+  show these sites; the card cites the No Excuse Absentee page rather than stating who may vote
+  this way, and for voting by mail links the City Board's Apply to Vote Absentee page
+  (`.../voter/absentee/vote-by-absentee-ballot.cfm`, which covers both ways to vote absentee;
+  the No Excuse page says it has no mail option), not the absentee topic, which is written for
+  County voters (a City topic is #94).
 - **Not the Election Day list:** `ElectionGeography_public_*` layer 0 has the same 57 public
   rows (it is a view, `publicview = 'Yes'`, of the same data) without the ZIP fields.
   `Polling_Centers_WFL1/FeatureServer/1` is the page's own embedded map ("Active Polling

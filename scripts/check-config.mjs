@@ -17,6 +17,7 @@
 
 import { realpathSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import cityResults from '../src/config/cityResults.js';
 import election from '../src/config/election.js';
 import { PRECINCT_CODE } from '../src/data/arcgis.js';
 import { cityPrecinctCode } from '../src/data/cityPrecinctCode.js';
@@ -221,6 +222,8 @@ export async function runHealthCheck(
     timeoutMs = 15000,
     attempts = 3,
     now: fixedNow,
+    // The City's early voting hours (src/config/cityResults.js, #91).
+    cityEarlyVoting = cityResults.earlyVoting,
   } = {},
 ) {
   const results = [];
@@ -813,11 +816,21 @@ export async function runHealthCheck(
       }
       return `${rows.length} Election Day sites, as the City Board lists; ${noZip} without a ZIP`;
     });
-    await sitesCheck(
-      'city early voting sites',
-      'earlyVotingWhere',
-      (rows) => `${rows.length} sites`,
-    );
+    await sitesCheck('city early voting sites', 'earlyVotingWhere', (rows) => {
+      // Every site needs its hours in src/config/cityResults.js, or the card
+      // and the wait times page show it with no status (#91).
+      const scheduled = cityEarlyVoting?.sites ?? {};
+      const noHours = rows
+        .map((r) => String(r[city.siteFields.id] ?? '').trim())
+        .filter((id) => !cityEarlyVoting?.schedules?.[scheduled[id]]?.length);
+      if (noHours.length) {
+        throw new CheckError(
+          `${noHours.join(', ')} ${noHours.length === 1 ? 'has' : 'have'} no hours in ` +
+            'earlyVoting.sites in src/config/cityResults.js',
+        );
+      }
+      return `${rows.length} sites, each with its hours`;
+    });
 
     if (ok.precincts && ok.districts && ok.boundary) {
       await check('city known points', async () => {

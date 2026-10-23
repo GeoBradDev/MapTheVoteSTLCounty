@@ -11,10 +11,17 @@ import {
   robotsTxt,
   sitemapXml,
 } from '../features/learn/content/searchEngines.js';
+import cityResults from '../config/cityResults.js';
 import election from '../config/election.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
-const CONFIG = path.join(ROOT, 'src/config/election.js');
+// The election config: election.js, and the values only the City's results
+// cards read, kept in their own file so they load only with the City chunk
+// (#91, #147).
+const CONFIGS = [
+  path.join(ROOT, 'src/config/election.js'),
+  path.join(ROOT, 'src/config/cityResults.js'),
+];
 
 // Source links mostly cite the county site and statutes, which other pages may
 // link too, and a verification date is not the election's. Neither is
@@ -145,11 +152,17 @@ describe('election-specific values', () => {
     }
   });
 
+  it("collects the City's early voting dates from their own config file (#91)", () => {
+    const { earlyVoting } = cityResults;
+    expect(electionValues(cityResults)).toContain(earlyVoting.schedules.board[0].from);
+    expect(electionValues(cityResults)).not.toContain(earlyVoting.lastVerified);
+  });
+
   it('appear only in the election config', async () => {
     const files = [...(await sourceFiles(path.join(ROOT, 'src'))), path.join(ROOT, 'index.html')];
-    const values = electionValues();
+    const values = [...new Set([...electionValues(), ...electionValues(cityResults)])];
     const found = [];
-    for (const file of files.filter((f) => f !== CONFIG)) {
+    for (const file of files.filter((f) => !CONFIGS.includes(f))) {
       const text = await readFile(file, 'utf8');
       for (const value of values) {
         if (text.includes(value)) found.push(`${path.relative(ROOT, file)}: ${value}`);

@@ -48,15 +48,22 @@ const ROUTES = [
     },
   },
   {
-    // A City precinct (#89): the City's polling places, its Election Day rule
-    // and the cards still to come.
+    // A City precinct (#89): the City's polling places, its Election Day rule,
+    // its early voting card (#91) with a site's hours open, and the cards
+    // still to come. At the time the wait fixtures were recorded, so the
+    // early voting card runs its line count UI.
     path: `/p/${CITY_CODE}`,
+    at: WAITS_RECORDED_AT,
     ready: async (page) => {
       await expect(page.getByText(`Results for precinct ${CITY_CODE} are ready.`)).toBeAttached();
       await expect(page.getByRole('list', { name: 'Nearest polling places' })).toBeVisible();
       await expect(
         page.getByText('The St. Louis City Board of Election Commissioners says:'),
       ).toBeVisible();
+      const early = page.getByRole('list', { name: 'Nearest early voting sites' });
+      await expect(early.getByRole('heading', { level: 3 }).first()).toBeVisible();
+      await early.getByText('Dates and hours').first().click();
+      await expect(early.getByText(/^Monday: /).first()).toBeVisible();
     },
   },
   {
@@ -65,12 +72,14 @@ const ROUTES = [
   },
   {
     // The wait times page (#104), at the time the wait fixtures were recorded,
-    // so the County's line counts show.
+    // so the County's line counts show, with the City's sites (#91).
     path: '/early-voting',
     at: WAITS_RECORDED_AT,
     ready: async (page) => {
-      await expect(page.getByRole('list', { name: 'Early voting sites' })).toBeVisible();
+      const list = page.getByRole('list', { name: 'Early voting sites' });
+      await expect(list).toBeVisible();
       await expect(page.getByText(/people in line, reported/).first()).toBeVisible();
+      await expect(list.getByRole('heading', { name: 'Buder Library' })).toBeVisible();
     },
   },
   {

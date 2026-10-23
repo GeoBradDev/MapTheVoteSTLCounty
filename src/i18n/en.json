@@ -210,7 +210,7 @@
       "missing": "We could not find the sample ballot for this precinct. Find it with the"
     },
     "earlyVoting": {
-      "intro": "Places to vote in person before Election Day, with the county's dates and hours.",
+      "intro": "Places to vote in person before Election Day, with their dates and hours.",
       "groupsLabel": "Dates and hours",
       "groups": {
         "boe": "Board of Elections office",
@@ -234,6 +234,8 @@
       "showAll": "Show all {count} early voting sites",
       "note": "Note:",
       "mail": "To vote by mail or with an absentee ballot, see",
+      "mailCity": "To vote by mail or with an absentee ballot, see the",
+      "noExcuseCity": "No Excuse Absentee page",
       "howToVote": "How to vote",
       "or": "or the",
       "countySite": "St. Louis County Board of Elections website",
@@ -288,10 +290,10 @@
   },
   "waitTimes": {
     "heading": "Early voting wait times",
-    "intro": "How many people are in line right now at each St. Louis County early voting site, as the county board's staff report it. No address needed.",
+    "intro": "How many people are in line right now at each St. Louis County and St. Louis City early voting site, as each board's staff report it. No address needed.",
     "season": {
       "before": "Early voting runs from {from} to {to}. Line counts show here while sites are open.",
-      "ended": "Early voting has ended. On Election Day, vote at your assigned polling place.",
+      "ended": "Early voting has ended.",
       "findPollingPlace": "Find your polling place"
     },
     "status": {
@@ -336,7 +338,7 @@
       "binOpen": "{min} or more",
       "noCount": "No current count"
     },
-    "city": "St. Louis City early voting sites are not listed here yet. The City board's own wait times dashboard is linked under Official sources below.",
+    "city": "Each board's sites are for its own voters: St. Louis County voters vote at County sites, and St. Louis City voters at City sites.",
     "cityLink": "{board} wait times dashboard",
     "disclaimer": "Each board's staff report these counts, and lines change quickly. A count is a guide, not a promise of how long you will wait.",
     "sources": "Official sources:",

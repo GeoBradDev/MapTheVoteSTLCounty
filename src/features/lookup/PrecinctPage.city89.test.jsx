@@ -6,9 +6,11 @@ import { configure, getConfig, render, screen, waitFor, within } from '@testing-
 import userEvent from '@testing-library/user-event';
 import { Route, Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
+import cityEarlySites from '../../../docs/raw/fixtures/city-early-voting-sites.json';
 import cityPolls from '../../../docs/raw/fixtures/city-polls.json';
 import cityById from '../../../docs/raw/fixtures/city-precinct-by-id.json';
 import cityGeometry from '../../../docs/raw/fixtures/city-precinct-geometry.json';
+import cityResults from '../../config/cityResults.js';
 import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
 import { formatLongDate } from './earlyVoting.js';
@@ -18,6 +20,7 @@ import { copy } from './resultsCopy.js';
 
 const CODE = 'W01P12';
 const city = election.jurisdictions.city;
+const rule = cityResults.electionDayRule;
 
 let fetchMock;
 let PrecinctPage;
@@ -36,7 +39,10 @@ function routeFetch({ fail = [] } = {}) {
     if (!url.href.startsWith(city.serviceRoot)) throw new Error(`Not a City layer: ${url.href}`);
     const key = url.pathname.includes(city.layers.sites) ? 'sites' : 'precincts';
     if (fail.includes(key)) return respond({ error: 'down' }, 500);
-    if (key === 'sites') return respond(cityPolls);
+    if (key === 'sites') {
+      const early = url.searchParams.get('where') === city.earlyVotingWhere;
+      return respond(early ? cityEarlySites : cityPolls);
+    }
     const asked = url.searchParams.get('where') ?? '';
     if (!asked.includes(cityById.features[0].attributes[city.precinctField])) return respond(empty);
     return respond(url.searchParams.get('f') === 'geojson' ? cityGeometry : cityById);
@@ -134,15 +140,13 @@ describe('a City precinct page (#89)', () => {
     renderAt(CODE);
     await screen.findByRole('list', { name: copy.polls.listLabel });
     const card = pollsCard();
-    expect(card).toHaveTextContent(city.electionDayRule.quote);
+    expect(card).toHaveTextContent(rule.quote);
     const source = within(card).getByRole('link', {
       name: copy.polls.sourceNames['www.stlouis-mo.gov'],
     });
-    expect(source).toHaveAttribute('href', referrals[city.electionDayRule.source].url);
+    expect(source).toHaveAttribute('href', referrals[rule.source].url);
     expect(card).toHaveTextContent(
-      copy.earlyVoting.lastVerified(
-        formatLongDate(city.electionDayRule.lastVerified, { year: true }),
-      ),
+      copy.earlyVoting.lastVerified(formatLongDate(rule.lastVerified, { year: true })),
     );
     // Nothing of the County's rule: no phone number, no Secretary of State lookup.
     expect(card).not.toHaveTextContent(election.electionDayPollingPlace.phone);
@@ -165,23 +169,41 @@ describe('a City precinct page (#89)', () => {
     routeFetch();
     renderAt(CODE);
     await ready(CODE);
-    for (const title of [copy.cards.ballot, copy.cards.earlyVoting, copy.cards.districts]) {
+    for (const title of [copy.cards.ballot, copy.cards.districts]) {
       const card = screen.getByRole('region', { name: title });
       const link = within(card).getByRole('link', { name: copy.map.city });
       expect(link).toHaveAttribute('href', referrals.stlCityBoard.url);
     }
   });
 
-  it('asks only the City layers, and never for the early voting sites yet (#91)', async () => {
+  it('asks only the City layers, the early voting sites with their own filter (#91)', async () => {
     routeFetch();
     renderAt(CODE);
     await screen.findByRole('list', { name: copy.polls.listLabel });
+    await screen.findByRole('list', { name: copy.earlyVoting.listLabel });
     const urls = fetchMock.mock.calls.map(([input]) => new URL(input));
     expect(urls.length).toBeGreaterThan(0);
-    for (const url of urls) {
-      expect(url.href.startsWith(city.serviceRoot)).toBe(true);
-      expect(url.searchParams.get('where')).not.toBe(city.earlyVotingWhere);
+    // Its line counts too (the City card's own loop asks only the City layer).
+    for (const url of urls) expect(url.href.startsWith(city.serviceRoot), url.href).toBe(true);
+    const wheres = urls.map((url) => url.searchParams.get('where'));
+    expect(wheres).toContain(city.earlyVotingWhere);
+    expect(wheres).toContain(city.pollsWhere);
+  });
+
+  it('shows the City early voting card: the nearest City sites with their hours (#91)', async () => {
+    routeFetch();
+    renderAt(CODE);
+    const card = () => screen.getByRole('region', { name: copy.cards.earlyVoting });
+    const list = await screen.findByRole('list', { name: copy.earlyVoting.listLabel });
+    expect(card()).toContainElement(list);
+    expect(list.children).toHaveLength(election.nearbyPollCount);
+    const names = cityEarlySites.features.map((f) => f.properties.name);
+    for (const row of list.children) {
+      expect(names).toContain(within(row).getByRole('heading', { level: 3 }).textContent);
     }
+    expect(card()).toHaveTextContent(copy.earlyVoting.groupsLabel);
+    // Not the pending card's link to the City Board's home page.
+    expect(card().querySelector(`a[href="${referrals.stlCityBoard.url}"]`)).toBeNull();
   });
 
   it('shows the failure state with the City lookup when the City precincts fail', async () => {
@@ -201,7 +223,7 @@ describe('a City precinct page (#89)', () => {
     const link = within(alert).getByRole('link', { name: copy.officialLookupFor('city') });
     expect(link).toHaveAttribute('href', referrals.stlCityLookup.url);
     expect(within(pollsCard()).getByRole('button', { name: errorCopy.retry })).toBeInTheDocument();
-    expect(pollsCard()).toHaveTextContent(city.electionDayRule.quote);
+    expect(pollsCard()).toHaveTextContent(rule.quote);
   });
 
   it('says an unknown City code is not found, with the City lookup', async () => {

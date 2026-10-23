@@ -281,9 +281,19 @@ function stubFetch(world) {
   };
 }
 
+// City early voting hours for every early voting site of a world (#91).
+function hoursFor(world) {
+  const ids = world.city.earlyVoting.map((row) => row[cityConfig.siteFields.id]);
+  return {
+    sites: Object.fromEntries(ids.map((id) => [id, 'all'])),
+    schedules: { all: [{ from: '', to: '', days: [1], open: '08:00', close: '17:00' }] },
+  };
+}
+
 async function run(world, config = election, options = {}) {
   const results = await runHealthCheck(config, {
     fetch: stubFetch(world),
+    cityEarlyVoting: hoursFor(world),
     sample: (items, count) => items.slice(0, count),
     retryDelayMs: 0,
     now: NOW,
@@ -327,7 +337,7 @@ describe('runHealthCheck', () => {
     expect(results['city voting locations'].detail).toBe(
       `${cityConfig.pollsListed} Election Day sites, as the City Board lists; 7 without a ZIP`,
     );
-    expect(results['city early voting sites'].detail).toBe('8 sites');
+    expect(results['city early voting sites'].detail).toBe('8 sites, each with its hours');
     expect(results['precinct count'].detail).toBe('1000 precincts, 990 In Election');
     expect(results['sample ballot PDFs'].detail).toMatch(/^5 of 5/);
   });
@@ -1320,6 +1330,18 @@ describe('the City layers (#87)', () => {
     few.city.precincts = few.city.precincts.slice(0, 20);
     const { min, max } = CITY_PRECINCT_RANGE;
     expect((await run(few))['city precincts'].detail).toBe(`20 precincts, want ${min} to ${max}`);
+  });
+
+  it('fails when a City early voting site has no hours in the City config (#91)', async () => {
+    const world = healthyWorld();
+    const hours = hoursFor(world);
+    const id = world.city.earlyVoting[2][cityConfig.siteFields.id];
+    delete hours.sites[id];
+    const results = await run(world, election, { cityEarlyVoting: hours });
+    expect(results['city early voting sites']).toMatchObject({
+      status: 'fail',
+      detail: `${id} has no hours in earlyVoting.sites in src/config/cityResults.js`,
+    });
   });
 
   it('fails when a site filter finds nothing, and warns when the list is not the expected count', async () => {

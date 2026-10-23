@@ -2,12 +2,15 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'wouter';
 import { usePageTitle } from '../../components/usePageTitle.js';
 import election from '../../config/election.js';
+import referrals from '../../config/referrals.js';
 import { getAbsenteeSites } from '../../data/arcgis.js';
+import { loadCityClient } from '../../data/jurisdictions.js';
 import { isFresh, layerMaxAgeMs } from '../../data/freshness.js';
 import { focusHeadingOnArrival } from '../../hydrate.js';
 import { getDeviceLocation } from '../lookup/deviceLocation.js';
 import { earlyVotingStatus, formatLongDate, hoursOn, zonedNow } from '../lookup/earlyVoting.js';
 import { distanceMiles, directionsLinks, isAppleMobile, pollRows } from '../lookup/nearbyPolls.js';
+import { Entrances } from '../lookup/PollsCard.jsx';
 import { copy as resultsCopy } from '../lookup/resultsCopy.js';
 import RetryButton from '../lookup/RetryButton.jsx';
 import { useNow } from '../lookup/useNow.js';
@@ -59,18 +62,89 @@ function useShownCheck(latest) {
 }
 
 /**
- * The absentee sites, loaded once with a retry on failure (#18), and loaded
- * again when the tab is shown after the layer max age (#84). A refresh that
- * fails keeps the rows.
+ * The City's early voting sites, with the schedules to read them by, from the
+ * City chunk (#91, #147).
+ * @returns {Promise<{ layer: object, scheduleFor: (loc: string | null) => object[] | undefined,
+ *   schedules: Record<string, object[]> }>}
  */
-function useSites(loadSites) {
+async function loadCitySites() {
+  const chunk = await loadCityClient();
+  return {
+    layer: await chunk.getCityEarlyVotingSites(),
+    scheduleFor: chunk.cityScheduleFor,
+    schedules: chunk.citySchedules,
+  };
+}
+
+// Each board's part of a load: its rows, each with its `jurisdiction`, the
+// schedule it keeps and its key in that board's line counts, and when they
+// loaded.
+function countyPart(value) {
+  const rows = pollRows(value).map((row) => ({
+    ...row,
+    jurisdiction: 'county',
+    schedule: schedules[row.absType],
+  }));
+  return { rows, loadedAt: value.loadedAt ?? Date.now() };
+}
+
+function cityPart(value) {
+  const { layer, scheduleFor } = value;
+  // The City's counts are keyed by the site's name (waitTimes.city.siteField).
+  const rows = pollRows(layer).map((row) => ({
+    ...row,
+    jurisdiction: 'city',
+    waitKey: row.name,
+    schedule: scheduleFor(row.loc),
+  }));
+  return { rows, loadedAt: layer.loadedAt ?? Date.now(), schedules: value.schedules };
+}
+
+/**
+ * Both boards' sites as one list, as each board's part settles: a part is
+ * undefined while it loads and null when it failed, and a board whose part
+ * failed or is loading again keeps the part it last loaded (`prev`). The list
+ * shows once one board has rows, without waiting for the other; `failed`
+ * names a board with no rows once its load failed. Both failing is an error;
+ * nothing loaded yet keeps `prev` (null on the first load: the skeleton).
+ */
+function combine(prev, parts, attempt) {
+  // Loaded now; else, while loading, what it was; else, failed now, what it
+  // last loaded or null.
+  const pick = (key) =>
+    parts[key] || (parts[key] === undefined ? prev?.[key] : prev?.[key] || null);
+  const county = pick('county');
+  const city = pick('city');
+  if (county === null && city === null) return { error: true, attempt };
+  if (!county && !city) return prev;
+  const loaded = [county, city].filter(Boolean);
+  return {
+    county,
+    city,
+    rows: loaded.flatMap((part) => part.rows),
+    loadedAt: Math.min(...loaded.map((part) => part.loadedAt)),
+    failed: county === null ? 'county' : city === null ? 'city' : null,
+    attempt,
+    citySchedules: city?.schedules ?? null,
+  };
+}
+
+/**
+ * Both boards' sites, loaded once with a retry on failure (#18), and loaded
+ * again when the tab is shown after the layer max age (#84). A refresh that
+ * fails, in whole or in part, keeps the rows of a load that did not.
+ */
+function useSites(loadSites, loadCity) {
   const [result, setResult] = useState(null);
   const { attempt, loading, retry, done, targetRef } = useRetry();
   const [refresh, setRefresh] = useState(0);
   const loadedAtRef = useRef(null);
+  // The result shown, read when a load starts.
+  const shownRef = useRef(null);
 
   useEffect(() => {
     loadedAtRef.current = result?.rows ? result.loadedAt : null;
+    shownRef.current = result;
   }, [result]);
 
   useEffect(() => {
@@ -85,28 +159,43 @@ function useSites(loadSites) {
 
   useEffect(() => {
     let current = true;
+    // Each board's part as it settles, so a slow board never holds up the
+    // other's list. A retry of a failure shows its answer only once both have
+    // settled, so the failure and its busy Try again stay in place (and focus
+    // on it) until then, and the alert is read again only if it still fails.
+    const parts = { county: undefined, city: undefined };
+    const retrying = Boolean(shownRef.current?.error || shownRef.current?.failed);
+    const settle = (key) => (part) => {
+      if (!current) return;
+      parts[key] = part;
+      const all = parts.county !== undefined && parts.city !== undefined;
+      if (retrying && !all) return;
+      // A copy: the updater may run later, after the other part settles too.
+      const settled = { ...parts };
+      setResult((prev) => combine(prev?.error ? null : prev, settled, attempt));
+      if (all) done();
+    };
     loadSites()
-      .then(
-        (layer) => ({ rows: pollRows(layer), loadedAt: layer.loadedAt ?? Date.now() }),
-        () => ({ error: true, attempt }),
-      )
-      .then((next) => {
-        if (!current) return;
-        setResult((prev) => (next.error && prev?.rows ? prev : next));
-        done();
-      });
+      .then(countyPart)
+      .then(settle('county'), () => settle('county')(null));
+    loadCity()
+      .then(cityPart)
+      .then(settle('city'), () => settle('city')(null));
     return () => {
       current = false;
     };
-  }, [loadSites, attempt, done, refresh]);
+  }, [loadSites, loadCity, attempt, done, refresh]);
 
   return { result, loading, retry, targetRef };
 }
 
-function OfficialLookupLink() {
+// The board's own lookup: the County's, or the City's (#91).
+const lookupUrls = { county: election.officialLookupUrl, city: referrals.stlCityLookup.url };
+
+function OfficialLookupLink({ id = 'county' }) {
   return (
-    <a href={election.officialLookupUrl} rel="noreferrer" className={linkClass}>
-      {resultsCopy.officialLookup}
+    <a href={lookupUrls[id]} rel="noreferrer" className={linkClass}>
+      {resultsCopy.officialLookupFor(id)}
     </a>
   );
 }
@@ -116,11 +205,13 @@ function SiteRow({ site, now, apple }) {
   const links = directionsLinks(site);
   const target = <span className="sr-only">{resultsCopy.polls.linkTarget(name)}</span>;
   const kind = resultsCopy.earlyVoting.siteKinds[site.absType];
-  const schedule = schedules[site.absType];
+  const { schedule } = site;
   const today = schedule && hoursOn(schedule, zonedNow(now, election.timeZone).date);
   return (
     <li className="border-t border-border pt-3 first:border-t-0 first:pt-0">
       <h3 className="font-semibold">{name}</h3>
+      {/* Which board runs the site: each board's sites are for its own voters. */}
+      <p className="text-sm text-muted">{election.waitTimes[site.jurisdiction].source}</p>
       <WaitReport wait={site.wait} now={now} showNone />
       <p>
         {kind && `${kind}. `}
@@ -128,6 +219,7 @@ function SiteRow({ site, now, apple }) {
       </p>
       {today && <p>{copy.todayHours(today.open, today.close)}</p>}
       <p>{resultsCopy.polls.address(site.address, site.zip)}</p>
+      <Entrances entry={site.entry} accessibleEntry={site.accessibleEntry} />
       {site.miles !== null && (
         <p className="text-muted">{resultsCopy.polls.distance(site.miles)}</p>
       )}
@@ -261,15 +353,25 @@ function Sources() {
   );
 }
 
+// When a request last succeeded, over both boards (ms), or null before any.
+function latestCheck(waits) {
+  const times = [waits.county.checkedAt, waits.city.checkedAt].filter((at) => at !== null);
+  return times.length ? Math.max(...times) : null;
+}
+
 /**
- * The early voting wait times page (#104): every County early voting site
- * with its current line count, hours and status, no address needed. Counts
- * come from the shared #103 loop; the list is the accessible version of
- * everything the optional map shows.
- * @param {{ loadSites?: () => Promise<object>,
+ * The early voting wait times page (#104): every County and City (#91) early
+ * voting site with its current line count, hours and status, no address
+ * needed. Counts come from the shared #103 loop; the list is the accessible
+ * version of everything the optional map shows.
+ * @param {{ loadSites?: () => Promise<object>, loadCity?: typeof loadCitySites,
  *   waitSource?: Parameters<typeof useWaitTimes>[0] }} props For tests.
  */
-export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource }) {
+export default function WaitTimesPage({
+  loadSites = getAbsenteeSites,
+  loadCity = loadCitySites,
+  waitSource,
+}) {
   const headingRef = useRef(null);
   usePageTitle(copy.heading);
   useEffect(() => {
@@ -282,7 +384,18 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
   }, []);
 
   const now = useNow();
-  const season = earlyVotingSeason(schedules, now, election.timeZone);
+  const { result, loading, retry, targetRef } = useSites(loadSites, loadCity);
+  // Both boards' schedules, the City's once its chunk is here; keyed apart so
+  // no County and City schedule share a key.
+  const cityKeyed = result?.citySchedules;
+  const allSchedules = useMemo(
+    () => ({
+      ...schedules,
+      ...Object.fromEntries(Object.entries(cityKeyed ?? {}).map(([k, v]) => [`city:${k}`, v])),
+    }),
+    [cityKeyed],
+  );
+  const season = earlyVotingSeason(allSchedules, now, election.timeZone);
   // When early voting ends with the page open, the list and its controls go:
   // if focus went with them, put it on the heading, which reads the news next.
   useLayoutEffect(() => {
@@ -291,8 +404,8 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
     if (!focused || focused === document.body) headingRef.current?.focus();
   }, [season.kind]);
   const waits = useWaitTimes(waitSource);
-  const checkedAt = useShownCheck(waits.county.checkedAt);
-  const { result, loading, retry, targetRef } = useSites(loadSites);
+  const lastSuccess = latestCheck(waits);
+  const checkedAt = useShownCheck(lastSuccess);
   // The device's position, in memory only.
   const [origin, setOrigin] = useState(null);
   const [sort, setSort] = useState('line');
@@ -312,12 +425,15 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
   const rows = result?.rows;
   const shown = useMemo(() => {
     if (!rows) return null;
-    const byKey = new Map(waits.county.waits.map((entry) => [entry.siteId, entry]));
+    const byKey = {
+      county: new Map(waits.county.waits.map((entry) => [entry.siteId, entry])),
+      city: new Map(waits.city.waits.map((entry) => [entry.siteId, entry])),
+    };
     const sites = rows.map((row) => ({
       ...row,
-      key: `${row.loc}:${row.waitKey}`,
-      wait: (row.waitKey && byKey.get(row.waitKey)) || null,
-      status: earlyVotingStatus(schedules[row.absType], now, election.timeZone),
+      key: `${row.jurisdiction}:${row.loc}:${row.waitKey}`,
+      wait: (row.waitKey && byKey[row.jurisdiction].get(row.waitKey)) || null,
+      status: earlyVotingStatus(row.schedule, now, election.timeZone),
       miles: origin ? distanceMiles(origin, row) : null,
     }));
     return orderSites(sites, {
@@ -325,15 +441,18 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
       waitOf: (site) => site.wait?.value ?? null,
       isOpen: (site) => site.status.kind === 'openNow',
     });
-  }, [rows, waits.county.waits, now, origin, sort]);
+  }, [rows, waits.county.waits, waits.city.waits, now, origin, sort]);
 
   const apple = isAppleMobile(globalThis.navigator);
-  // "Unavailable" only once no check has succeeded for ANNOUNCE_MS, so one
-  // failed refresh between successes does not flip the line every 30 s.
-  const lastSuccess = waits.county.checkedAt;
-  const unavailable =
-    waits.county.status === 'unavailable' &&
-    (lastSuccess === null || now - lastSuccess >= ANNOUNCE_MS);
+  // "Unavailable" when either board's counts cannot be loaded, both boards'
+  // sites being listed (#91), but only once that board's checks have not
+  // succeeded for ANNOUNCE_MS, so one failed refresh between successes does
+  // not flip the line every 30 s.
+  const unavailable = ['county', 'city'].some(
+    (key) =>
+      waits[key].status === 'unavailable' &&
+      (waits[key].checkedAt === null || now - waits[key].checkedAt >= ANNOUNCE_MS),
+  );
   // The live region gets the throttled time; the visible line, hidden from
   // screen readers so they do not hear it twice, has the latest.
   const statusFor = (at) => {
@@ -359,6 +478,7 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
         {copy.heading}
       </h1>
       <p className="mt-2">{copy.intro}</p>
+      <p className="mt-2">{copy.city}</p>
 
       {season.kind === 'ended' ? (
         <p className="mt-4">
@@ -405,15 +525,27 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
               <>
                 <p role="alert">
                   <span key={result.attempt}>
-                    {copy.failed} <OfficialLookupLink />.
+                    {copy.failed} <OfficialLookupLink /> {resultsCopy.earlyVoting.or}{' '}
+                    <OfficialLookupLink id="city" />.
                   </span>
                 </p>
                 <RetryButton onRetry={retry} busy={loading} className="mt-2" />
               </>
             )}
-            {shown && shown.length === 0 && (
+            {result?.failed && (
+              <>
+                <p role="alert">
+                  <span key={result.attempt}>
+                    {copy.failed} <OfficialLookupLink id={result.failed} />.
+                  </span>
+                </p>
+                <RetryButton onRetry={retry} busy={loading} className="mt-2 mb-4" />
+              </>
+            )}
+            {shown && shown.length === 0 && !result.failed && (
               <p>
-                {copy.none} <OfficialLookupLink />.
+                {copy.none} <OfficialLookupLink /> {resultsCopy.earlyVoting.or}{' '}
+                <OfficialLookupLink id="city" />.
               </p>
             )}
             {shown && shown.length > 0 && (
@@ -442,8 +574,6 @@ export default function WaitTimesPage({ loadSites = getAbsenteeSites, waitSource
               </>
             )}
           </div>
-
-          <p className="mt-6">{copy.city}</p>
         </>
       )}
 

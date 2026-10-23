@@ -15,6 +15,7 @@ import { copy, sourceName } from './resultsCopy.js';
 import RetryButton from './RetryButton.jsx';
 import StaleNote from './StaleNote.jsx';
 import { useJurisdiction } from './jurisdictionContext.js';
+import { Entrances, OfficialLookupLink } from './PollsCard.jsx';
 import { useNearestSites } from './useNearestSites.js';
 import { useNow } from './useNow.js';
 
@@ -36,9 +37,6 @@ const OFF_SOURCE = {
   getSnapshot: () => OFF_STATE,
   getServerSnapshot: () => OFF_STATE,
 };
-
-const isOpenNow = (site, now) =>
-  earlyVotingStatus(schedules[site.absType], now, election.timeZone).kind === 'openNow';
 
 /**
  * A key per row that stays the same when the rows are reordered or a count
@@ -100,31 +98,30 @@ function statusText(key, now) {
   return t.status(earlyVotingStatus(schedules[key], now, election.timeZone), formatLongDate);
 }
 
-function OfficialLookupLink() {
+// The County row's kind of site and its status today.
+function CountyDetail({ site, now }) {
+  const kind = t.siteKinds[site.absType];
+  if (!kind) return null;
   return (
-    <a href={election.officialLookupUrl} rel="noreferrer" className={linkClass}>
-      {copy.officialLookup}
-    </a>
+    <p>
+      {kind}. {schedules[site.absType] && statusText(site.absType, now)}
+    </p>
   );
 }
 
-function SiteRow({ site, now, apple, headingRef }) {
+function SiteRow({ site, now, apple, headingRef, Detail }) {
   const name = site.name ?? copy.polls.unnamed(site.loc);
   const links = directionsLinks(site);
   const target = <span className="sr-only">{copy.polls.linkTarget(name)}</span>;
-  const kind = t.siteKinds[site.absType];
   return (
     <li className="border-t border-border pt-3 first:border-t-0 first:pt-0">
       <h3 ref={headingRef} tabIndex={headingRef ? -1 : undefined} className="font-semibold">
         {name}
       </h3>
-      {kind && (
-        <p>
-          {kind}. {schedules[site.absType] && statusText(site.absType, now)}
-        </p>
-      )}
+      <Detail site={site} now={now} />
       <WaitReport wait={site.wait} now={now} />
       <p>{copy.polls.address(site.address, site.zip)}</p>
+      <Entrances entry={site.entry} accessibleEntry={site.accessibleEntry} />
       <p className="text-muted">{copy.polls.distance(site.miles)}</p>
       {site.absNote && (
         <p>
@@ -179,19 +176,38 @@ function Schedules({ now }) {
 }
 
 /**
- * The body of the "Early voting" card: the nearest in-person absentee sites,
- * whether each kind of site is open now, and the county's dates and hours.
- * While early voting runs, each site's current line count from the shared
- * #103 loop, a sort by shortest line nearby, and a link to the wait times
- * page (#105).
+ * The nearest early voting sites of the voter's jurisdiction, for the County
+ * card below and the City's (CityEarlyVotingCard, in the City chunk): each
+ * site's status, address and directions, and while early voting runs its
+ * current line count (from the shared #103 loop, or `waitSource`), a sort by shortest line
+ * nearby, and a link to the wait times page (#105).
  * @param {{ code: string, origin: { lat: number, lng: number } | null,
- *   waitSource?: Parameters<typeof useWaitTimes>[0] }} props
+ *   waitSource?: Parameters<typeof useWaitTimes>[0],
+ *   schedules: Record<string, import('../../config/election.js').ScheduleEntry[]>,
+ *   scheduleOf: (site: object) => import('../../config/election.js').ScheduleEntry[] | undefined,
+ *   waits: 'county' | 'city', waitKeyOf: (site: object) => string | null,
+ *   Detail: (props: { site: object, now: number }) => import('react').ReactNode }} props
  *   `origin` is the looked-up point, held in memory only; without one,
  *   distances are from the precinct's center. `waitSource` is for tests.
+ *   `schedules` is every schedule of the jurisdiction, for whether early
+ *   voting runs; `scheduleOf` a site's own. `waits` names the line count
+ *   source and `waitKeyOf` a site's key in it. `Detail` renders a site's
+ *   status lines. The failure lines end with the jurisdiction's own lookup.
+ *   `children` follow the list (the card's dates, hours and links), inside
+ *   the card, which takes focus when a retry or refresh removes the focused
+ *   element.
  */
-export default function EarlyVotingCard({ code, origin, waitSource }) {
-  // The absentee topic, once published (#22, #23); until then, the index.
-  const absentee = getTopic(CARD_TOPICS.absentee, getLocale());
+export function EarlyVotingSites({
+  code,
+  origin,
+  waitSource,
+  schedules: all,
+  scheduleOf,
+  waits: waitsKey,
+  waitKeyOf,
+  Detail,
+  children,
+}) {
   // { rows, loadedAt } once loaded, { error: true, attempt } on failure. A
   // failed load can be tried again; it stays shown while it is (#18). A list
   // left open past the max age refreshes when the tab is shown again (#84).
@@ -200,9 +216,9 @@ export default function EarlyVotingCard({ code, origin, waitSource }) {
   const [showAll, setShowAll] = useState(false);
   const focusRef = useRef(null);
   const now = useNow();
-  const season = earlyVotingSeason(schedules, now, election.timeZone).kind;
+  const season = earlyVotingSeason(all, now, election.timeZone).kind;
   const during = season === 'during';
-  const waits = useWaitTimes(during ? waitSource : OFF_SOURCE);
+  const waits = useWaitTimes(during ? waitSource : OFF_SOURCE)[waitsKey];
   const [sort, setSort] = useState('nearest');
   // The row keys in the order shown when focus entered the list. While focus
   // is in it the order holds, so a refresh never moves (and so blurs) the
@@ -214,23 +230,24 @@ export default function EarlyVotingCard({ code, origin, waitSource }) {
   }, [showAll]);
 
   const loaded = result?.rows;
-  const countyWaits = waits.county.waits;
-  // Counts can show: early voting is running and the County source is on.
-  const waitsOn = during && waits.county.status !== 'off';
+  const siteWaits = waits.waits;
+  // Counts can show: early voting is running and the source is on.
+  const waitsOn = during && waits.status !== 'off';
   const ordered = useMemo(() => {
     if (!loaded) return loaded;
-    const byKey = new Map(countyWaits.map((entry) => [entry.siteId, entry]));
-    const rows = withKeys(loaded).map((row) => ({
-      ...row,
-      wait: (waitsOn && row.waitKey && byKey.get(row.waitKey)) || null,
-    }));
+    const byKey = new Map(siteWaits.map((entry) => [entry.siteId, entry]));
+    const rows = withKeys(loaded).map((row) => {
+      const waitKey = waitKeyOf(row);
+      return { ...row, wait: (waitsOn && waitKey && byKey.get(waitKey)) || null };
+    });
     if (!waitsOn || sort !== 'nearby') return rows;
     return orderSites(rows, {
       sort,
       waitOf: (row) => row.wait?.value ?? null,
-      isOpen: (row) => isOpenNow(row, now),
+      isOpen: (row) =>
+        earlyVotingStatus(scheduleOf(row), now, election.timeZone).kind === 'openNow',
     });
-  }, [loaded, countyWaits, waitsOn, sort, now]);
+  }, [loaded, siteWaits, waitsOn, sort, now, scheduleOf, waitKeyOf]);
   const rows = held && ordered ? inHeldOrder(ordered, held) : ordered;
   // Focus can leave the list with no blur reaching it (the focused row was
   // removed, #84): when the rows change, let go of the held order if focus is
@@ -242,7 +259,7 @@ export default function EarlyVotingCard({ code, origin, waitSource }) {
   const shownRows = showAll ? rows : rows?.slice(0, first);
   const noCounts =
     waitsOn &&
-    waits.county.status !== 'loading' &&
+    waits.status !== 'loading' &&
     shownRows?.length > 0 &&
     !shownRows.some((row) => row.wait);
   const apple = isAppleMobile(globalThis.navigator);
@@ -300,6 +317,7 @@ export default function EarlyVotingCard({ code, origin, waitSource }) {
                 site={site}
                 now={now}
                 apple={apple}
+                Detail={Detail}
                 headingRef={showAll && i === first ? focusRef : undefined}
               />
             ))}
@@ -326,19 +344,58 @@ export default function EarlyVotingCard({ code, origin, waitSource }) {
         </p>
       )}
 
-      <Schedules now={now} />
-
-      <p className="mt-3">
-        {t.mail}{' '}
-        <Link href={absentee ? `/learn/${absentee.id}` : '/learn'} className={linkClass}>
-          {absentee ? absentee.title : t.howToVote}
-        </Link>{' '}
-        {t.or}{' '}
-        <a href={election.countySiteUrl} rel="noreferrer" className={linkClass}>
-          {t.countySite}
-        </a>
-        .
-      </p>
+      {children}
     </div>
+  );
+}
+
+/**
+ * The closing line: mail-in and absentee ballots are in How to vote (the
+ * absentee topic once published, #22, #23) and on the board's own page.
+ * @param {{ href: string, label: string }} props
+ */
+export function MailLine({ href, label }) {
+  const absentee = getTopic(CARD_TOPICS.absentee, getLocale());
+  return (
+    <p className="mt-3">
+      {t.mail}{' '}
+      <Link href={absentee ? `/learn/${absentee.id}` : '/learn'} className={linkClass}>
+        {absentee ? absentee.title : t.howToVote}
+      </Link>{' '}
+      {t.or}{' '}
+      <a href={href} rel="noreferrer" className={linkClass}>
+        {label}
+      </a>
+      .
+    </p>
+  );
+}
+
+const countySchedule = (site) => schedules[site.absType];
+const countyWaitKey = (site) => site.waitKey;
+
+/**
+ * The body of the County's "Early voting" card: the nearest in-person
+ * absentee sites (EarlyVotingSites), whether each kind of site is open now,
+ * and the county's dates and hours.
+ * @param {{ code: string, origin: { lat: number, lng: number } | null,
+ *   waitSource?: Parameters<typeof useWaitTimes>[0] }} props
+ */
+export default function EarlyVotingCard({ code, origin, waitSource }) {
+  const now = useNow();
+  return (
+    <EarlyVotingSites
+      code={code}
+      origin={origin}
+      waitSource={waitSource}
+      schedules={schedules}
+      scheduleOf={countySchedule}
+      waits="county"
+      waitKeyOf={countyWaitKey}
+      Detail={CountyDetail}
+    >
+      <Schedules now={now} />
+      <MailLine href={election.countySiteUrl} label={t.countySite} />
+    </EarlyVotingSites>
   );
 }
