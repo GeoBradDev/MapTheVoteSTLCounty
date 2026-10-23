@@ -19,15 +19,15 @@ function renderHome() {
 }
 
 describe('HomePage', () => {
-  it('names the guide, the election and Election Day from the config', () => {
+  it('names the guide and Election Day from the config, as one compact line (#80)', () => {
     renderHome();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(copy.heading);
-    expect(screen.getByText(election.electionName)).toBeInTheDocument();
     const date = screen.getByText(copy.electionDay(election.electionDate, election.timeZone));
-    expect(date.closest('time') ?? date.querySelector('time')).toHaveAttribute(
-      'datetime',
-      election.electionDate,
-    );
+    expect(date.closest('time')).toHaveAttribute('datetime', election.electionDate);
+    // One date line: no separate eyebrow repeating the date.
+    expect(screen.queryByText(election.electionName)).toBeNull();
+    const header = screen.getByRole('banner');
+    expect(header.querySelectorAll('time')).toHaveLength(1);
   });
 
   // The first action next to the address search (#104): no address needed.
@@ -58,7 +58,7 @@ describe('HomePage', () => {
 
   it('formats Election Day in the election time zone', () => {
     expect(copy.electionDay('2030-11-05', 'America/Chicago')).toBe(
-      'Election Day is Tuesday, November 5, 2030.',
+      'Election Day: Tue, Nov 5, 2030',
     );
   });
 
@@ -83,6 +83,28 @@ describe('HomePage', () => {
     for (const url of [...sources, phoneSource]) {
       expect(container.querySelector(`a[href="${url}"]`)).toBeNull();
     }
+  });
+
+  // #80: the hero is the date, the heading, the intro and the nonpartisan
+  // line, then the wait times link and the address search.
+  it('puts the wait times link between the header and the address box', () => {
+    renderHome();
+    const header = screen.getByRole('banner');
+    const link = screen.getByRole('link', { name: copy.waitTimes });
+    expect(header.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(header.contains(link)).toBe(false);
+  });
+
+  it('shows "How to vote" and both boards as full-width rows in its own list', () => {
+    renderHome();
+    const nav = screen.getByRole('navigation', { name: copy.moreInfo });
+    const links = within(nav).getAllByRole('link');
+    expect(links.map((a) => a.textContent)).toEqual([
+      copy.howToVote,
+      copy.countySite,
+      copy.citySite,
+    ]);
+    for (const a of links) expect(a).toHaveClass('flex', 'min-h-11', 'w-full', 'border');
   });
 
   it('links to "How to vote" and both official election sites (#93)', () => {

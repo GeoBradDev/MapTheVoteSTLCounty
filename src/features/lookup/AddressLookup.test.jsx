@@ -59,6 +59,21 @@ async function search(text = ADDRESS) {
 }
 
 describe('AddressLookup', () => {
+  // #80: the two ways in come first, one under the other; the fine print
+  // (the location notes and the address search credits) follows both.
+  it('puts "Use my location" right after "Find my precinct" and the credits after both', () => {
+    renderLookup();
+    const find = screen.getByRole('button', { name: searchCopy.submit });
+    const locate = screen.getByRole('button', { name: /use my location/i });
+    const credits = screen.getByText(/sent only to these services/);
+    const follows = (a, b) =>
+      Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(follows(find, locate)).toBe(true);
+    expect(follows(locate, credits)).toBe(true);
+    const buttons = screen.getAllByRole('button');
+    expect(buttons.indexOf(locate)).toBe(buttons.indexOf(find) + 1);
+  });
+
   it('geocodes the address, passes the place to locate and opens the precinct', async () => {
     locate.mockResolvedValue({ kind: 'precinct', precinct: { precinct: 'OAK019' } });
     const { location } = renderLookup();

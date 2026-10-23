@@ -307,6 +307,14 @@ test.describe('the nonpartisan, unofficial statement', () => {
     await expect(page.getByRole('link', { name: 'See early voting wait times' })).toBeInViewport({
       ratio: 1,
     });
+    // And the heading and both ways in (#80).
+    await expect(page.getByRole('heading', { level: 1 })).toBeInViewport({ ratio: 1 });
+    await expect(page.getByRole('button', { name: 'Find my precinct' })).toBeInViewport({
+      ratio: 1,
+    });
+    await expect(page.getByRole('button', { name: 'Use my location' })).toBeInViewport({
+      ratio: 1,
+    });
   });
 
   test('prints on a results page, without the Privacy link', async ({ page }) => {
