@@ -11,6 +11,47 @@ function ShareIcon() {
   );
 }
 
+const ROW = 'flex flex-wrap items-center gap-x-4 gap-y-1';
+const BUTTON =
+  'inline-flex min-h-11 items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-primary';
+const NOTE = 'mt-1 text-xs text-muted';
+
+/**
+ * The header's row before the precinct loads: `children` (the header's other
+ * links) as ShareLink places them. With `hold`, while a code-shaped precinct
+ * loads (#27), the button's place is held, invisible and hidden from screen
+ * readers, and its note shows as ShareLink shows it (hidden from screen
+ * readers, as there is no button yet for it to describe), so nothing below moves
+ * when the loaded row replaces it. The note needs only the code, and with
+ * some fonts it is the page's largest text, so it paints before the data
+ * (#156). Nothing to press: a code that turns out not to exist has no link
+ * to share.
+ * @param {{ code: string, hold: boolean, children?: import('react').ReactNode }} props
+ */
+export function ShareLinkPlaceholder({ code, hold, children }) {
+  return (
+    <div className="mt-2">
+      <div className={ROW}>
+        {children}
+        {hold && (
+          <span aria-hidden="true" className={`invisible ${BUTTON}`}>
+            <span className="size-4" />
+            {copy.share.short}
+          </span>
+        )}
+      </div>
+      {hold && (
+        <>
+          <p aria-hidden="true" className={NOTE}>
+            {copy.share.note(code)}
+          </p>
+          <p className="mt-1" />
+        </>
+      )}
+    </div>
+  );
+}
+
 /**
  * Shares the precinct's link: the share sheet where the browser has one, else
  * the clipboard, else a field to copy it from by hand. The link and the title
@@ -62,20 +103,20 @@ export default function ShareLink({ code, children }) {
 
   return (
     <div className="mt-2">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+      <div className={ROW}>
         {children}
         <button
           type="button"
           onClick={handleClick}
           aria-label={copy.share.button}
           aria-describedby={noteId}
-          className="inline-flex min-h-11 items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-primary"
+          className={BUTTON}
         >
           <ShareIcon />
           {copy.share.short}
         </button>
       </div>
-      <p id={noteId} className="mt-1 text-xs text-muted">
+      <p id={noteId} className={NOTE}>
         {copy.share.note(code)}
       </p>
       <p role="status" className="mt-1 font-semibold">

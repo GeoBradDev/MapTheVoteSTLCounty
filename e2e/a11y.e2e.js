@@ -8,6 +8,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import {
+  AFTER_EARLY_VOTING_AT,
   BASEMAP_STYLE_URL,
   BLANK_STYLE,
   CITY_CODE,
@@ -422,6 +423,96 @@ test('Election Day with no Election Day reports shows only the no-data state', a
   await expect(page.getByText('No current line count for these polling places.')).toBeVisible();
   await expect(polls.getByText(/in line, reported/)).toHaveCount(0);
 });
+
+// While a precinct loads, the summary's Election Day line already shows (its
+// largest text, #156). The header holds the share row's place, so the line
+// does not move when the results replace the skeleton (#27).
+// At each project's width, and at 412 px (a common Android width, above the
+// 400 px where the header stops holding two lines for a County precinct's line).
+for (const [code, width] of [
+  [CODE, null],
+  [CITY_CODE, null],
+  [CODE, 412],
+  [CITY_CODE, 412],
+]) {
+  test(`the Election Day line stays put when /p/${code} loads${width ? ` at ${width} px` : ''}`, async ({
+    page,
+  }) => {
+    if (width) await page.setViewportSize({ width, height: 800 });
+    await answerFromFixtures(page, { delayMs: 1500 });
+    await page.goto(`/p/${code}`);
+    const line = page
+      .getByRole('heading', { level: 2, name: 'Election Day' })
+      .locator('xpath=following-sibling::p[1]');
+    await expect(page.getByTestId('results-skeleton')).toBeVisible();
+    await expect(line).toBeVisible();
+    const before = await line.boundingBox();
+    await expect(page.getByTestId('results-skeleton')).toHaveCount(0);
+    await expect(page.getByRole('list', { name: 'Nearest polling places' })).toBeVisible();
+    const after = await line.boundingBox();
+    expect(Math.abs(after.y - before.y)).toBeLessThan(1);
+    expect(after.height).toBe(before.height);
+  });
+}
+
+// The results page's largest text needs no data (#156): at the Lighthouse
+// run's 360 x 640, every LCP entry is painted before the layers answer,
+// whatever font the system has. During early voting it is the Election Day
+// line (with some fonts the share note); outside early voting, the sample
+// ballot part's fixed intro (#27). A taller or wider screen shows more of the
+// loaded summary, whose data driven text can be larger still.
+const CLOCKS = [
+  ['early voting', WAITS_RECORDED_AT, undefined],
+  ['after early voting', AFTER_EARLY_VOTING_AT, undefined],
+  ['Election Day', ELECTION_DAY_AT, ELECTION_DAY_WAITS],
+];
+
+for (const code of [CODE, CITY_CODE]) {
+  for (const [name, at, waits] of CLOCKS) {
+    test(`/p/${code} paints its largest text before the data answers (${name})`, async ({
+      page,
+    }) => {
+      await page.clock.setFixedTime(at);
+      await page.setViewportSize({ width: 360, height: 640 });
+      await page.addInitScript(() => {
+        window.lcpEntries = [];
+        new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) window.lcpEntries.push(entry.startTime);
+        }).observe({ type: 'largest-contentful-paint', buffered: true });
+      });
+      await answerFromFixtures(page, { delayMs: 1500, waits });
+      await page.goto(`/p/${code}`);
+      await expect(page.getByRole('list', { name: 'Nearest polling places' })).toBeVisible();
+      const entries = await page.evaluate(() => window.lcpEntries);
+      expect(entries.length).toBeGreaterThan(0);
+      for (const time of entries) expect(time).toBeLessThan(1500);
+    });
+  }
+}
+
+// Outside early voting the skeleton shows the sample ballot part's intro
+// (#27): it does not move when the results replace the skeleton, County and
+// City, at each project's width.
+for (const code of [CODE, CITY_CODE]) {
+  for (const [name, at, waits] of CLOCKS.slice(1)) {
+    test(`the sample ballot intro stays put when /p/${code} loads (${name})`, async ({ page }) => {
+      await page.clock.setFixedTime(at);
+      await answerFromFixtures(page, { delayMs: 1500, waits });
+      await page.goto(`/p/${code}`);
+      const intro = page
+        .getByRole('heading', { level: 2, name: 'Sample ballot' })
+        .locator('xpath=following-sibling::p[1]');
+      await expect(page.getByTestId('results-skeleton')).toBeVisible();
+      await expect(intro).toBeVisible();
+      const before = await intro.boundingBox();
+      await expect(page.getByTestId('results-skeleton')).toHaveCount(0);
+      await expect(page.getByRole('list', { name: 'Nearest polling places' })).toBeVisible();
+      const after = await intro.boundingBox();
+      expect(Math.abs(after.y - before.y)).toBeLessThan(1);
+      expect(after.height).toBe(before.height);
+    });
+  }
+}
 
 test.describe('with reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });

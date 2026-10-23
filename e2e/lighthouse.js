@@ -25,7 +25,16 @@ import lighthouse from 'lighthouse';
 import puppeteer from 'puppeteer-core';
 import { preview } from 'vite';
 import election from '../src/config/election.js';
-import { BASEMAP_STYLE_URL, BLANK_STYLE, CITY_CODE, CODE, fixtureBody } from './fixtures.js';
+import {
+  AFTER_EARLY_VOTING_AT,
+  BASEMAP_STYLE_URL,
+  BLANK_STYLE,
+  CITY_CODE,
+  CODE,
+  ELECTION_DAY_AT,
+  fixtureBody,
+  WAITS_RECORDED_AT,
+} from './fixtures.js';
 
 /** Lowest performance score allowed, 0 to 100. */
 const MIN_SCORE = 90;
@@ -43,7 +52,7 @@ const MAX_LCP_MS = 2500;
  * municipality, the districts, the sample ballot link and each
  * polling place's name and ZIP.
  */
-const ROUTES = [
+const PAGES = [
   {
     path: '/',
     shows: () =>
@@ -125,6 +134,62 @@ const ROUTES = [
   },
 ];
 
+/**
+ * The results pages' layout depends on the date: during early voting the
+ * summary has an early voting part, and once early voting has closed its
+ * sample ballot part moves up into the 360 x 640 view, where its intro is the
+ * largest text, shown while the precinct loads (#27, #156). So each
+ * results page is measured at a pinned clock in each state, today, not only
+ * once the date comes: during early voting, the evening after it closes and
+ * Election Day morning. The other pages use the real clock.
+ */
+const CLOCKS = [
+  { name: 'early voting', at: WAITS_RECORDED_AT },
+  { name: 'after early voting', at: AFTER_EARLY_VOTING_AT },
+  { name: 'Election Day', at: ELECTION_DAY_AT },
+];
+
+const ROUTES = PAGES.flatMap((route) =>
+  route.path.startsWith('/p/')
+    ? CLOCKS.map((clock) => ({ ...route, clock, label: `${route.path} (${clock.name})` }))
+    : [{ ...route, label: route.path }],
+);
+
+// Runs in the page before its scripts: moves Date to `at` (ms since the
+// epoch), still ticking, so the app sees that day. Only Date: the timers and
+// performance.now(), which Lighthouse's own measures use, are untouched.
+function pinClock(at) {
+  const RealDate = Date;
+  const offset = at - RealDate.now();
+  class PinnedDate extends RealDate {
+    constructor(...args) {
+      super(...(args.length ? args : [RealDate.now() + offset]));
+    }
+
+    static now() {
+      return RealDate.now() + offset;
+    }
+  }
+  globalThis.Date = PinnedDate;
+}
+
+/** The simulated network's round trip time, in ms (CONFIG below). */
+const RTT_MS = 150;
+
+/**
+ * How long the local server waits before it answers a GET or POST (a layer,
+ * the basemap style or a 404), in ms: four simulated round trips, about what
+ * a phone waits for a real host on a new connection (DNS, TCP, TLS, then the
+ * request). Answering at once let the data arrive before the first frame
+ * painted, so the run saw data driven content as the page's first paint and
+ * Lighthouse counted the layers' connections toward LCP even for text that
+ * needs no data (#156). The wait puts the answer well after the first frame
+ * on any runner, as on a phone; Lighthouse's simulation counts it as server
+ * time, so content that waits for data is measured as slower, never faster.
+ * Well under the app's slow notice (3 s) and request timeout (8 s).
+ */
+const ANSWER_DELAY_MS = 4 * RTT_MS;
+
 const RUNS = 3;
 const PORT = 4174;
 const REPORTS = new URL('../lighthouse-reports/', import.meta.url);
@@ -143,7 +208,7 @@ const CONFIG = {
     },
     // Lighthouse's mobile defaults, written out: simulated slow 4G, 4x CPU.
     throttlingMethod: 'simulate',
-    throttling: { rttMs: 150, throughputKbps: 1638.4, cpuSlowdownMultiplier: 4 },
+    throttling: { rttMs: RTT_MS, throughputKbps: 1638.4, cpuSlowdownMultiplier: 4 },
   },
 };
 
@@ -188,6 +253,7 @@ async function answer(request, response) {
   }
   const href = `https://${request.headers.host}${request.url}`;
   const form = await formBody(request);
+  await new Promise((resolve) => setTimeout(resolve, ANSWER_DELAY_MS));
   const body = href === BASEMAP_STYLE_URL ? BLANK_STYLE : fixtureBody(href, form);
   if (body === null) {
     response.writeHead(404).end();
@@ -202,9 +268,10 @@ async function answer(request, response) {
   response.writeHead(200, headers).end(gzip ? gzipSync(body) : body);
 }
 
-async function measure(browser, { path: route, shows, code = CODE }) {
+async function measure(browser, { path: route, shows, code = CODE, clock }) {
   const page = await browser.newPage();
   try {
+    if (clock) await page.evaluateOnNewDocument(pinClock, clock.at.getTime());
     const url = `http://localhost:${PORT}${route}`;
     const result = await lighthouse(url, { logLevel: 'error', output: 'html' }, CONFIG, page);
     const { lhr } = result;
@@ -218,6 +285,11 @@ async function measure(browser, { path: route, shows, code = CODE }) {
       cls: audit('cumulative-layout-shift'),
       si: audit('speed-index'),
       shown: await page.evaluate(shows, code),
+      // The pinned clock held through Lighthouse's navigation: within a
+      // minute of `at`, as the page's own Date sees it.
+      pinned: clock
+        ? Math.abs((await page.evaluate(() => Date.now())) - clock.at.getTime()) < 60_000
+        : true,
       report: result.report,
     };
   } finally {
@@ -261,23 +333,27 @@ async function main() {
       const runs = [];
       for (let i = 0; i < RUNS; i += 1) runs.push(await measure(browser, route));
       const m = median(runs);
-      const name = route.path === '/' ? 'home' : route.path.slice(1).replaceAll('/', '-');
+      const base = route.path === '/' ? 'home' : route.path.slice(1).replaceAll('/', '-');
+      const name = route.clock ? `${base}-${route.clock.name.replaceAll(' ', '-')}` : base;
       await writeFile(new URL(`${name}.html`, REPORTS), m.report);
       console.log(
-        `${route.path}: performance ${m.score} (runs ${runs.map((r) => r.score).join(', ')}), ` +
+        `${route.label}: performance ${m.score} (runs ${runs.map((r) => r.score).join(', ')}), ` +
           `LCP ${Math.round(m.lcp)} ms, FCP ${Math.round(m.fcp)} ms, ` +
           `TBT ${Math.round(m.tbt)} ms, CLS ${m.cls.toFixed(3)}, SI ${Math.round(m.si)} ms`,
       );
       if (!runs.every((r) => r.shown)) {
-        failures.push(`${route.path}: a run ended without the page's content`);
+        failures.push(`${route.label}: a run ended without the page's content`);
+      }
+      if (!runs.every((r) => r.pinned)) {
+        failures.push(`${route.label}: a run's page did not see the pinned clock`);
       }
       if (!runs.every((r) => Number.isFinite(r.lcp))) {
-        failures.push(`${route.path}: a run reported no LCP`);
+        failures.push(`${route.label}: a run reported no LCP`);
       }
       if (m.score < MIN_SCORE)
-        failures.push(`${route.path}: score ${m.score} is below ${MIN_SCORE}`);
+        failures.push(`${route.label}: score ${m.score} is below ${MIN_SCORE}`);
       if (m.lcp >= MAX_LCP_MS) {
-        failures.push(`${route.path}: LCP ${Math.round(m.lcp)} ms is not under ${MAX_LCP_MS} ms`);
+        failures.push(`${route.label}: LCP ${Math.round(m.lcp)} ms is not under ${MAX_LCP_MS} ms`);
       }
     }
   } finally {

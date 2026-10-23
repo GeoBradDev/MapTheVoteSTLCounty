@@ -19,9 +19,10 @@ describe('CitySampleBallotCard (#92)', () => {
     );
   });
 
-  it('says it is the citywide ballot, never the voter precinct ballot', () => {
+  it('never uses the County card words', () => {
     const { container } = render(<CitySampleBallotCard />);
-    expect(container).toHaveTextContent(copy.ballot.introCity);
+    // Its intro, which says it is the citywide ballot, is the summary part's
+    // (BallotPart; PrecinctPage.city89.test.jsx checks it on the page).
     // Never the County card's "your sample ballot" words.
     expect(container.textContent).not.toContain(copy.ballot.open);
     expect(container.textContent).not.toContain(copy.ballot.intro);

@@ -16,7 +16,8 @@ import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
 import { createFakeGeocoder } from '../../test/fakeGeocoder.js';
 import { nearestPolls, polygonCenter } from './nearbyPolls.js';
-import { copy } from './resultsCopy.js';
+import { formatLongDate } from './earlyVoting.js';
+import { copy, formatTime } from './resultsCopy.js';
 
 let fetchMock;
 let PrecinctPage;
@@ -180,6 +181,9 @@ describe('PrecinctPage', () => {
   });
 
   it('shows the heading and skeletons, and an empty live region, while loading', () => {
+    // During early voting, so the summary's early voting part comes next.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(Date.UTC(2026, 9, 22, 15)));
     fetchMock.mockImplementation(() => new Promise(() => {}));
     renderAt('CC007');
     expect(heading()).toHaveTextContent(copy.heading);
@@ -187,12 +191,77 @@ describe('PrecinctPage', () => {
     expect(liveRegion()).toBeInTheDocument();
     expect(liveRegion()).toHaveTextContent(/^$/);
     const skeleton = screen.getByTestId('results-skeleton');
-    expect(skeleton).toHaveAttribute('aria-hidden', 'true');
     // At least a screen tall, so the footer does not jump when results arrive (#27).
     expect(skeleton).toHaveClass('min-h-screen');
     expect(skeleton.querySelector('.motion-reduce\\:animate-none')).not.toBeNull();
-    expect(screen.queryAllByRole('heading', { level: 2 })).toEqual([]);
+    // Every placeholder bar is hidden from screen readers.
+    for (const bar of skeleton.querySelectorAll('.animate-pulse')) {
+      expect(bar.closest('[aria-hidden="true"]')).not.toBeNull();
+    }
+    // The summary's Election Day part needs no data, so it shows while the
+    // precinct loads: its line is the page's largest text, and painting it
+    // before the precinct answers keeps LCP off the request (#27, #156).
+    const { open, close } = election.electionDayHours;
+    expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
+      copy.summary.electionDay,
+    ]);
+    expect(
+      within(skeleton).getByText(
+        copy.summary.when(
+          formatLongDate(election.electionDate),
+          formatTime(open),
+          formatTime(close),
+        ),
+      ),
+    ).toBeVisible();
+    // The share note needs only the code, so it shows too (#156); the share
+    // button comes with the results.
+    // Painted, but hidden from screen readers until the button it describes comes.
+    expect(screen.getByText(copy.share.note('CC007'))).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.queryByRole('button', { name: copy.share.button })).toBeNull();
+    // Nothing in it takes focus: a link focused there would be lost, focus
+    // and all, when the skeleton goes.
+    expect(skeleton.querySelectorAll('a, button, input, [tabindex]')).toHaveLength(0);
     expect(screen.getByRole('link', { name: copy.searchAnother })).toHaveAttribute('href', '/');
+  });
+
+  // Outside early voting the sample ballot part is the second in the summary,
+  // and its fixed intro is the largest text on a phone, so it shows while the
+  // precinct loads (#27, #156), with the hours note above it as text.
+  it.each([
+    ['after early voting closes', new Date(Date.UTC(2026, 10, 3, 2))],
+    ['on Election Day', new Date(Date.UTC(2026, 10, 3, 15))],
+  ])('shows the sample ballot intro while loading %s', (_, at) => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(at);
+    fetchMock.mockImplementation(() => new Promise(() => {}));
+    renderAt('CC007');
+    const skeleton = screen.getByTestId('results-skeleton');
+    expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
+      copy.summary.electionDay,
+      copy.cards.ballot,
+    ]);
+    const ballot = within(skeleton).getByRole('region', { name: copy.cards.ballot });
+    expect(within(ballot).getByText(copy.ballot.intro)).toBeVisible();
+    expect(within(skeleton).getByText(new RegExp(`${copy.polls.source}:`))).toBeVisible();
+    for (const bar of skeleton.querySelectorAll('.animate-pulse')) {
+      expect(bar.closest('[aria-hidden="true"]')).not.toBeNull();
+    }
+    expect(skeleton.querySelectorAll('a, button, input, [tabindex]')).toHaveLength(0);
+  });
+
+  it('keeps the sample ballot intro, then says the ballot was not found, when the link fails the checks', async () => {
+    routeFetch(
+      withAttributes(byId, {
+        html: 'Sample Ballot: <a href=https://example.org/b.pdf>CC-007.pdf</a>',
+      }),
+    );
+    renderAt('CC007');
+    await ready('CC007');
+    const card = screen.getByRole('region', { name: copy.cards.ballot });
+    const lines = [...card.querySelectorAll('p')].map((p) => p.textContent);
+    expect(lines[0]).toBe(copy.ballot.intro);
+    expect(lines[1]).toMatch(new RegExp(`^${copy.ballot.missing}`));
   });
 
   it('shows the header, no banner, the summary and the cards in order for an In Election precinct', async () => {
@@ -627,6 +696,22 @@ describe('PrecinctPage', () => {
     expect(document.title).not.toContain('ZZ999');
     unmount();
     expect(document.title).toBe('Before');
+  });
+
+  it('keeps focus on "Search another address" when a load it was focused during ends in not found', async () => {
+    let answer;
+    fetchMock.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          answer = () => resolve(respond({ ...byId, features: [] }));
+        }),
+    );
+    renderAt('ZZ999');
+    const link = screen.getByRole('link', { name: copy.searchAnother });
+    link.focus();
+    answer();
+    await screen.findByRole('region', { name: copy.searchInstead });
+    expect(screen.getByRole('link', { name: copy.searchAnother })).toHaveFocus();
   });
 
   it('titles URL text that is not a precinct code as not found, never echoing it', async () => {

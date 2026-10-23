@@ -19,6 +19,9 @@ const CitySampleBallotCard = cityComponent('CitySampleBallotCard');
 const CityEarlyVoteSummary = cityComponent('CityEarlyVoteSummary');
 
 const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
+/** The summary's box, also the results skeleton's (ResultsCards.jsx). */
+export const SUMMARY_BOX =
+  'mt-4 flex flex-col gap-3 rounded-md border-2 border-primary bg-surface-raised p-4';
 // Local until the shared Button and Link components land (#78).
 const directionsClass =
   'inline-flex min-h-11 items-center gap-2 rounded-md border border-primary px-4 font-semibold text-primary';
@@ -62,7 +65,7 @@ const line = (height, width) => (
 // with `early` the line of an early voting site's status, with `count` the
 // two of its line count, and its directions button, so nothing below moves
 // when it loads (#27).
-function PlaceSkeleton({ testId, early = false, count = false }) {
+export function PlaceSkeleton({ testId, early = false, count = false }) {
   return (
     <div data-testid={testId} aria-hidden="true" className="mt-2">
       {line('h-5', 'w-1/2')}
@@ -100,8 +103,15 @@ function Place({ label, place, children }) {
   );
 }
 
-// Who may still vote at closing time, and where the hours come from.
-function HoursNote() {
+/**
+ * Who may still vote at closing time, and where the hours come from. With
+ * `linked` false, the sources' names are plain text in the links' place and
+ * style, for the results skeleton (ResultsCards.jsx), which holds nothing that
+ * takes focus: the same words, so the same lines, and nothing below moves when
+ * the loaded summary's note replaces it (#27).
+ * @param {{ linked?: boolean }} props
+ */
+export function HoursNote({ linked = true }) {
   const { close, inLineAtCloseMayVote, sources } = election.electionDayHours;
   return (
     <p className="text-xs">
@@ -110,23 +120,49 @@ function HoursNote() {
       {sources.map((url, i) => (
         <span key={url}>
           {i > 0 && ', '}
-          <a href={url} rel="noreferrer" className={linkClass}>
-            {sourceName(url)}
-          </a>
+          {linked ? (
+            <a href={url} rel="noreferrer" className={linkClass}>
+              {sourceName(url)}
+            </a>
+          ) : (
+            <span className={linkClass}>{sourceName(url)}</span>
+          )}
         </span>
       ))}
     </p>
   );
 }
 
-// Election Day's date and hours, and the nearest polling place. A failed or
-// empty list shows nothing here: the polling places card below says so and
-// offers Try again (#18).
-function ElectionDay({ code, origin }) {
-  const { getPolls } = useJurisdiction();
-  const { result } = useNearestSites(getPolls, code, origin);
+/**
+ * The summary's sample ballot part: its heading and the jurisdiction's fixed
+ * intro, then `children` (the County precinct's link or the "could not find"
+ * line, or the City's one ballot). Data independent, so the results skeleton
+ * shows it too while the precinct loads, outside early voting (#27, #156):
+ * there the intro is the page's largest text on a phone, and the loaded
+ * summary repaints it at the same size and place, so LCP does not wait for the
+ * precinct request.
+ */
+export function BallotPart({ children }) {
+  const { id } = useJurisdiction();
+  return (
+    <Part title={copy.cards.ballot}>
+      <p className="mt-2">{id === 'city' ? copy.ballot.introCity : copy.ballot.intro}</p>
+      {children}
+    </Part>
+  );
+}
+
+/**
+ * The summary's Election Day part: its heading and Election Day's date and
+ * hours, then `children`. Data independent, so the results skeleton shows it
+ * too while the precinct loads (#27, #156): the date line is the page's
+ * largest text, and the loaded summary repaints it at the same size and
+ * place, so LCP does not wait for the precinct request. `children` hold the
+ * hours note: the loaded summary's with its links, the skeleton's with its
+ * sources as plain text, so the skeleton holds nothing that takes focus.
+ */
+export function ElectionDayPart({ children }) {
   const { open, close } = election.electionDayHours;
-  const nearest = result?.rows?.[0];
   return (
     <Part title={copy.summary.electionDay}>
       <p className="mt-1 font-semibold sm:text-lg">
@@ -136,10 +172,24 @@ function ElectionDay({ code, origin }) {
           formatTime(close),
         )}
       </p>
+      {children}
+    </Part>
+  );
+}
+
+// Election Day's date and hours, and the nearest polling place. A failed or
+// empty list shows nothing here: the polling places card below says so and
+// offers Try again (#18).
+function ElectionDay({ code, origin }) {
+  const { getPolls } = useJurisdiction();
+  const { result } = useNearestSites(getPolls, code, origin);
+  const nearest = result?.rows?.[0];
+  return (
+    <ElectionDayPart>
       <HoursNote />
       {!result && <PlaceSkeleton testId="summary-poll-skeleton" />}
       {nearest && <Place label={copy.summary.nearestPoll} place={nearest} />}
-    </Part>
+    </ElectionDayPart>
   );
 }
 
@@ -238,7 +288,7 @@ export default function ResultsSummary({ code, origin, showBallot, ballotHtml, w
   const { id } = useJurisdiction();
   const isCity = id === 'city';
   return (
-    <div className="mt-4 flex flex-col gap-3 rounded-md border-2 border-primary bg-surface-raised p-4">
+    <div className={SUMMARY_BOX}>
       <ElectionDay code={code} origin={origin} />
       {isCity ? (
         <Suspense fallback={null}>
@@ -257,7 +307,7 @@ export default function ResultsSummary({ code, origin, showBallot, ballotHtml, w
       )}
       {/* None for a precinct with nothing on the ballot: its banner says so. */}
       {showBallot && (
-        <Part title={copy.cards.ballot}>
+        <BallotPart>
           {isCity ? (
             <Suspense fallback={null}>
               <CitySampleBallotCard />
@@ -265,7 +315,7 @@ export default function ResultsSummary({ code, origin, showBallot, ballotHtml, w
           ) : (
             <SampleBallotCard html={ballotHtml} code={code} />
           )}
-        </Part>
+        </BallotPart>
       )}
       {!origin && <p className="text-sm text-muted">{copy.polls.fromCenter(code)}</p>}
     </div>

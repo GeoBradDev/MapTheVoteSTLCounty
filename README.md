@@ -265,6 +265,13 @@ headers and the cache rules. `src/test/render.test.js` checks it.
 - **Content-Security-Policy:** it allows only the origins the app calls. Code that fetches a
   new origin (a geocoder, map tiles, fonts) must add it to the policy in `render.yaml` in the
   same change, or the browser blocks the request in production.
+- **Preconnect on precinct pages:** `/p/*` is served with a `Link` header that preconnects to
+  the ArcGIS host the page asks for its precinct first (`PRECINCT_PRECONNECT` in
+  `src/prerender/plugin.js`, built from the County's and the City's election service roots).
+  It names only hosts already in `connect-src` and in the privacy notice; `npm run preview`
+  sends the same header. Like a route change, a header change shows only on production: check
+  it with `curl -I https://mapthevotestl.com/p/CC007` after the deploy. Lighthouse's simulated
+  network does not credit a preconnect, so the Lighthouse run cannot measure its gain.
 - **Cache-Control:** no two header rules may match the same path; Render does not document
   how they combine. The app shell and the pre-rendered pages send `no-cache` and hashed `/assets/` files are
   `immutable`; `/robots.txt` and `/sitemap.xml` are cached for an hour. A new route needs its
@@ -396,7 +403,10 @@ called: Chromium resolves the county's ArcGIS host (the City Board's layers are 
 server, and every other host except `localhost` to nothing. That server answers the County
 and City layers (GET, or a point query's POST) from `docs/raw/fixtures/` (shaped to the query's `outFields` and `geometryPrecision`, gzipped
 like the county's service) and the basemap style with a blank style (`BLANK_STYLE` in
-`e2e/fixtures.js`). It needs `openssl` for the local server's throwaway certificate, and
+`e2e/fixtures.js`), each after a 600 ms wait (four simulated round trips, about what a phone
+waits on a new connection): no real ArcGIS host answers within a frame, and an answer that
+arrived before the first paint made Lighthouse count the layers' connections toward LCP even
+for text that needs no data (#156). It needs `openssl` for the local server's throwaway certificate, and
 Playwright's Chromium (`npx playwright install chromium`).
 
 `src/test/build.test.js` keeps the JavaScript the first load fetches under 120 KB gzipped and
@@ -404,9 +414,18 @@ fails on any web font: the app uses the system font stack. Rules the scores rely
 
 - Load anything large or slow to start only when it is needed, as the map is (see Map).
 - Give a loading placeholder at least the size of what replaces it, so the page does not jump.
+- Show text that needs no data while the data loads, in the place and at the size the loaded
+  page shows it, so the page's largest text paints without waiting for a request (#151,
+  #156). Which text is largest can change with the election calendar (the results summary
+  has an early voting part only while early voting runs), so the Lighthouse run measures each
+  results page at pinned clocks (during early voting, the evening after it closes, Election
+  Day morning) and `e2e/a11y.e2e.js` checks at the same clocks that every LCP entry at
+  360 x 640 comes before the data.
 - Start the requests a page needs together, not one after another: the results page asks for
   the polling places, the early voting sites, the County's polling place rooms and (without a
-  looked-up point) the outline while the precinct loads.
+  looked-up point) the outline while the precinct loads. Precinct pages also preconnect to
+  the ArcGIS host those requests go to (the `Link` header, see Deploy), which Lighthouse's
+  simulation does not credit.
 - Ask ArcGIS only for the fields the app reads: `PRECINCT_FIELDS`, `POLL_FIELDS` and
   `ROOM_FIELDS` in `src/data/arcgis.js` (the room layer also holds staffing, photo, turnout and
   task fields, which the app never asks for). A query that names a field the layer lacks fails, so

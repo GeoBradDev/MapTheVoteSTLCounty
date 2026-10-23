@@ -238,6 +238,15 @@ describe('ResultsSummary', () => {
     expect(getCountyWaits).not.toHaveBeenCalled();
   });
 
+  it('opens the sample ballot part with one neutral line about what it holds, link or not', () => {
+    renderSummary();
+    const ballot = region(copy.cards.ballot);
+    expect(ballot.querySelector('p')).toHaveTextContent(copy.ballot.intro);
+    expect(ballot).toHaveTextContent(copy.ballot.missing);
+    expect(copy.ballot.intro).not.toMatch(/candidate|party|democrat|republican/i);
+    expect(copy.ballot.introCity).not.toMatch(/candidate|party|democrat|republican/i);
+  });
+
   it('holds the sample ballot section, or none when the precinct has no ballot', () => {
     const { unmount } = renderSummary();
     expect(region(copy.cards.ballot)).toHaveTextContent(copy.ballot.missing);

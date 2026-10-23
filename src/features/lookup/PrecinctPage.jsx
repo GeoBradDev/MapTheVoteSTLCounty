@@ -14,10 +14,10 @@ import { JurisdictionContext } from './jurisdictionContext.js';
 import { lookupPointFor } from './lookupPoint.js';
 import { precinctStatus } from './precinctStatus.js';
 import PrecinctStatusBanner from './PrecinctStatusBanner.jsx';
-import ResultsCards, { ResultsSkeleton, SkeletonLine } from './ResultsCards.jsx';
+import ResultsCards, { ResultsSkeleton } from './ResultsCards.jsx';
 import { copy } from './resultsCopy.js';
 import RetryButton from './RetryButton.jsx';
-import ShareLink from './ShareLink.jsx';
+import ShareLink, { ShareLinkPlaceholder } from './ShareLink.jsx';
 import { useSlowNotice } from './slowNotice.js';
 
 const linkClass = 'text-primary underline';
@@ -143,6 +143,7 @@ function PrecinctResults({ code }) {
   }
 
   const isCity = jurisdiction.id === 'city';
+  const placeHold = isCity ? 'min-h-12 min-[28rem]:min-h-0' : 'min-h-12 min-[25rem]:min-h-0';
   let status = null;
   if (precinct) status = isCity ? CITY_STATUS : precinctStatus(precinct);
   const municipality = placeLine(jurisdiction, code, precinct);
@@ -162,8 +163,13 @@ function PrecinctResults({ code }) {
         </h1>
         {/* Only a code-shaped value is shown: a link could otherwise put any
             text there. */}
+        {/* While loading, two lines are held below the width where the
+            longest place line fits on one: 400 px for a County precinct
+            ("Unincorporated St. Louis County") and 448 px for a City one
+            (Ward 28, Precinct 10). Narrower widths with a shorter line still
+            move it once (#27). */}
         {titled && (
-          <p className="mt-1 sm:text-lg">
+          <p className={`mt-1 sm:text-lg ${result ? '' : placeHold}`}>
             {copy.precinct(code)}
             {municipality && (
               <>
@@ -173,11 +179,17 @@ function PrecinctResults({ code }) {
             )}
           </p>
         )}
-        {!result && <SkeletonLine className="mt-2 h-5 w-48" />}
+        {/* While a code-shaped precinct loads, the share row's place is
+            held, so the summary's Election Day line, shown meanwhile, does
+            not move when the results arrive (#27, #156). One slot until the
+            precinct loads, so a focused link stays focused through a "not
+            found" answer. */}
         {precinct ? (
           <ShareLink code={code}>{searchLink}</ShareLink>
         ) : (
-          <p className="mt-2">{searchLink}</p>
+          <ShareLinkPlaceholder code={code} hold={!result && titled}>
+            {searchLink}
+          </ShareLinkPlaceholder>
         )}
       </header>
 

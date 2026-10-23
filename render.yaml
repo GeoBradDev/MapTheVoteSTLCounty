@@ -130,6 +130,15 @@ services:
           form-action 'self';
           frame-ancestors 'none';
           upgrade-insecure-requests
+      # Precinct pages only (#27, #156, owner decision on #27): preconnect to
+      # the ArcGIS host they ask for the precinct first, the County's and the
+      # City's election services (both services6.arcgis.com), so the
+      # connection is set up while the script downloads. Already in connect-src
+      # and named in the privacy notice. The value is src/prerender/plugin.js
+      # PRECINCT_PRECONNECT, which vite preview also sends (the Lighthouse run).
+      - path: /p/*
+        name: Link
+        value: <https://services6.arcgis.com>; rel=preconnect; crossorigin
       # Cache-Control: no two rules may match the same path. Render does not
       # document how same-name rules combine, and a joined or wrong value could
       # keep voters on an old build. The shell and the pre-rendered pages

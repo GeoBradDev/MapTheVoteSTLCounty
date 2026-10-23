@@ -75,6 +75,7 @@ beforeEach(async () => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.useRealTimers();
 });
 
 function renderAt(code) {
@@ -179,6 +180,31 @@ describe('a City precinct page (#89)', () => {
     const hosts = [...main.querySelectorAll('a[href^="http"]')].map((a) => new URL(a.href).host);
     const county = [election.officialLookupUrl, election.countySiteUrl].map((u) => new URL(u).host);
     for (const host of hosts) expect(county).not.toContain(host);
+  });
+
+  // Outside early voting the City sample ballot part's fixed intro is the
+  // largest text on a phone, so it shows while the precinct loads (#27,
+  // #156): from the City chunk, which the precinct request loads first.
+  it('shows the City sample ballot intro while loading after early voting closes', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(Date.UTC(2026, 10, 3, 2)));
+    fetchMock.mockImplementation(() => new Promise(() => {}));
+    renderAt(CODE);
+    const skeleton = screen.getByTestId('results-skeleton');
+    const ballot = await within(skeleton).findByRole('region', { name: copy.cards.ballot });
+    expect(within(ballot).getByText(copy.ballot.introCity)).toBeVisible();
+    expect(skeleton).not.toHaveTextContent(copy.ballot.intro);
+    expect(skeleton.querySelectorAll('a, button, input, [tabindex]')).toHaveLength(0);
+  });
+
+  it('shows no sample ballot part while loading during the City early voting', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(Date.UTC(2026, 9, 22, 15)));
+    fetchMock.mockImplementation(() => new Promise(() => {}));
+    renderAt(CODE);
+    const skeleton = screen.getByTestId('results-skeleton');
+    await within(skeleton).findByTestId('summary-skeleton-early');
+    expect(within(skeleton).queryByRole('region', { name: copy.cards.ballot })).toBeNull();
   });
 
   it('shows the City sample ballot card: the citywide PDF, never a precinct ballot (#92)', async () => {

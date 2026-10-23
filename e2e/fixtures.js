@@ -111,6 +111,12 @@ export const WAITS_RECORDED_AT = new Date(Date.UTC(2026, 9, 22, 14, 5));
 /** 9:05 a.m. Central on Election Day, just after the Election Day wait fixtures (#107). */
 export const ELECTION_DAY_AT = new Date(Date.UTC(2026, 10, 3, 15, 5));
 
+/**
+ * 8 p.m. Central on Monday, November 2, 2026: early voting has closed and
+ * Election Day has not begun, so the results summary has no early voting part.
+ */
+export const AFTER_EARLY_VOTING_AT = new Date(Date.UTC(2026, 10, 3, 2, 0));
+
 /** The wait fixtures for Election Day: both boards' Election Day states. */
 export const ELECTION_DAY_WAITS = Object.freeze({ county: 'electionDay', city: 'electionDay' });
 
