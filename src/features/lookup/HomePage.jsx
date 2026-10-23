@@ -23,16 +23,20 @@ export default function HomePage() {
   return (
     <>
       <header>
-        {/* The election date as one compact line (#80). */}
-        <p className="inline-flex min-h-8 items-center rounded-full bg-accent px-3 text-sm font-semibold text-on-accent">
-          <time dateTime={election.electionDate}>
+        {/* Focusable from script: the app moves focus here after an in-app link. */}
+        <h1 tabIndex={-1} className="text-3xl font-semibold">
+          {copy.heading}
+        </h1>
+        {/* The election date as one compact line (#80), after the heading so
+            reading on from the focused h1 reaches it. */}
+        <p className="mt-2">
+          <time
+            dateTime={election.electionDate}
+            className="inline-block rounded-full bg-accent px-3 py-1 text-sm font-semibold text-on-accent"
+          >
             {copy.electionDay(election.electionDate, election.timeZone)}
           </time>
         </p>
-        {/* Focusable from script: the app moves focus here after an in-app link. */}
-        <h1 tabIndex={-1} className="mt-3 text-3xl font-semibold">
-          {copy.heading}
-        </h1>
         <p className="mt-2">{copy.intro}</p>
         <p className="mt-1 text-sm text-muted">{copy.unofficial}</p>
       </header>

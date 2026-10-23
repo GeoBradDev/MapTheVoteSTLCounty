@@ -6,7 +6,7 @@ Coordinator notes that override the issue text: no Election Day rule on the home
 
 ## Acceptance criteria
 1. At 360 x 640 the heading, the address input, "Find my precinct", "Use my location", the nonpartisan line (#71) and the wait times link (#104) are all fully in the viewport without scrolling (e2e).
-2. The hero shows the election date as one compact line (a pill, "Election Day: Tue, Nov 3, 2026"), built from `election.electionDate` and `election.timeZone`, inside a `<time dateTime>`; the separate eyebrow and the "Election Day is ..." sentence are gone.
+2. The hero shows, right after the heading (the app focuses the h1 after an in-app link, so reading on from it must reach the date), the election date as one compact line (a pill, "Election Day: Tue, Nov 3, 2026"), built from `election.electionDate` and `election.timeZone`, inside a `<time dateTime>`; the separate eyebrow and the "Election Day is ..." sentence are gone.
 3. "Use my location" sits directly below "Find my precinct" as a full-width (at phone width) secondary button with a 2px primary border; the location privacy and "not your home" notes and the geocoder attribution follow the two actions, in small type, still visible (no disclosure: the OSM / Photon / County credits stay on the page as their terms ask).
 4. The geocoder attribution keeps every credit and link and the same text; only its position moves (after the actions). This holds on every page that uses `AddressLookup` (home, precinct, not found).
 5. "How to vote" and both boards' sites are tappable rows (bordered, at least 44 px tall, full width) in the "More information" nav.
@@ -16,7 +16,7 @@ Coordinator notes that override the issue text: no Election Day rule on the home
 9. The `/` Lighthouse budget passes; first-load JS stays under the 120 KB gzip budget; the pre-render (#99) still works.
 
 ## Files that change
-- `src/features/lookup/HomePage.jsx`: header with the date pill, heading, intro, nonpartisan line; wait times link; nav as rows.
+- `src/features/lookup/HomePage.jsx`: header with the heading, date pill, intro, nonpartisan line; wait times link; nav as rows.
 - `src/features/lookup/homeCopy.js`: `electionDay` formats the short date.
 - `src/i18n/en.json`: `home.electionDay` becomes "Election Day: {date}".
 - `src/features/lookup/HomePage.test.jsx`: header test for the pill (no eyebrow), short date format, nav rows order test, the wait times link between the header and the address box.

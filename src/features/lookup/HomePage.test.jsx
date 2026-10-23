@@ -105,6 +105,9 @@ describe('HomePage', () => {
     const link = screen.getByRole('link', { name: copy.waitTimes });
     expect(header.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(header.contains(link)).toBe(false);
+    expect(
+      link.compareDocumentPosition(screen.getByRole('combobox')) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it('shows "How to vote" and both boards as full-width rows in its own list', () => {

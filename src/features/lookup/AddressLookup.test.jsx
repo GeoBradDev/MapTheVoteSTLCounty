@@ -366,7 +366,7 @@ describe('AddressLookup', () => {
     expect(lookupPointFor('CC007')).toEqual({ lat: 38.66, lng: -90.45 });
   });
 
-  it('credits OpenStreetMap contributors next to the address box', () => {
+  it('credits OpenStreetMap contributors after the two ways in', () => {
     renderLookup();
     expect(screen.getByRole('link', { name: 'OpenStreetMap contributors' })).toHaveAttribute(
       'href',
