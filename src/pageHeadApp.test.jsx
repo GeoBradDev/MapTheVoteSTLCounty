@@ -93,6 +93,36 @@ describe('head on navigation', () => {
     expect(document.title).toBe('St. Louis Voter Guide');
   });
 
+  // Every page puts back the title it found when it goes. That must happen
+  // before the next page sets its own, or the old title wins (#128).
+  describe.each(['/privacy', '/learn', '/learn/voter-id'])('straight from %s', (from) => {
+    it.each([
+      ['/p/CC007', 'Precinct CC007 | St. Louis Voter Guide'],
+      ['/p/W01P12', 'Precinct W01P12 | St. Louis Voter Guide'],
+    ])('gives %s its own title', (to, title) => {
+      const location = arriveAt(from);
+      act(() => location.navigate(to));
+      expect(document.title).toBe(title);
+    });
+  });
+
+  it.each(['/early-voting', '/nope'])('gives a precinct its own title straight from %s', (from) => {
+    const location = arriveAt('/');
+    act(() => location.navigate(from));
+    act(() => location.navigate('/p/CC007'));
+    expect(document.title).toBe('Precinct CC007 | St. Louis Voter Guide');
+  });
+
+  it('gives a public page its own title straight from a precinct', () => {
+    const location = arriveAt('/privacy');
+    act(() => location.navigate('/p/W01P12'));
+    act(() => location.navigate('/learn'));
+    expect(document.title).toBe(pageHead('/learn').title);
+    act(() => location.navigate('/p/CC007'));
+    act(() => location.navigate('/'));
+    expect(document.title).toBe('St. Louis Voter Guide');
+  });
+
   it('never puts a query string or hash in the canonical', () => {
     const location = arriveAt('/learn');
     act(() => location.navigate('/privacy?address=1318+Ross+Ave#main'));
