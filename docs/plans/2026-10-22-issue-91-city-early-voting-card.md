@@ -29,8 +29,10 @@ budget, all City-only results UI in one on-demand chunk with the City data clien
    (or the precinct center), each with today's status ("Open today until", "Opens today
    at", "Opens <date> at", or ended), its address, entrance notes, distance and
    directions, and its own dates and hours. Same code as the County card.
-3. While early voting runs, each City row shows its current line count from the shared
-   wait time loop (`waits.city`, joined on the site `name`), the nearby sort and the link
+3. While early voting runs, each City row shows its current line count from a wait time
+   loop on the shared rules (#103) that asks only the City's layer (`waits.city`, joined
+   on the site `name`; revised during implementation from "the shared loop", which also
+   asks County layers), the nearby sort and the link
    to `/early-voting`, as the County card does since #105.
 4. No eligibility rules in the card: it links the absentee learn topic and the City
    Board's No Excuse Absentee page. No County text on a City page.
@@ -79,8 +81,9 @@ budget, all City-only results UI in one on-demand chunk with the City data clien
   schedule into the `ScheduleEntry` form `earlyVotingStatus` reads; weekday lines.
 - `src/features/lookup/ResultsCards.jsx`: City `earlyVoting` body, lazy from the chunk.
 - `src/features/waitTimes/WaitTimesPage.jsx`: City sites from the chunk, merged list; each
-  row names its board; one board's sites failing keeps the other's, with that board's
-  lookup and a retry; the status line says unavailable when either board's counts fail.
+  row names its board; each board's sites show as they arrive (a slow board never holds up
+  the other); one board's sites failing keeps the other's, with that board's lookup and a
+  retry, and a board keeps the rows it last loaded through a failed retry; the status line says unavailable when either board's counts fail.
 - `src/i18n/en.json`, copy modules: the card intro made jurisdiction neutral; wait times
   intro covers both; the "City not listed" line becomes "each board's sites are for its own
   voters". No new strings: every string is in the first load.

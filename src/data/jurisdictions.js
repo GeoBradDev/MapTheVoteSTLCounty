@@ -51,9 +51,10 @@ export const county = Object.freeze({
 let cityClient;
 
 /**
- * The City's data code (./cityArcgis.js, #87), loaded on first use so it stays
- * out of the first load. A failed load is not kept, so the next call tries
- * again.
+ * The City chunk (src/cityChunk.js): the City's data code (./cityArcgis.js,
+ * #87), the City-only results UI and src/config/cityResults.js (#91), loaded
+ * on first use so they stay out of the first load (#147). A failed load is not
+ * kept, so the next call tries again.
  * @returns {Promise<typeof import('../cityChunk.js')>}
  */
 export function loadCityClient() {
@@ -65,8 +66,8 @@ export function loadCityClient() {
 }
 
 /**
- * @type {Jurisdiction} The City (#89): its data code in ./cityArcgis.js, loaded
- * on first use.
+ * @type {Jurisdiction} The City (#89): its data code in ./cityArcgis.js, from
+ * the City chunk, loaded on first use.
  */
 export const city = Object.freeze({
   id: 'city',

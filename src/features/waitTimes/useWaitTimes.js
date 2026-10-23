@@ -1,6 +1,8 @@
 // The early voting wait times every component reads (#103), from one shared
 // refresh loop: one request per jurisdiction per `refreshSeconds`, however
-// many components read it. The loop runs only while some component reads it
+// many components read it. (The City early voting card, #91, runs its own
+// loop on the same rules, built with createWaitTimesStore, that asks only the
+// City's layer.) The loop runs only while some component reads it
 // and the tab is visible, and refreshes at once when the tab comes back. A
 // failed refresh keeps the last values while each is still fresh and its site
 // open, then reports the jurisdiction unavailable. A failure never throws

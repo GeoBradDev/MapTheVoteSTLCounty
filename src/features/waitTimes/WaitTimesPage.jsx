@@ -78,9 +78,8 @@ async function loadCitySites() {
 
 // Each board's part of a load: its rows, each with its `jurisdiction`, the
 // schedule it keeps and its key in that board's line counts, and when they
-// loaded. Null when that board's sites failed.
-function countyPart({ status, value }) {
-  if (status !== 'fulfilled') return null;
+// loaded.
+function countyPart(value) {
   const rows = pollRows(value).map((row) => ({
     ...row,
     jurisdiction: 'county',
@@ -89,8 +88,7 @@ function countyPart({ status, value }) {
   return { rows, loadedAt: value.loadedAt ?? Date.now() };
 }
 
-function cityPart({ status, value }) {
-  if (status !== 'fulfilled') return null;
+function cityPart(value) {
   const { layer, scheduleFor } = value;
   // The City's counts are keyed by the site's name (waitTimes.city.siteField).
   const rows = pollRows(layer).map((row) => ({
@@ -103,19 +101,29 @@ function cityPart({ status, value }) {
 }
 
 /**
- * Both boards' sites as one list. When one board's sites are missing, the
- * other's are still listed and `failed` names the missing one; when both are,
- * the result is an error.
+ * Both boards' sites as one list, as each board's part settles: a part is
+ * undefined while it loads and null when it failed, and a board whose part
+ * failed or is loading again keeps the part it last loaded (`prev`). The list
+ * shows once one board has rows, without waiting for the other; `failed`
+ * names a board with no rows once its load failed. Both failing is an error;
+ * nothing loaded yet keeps `prev` (null on the first load: the skeleton).
  */
-function combine(county, city, attempt) {
-  if (!county && !city) return { error: true, attempt };
-  const parts = [county, city].filter(Boolean);
+function combine(prev, parts, attempt) {
+  // Loaded now; else, while loading, what it was; else, failed now, what it
+  // last loaded or null.
+  const pick = (key) =>
+    parts[key] || (parts[key] === undefined ? prev?.[key] : prev?.[key] || null);
+  const county = pick('county');
+  const city = pick('city');
+  if (county === null && city === null) return { error: true, attempt };
+  if (!county && !city) return prev;
+  const loaded = [county, city].filter(Boolean);
   return {
     county,
     city,
-    rows: parts.flatMap((part) => part.rows),
-    loadedAt: Math.min(...parts.map((part) => part.loadedAt)),
-    failed: !county ? 'county' : !city ? 'city' : null,
+    rows: loaded.flatMap((part) => part.rows),
+    loadedAt: Math.min(...loaded.map((part) => part.loadedAt)),
+    failed: county === null ? 'county' : city === null ? 'city' : null,
     attempt,
     citySchedules: city?.schedules ?? null,
   };
@@ -148,16 +156,23 @@ function useSites(loadSites, loadCity) {
 
   useEffect(() => {
     let current = true;
-    Promise.allSettled([loadSites(), loadCity()])
-      .then(([county, city]) => ({ county: countyPart(county), city: cityPart(city) }))
-      .then((next) => {
-        if (!current) return;
-        // A board whose sites failed this time keeps the rows it last loaded.
-        setResult((prev) =>
-          combine(next.county ?? prev?.county ?? null, next.city ?? prev?.city ?? null, attempt),
-        );
-        done();
-      });
+    // Each board's part as it settles, so a slow board never holds up the
+    // other's list.
+    const parts = { county: undefined, city: undefined };
+    const settle = (key) => (part) => {
+      if (!current) return;
+      parts[key] = part;
+      // A copy: the updater may run later, after the other part settles too.
+      const settled = { ...parts };
+      setResult((prev) => combine(prev?.error ? null : prev, settled, attempt));
+      if (parts.county !== undefined && parts.city !== undefined) done();
+    };
+    loadSites()
+      .then(countyPart)
+      .then(settle('county'), () => settle('county')(null));
+    loadCity()
+      .then(cityPart)
+      .then(settle('city'), () => settle('city')(null));
     return () => {
       current = false;
     };

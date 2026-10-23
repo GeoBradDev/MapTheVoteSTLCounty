@@ -549,6 +549,38 @@ describe('WaitTimesPage: St. Louis City sites (#91)', () => {
     ).toHaveAttribute('href', referrals.stlCityLookup.url);
   });
 
+  it("lists the County's sites without waiting for a slow City", async () => {
+    withCity({
+      loadCity: () => new Promise(() => {}),
+      waitSource: createWaitTimesStore({ county: countyEmpty, city: null }),
+    });
+    await screen.findByRole('list', { name: copy.listLabel });
+    expect(items()).toHaveLength(sites.features.length);
+    expect(screen.queryByText(new RegExp(copy.failed))).toBeNull();
+  });
+
+  it('keeps the City failure and its retry shown while the retry runs', async () => {
+    const user = userEvent.setup();
+    let release;
+    let calls = 0;
+    const loadCity = () => {
+      calls += 1;
+      if (calls <= 2) return Promise.reject(new Error('down'));
+      return new Promise((resolve) => {
+        release = () => resolve(cityPart(citySites));
+      });
+    };
+    withCity({ loadCity, waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
+    await screen.findByText(new RegExp(copy.failed));
+    await user.click(screen.getByRole('button', { name: /try again/i }));
+    expect(screen.getByText(new RegExp(copy.failed))).toBeInTheDocument();
+    await act(async () => release());
+    await waitFor(() =>
+      expect(items()).toHaveLength(sites.features.length + citySites.features.length),
+    );
+    expect(screen.queryByText(new RegExp(copy.failed))).toBeNull();
+  });
+
   it("names both boards' lookups when both boards' sites fail", async () => {
     const down = async () => {
       throw new Error('down');

@@ -179,7 +179,7 @@ function Schedules({ now }) {
  * The nearest early voting sites of the voter's jurisdiction, for the County
  * card below and the City's (CityEarlyVotingCard, in the City chunk): each
  * site's status, address and directions, and while early voting runs its
- * current line count from the shared #103 loop, a sort by shortest line
+ * current line count (from the shared #103 loop, or `waitSource`), a sort by shortest line
  * nearby, and a link to the wait times page (#105).
  * @param {{ code: string, origin: { lat: number, lng: number } | null,
  *   waitSource?: Parameters<typeof useWaitTimes>[0],
