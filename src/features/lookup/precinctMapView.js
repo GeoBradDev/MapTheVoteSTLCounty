@@ -10,7 +10,7 @@ import { Map as MapLibreMap, Marker, setWorkerUrl } from 'maplibre-gl';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { mapBounds, oklchToRgb, placesKey } from './mapBounds.js';
 import { NO_COUNT_CLASS, WAIT_COLOR_CLASSES } from '../waitTimes/waitColors.js';
-import { basemapStyleUrl, neutralizeBasemap, watchColorScheme } from './mapStyle.js';
+import { basemapStyleUrl, followColorScheme, neutralizeBasemap } from './mapStyle.js';
 import './precinctMap.css';
 
 setWorkerUrl(workerUrl);
@@ -105,9 +105,7 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
 
   // The system color scheme changed (#77): the other basemap, and the
   // precinct drawn again in the new theme's colors on its style load.
-  const stopWatching = watchColorScheme(() => {
-    map.setStyle(basemapStyleUrl(), { diff: false });
-  });
+  const stopWatching = followColorScheme(map);
 
   function fail(error) {
     if (state !== 'loading') return;

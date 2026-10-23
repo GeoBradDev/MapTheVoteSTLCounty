@@ -445,8 +445,8 @@ The palette is nonpartisan: no red or blue. Define colors only as oklch `--color
 CSS under `src` or in the built CSS, and on any `data:` URI in the CSS under `src` (put icons in
 SVG components that use `currentColor`). Only CSS is checked: a color written anywhere else
 (`index.html`, JSX props or SVG attributes, JavaScript strings) is not, so use token classes
-there instead of color values. Two exceptions are checked on their own: the `theme-color` meta in
-`index.html` (#76, below) and the site icons in `public/` (#79): a favicon
+there instead of color values. Two exceptions are checked on their own: the `theme-color` metas in
+`index.html` (#76, #77, below) and the site icons in `public/` (#79): a favicon
 cannot read the page's CSS, so `favicon.svg` writes `--color-primary` and `--color-on-primary`
 as hex, and `favicon.ico` and `apple-touch-icon.png` are drawn from it. A build test fails on
 red or blue in `favicon.svg` (not in the two raster icons); when those tokens change, redraw all
@@ -470,10 +470,10 @@ The tokens (#76), each with its role and minimum contrast beside it in `src/inde
   and `wait-number-light` and `wait-number-dark` for the marker numbers on it, the same in
   both themes.
 - `shadow`: `ink` at 12%, the one color the `shadow-card` and `shadow-popover` shadows use
-  (in dark mode, the darkest surface).
+  (in dark mode, near black).
 
 Dark mode (#77) follows the system setting, with no toggle (one would need storage, see
-Privacy). Every token has a dark value in `src/index.css`, under
+Privacy). Every token but the marker number pair has a dark value in `src/index.css`, under
 `@media screen and (prefers-color-scheme: dark)`, so print stays light; `color-scheme: light dark`
 lets form controls and scrollbars follow, and the page itself paints `surface`. A new token
 gets a dark value too (a test fails on one left out).
@@ -919,7 +919,9 @@ polls are open (#107), with classes from that board's counts at the polling plac
 The basemap is [OpenFreeMap](https://openfreemap.org)'s Positron style, or in dark mode its
 Dark style (#77), all grays: free, with no API key
 or account, and its terms allow embedding it. Both maps pick the style for the system color
-scheme, read their token colors at each style load, and switch style when the scheme changes. Its attribution (OpenFreeMap, OpenMapTiles,
+scheme, read their token colors at each style load, and switch style when the scheme changes,
+fetching the new style first so a failed request keeps the drawn map. A page printed with the
+system dark leaves the maps out, so print stays light. Its attribution (OpenFreeMap, OpenMapTiles,
 OpenStreetMap contributors) is shown as links under the map. Its water labels are blue and
 its interstate shields slate blue, so the map draws every label in the muted token and
 interstates with the gray road shield. The precinct outline is drawn in ink, not the brand

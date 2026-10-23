@@ -164,7 +164,14 @@ export default function PrecinctMap({ code, origin, polls, classes = [] }) {
     classes.length > 0 && polls.some((poll) => poll.bin !== null && poll.bin !== undefined);
 
   return (
-    <div ref={regionRef} role="region" aria-label={copy.map.label(code)} className="mt-3">
+    // Printed with the system dark (#77), the canvas would keep the dark
+    // basemap on a light page: the list holds everything, so leave it out.
+    <div
+      ref={regionRef}
+      role="region"
+      aria-label={copy.map.label(code)}
+      className="mt-3 print:dark:hidden"
+    >
       <div className="relative h-56 overflow-hidden sm:h-64 rounded-card border border-border">
         {/* MapLibre adds its own classes to this element, so React must never
             change its className. Not positioned: .maplibregl-map sets

@@ -149,7 +149,9 @@ export default function WaitTimesMap({ sites, classes, onFail, label = copy.map.
   if (state === 'failed') return null;
 
   return (
-    <div ref={regionRef} role="region" aria-label={label} className="mt-3">
+    // Printed with the system dark (#77), the canvas would keep the dark
+    // basemap on a light page: the list holds everything, so leave it out.
+    <div ref={regionRef} role="region" aria-label={label} className="mt-3 print:dark:hidden">
       <div className="relative h-72 overflow-hidden rounded-card border border-border">
         {/* MapLibre adds its own classes to this element: React never changes its className. */}
         <div ref={containerRef} className="isolate h-full w-full" />

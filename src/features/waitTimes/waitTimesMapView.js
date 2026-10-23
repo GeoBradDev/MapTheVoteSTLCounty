@@ -7,7 +7,7 @@ import { Map as MapLibreMap, Marker, setWorkerUrl } from 'maplibre-gl';
 // no blob: worker source.
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { mapBounds, oklchToRgb } from '../lookup/mapBounds.js';
-import { basemapStyleUrl, neutralizeBasemap, watchColorScheme } from '../lookup/mapStyle.js';
+import { basemapStyleUrl, followColorScheme, neutralizeBasemap } from '../lookup/mapStyle.js';
 import { NO_COUNT_CLASS, WAIT_COLOR_CLASSES } from './waitColors.js';
 import '../lookup/precinctMap.css';
 
@@ -73,9 +73,7 @@ export function createWaitTimesMap(container, { sites, onReady, onFail }) {
   let markers = [];
 
   // The system color scheme changed (#77): the other basemap.
-  const stopWatching = watchColorScheme(() => {
-    map.setStyle(basemapStyleUrl(), { diff: false });
-  });
+  const stopWatching = followColorScheme(map);
 
   function fail(error) {
     if (state !== 'loading') return;

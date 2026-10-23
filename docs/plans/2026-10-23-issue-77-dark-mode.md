@@ -39,7 +39,9 @@ Domain skills:
    the dark basemap, with no red or blue: `mapColors.test.js` and `gestureHint.test.js` run
    for both themes against each basemap's land (Positron and dark). Marker numbers use fixed
    tokens so they stay 4.5:1 on their fill whatever the theme.
-8. Print stays light regardless of scheme.
+8. Print stays light regardless of scheme. The map canvas cannot switch basemap in time for
+   a print, so with the system dark the map regions are left out of print
+   (`print:dark:hidden`); the lists hold everything on them.
 9. No manual toggle and no storage.
 10. axe passes for both schemes: every route in `e2e/a11y.e2e.js` also runs axe with
     `colorScheme: 'dark'`. `BLANK_STYLE` answers both style URLs.
@@ -52,7 +54,11 @@ Domain skills:
 - `index.html`: color-scheme meta, two theme-color metas.
 - `src/features/lookup/basemap.js`: `BASEMAP_DARK_STYLE_URL`, `BASEMAP_STYLES`.
 - `src/features/lookup/mapStyle.js`: `DARK_SCHEME` query, `basemapStyleUrl()`,
-  `watchColorScheme()`.
+  `watchColorScheme()`, `followColorScheme(map)`, which fetches the new style first and sets
+  it only once it arrived, so a failed request (offline) keeps the drawn basemap.
+- `src/features/lookup/PrecinctMap.jsx`, `src/features/waitTimes/WaitTimesMap.jsx`:
+  `print:dark:hidden` on the map region.
+- `src/features/lookup/precinctMap.css`: the gesture hint comment.
 - `src/features/lookup/precinctMapView.js`, `src/features/waitTimes/waitTimesMapView.js`:
   pick the style by scheme, set up layers on every `style.load`, `setStyle` on change,
   unsubscribe on remove or failure.
@@ -83,6 +89,13 @@ Domain skills:
 - Ink is light in dark mode, so the precinct outline (ink) nears the pale tan step: the
   dark `wait-3` is a shade deeper so the outline stays 0.15 OKLab from every step.
 - LCP: no new request on first load; the CSS grows by about 1 KB.
+
+## Revisions
+
+- After review finder 1: fetch-first style switch (`setStyle` with a URL dropped the drawn
+  basemap before the request could fail), maps left out of dark print, the dark shadow a
+  plain oklch color (the build's color-mix fallback resolved the var() to its light value),
+  `render.test.js` checks the dark style's origin, stale comments fixed.
 
 ## Proof
 

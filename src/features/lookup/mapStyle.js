@@ -2,7 +2,12 @@
 // Imported only by the map view modules, which load with MapLibre.
 import { BASEMAP_DARK_STYLE_URL, BASEMAP_STYLE_URL } from './basemap.js';
 
-/** The same query the dark token values in src/index.css sit under (#77). */
+/**
+ * Dark mode (#77), as the dark token values in src/index.css see it on
+ * screen. Those sit under `screen and` so print stays light; a printed page
+ * with the system dark leaves the map out instead (print:dark:hidden on the
+ * map regions), so this query needs no media type.
+ */
 export const DARK_SCHEME = '(prefers-color-scheme: dark)';
 
 function darkQuery() {
@@ -32,6 +37,38 @@ export function watchColorScheme(onChange) {
   return () => query.removeEventListener('change', listener);
 }
 
+/**
+ * Switches `map` to the basemap for the scheme each time the system color
+ * scheme changes (#77), until the returned function is called. The new style
+ * is fetched first and set only once it arrived: `setStyle` with a URL drops
+ * the drawn basemap at once, so a request that failed (the phone went
+ * offline) would leave a blank map the page can no longer take away. On a
+ * failed fetch the map keeps the basemap it has.
+ * @param {{ setStyle: (style: object, options: object) => void }} map
+ * @returns {() => void} Stops following.
+ */
+export function followColorScheme(map) {
+  let active = true;
+  const stop = watchColorScheme(async () => {
+    const url = basemapStyleUrl();
+    let style;
+    try {
+      const response = await fetch(url);
+      if (!response.ok) return;
+      style = await response.json();
+    } catch {
+      return;
+    }
+    // Stopped, or the scheme changed again while this one loaded.
+    if (!active || basemapStyleUrl() !== url) return;
+    map.setStyle(style, { diff: false });
+  });
+  return () => {
+    active = false;
+    stop();
+  };
+}
+
 // Positron's interstate shield layer, and the gray shield its other roads use.
 const INTERSTATE_SHIELDS = 'highway-shield-us-interstate';
 const GRAY_SHIELD = ['concat', 'road_', ['get', 'ref_length']];
@@ -40,7 +77,7 @@ const GRAY_SHIELD = ['concat', 'road_', ['get', 'ref_length']];
  * The basemap's own colors are grays, except its blue water labels and its
  * slate-blue interstate shields. Draws every label in `labelColor`, so no
  * party color shows whatever the style changes, and interstates with the plain
- * gray road shield. Call on the map's `load`.
+ * gray road shield. Call on each `style.load`.
  * @param {import('maplibre-gl').Map} map
  * @param {string} labelColor An rgb() color.
  */

@@ -113,7 +113,8 @@
 /*
   Dark mode (#77) follows the system setting; there is no toggle, as one would
   need storage (src/test/no-storage.test.js). Every color token above has its
-  dark value here, still oklch and still no red or blue, each meeting the same
+  dark value here but the marker number tokens, which sit on the ramp's fills
+  and so stay the same, still oklch and still no red or blue, each meeting the same
   minimum as its light value (src/test/contrast.test.js checks both themes).
   On screens only, so print stays light. The maps read these at each style
   load and switch to OpenFreeMap's dark basemap (src/features/lookup/mapStyle.js).
@@ -152,8 +153,12 @@
     --color-wait-3: oklch(0.82 0.1 87.5);
     --color-wait-4: oklch(0.67 0.12 65);
     --color-wait-5: oklch(0.47 0.11 55);
-    /* Light ink cannot cast a shadow, so shadows take the darkest surface. */
-    --color-shadow: color-mix(in oklch, var(--color-surface-sunken) 90%, transparent);
+    /*
+      Light ink cannot cast a shadow, so shadows are near black. A plain
+      color, not color-mix(): the build's fallback for browsers without
+      color-mix() would resolve a var() to its light value.
+    */
+    --color-shadow: oklch(0.1 0.004 185);
   }
 }
 

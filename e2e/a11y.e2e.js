@@ -697,6 +697,41 @@ test.describe('in dark mode', () => {
     await expect(map.locator('.maplibregl-marker').first()).toBeAttached();
   });
 
+  test('a map whose dark basemap cannot load keeps the one it drew', async ({ page }) => {
+    await page.clock.setFixedTime(WAITS_RECORDED_AT);
+    const styles = [];
+    await answerFromFixtures(page, { basemap: true, styles });
+    // The phone went offline before the scheme changed: the dark style fails.
+    // Routes added later are asked first.
+    await page.route(BASEMAP_DARK_STYLE_URL, (route) => route.abort());
+    await page.goto('/early-voting');
+    const map = page.getByRole('region', { name: 'Map of early voting sites' });
+    await map.scrollIntoViewIfNeeded();
+    await expect(map.getByRole('list', { name: 'People in line' })).toBeVisible();
+    const failed = page.waitForEvent('requestfailed', (r) => r.url() === BASEMAP_DARK_STYLE_URL);
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await failed;
+    await expect(map.locator('canvas')).toHaveCount(1);
+    await expect(map.getByRole('list', { name: 'People in line' })).toBeVisible();
+    expect(styles).toEqual([BASEMAP_STYLE_URL]);
+  });
+
+  test('prints a page without its map, so the dark basemap never prints', async ({ page }) => {
+    await page.clock.setFixedTime(WAITS_RECORDED_AT);
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await answerFromFixtures(page, { basemap: true });
+    await page.goto('/early-voting');
+    const map = page.getByRole('region', { name: 'Map of early voting sites' });
+    await map.scrollIntoViewIfNeeded();
+    await expect(map.getByRole('list', { name: 'People in line' })).toBeVisible();
+    await page.emulateMedia({ colorScheme: 'dark', media: 'print' });
+    await expect(map).toBeHidden();
+    await expect(page.getByRole('list', { name: 'Early voting sites' })).toBeVisible();
+    // A light page prints as before.
+    await page.emulateMedia({ colorScheme: 'light', media: 'print' });
+    await expect(map).toBeVisible();
+  });
+
   test('a map opened in dark mode asks for the dark basemap only', async ({ page }) => {
     const styles = [];
     await page.clock.setFixedTime(WAITS_RECORDED_AT);

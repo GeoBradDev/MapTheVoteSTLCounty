@@ -71,7 +71,10 @@ describe('the dark theme (#77)', () => {
   });
 
   it('defines no dark token the light theme lacks', () => {
-    expect(Object.keys(themes.darkOnly).filter((name) => !(name in themes.light))).toEqual([]);
+    // The light shadow is a color-mix() of ink, which themeTokens leaves out.
+    const lightNames = new Set([...Object.keys(themes.light), 'shadow']);
+    expect(Object.keys(themes.darkOnly).filter((name) => !lightNames.has(name))).toEqual([]);
+    expect(css).toMatch(/@theme\s*\{[^}]*--color-shadow:/);
   });
 
   it('is dark: light text on dark surfaces', () => {
