@@ -49,6 +49,8 @@ compact and static so it never becomes a late-painting LCP element (#27, PR #178
 - `e2e/a11y.e2e.js`: the existing "How to vote" click scoped to `main` (the header now has a
   link with the same name); a per-route check that the banner is shown and at most 56 px tall,
   also with the text spacing override.
+- `src/prerender/plugin.js`: a comment that said the Lighthouse run loads no extra file (the
+  icons now load); `src/test/render.test.js`: the icon paths join the header rule probes.
 - `README.md` (Phase 8): mention the header where the page rules and print rules are described,
   if a line there becomes wrong.
 
@@ -70,7 +72,11 @@ compact and static so it never becomes a late-painting LCP element (#27, PR #178
   "Look up" shows from `sm` up only (the site name already links home); that matches the issue's
   "on wider screens" wording.
 - Hydration: the header reads the location for `aria-current`; the server render passes
-  `ssrPath`, so markup matches.
+  `ssrPath`, so markup matches. The pre-rendered `/learn` also hydrates at `/learn/`, so the
+  comparison normalizes the path (trailing slash, case) as the routes do (finder 1).
+- Measured at 360 px: with "Look up" shown, the site name and both links wrap inside the row
+  under the text spacing override, so "Look up" shows from `sm` (640 px) up, as the issue's
+  "on wider screens" allows.
 - LCP: the header text is small; the largest element stays each page's own content.
 
 Not chosen: a sticky header (issue says not by default; noted in the PR for review), a

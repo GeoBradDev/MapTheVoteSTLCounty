@@ -116,9 +116,9 @@ export function previewTarget(outDir, pathname) {
 /**
  * Whether `vite preview` should route `req` like Render: a GET or HEAD for a
  * page, by the same test Vite's own fallback to index.html uses (an Accept
- * that allows HTML, and not /favicon.ico). Anything else, such as the
- * browser's own favicon request, is left to Vite as before, so the Lighthouse
- * run loads no extra file.
+ * that allows HTML, and not /favicon.ico). Anything else is left to Vite as
+ * before. A request for a file that exists, such as the site's icons (#79),
+ * is served as that file either way.
  * @param {{ method?: string, url?: string, headers: Record<string, string | undefined> }} req
  */
 export function isPageRequest(req) {

@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'wouter';
+import { normalizePath } from '../pageHead.js';
 import SiteMark from './SiteMark.jsx';
 import { copy } from './siteHeaderCopy.js';
 
@@ -17,7 +18,11 @@ const navLink =
  */
 export default function SiteHeader() {
   const [location] = useLocation();
-  const current = (path) => (location === path ? 'page' : undefined);
+  // As the routes match: a trailing slash or other case is the same page.
+  // The pre-rendered /learn page also hydrates at /learn/ (#99), so this
+  // must agree with the server's render there.
+  const here = normalizePath(location).toLowerCase();
+  const current = (path) => (here === path ? 'page' : undefined);
   return (
     <header className="border-b border-border print:hidden" data-site-header="">
       <div className="mx-auto flex min-h-13 w-full max-w-2xl items-center justify-between gap-x-4 px-4">
