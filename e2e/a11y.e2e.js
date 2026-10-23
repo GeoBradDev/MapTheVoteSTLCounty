@@ -49,8 +49,8 @@ const ROUTES = [
   },
   {
     // A City precinct (#89): the City's polling places, its Election Day rule,
-    // its early voting card (#91) with a site's hours open, and the cards
-    // still to come. At the time the wait fixtures were recorded, so the
+    // its early voting card (#91) with a site's hours open, its districts
+    // card (#90), and the card still to come. At the time the wait fixtures were recorded, so the
     // early voting card runs its line count UI.
     path: `/p/${CITY_CODE}`,
     at: WAITS_RECORDED_AT,
@@ -64,6 +64,8 @@ const ROUTES = [
       await expect(early.getByRole('heading', { level: 3 }).first()).toBeVisible();
       await early.getByText('Dates and hours').first().click();
       await expect(early.getByText(/^Monday: /).first()).toBeVisible();
+      // Its districts card (#90).
+      await expect(page.getByText('Missouri House District 78')).toBeVisible();
     },
   },
   {

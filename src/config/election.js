@@ -244,8 +244,8 @@ const county = {
 // (docs/data.md, "St. Louis City"). The precincts layer's `precinctid` reads
 // `W <ward> P <precinct>`, like `W 1 P 12`: 207 precincts in wards 1 to 14.
 // The values only the City's results cards read (its early voting hours, #91,
-// and its Election Day rule, #89) are in ./cityResults.js, loaded only with the
-// City chunk (#147).
+// its Election Day rule, #89, and its districts card's rows, #90) are in
+// ./cityResults.js, loaded only with the City chunk (#147).
 const cityServiceRoot = 'https://services6.arcgis.com/HZXbCkpCSqbGd0vK/ArcGIS/rest/services';
 const cityGeography = 'ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer';
 const cityLayers = {

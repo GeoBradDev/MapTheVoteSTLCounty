@@ -252,6 +252,7 @@
         "countyCouncil": "County Council",
         "municipality": "Municipality",
         "ward": "City ward or district",
+        "cityWard": "Ward",
         "township": "Township",
         "school": "School district",
         "juniorCollege": "Community college subdistrict",
@@ -269,6 +270,9 @@
         "annexation": "Annexation area"
       },
       "source": "From the St. Louis County Board of Elections precinct data.",
+      "sourceCity": "From the St. Louis City Board of Election Commissioners' election data.",
+      "multipleCity": "The City's data lists more than one district for an office here, so each is shown. Check yours with the",
+      "failed": "We could not load your districts right now. Find them with the",
       "missing": "We could not find the districts for this precinct. Find them with the"
     },
     "map": {
@@ -382,7 +386,7 @@
       },
       "findingPrecinct": {
         "heading": "Finding your precinct",
-        "text": "The point where your address was found, or your device's location if you choose Use my location, goes to St. Louis County's election maps on Esri's ArcGIS Online ({electionMaps}), in the body of the request, not in its web address. When it is in or near the City of St. Louis, it goes the same way to the St. Louis City Board of Election Commissioners' election maps ({cityElectionMaps}), also on Esri's ArcGIS Online. An address the address search places in the City goes there first, and to the county's maps too only if the City has no precinct for it or cannot be reached. When the address you type has several entries in the county's address points, like the units of an apartment building, the points of all of them go to the county's election maps first, the same way, to check that they are in one precinct. Your browser does not keep these requests or their answers in its cache. Opening a shared link sends only the precinct code, to the election maps of its own board."
+        "text": "The point where your address was found, or your device's location if you choose Use my location, goes to St. Louis County's election maps on Esri's ArcGIS Online ({electionMaps}), in the body of the request, not in its web address. When it is in or near the City of St. Louis, it goes the same way to the St. Louis City Board of Election Commissioners' election maps ({cityElectionMaps}), also on Esri's ArcGIS Online. An address the address search places in the City goes there first, and to the county's maps too only if the City has no precinct for it or cannot be reached. When the address you type has several entries in the county's address points, like the units of an apartment building, the points of all of them go to the county's election maps first, the same way, to check that they are in one precinct. Your browser does not keep these requests or their answers in its cache. Opening a shared link sends only the precinct code to the election maps of its own board. A City precinct's page, however you reach it, also sends the City's election maps a point inside that precinct, taken from its outline and never from you, to find its districts."
       },
       "useMyLocation": {
         "heading": "Use my location",

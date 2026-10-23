@@ -6,5 +6,6 @@
 // (each split also moved shared code out of the entry and cost more).
 export * from './data/cityArcgis.js';
 export { cityHours, cityScheduleFor, citySchedules } from './features/lookup/cityEarlyVoting.js';
+export { default as CityDistrictsCard } from './features/lookup/CityDistrictsCard.jsx';
 export { default as CityEarlyVotingCard } from './features/lookup/CityEarlyVotingCard.jsx';
 export { default as CityElectionDayRule } from './features/lookup/CityElectionDayRule.jsx';

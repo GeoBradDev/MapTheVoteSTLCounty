@@ -120,7 +120,8 @@ describe('PrivacyPage', () => {
       "the points of all of them go to the county's election maps first, the same way, to check that they are in one precinct",
     );
     expect(item).toHaveTextContent(
-      'Opening a shared link sends only the precinct code, to the election maps of its own board.',
+      // The City districts card (#90) asks at a point from the precinct's outline.
+      "Opening a shared link sends only the precinct code to the election maps of its own board. A City precinct's page, however you reach it, also sends the City's election maps a point inside that precinct, taken from its outline and never from you, to find its districts.",
     );
     expect(item).not.toHaveTextContent("part of the request's web address");
     expect(item).not.toHaveTextContent('ordinary cache');

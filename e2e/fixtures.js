@@ -24,6 +24,7 @@ const CITY_FIXTURES = {
   earlyVoting: fixture('city-early-voting-sites'),
   byId: fixture('city-precinct-by-id'),
   geometry: fixture('city-precinct-geometry'),
+  districts: fixture('city-districts-at-point'),
 };
 
 const countyFresh = fixture('county-waits-fresh');
@@ -98,13 +99,19 @@ export function isCityElectionLayer(href, params) {
   return !(wait && waitQuery);
 }
 
-// The City layers' answer: the Election Day or early voting locations, or CITY_CODE's precinct and
-// outline; nothing for any other precinct or layer.
+// The City layers' answer: the Election Day or early voting locations, the
+// districts at a point, or CITY_CODE's precinct and outline; nothing for any
+// other precinct or layer.
 function cityBody(url, params) {
   if (url.pathname.includes(cityBlock.layers.sites)) {
     const where = params.get('where');
     if (where === cityBlock.pollsWhere) return CITY_FIXTURES.polls;
     return where === cityBlock.earlyVotingWhere ? CITY_FIXTURES.earlyVoting : { features: [] };
+  }
+  // The districts at a point (#90); the same layer's City outline query
+  // (boundaryWhere) gets nothing.
+  if (url.pathname.includes(cityBlock.layers.districts) && !params.get('where')) {
+    return CITY_FIXTURES.districts;
   }
   const id = CITY_FIXTURES.byId.features[0].attributes[cityBlock.precinctField];
   const ours = params.get('where') === `${cityBlock.precinctField}='${id}'`;

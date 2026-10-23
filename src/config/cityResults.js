@@ -95,6 +95,41 @@ export default deepFreeze({
    */
   earlyVoting,
 
+  // The districts card's rows (#90), in order. `key` names the row's label in
+  // the results copy; `offices` are the districts layer's `electedoffice`
+  // values it reads (districtLayerFields.office in ./election.js), and the row
+  // shows that row's `district` text, never the office. Offices elected
+  // citywide or statewide are the same for every City voter and are left out,
+  // except the Board of Education, which the County card lists as its school
+  // district. A party committee office is never listed here. The whole City is
+  // in congressional District 1 under the 2022 map (RSMo 128.461), which stays
+  // in effect for November 3, 2026, and under the 2025 HB 1 text (RSMo
+  // 128.471); docs/data.md has the check. Read from the layer on 2026-10-22.
+  districts: {
+    rows: [
+      { key: 'congressional', offices: ['United States House of Representatives'] },
+      { key: 'stateSenate', offices: ['State Senate'] },
+      { key: 'stateHouse', offices: ['State House Representative'] },
+      { key: 'cityWard', offices: ['Alderman', 'Alderwoman'] },
+      // The rows say "St. Louis Community College Trustee"; the field's coded
+      // values say "Community College Trustee".
+      {
+        key: 'juniorCollege',
+        offices: ['St. Louis Community College Trustee', 'Community College Trustee'],
+      },
+      { key: 'school', offices: ['Board of Education of the City of St. Louis'] },
+    ],
+    // The congressional row's check: the 2022 map's first district and the
+    // Revisor's note that it stays in effect for November 2026, and H.B. 1's
+    // (2025) first district as truly agreed.
+    sources: [
+      'https://revisor.mo.gov/main/OneSection.aspx?section=128.461',
+      'https://revisor.mo.gov/main/OneSection.aspx?section=128.346',
+      'https://documents.house.mo.gov/billtracking/bills254/hlrbillspdf/3344H.01T.pdf',
+    ],
+    lastVerified: '2026-10-22',
+  },
+
   // Where a City voter may vote on Election Day, in the City Board's own words
   // from its polling places page, re-read on 2026-10-22 (#89). Any City voter
   // may vote at any of the listed locations; the County has its own rule

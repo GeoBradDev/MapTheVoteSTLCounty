@@ -184,7 +184,7 @@ describe('production build', () => {
     for (const f of firstLoad) expect(js[f], f).not.toContain('has no inside to ask at');
   });
 
-  // The City-only results UI and its config (#91, #147) come with the City
+  // The City-only results UI and its config (#91, #90, #147) come with the City
   // chunk, never the first load: the City's early voting site ids and its
   // quoted Election Day rule mark them.
   it('keeps the City-only results UI and its config out of the first load', () => {
@@ -194,6 +194,9 @@ describe('production build', () => {
     const marks = [
       ...Object.keys(cityResults.earlyVoting.sites).filter((id) => !pollsWhere.includes(id)),
       cityResults.electionDayRule.quote.slice(0, 40),
+      // The districts card's offices (#90); not the short ones, like "State
+      // Senate", which a County label shares.
+      ...cityResults.districts.rows.flatMap((row) => row.offices).filter((o) => o.length > 20),
     ];
     for (const f of firstLoad) {
       for (const mark of marks) expect(js[f].includes(mark), `${f}: ${mark}`).toBe(false);

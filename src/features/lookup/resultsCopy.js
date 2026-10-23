@@ -32,7 +32,7 @@ export function sourceName(url) {
 
 // The district rows that have a label, in en.json's order. `ward`: some cities
 // number council districts instead of wards, such as "City of Ellisville
-// District 1".
+// District 1". `cityWard` is St. Louis City's (#90).
 const DISTRICT_KEYS = [
   'congressional',
   'stateSenate',
@@ -40,6 +40,7 @@ const DISTRICT_KEYS = [
   'countyCouncil',
   'municipality',
   'ward',
+  'cityWard',
   'township',
   'school',
   'juniorCollege',
@@ -262,6 +263,10 @@ export const copy = translated((t) => ({
       DISTRICT_KEYS.map((key) => [key, t(`results.districts.labels.${key}`)]),
     ),
     source: t('results.districts.source'),
+    // The City card's (#90).
+    sourceCity: t('results.districts.sourceCity'),
+    multipleCity: t('results.districts.multipleCity'),
+    failed: t('results.districts.failed'),
     missing: t('results.districts.missing'),
   },
   map: {
