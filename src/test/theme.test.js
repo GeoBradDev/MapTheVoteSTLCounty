@@ -10,11 +10,11 @@ import {
   declarations,
   parseOklch,
   partyColor,
-  contrastRatio,
   oklchTokens,
   stripComments,
   toOklch,
 } from './colors.js';
+import { oklchToRgb } from '../features/lookup/mapBounds.js';
 
 const SRC = path.resolve(import.meta.dirname, '..');
 
@@ -194,9 +194,12 @@ describe('theme-color meta', () => {
   it('is the surface token, neither red nor blue', () => {
     const value = html.match(/<meta\s+name="theme-color"\s+content="([^"]+)"/)?.[1];
     expect(value).toMatch(/^#[0-9a-f]{6}$/i);
-    const color = toOklch(value);
-    expect(partyColor(color)).toBeNull();
-    const surface = oklchTokens(css).surface;
-    expect(contrastRatio(oklchTokens(`--color-x: ${color};`).x, surface)).toBeLessThan(1.02);
+    expect(partyColor(toOklch(value))).toBeNull();
+    // The surface token as sRGB hex, as the browser draws it.
+    const hex = `#${oklchToRgb(oklchTokens(css).surface)
+      .match(/\d+/g)
+      .map((c) => Number(c).toString(16).padStart(2, '0'))
+      .join('')}`;
+    expect(value.toLowerCase()).toBe(hex);
   });
 });

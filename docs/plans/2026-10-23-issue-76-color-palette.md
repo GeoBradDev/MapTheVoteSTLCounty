@@ -29,14 +29,15 @@ stays on script-focused error areas and retried cards (#78). The manifest stays 
    `currentColor`, `aria-hidden`) per kind. In forced colors the edge and icon remain.
 5. Secondary-looking buttons (`quiet`: Share this page, Show more) and full-width link rows
    have a `border-strong` boundary (3:1).
-6. The primary button has hover and pressed states from `primary-hover` and `primary-pressed`.
+6. The primary button has hover and pressed states from `primary-hover` and `primary-pressed`;
+   the secondary and quiet buttons fill with `surface-raised` on hover.
 7. `index.html` has `<meta name="theme-color">` equal to the `surface` token as hex; a test
-   reads it, checks `partyColor` is null and that it matches `surface`.
+   reads it, checks `partyColor` is null and that it equals `surface` converted to sRGB hex.
 8. The site icons (`favicon.svg`, `favicon.ico`, `apple-touch-icon.png`) are redrawn in the new
    `primary` and `on-primary` (README rule).
 9. The precinct map's outline cannot be read as a line-count class: the new brand teal is about
    0.03 OKLab from `wait-1` (the shortest-line step), so the outline and its fill draw in `ink`
-   instead of `primary`.
+   instead of `primary`, its fill at 10% (was 15%, since ink is darker than the teal).
 10. README "Colors" lists the tokens and the semantic color rule; README "Map" says what the
     outline uses.
 11. `npm run lint`, `format:check`, `npm test`, `build`, `test:e2e` (axe, no contrast issues at

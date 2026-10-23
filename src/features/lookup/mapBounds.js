@@ -51,8 +51,8 @@ const encode = (linear) => {
  * An `oklch()` color token as an sRGB `rgb()` string. MapLibre's style parser
  * does not read oklch, and colors are defined only as oklch tokens in
  * src/index.css, so the map converts them at runtime.
- * @param {string | undefined} value Like "oklch(0.42 0.07 165)".
- * @returns {string | null} Like "rgb(32, 89, 67)", or null when not oklch.
+ * @param {string | undefined} value Like "oklch(0.45 0.075 185)".
+ * @returns {string | null} Like "rgb(15, 99, 91)", or null when not oklch.
  */
 export function oklchToRgb(value) {
   const m = String(value ?? '')
