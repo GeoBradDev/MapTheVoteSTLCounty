@@ -18,10 +18,10 @@ const COUNTY_HOSTS = new Set([
 const isCounty = (url) => COUNTY_HOSTS.has(new URL(url).hostname.replace(/^www\./, ''));
 
 /** A heading for a City-only section. */
-const CITY_HEADING = /^#{2,3} .*City of St\. Louis/;
+const CITY_HEADING = /^#{2,4} .*(City of St\. Louis|St\. Louis City)/;
 
-/** "the City" or "the City's", as the topics shorten the City of St. Louis. */
-const SAYS_THE_CITY = /\bthe City\b/;
+/** "the City" or "The City's", as the topics shorten the City of St. Louis. */
+const SAYS_THE_CITY = /\b[Tt]he City\b/;
 
 /**
  * The paragraphs and list items of a topic body, each with whether it sits in
@@ -125,6 +125,18 @@ describe('City sections and "the City" in learn topics (#94)', () => {
     const text = topic("Any voter in the City can vote at the City's places.[^county]\n\nOk.");
     expect(uncitedCityBlocks(text)).toEqual([
       "Any voter in the City can vote at the City's places.[^county]",
+    ]);
+  });
+
+  it('checks "The City" at the start of a sentence, and a St. Louis City heading', () => {
+    const text = topic(
+      ["The City's sites close at 4 p.m.[^county]", '', '#### St. Louis City', '', 'Call us.'].join(
+        '\n',
+      ),
+    );
+    expect(uncitedCityBlocks(text)).toEqual([
+      "The City's sites close at 4 p.m.[^county]",
+      'Call us.',
     ]);
   });
 

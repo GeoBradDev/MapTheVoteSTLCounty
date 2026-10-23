@@ -46,7 +46,7 @@ You must be registered to vote.[^sos-voting-rights] Here is how to check your re
   visit its office at 300 N. Tucker Blvd.[^city-check-registration] Staff can help if your
   name is not found.[^city-check-registration]
 
-## If the City cannot find your registration
+## If you cannot find your City registration
 
 You may be on the City Board's inactive voter list.[^city-check-registration] That list holds
 voters whose address the City Board could not confirm.[^city-inactive] Search for your name

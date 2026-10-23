@@ -20,9 +20,6 @@ sources:
   - id: city-register
     label: St. Louis City Board of Election Commissioners, Register to Vote
     url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/voter-registration.cfm
-  - id: city-update-registration
-    label: St. Louis City Board of Election Commissioners, Update Voter Registration Name or Address
-    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/name-change.cfm
 ---
 
 ## The deadline for November 3, 2026 has passed
@@ -54,5 +51,4 @@ You can register online, by mail or in person.[^sos-register] Start on the Secre
 State's [Register to Vote page](https://www.sos.mo.gov/elections/goVoteMissouri/register).
 
 In the City of St. Louis, you can also register in person at the City Board's office,
-300 N. Tucker Blvd., or at any public library.[^city-register] A form you mail must be
-postmarked by the fourth Wednesday before the election.[^city-update-registration]
+300 N. Tucker Blvd., or at any public library.[^city-register]

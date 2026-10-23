@@ -88,6 +88,9 @@ separate pause.
 - The City Board's Register to Vote page says it sends no confirmation for a new
   registration, while the Secretary of State says the election office sends a notice; the
   topic gives both, attributed (found by finder 1).
+- The City Board's Absentee Voting Requirements page lists incarceration under reasons that
+  need a notary, while RSMo 115.277.2 exempts it; the topic keeps the statute and tells City
+  voters in jail to ask the City Board first (found by finder 2).
 - The City pages list 314-622-3319 both as an absentee phone and as a fax number; the topics
   repeat it as the pages do.
 - Topic bodies are separate chunks (#147), so longer topics do not touch the first-load budget.

@@ -163,7 +163,9 @@ caregivers.[^sos-how-to-vote]
 - Most voters who mail their ballot must have the envelope notarized.[^rsmo-115-277]
 - You do not need a notary if your reason is sickness or a physical disability, or if you are in
   jail.[^rsmo-115-277] Voters on the permanent disability list and military and overseas
-  voters also do not need one.[^rsmo-115-283]
+  voters also do not need one.[^rsmo-115-283] The City Board's page lists being in jail among
+  the reasons that need a notary, so City voters in jail should ask the City Board
+  first.[^city-absentee-requirements]
 - A notary may not charge you a fee for this.[^rsmo-115-283]
 
 ## Return your ballot
