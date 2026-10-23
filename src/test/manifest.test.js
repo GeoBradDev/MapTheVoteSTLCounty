@@ -4,6 +4,7 @@
 // @vitest-environment node
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { inflateSync } from 'node:zlib';
 import en from '../i18n/en.json';
 import { partyColor, toOklch } from './colors.js';
 
@@ -22,6 +23,47 @@ function pngInfo(file) {
     height: bytes.readUInt32BE(20),
     alpha: [4, 6].includes(bytes[25]),
   };
+}
+
+// The pixels of an 8-bit, non-interlaced RGB PNG (color type 2, as the
+// maskable icons are saved), as rows of [r, g, b].
+function rgbPixels(file) {
+  const bytes = readFileSync(file);
+  const { width, height } = pngInfo(file);
+  expect([bytes[24], bytes[25], bytes[28]], file).toEqual([8, 2, 0]);
+  const idat = [];
+  for (let at = 8; at < bytes.length;) {
+    const length = bytes.readUInt32BE(at);
+    const type = bytes.subarray(at + 4, at + 8).toString('ascii');
+    if (type === 'IDAT') idat.push(bytes.subarray(at + 8, at + 8 + length));
+    at += length + 12;
+  }
+  const raw = inflateSync(Buffer.concat(idat));
+  const stride = width * 3;
+  const rows = [];
+  let previous = new Uint8Array(stride);
+  for (let y = 0; y < height; y += 1) {
+    const filter = raw[y * (stride + 1)];
+    const line = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1));
+    const row = new Uint8Array(stride);
+    for (let i = 0; i < stride; i += 1) {
+      const a = i >= 3 ? row[i - 3] : 0;
+      const b = previous[i];
+      const c = i >= 3 ? previous[i - 3] : 0;
+      const p = a + b - c;
+      const paeth =
+        Math.abs(p - a) <= Math.abs(p - b) && Math.abs(p - a) <= Math.abs(p - c)
+          ? a
+          : Math.abs(p - b) <= Math.abs(p - c)
+            ? b
+            : c;
+      const predictor = [0, a, b, (a + b) >> 1, paeth][filter];
+      row[i] = (line[i] + predictor) & 0xff;
+    }
+    rows.push(row);
+    previous = row;
+  }
+  return rows;
 }
 
 const iconFile = (icon) => path.join(PUBLIC, icon.src.replace(/^\//, ''));
@@ -74,6 +116,28 @@ describe('web app manifest', () => {
   it('draws the maskable icons with no alpha channel', () => {
     for (const icon of manifest.icons.filter((i) => i.purpose === 'maskable')) {
       expect(pngInfo(iconFile(icon)).alpha, icon.src).toBe(false);
+    }
+  });
+
+  // A launcher may crop a maskable icon to a circle 80% of its width
+  // (https://web.dev/articles/maskable-icon): every pixel outside that circle
+  // is the fill of its corner, so the mark is never cut off.
+  it('keeps the mark of each maskable icon inside the safe zone', () => {
+    for (const icon of manifest.icons.filter((i) => i.purpose === 'maskable')) {
+      const rows = rgbPixels(iconFile(icon));
+      const size = rows.length;
+      const fill = [...rows[0].subarray(0, 3)];
+      const center = size / 2;
+      const outside = [];
+      rows.forEach((row, y) => {
+        for (let x = 0; x < size; x += 1) {
+          const distance = Math.hypot(x + 0.5 - center, y + 0.5 - center);
+          if (distance <= size * 0.4) continue;
+          const pixel = row.subarray(x * 3, x * 3 + 3);
+          if (pixel.some((v, i) => Math.abs(v - fill[i]) > 2)) outside.push([x, y]);
+        }
+      });
+      expect(outside.slice(0, 5), icon.src).toEqual([]);
     }
   });
 
