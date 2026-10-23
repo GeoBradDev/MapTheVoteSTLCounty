@@ -1,0 +1,99 @@
+{
+  "url": "https://services6.arcgis.com/HZXbCkpCSqbGd0vK/ArcGIS/rest/services/ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/1",
+  "name": "Voting Precincts",
+  "geometryType": "esriGeometryPolygon",
+  "maxRecordCount": 2000,
+  "supportedQueryFormats": "JSON, geoJSON, PBF",
+  "count": 207,
+  "fields": [
+    {
+      "name": "OBJECTID",
+      "type": "esriFieldTypeOID",
+      "alias": "OBJECTID",
+      "domain": null
+    },
+    {
+      "name": "precinctid",
+      "type": "esriFieldTypeString",
+      "alias": "Precinct ID",
+      "domain": null
+    },
+    {
+      "name": "name",
+      "type": "esriFieldTypeString",
+      "alias": "Precinct Name",
+      "domain": null
+    },
+    {
+      "name": "county",
+      "type": "esriFieldTypeString",
+      "alias": "County",
+      "domain": null
+    },
+    {
+      "name": "facilityid",
+      "type": "esriFieldTypeString",
+      "alias": "Voting Location ID",
+      "domain": null
+    },
+    {
+      "name": "pollingid",
+      "type": "esriFieldTypeGUID",
+      "alias": "Polling GlobalID",
+      "domain": null
+    },
+    {
+      "name": "globalid",
+      "type": "esriFieldTypeGlobalID",
+      "alias": "GlobalID",
+      "domain": null
+    },
+    {
+      "name": "created_user",
+      "type": "esriFieldTypeString",
+      "alias": "Created By",
+      "domain": null
+    },
+    {
+      "name": "created_date",
+      "type": "esriFieldTypeDate",
+      "alias": "Created On",
+      "domain": null
+    },
+    {
+      "name": "last_edited_user",
+      "type": "esriFieldTypeString",
+      "alias": "Last Edited By",
+      "domain": null
+    },
+    {
+      "name": "last_edited_date",
+      "type": "esriFieldTypeDate",
+      "alias": "Last Edited On",
+      "domain": null
+    },
+    {
+      "name": "Shape__Area",
+      "type": "esriFieldTypeDouble",
+      "alias": "Shape__Area",
+      "domain": null
+    },
+    {
+      "name": "Shape__Length",
+      "type": "esriFieldTypeDouble",
+      "alias": "Shape__Length",
+      "domain": null
+    }
+  ],
+  "samples": [
+    {
+      "precinctid": "W 1 P 12"
+    },
+    {
+      "precinctid": "W 1 P 16"
+    },
+    {
+      "precinctid": "W 1 P 7"
+    }
+  ]
+}

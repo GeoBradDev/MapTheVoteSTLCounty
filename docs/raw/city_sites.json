@@ -1,0 +1,382 @@
+{
+  "url": "https://services6.arcgis.com/HZXbCkpCSqbGd0vK/ArcGIS/rest/services/VotingLocations_currentwait_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/0",
+  "name": "VotingLocations_currentwait_4533ffc5e0c84851a35cc97e64bb160a",
+  "geometryType": "esriGeometryPoint",
+  "maxRecordCount": 2000,
+  "supportedQueryFormats": "JSON, geoJSON, PBF",
+  "count": 76,
+  "fields": [
+    {
+      "name": "facilityid",
+      "type": "esriFieldTypeString",
+      "alias": "Voting Location ID",
+      "domain": null
+    },
+    {
+      "name": "type",
+      "type": "esriFieldTypeString",
+      "alias": "Voting Facility Type",
+      "domain": [
+        "Polling Place",
+        "Voting Center",
+        "Ballot Drop Box"
+      ]
+    },
+    {
+      "name": "name",
+      "type": "esriFieldTypeString",
+      "alias": "Voting Location Name",
+      "domain": null
+    },
+    {
+      "name": "fulladdr",
+      "type": "esriFieldTypeString",
+      "alias": "Address",
+      "domain": null
+    },
+    {
+      "name": "municipality",
+      "type": "esriFieldTypeString",
+      "alias": "Municipality",
+      "domain": null
+    },
+    {
+      "name": "phone",
+      "type": "esriFieldTypeString",
+      "alias": "Phone",
+      "domain": null
+    },
+    {
+      "name": "operhours",
+      "type": "esriFieldTypeString",
+      "alias": "Operational Hours",
+      "domain": null
+    },
+    {
+      "name": "agencyurl",
+      "type": "esriFieldTypeString",
+      "alias": "Website",
+      "domain": null
+    },
+    {
+      "name": "accessible",
+      "type": "esriFieldTypeString",
+      "alias": "Accessible",
+      "domain": [
+        "Yes",
+        "No"
+      ]
+    },
+    {
+      "name": "pocname",
+      "type": "esriFieldTypeString",
+      "alias": "Contact Name",
+      "domain": null
+    },
+    {
+      "name": "pocphone",
+      "type": "esriFieldTypeString",
+      "alias": "Contact Phone",
+      "domain": null
+    },
+    {
+      "name": "pocemail",
+      "type": "esriFieldTypeString",
+      "alias": "Contact Email",
+      "domain": null
+    },
+    {
+      "name": "imageurl",
+      "type": "esriFieldTypeString",
+      "alias": "Image URL",
+      "domain": null
+    },
+    {
+      "name": "earlyvoting",
+      "type": "esriFieldTypeString",
+      "alias": "Early Voting Available",
+      "domain": [
+        "Yes",
+        "No"
+      ]
+    },
+    {
+      "name": "earlyvotingstartdate",
+      "type": "esriFieldTypeDate",
+      "alias": "Early Voting Start Date",
+      "domain": null
+    },
+    {
+      "name": "earlyvotingenddate",
+      "type": "esriFieldTypeDate",
+      "alias": "Early Voting End Date",
+      "domain": null
+    },
+    {
+      "name": "earlyvotingoperhours",
+      "type": "esriFieldTypeString",
+      "alias": "Early Voting Operational Hours",
+      "domain": null
+    },
+    {
+      "name": "nextelectdate",
+      "type": "esriFieldTypeDate",
+      "alias": "Next Election Date",
+      "domain": null
+    },
+    {
+      "name": "regdate",
+      "type": "esriFieldTypeDate",
+      "alias": "Voter Registration Deadline",
+      "domain": null
+    },
+    {
+      "name": "boxlocdesc",
+      "type": "esriFieldTypeString",
+      "alias": "Ballot Drop Box Location",
+      "domain": null
+    },
+    {
+      "name": "comments",
+      "type": "esriFieldTypeString",
+      "alias": "Comments",
+      "domain": null
+    },
+    {
+      "name": "publicview",
+      "type": "esriFieldTypeString",
+      "alias": "Publicly Visible",
+      "domain": [
+        "Yes",
+        "No"
+      ]
+    },
+    {
+      "name": "globalid",
+      "type": "esriFieldTypeGlobalID",
+      "alias": "GlobalID",
+      "domain": null
+    },
+    {
+      "name": "created_user",
+      "type": "esriFieldTypeString",
+      "alias": "Created By",
+      "domain": null
+    },
+    {
+      "name": "created_date",
+      "type": "esriFieldTypeDate",
+      "alias": "Created On",
+      "domain": null
+    },
+    {
+      "name": "last_edited_user",
+      "type": "esriFieldTypeString",
+      "alias": "Last Edited By",
+      "domain": null
+    },
+    {
+      "name": "last_edited_date",
+      "type": "esriFieldTypeDate",
+      "alias": "Last Edited On",
+      "domain": null
+    },
+    {
+      "name": "overheadimageurl",
+      "type": "esriFieldTypeString",
+      "alias": "Overhead Image URL",
+      "domain": null
+    },
+    {
+      "name": "neighborhood",
+      "type": "esriFieldTypeString",
+      "alias": "Neighborhood",
+      "domain": null
+    },
+    {
+      "name": "exception",
+      "type": "esriFieldTypeString",
+      "alias": "exception",
+      "domain": null
+    },
+    {
+      "name": "ParcelId",
+      "type": "esriFieldTypeString",
+      "alias": "ParcelId",
+      "domain": null
+    },
+    {
+      "name": "pollingplaceID",
+      "type": "esriFieldTypeInteger",
+      "alias": "pollingplaceID",
+      "domain": null
+    },
+    {
+      "name": "pollingPlace",
+      "type": "esriFieldTypeString",
+      "alias": "pollingPlace",
+      "domain": null
+    },
+    {
+      "name": "pollingPlaceAddress",
+      "type": "esriFieldTypeString",
+      "alias": "pollingPlaceAddress",
+      "domain": null
+    },
+    {
+      "name": "pollingPlaceZipCode",
+      "type": "esriFieldTypeString",
+      "alias": "pollingPlaceZipCode",
+      "domain": null
+    },
+    {
+      "name": "disabledentry",
+      "type": "esriFieldTypeString",
+      "alias": "disabledentry",
+      "domain": null
+    },
+    {
+      "name": "entrydetails",
+      "type": "esriFieldTypeString",
+      "alias": "entrydetails",
+      "domain": null
+    },
+    {
+      "name": "x",
+      "type": "esriFieldTypeDouble",
+      "alias": "x",
+      "domain": null
+    },
+    {
+      "name": "y",
+      "type": "esriFieldTypeDouble",
+      "alias": "y",
+      "domain": null
+    },
+    {
+      "name": "handle",
+      "type": "esriFieldTypeString",
+      "alias": "handle",
+      "domain": null
+    },
+    {
+      "name": "cityWideVoting",
+      "type": "esriFieldTypeSmallInteger",
+      "alias": "cityWideVoting",
+      "domain": null
+    },
+    {
+      "name": "noExcuseVoting",
+      "type": "esriFieldTypeSmallInteger",
+      "alias": "noExcuseVoting",
+      "domain": null
+    },
+    {
+      "name": "status",
+      "type": "esriFieldTypeSmallInteger",
+      "alias": "status",
+      "domain": null
+    },
+    {
+      "name": "satellite",
+      "type": "esriFieldTypeString",
+      "alias": "satellite",
+      "domain": null
+    },
+    {
+      "name": "facilityid_1740505041182",
+      "type": "esriFieldTypeString",
+      "alias": "Voting Location ID",
+      "domain": null
+    },
+    {
+      "name": "name_1740505041182",
+      "type": "esriFieldTypeString",
+      "alias": "Voting Location Name",
+      "domain": null
+    },
+    {
+      "name": "waittime",
+      "type": "esriFieldTypeSmallInteger",
+      "alias": "Wait Time (Minutes)",
+      "domain": null
+    },
+    {
+      "name": "globalid_1740505041182",
+      "type": "esriFieldTypeGUID",
+      "alias": "GlobalID",
+      "domain": null
+    },
+    {
+      "name": "created_user_1740505041182",
+      "type": "esriFieldTypeString",
+      "alias": "Created By",
+      "domain": null
+    },
+    {
+      "name": "created_date_1740505041182",
+      "type": "esriFieldTypeDate",
+      "alias": "Created On",
+      "domain": null
+    },
+    {
+      "name": "last_edited_user_1740505041182",
+      "type": "esriFieldTypeString",
+      "alias": "Last Edited By",
+      "domain": null
+    },
+    {
+      "name": "last_edited_date_1740505041182",
+      "type": "esriFieldTypeDate",
+      "alias": "Last Edited On",
+      "domain": null
+    },
+    {
+      "name": "notice",
+      "type": "esriFieldTypeString",
+      "alias": "Notice",
+      "domain": null
+    },
+    {
+      "name": "ObjectId",
+      "type": "esriFieldTypeOID",
+      "alias": "ObjectId",
+      "domain": null
+    }
+  ],
+  "samples": [
+    {
+      "facilityid": "Greater_Leonard_Church",
+      "name": "Greater Leonard MB Church - Education Building",
+      "fulladdr": "2501 N 11 St",
+      "pollingPlaceZipCode": "63106",
+      "entrydetails": "off Benton St. Street parking only.",
+      "disabledentry": "off Benton St. Street parking only.",
+      "waittime": null,
+      "created_date_1740505041182": null,
+      "earlyvotingoperhours": null
+    },
+    {
+      "facilityid": "Mathews_Dickey",
+      "name": "Boy's & Girls Club - Mathews Dickey",
+      "fulladdr": "4245 N Kingshighway Blvd",
+      "pollingPlaceZipCode": "63115",
+      "entrydetails": "off parking lot accessed from Penrose St.",
+      "disabledentry": "off parking lot accessed from Penrose St.",
+      "waittime": null,
+      "created_date_1740505041182": null,
+      "earlyvotingoperhours": null
+    },
+    {
+      "facilityid": "Carondelet_Branch_Library",
+      "name": "Carondelet Branch Library",
+      "fulladdr": "6800 Michigan Ave",
+      "pollingPlaceZipCode": "63111",
+      "entrydetails": "off parking lot accessed from Michigan Ave.",
+      "disabledentry": "off parking lot accessed from Michigan Ave.",
+      "waittime": null,
+      "created_date_1740505041182": null,
+      "earlyvotingoperhours": null
+    }
+  ]
+}
