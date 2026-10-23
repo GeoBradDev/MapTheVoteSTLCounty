@@ -210,13 +210,20 @@ const ROUTES = [
     ready: (page) => expect(page.getByRole('heading', { level: 1 })).toBeVisible(),
   },
   {
-    // A topic with St. Louis City sections (#94), its folded sections open.
+    // A topic with St. Louis City sections (#94) and many source links.
     path: '/learn/who-to-contact',
+    ready: (page) => expect(page.getByRole('heading', { level: 1 })).toBeVisible(),
+  },
+  {
+    // A topic with St. Louis City sections (#94) folded into details, each
+    // opened so the checks cover what is inside.
+    path: '/learn/absentee',
     ready: async (page) => {
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-      for (const line of await page.locator('details:not([open]) > summary').all()) {
-        await line.click();
-      }
+      const folded = page.locator('details:not([open]) > summary');
+      await expect(folded).not.toHaveCount(0);
+      // Opening one drops it from the locator, so always take the first.
+      while ((await folded.count()) > 0) await folded.first().click();
     },
   },
   {
@@ -263,6 +270,21 @@ async function smallTargets(page) {
   });
 }
 
+// Links shown as a box of their own (not `display: inline`, so not set in a
+// line of text) under 44 px tall, whatever else their block holds: a button
+// styled link next to another control, or a card's main link.
+async function smallBoxLinks(page) {
+  return page.evaluate(() =>
+    [...document.querySelectorAll('a[href]')]
+      .filter((el) => getComputedStyle(el).display !== 'inline')
+      .map((el) => ({ el, box: el.getBoundingClientRect() }))
+      .filter(({ box }) => box.width > 1 && box.height > 1 && box.height < 44)
+      .map(
+        ({ el, box }) => `a "${el.textContent.trim().slice(0, 60)}": ${Math.round(box.height)} px`,
+      ),
+  );
+}
+
 async function horizontalOverflow(page) {
   return page.evaluate(() => {
     const root = document.documentElement;
@@ -295,6 +317,10 @@ for (const { name, path, ready, at, waits, basemap } of ROUTES) {
 
     test('has no control under 44 px tall', async ({ page }) => {
       expect(await smallTargets(page)).toEqual([]);
+    });
+
+    test('has no link box under 44 px tall', async ({ page }) => {
+      expect(await smallBoxLinks(page)).toEqual([]);
     });
 
     test('has one h1 and the page language', async ({ page }) => {

@@ -75,9 +75,14 @@ Noted, not changed here:
    lightest thing on the basemap, checked by a unit test from the CSS and the tokens.
 4. `e2e/a11y.e2e.js` fails when a standalone control (link, button, summary, form
    control) on any covered route is under 44 px tall, with links inside a sentence or
-   a comma list exempt, and the skip link exempt while hidden.
+   a comma list exempt, and the skip link exempt while hidden. Revised after review: that
+   check exempts any link whose nearest block holds other text, which also exempts
+   button-like links in a card or toolbar `div`; it stays as committed (a frozen test),
+   and a second check fails on any link drawn as its own box (`display` other than
+   `inline`) under 44 px, whatever its block holds.
 5. `e2e/a11y.e2e.js` covers the routes and states it missed: the City precinct on
-   Election Day with its map, a topic with City sections (`/learn/who-to-contact`),
+   Election Day with its map, topics with City sections (`/learn/who-to-contact`, and
+   `/learn/absentee` with its folded sections opened, added after review),
    `/learn/nope`, and `/early-voting` with the map hidden.
 6. The gate (lint, format check, tests, build, e2e, perf) passes; results pages' LCP does
    not regress (about 2.41 to 2.42 s before).

@@ -358,8 +358,9 @@ The target is WCAG 2.1 AA (#26). `npm run test:e2e` runs `e2e/a11y.e2e.js` (and 
 against the production build (`vite preview`), at 360 px and 1280 px. On each key route it
 runs axe-core (WCAG 2.1 A and AA plus best practice, contrast included) and checks for
 horizontal scroll (also with the WCAG text spacing override), one `h1`, the page language,
-the skip link and that every standalone control (link, button, summary, form control) is at
-least 44 px tall; a link inside a sentence or a comma list is exempt, as WCAG's target size
+the skip link and touch targets: every link drawn as a box of its own (not `display: inline`)
+and every other control (button, summary, form control, or a link alone in its block) is at
+least 44 px tall. A link set inline in a line of text is exempt, as WCAG's target size
 criteria exempt it. It also checks focus after an in-app link and reduced motion. The county's
 layers, the City Board's layers, and the County and City wait time layers, are answered from
 `docs/raw/fixtures/` (the wait times route and the County and City results routes at the time
