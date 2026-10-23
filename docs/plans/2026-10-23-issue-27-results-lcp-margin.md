@@ -60,7 +60,7 @@ request answers, so the simulated new connection to the ArcGIS host counts towar
 - `src/features/lookup/ResultsCards.jsx`: `ResultsSkeleton`'s summary box renders
   `ElectionDayPart` with a `PlaceSkeleton`, then the remaining placeholder bars
   (`aria-hidden`), with the loaded summary's box classes.
-- `e2e/lighthouse.js` (revision, see below): the local fixture server waits 100 ms before it
+- `e2e/lighthouse.js` (revision, see below): the local fixture server waits 600 ms before it
   answers any request.
 - `src/features/lookup/ShareLink.jsx` (review revision): `ShareLinkPlaceholder`, the share
   row laid out with the same classes, invisible and hidden from screen readers.
@@ -70,7 +70,7 @@ request answers, so the simulated new connection to the ArcGIS host counts towar
   focus through a "not found" answer; while loading it holds two lines for the precinct line
   below 400 px for a County precinct and below 448 px for a City one, in place of the old
   placeholder line.
-- `README.md` (Phase 8): the Performance section says the fixture server waits 100 ms and
+- `README.md` (Phase 8): the Performance section says the fixture server waits 600 ms and
   adds the rule to show text that needs no data while the data loads.
 - `e2e/a11y.e2e.js` (review revision): the date line stays put on load, County and City.
 - `src/features/lookup/PrecinctPage.test.jsx`: the loading test asserts the Election Day
@@ -84,11 +84,11 @@ skeleton's date line, at about 64 ms. In the Lighthouse run the local fixture se
 in about 2 ms, before Chromium painted the first frame (requests at 68 ms, answers at 71 ms,
 first paint at 75 ms), so the skeleton never painted, the loaded summary's line was the
 observed LCP, and the simulation counted the ArcGIS connections toward it. No real ArcGIS
-host answers within a frame, so the fixture server now waits 100 ms before answering.
+host answers within a frame, so the fixture server now waits 600 ms before answering.
 Lighthouse's simulation counts that wait as server time, so it makes data driven content
 slower, never faster. Control: main's code with this harness change measures /p/CC007 at
-2520 ms and /p/W01P12 at 2513 ms (both fail the unchanged 2500 ms budget), so the harness
-does not hide the old cause.
+3020 ms and /p/W01P12 at 3014 ms (2520 and 2513 ms with the first, 100 ms wait), both
+failing the unchanged 2500 ms budget, so the harness does not hide the old cause.
 
 ## Revision after the first review
 
@@ -99,6 +99,13 @@ now say. The second finder found that the first version of that fix moved "Searc
 address" between two slots, so a keyboard user focused on it lost focus on a "not found"
 answer; it now stays in one slot (`PrecinctPage.test.jsx`, "keeps focus on Search another
 address").
+
+## Revision after CI
+
+CI's first run measured /p/CC007 at 2541 ms and /p/W01P12 at 2522 ms: on its slower runner
+the first frame painted after the 100 ms answers, so the run measured main's behavior again.
+The wait is now four round trips at the run's own 150 ms RTT (600 ms), the cost of a new
+connection on a phone, still well under the app's 3 s slow notice and 8 s timeout.
 
 ## Order of work
 

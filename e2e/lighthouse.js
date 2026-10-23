@@ -125,18 +125,23 @@ const ROUTES = [
   },
 ];
 
+/** The simulated network's round trip time, in ms (CONFIG below). */
+const RTT_MS = 150;
+
 /**
- * How long the local server waits before it answers a GET or POST (a
- * layer, the basemap style or a 404), in ms. The real ArcGIS hosts never answer within a frame: a new
- * connection alone is several round trips. Answering at once let the data
- * arrive before the first frame painted, so the run saw data driven content
- * as the page's first paint and Lighthouse counted the layers' connections
- * toward LCP even for text that needs no data (#156). The wait puts the
- * answer after the first frame, as on a phone; Lighthouse's simulation then
- * counts it as server time, so content that waits for data is measured as
- * slower, never faster.
+ * How long the local server waits before it answers a GET or POST (a layer,
+ * the basemap style or a 404), in ms: the four round trips a phone needs on
+ * a new connection to a host (DNS, TCP, TLS, then the request) at the
+ * simulated round trip time. Answering at once let the data arrive before
+ * the first frame painted, so the run saw data driven content as the page's
+ * first paint and Lighthouse counted the layers' connections toward LCP even
+ * for text that needs no data (#156). A 100 ms wait was not enough on CI's
+ * slower runners. The wait puts the answer after the first frame, as on a
+ * phone; Lighthouse's simulation counts it as server time, so content that
+ * waits for data is measured as slower, never faster. Well under the app's
+ * slow notice (3 s) and request timeout (8 s).
  */
-const ANSWER_DELAY_MS = 100;
+const ANSWER_DELAY_MS = 4 * RTT_MS;
 
 const RUNS = 3;
 const PORT = 4174;
@@ -156,7 +161,7 @@ const CONFIG = {
     },
     // Lighthouse's mobile defaults, written out: simulated slow 4G, 4x CPU.
     throttlingMethod: 'simulate',
-    throttling: { rttMs: 150, throughputKbps: 1638.4, cpuSlowdownMultiplier: 4 },
+    throttling: { rttMs: RTT_MS, throughputKbps: 1638.4, cpuSlowdownMultiplier: 4 },
   },
 };
 
