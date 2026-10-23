@@ -59,15 +59,14 @@ If you voted provisionally because you had no photo ID, your ballot counts if:[^
 Any provisional ballot counts only if the county board finds that you are registered and
 eligible to vote in this election.[^rsmo-115-430]
 
-## Vote at the right polling place
+## Where to vote
 
 In St. Louis County, a registered voter may vote at any polling place in St. Louis County on
 Election Day.[^county-polling-places] This does not apply in the City of St. Louis, which has
 its own rule.
 
-Elsewhere in Missouri, a provisional ballot cast at the wrong polling place is not
-counted.[^rsmo-115-430] If the
-election judges find you are at the wrong place, they tell you where to go.[^rsmo-115-430] You can go to your
+Outside St. Louis County and the City, a provisional ballot cast at the wrong polling place is
+not counted.[^rsmo-115-430] If the election judges find you are at the wrong place, they tell you where to go.[^rsmo-115-430] You can go to your
 correct polling place or a central polling place.[^rsmo-115-430][^sos-other-questions]
 
 ## Find out if your ballot counted

@@ -92,8 +92,8 @@ polling place shall not be counted", and the Secretary of State's On Election Da
 vote at their assigned polling place. The County Board's page quoted above says County voters
 may vote at any polling place in the County, so the app no longer cites either for the County
 rule and no longer says "assigned polling place" to County voters. The provisional ballots topic still
-cites RSMo 115.430 for what happens at the wrong polling place, for voters elsewhere in
-Missouri, after the County rule.
+cites RSMo 115.430 for what happens at the wrong polling place, for voters outside St.
+Louis County and the City, after the County rule.
 
 The City of St. Louis Board says City voters may vote at any of its listed locations
 (https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/polling-places/index.cfm,
