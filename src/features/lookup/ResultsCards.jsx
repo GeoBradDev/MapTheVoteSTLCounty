@@ -31,8 +31,7 @@ function Card({ title, children }) {
  * @param {{ code: string, origin: { lat: number, lng: number } | null,
  *   showBallot: boolean, ballotHtml: unknown, precinct: object }} props
  *   `origin` is the looked-up point, in memory only. `showBallot` false hides
- *   the summary with its sample ballot, for a precinct with nothing on the
- *   ballot.
+ *   the summary's sample ballot, for a precinct with nothing on the ballot.
  *   `ballotHtml` is a County precinct's `html` field, which only the sample
  *   ballot parser reads; the card checks its link against `code`. A City
  *   precinct's card never reads it. `precinct` is the
@@ -67,13 +66,7 @@ export default function ResultsCards({ code, origin, showBallot, ballotHtml, pre
         };
   return (
     <>
-      {/* A precinct with nothing on the ballot gets no summary: its banner
-          says so, and the cards below still list the places (#81). */}
-      {showBallot ? (
-        <ResultsSummary code={code} origin={origin} ballotHtml={ballotHtml} />
-      ) : (
-        !origin && <p className="mt-6 text-muted">{copy.polls.fromCenter(code)}</p>
-      )}
+      <ResultsSummary code={code} origin={origin} showBallot={showBallot} ballotHtml={ballotHtml} />
       <div className="mt-6 flex flex-col gap-4">
         {CARDS.map((key) => (
           <Card key={key} title={copy.cards[key]}>

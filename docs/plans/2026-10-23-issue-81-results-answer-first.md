@@ -135,9 +135,10 @@ Not done here: Election Day line counts in the summary (the card has them, #107)
   only components).
 - Criterion 3 (40% shorter) is not reached; measured results and the question to the owner are
   in the pull request.
-- A precinct with nothing on the ballot (not in the election, nonresidential) gets no summary:
-  its banner says so, and the cards still list the places, with the "distances are from the
-  center" note above them.
+- A precinct with nothing on the ballot (not in the election, nonresidential) keeps the summary
+  without its sample ballot section, so its Election Day hours, rule source and (during early
+  voting) the wait times link stay on the page (finder 2).
+- The summary's early voting placeholder holds the status and line count lines too (finder 2).
 - The summary's early voting part gives no status line for a site the schedules do not cover,
   as the card does (finder 1).
 - `Disclosure` opens for printing and folds back after, as topic pages do, so a printed results

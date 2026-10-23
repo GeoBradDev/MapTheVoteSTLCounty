@@ -51,17 +51,25 @@ function Part({ title, children }) {
   );
 }
 
-// Placeholder lines the height of a place's label, name, address and link.
-function PlaceSkeleton({ testId }) {
+// One placeholder line of the given height class, its bar the given width.
+const line = (height, width) => (
+  <div className={`flex ${height} items-center`}>
+    <div className={`h-4 ${width} ${bar}`} />
+  </div>
+);
+
+// Placeholder lines at least the height of a place's label, name and address,
+// with `early` the lines of an early voting site's status and line count, and
+// its directions button, so nothing below moves when it loads (#27).
+function PlaceSkeleton({ testId, early = false }) {
   return (
     <div data-testid={testId} aria-hidden="true" className="mt-2">
-      <div className={`h-4 w-1/2 ${bar}`} />
-      <div className="mt-1 flex h-6 items-center">
-        <div className={`h-4 w-3/4 ${bar}`} />
-      </div>
-      <div className="flex h-6 items-center">
-        <div className={`h-4 w-2/3 ${bar}`} />
-      </div>
+      {line('h-5', 'w-1/2')}
+      {line('h-6', 'w-3/4')}
+      {line('h-6', 'w-2/3')}
+      {early && line('h-6', 'w-1/2')}
+      {early && line('h-6', 'w-2/3')}
+      {early && line('h-5', 'w-1/2')}
       <div className={`mt-1 h-11 w-40 ${bar}`} />
     </div>
   );
@@ -178,7 +186,7 @@ export function EarlyVoteSummary({
   const wait = (key && waits.waits.find((entry) => entry.siteId === key)) || null;
   return (
     <Part title={copy.summary.early}>
-      {!result && <PlaceSkeleton testId="summary-early-skeleton" />}
+      {!result && <PlaceSkeleton testId="summary-early-skeleton" early />}
       {site && (
         <>
           <Place
@@ -213,13 +221,12 @@ export function EarlyVoteSummary({
  * polling place, while early voting runs the nearest open early voting site
  * and its line count, and the sample ballot. Each from the same shared
  * requests and line count loops as the cards below, so nothing new is asked.
- * Only for a precinct with something on the ballot (ResultsCards).
  * @param {{ code: string, origin: { lat: number, lng: number } | null,
- *   ballotHtml: unknown,
+ *   showBallot: boolean, ballotHtml: unknown,
  *   waitSource?: Parameters<typeof useWaitTimes>[0] }} props
  *   `waitSource` is for tests.
  */
-export default function ResultsSummary({ code, origin, ballotHtml, waitSource }) {
+export default function ResultsSummary({ code, origin, showBallot, ballotHtml, waitSource }) {
   const { id } = useJurisdiction();
   const isCity = id === 'city';
   return (
@@ -240,15 +247,18 @@ export default function ResultsSummary({ code, origin, ballotHtml, waitSource })
           waitKeyOf={countyWaitKey}
         />
       )}
-      <Part title={copy.cards.ballot}>
-        {isCity ? (
-          <Suspense fallback={null}>
-            <CitySampleBallotCard />
-          </Suspense>
-        ) : (
-          <SampleBallotCard html={ballotHtml} code={code} />
-        )}
-      </Part>
+      {/* None for a precinct with nothing on the ballot: its banner says so. */}
+      {showBallot && (
+        <Part title={copy.cards.ballot}>
+          {isCity ? (
+            <Suspense fallback={null}>
+              <CitySampleBallotCard />
+            </Suspense>
+          ) : (
+            <SampleBallotCard html={ballotHtml} code={code} />
+          )}
+        </Part>
+      )}
       {!origin && <p className="text-sm text-muted">{copy.polls.fromCenter(code)}</p>}
     </div>
   );

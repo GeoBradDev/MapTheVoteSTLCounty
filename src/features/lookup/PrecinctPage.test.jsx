@@ -240,12 +240,13 @@ describe('PrecinctPage', () => {
     expect(pollsCalls.length - absentee.length).toBe(1);
   });
 
-  it('shows no summary for a precinct with nothing on the ballot (#81)', async () => {
+  it('keeps the Election Day summary, with no sample ballot, for a precinct with nothing on the ballot (#81)', async () => {
     routeFetch(withAttributes(byId, { in_election: 'Not In Election' }));
     renderAt('CC007');
     await ready('CC007');
-    expect(screen.queryByRole('region', { name: copy.summary.electionDay })).toBeNull();
-    expect(screen.getByRole('region', { name: copy.cards.polls })).toBeInTheDocument();
+    const day = screen.getByRole('region', { name: copy.summary.electionDay });
+    expect(day).toHaveTextContent(copy.polls.inLine(election.electionDayHours.close));
+    expect(screen.queryByRole('region', { name: copy.cards.ballot })).toBeNull();
   });
 
   it('moves focus to the results heading when results load', async () => {

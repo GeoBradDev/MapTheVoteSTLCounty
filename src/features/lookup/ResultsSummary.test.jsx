@@ -68,7 +68,7 @@ const electionDay = () => region(s().electionDay);
 
 function renderSummary(props = {}) {
   return render(
-    <ResultsSummary code="CC007" origin={ORIGIN} ballotHtml={BALLOT_HTML} {...props} />,
+    <ResultsSummary code="CC007" origin={ORIGIN} showBallot ballotHtml={BALLOT_HTML} {...props} />,
   );
 }
 
@@ -197,9 +197,31 @@ describe('ResultsSummary', () => {
     expect(getCountyWaits).not.toHaveBeenCalled();
   });
 
-  it('holds the sample ballot section', () => {
-    renderSummary();
+  it('holds the sample ballot section, or none when the precinct has no ballot', () => {
+    const { unmount } = renderSummary();
     expect(region(copy.cards.ballot)).toHaveTextContent(copy.ballot.missing);
+    unmount();
+    renderSummary({ showBallot: false });
+    expect(screen.queryByRole('region', { name: copy.cards.ballot })).toBeNull();
+    expect(electionDay()).toBeInTheDocument();
+  });
+
+  // #27: a placeholder at least the size of what replaces it.
+  it('holds room for the early voting site, its status and its count while it loads', () => {
+    getAbsenteeSites.mockReturnValue(new Promise(() => {}));
+    renderSummary({ waitSource: store(countyFresh) });
+    const lines = screen.getByTestId('summary-early-skeleton').children;
+    // A label, the name and address, the status, the count and its board,
+    // then the directions button.
+    expect([...lines].map((line) => line.className)).toEqual([
+      expect.stringContaining('h-5'),
+      expect.stringContaining('h-6'),
+      expect.stringContaining('h-6'),
+      expect.stringContaining('h-6'),
+      expect.stringContaining('h-6'),
+      expect.stringContaining('h-5'),
+      expect.stringContaining('h-11'),
+    ]);
   });
 
   it('asks each shared layer once', async () => {
