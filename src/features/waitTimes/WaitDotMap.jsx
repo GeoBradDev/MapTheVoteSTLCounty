@@ -10,14 +10,14 @@ import { useEffect, useMemo } from 'react';
 import { Link } from 'wouter';
 import election, { jurisdictions } from '../../config/election.js';
 import { getAbsenteeSites, getPolls } from '../../data/arcgis.js';
-import { zonedNow } from '../lookup/earlyVoting.js';
+import { earlyVotingStatus, zonedNow } from '../lookup/earlyVoting.js';
 import { copy as homeCopy } from '../lookup/homeCopy.js';
 import { copy as resultsCopy } from '../lookup/resultsCopy.js';
 import { useNow } from '../lookup/useNow.js';
 import { dotMap, HOLLOW_RADIUS, project } from './dotMapModel.js';
 import { homeMapMode } from './homeMapMode.js';
 import { CITY_RING, COUNTY_RING, VIEW } from './outline.js';
-import { useWaitTimes } from './useWaitTimes.js';
+import { OFF_WAITS, useWaitTimes } from './useWaitTimes.js';
 import { clockTime, loadCityPolls, loadCitySites, useSites } from './waitSites.js';
 import { copy } from './waitTimesCopy.js';
 
@@ -227,10 +227,22 @@ export default function WaitDotMap({
   const mode = homeMapMode(now);
   const electionDay = mode === 'electionDay';
   const { result } = useSites(loadSites, loadCity, loadPolls, loadCityDay, electionDay);
-  const waits = useWaitTimes(waitSource);
   // Rows loaded for the other mode (the day just turned to Election Day) are
   // not shown: the polling places replace them.
   const rows = result?.mode === (electionDay ? 'electionDay' : 'earlyVoting') ? result.rows : null;
+  // The line count layers are asked only while a site is open (nights, the
+  // evening before Election Day and its early morning ask nothing), as the
+  // results page's cards do.
+  const anyOpen = useMemo(
+    () =>
+      Boolean(
+        rows?.some(
+          (row) => earlyVotingStatus(row.schedule, now, election.timeZone).kind === 'openNow',
+        ),
+      ),
+    [rows, now],
+  );
+  const waits = useWaitTimes(anyOpen ? waitSource : OFF_WAITS);
   const model = useMemo(
     () => (rows ? dotMap({ rows, waits: waits.waits, now }) : null),
     [rows, waits.waits, now],

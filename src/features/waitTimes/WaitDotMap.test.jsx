@@ -194,6 +194,18 @@ describe('WaitDotMap with every site closed', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
+  it('asks the line count layers nothing while every site is closed', async () => {
+    vi.setSystemTime(CLOSED_AT);
+    const county = vi.fn(none);
+    const city = vi.fn(none);
+    renderMap({ waits: { county, city } });
+    expect(
+      await screen.findByText(homeCopy.waitMap.openOn('2026-10-23', '08:00')),
+    ).toBeInTheDocument();
+    expect(county).not.toHaveBeenCalled();
+    expect(city).not.toHaveBeenCalled();
+  });
+
   it('on the evening of November 2, says Election Day is tomorrow', async () => {
     vi.setSystemTime(EVE_AT);
     const { onClose } = renderMap({ waits: { county: none, city: none } });

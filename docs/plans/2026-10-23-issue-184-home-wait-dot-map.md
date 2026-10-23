@@ -187,4 +187,8 @@ centering on the voter (privacy).
   counts are named in the status line; rows loaded for early voting are not
   shown once the day turns to Election Day; e2e and axe cover Election Day
   before the polls open.
-
+- Review round 2: the privacy notice (`privacy.sent.waitTimes.text` in
+  `src/i18n/en.json`) and the README's privacy statement now name the home
+  page's map among the pages that ask the line count layers; the map asks
+  them only while a site is open (`OFF_WAITS` otherwise), as the results
+  page's cards do.

@@ -458,7 +458,7 @@
       },
       "waitTimes": {
         "heading": "Line counts",
-        "text": "The early voting wait times page, the early voting part of a precinct's results while early voting is running, and, on Election Day, that page and the polling places part of a precinct's results while the polls are open, ask the line count layers of the {countyBoard} ({countyLayers}) and the {cityBoard} ({cityLayers}), both on Esri's ArcGIS Online, for the current counts every {seconds} seconds while they are open on your screen. On Election Day, a precinct's results ask only its own board's layer. These requests carry nothing about you: no address, location or precinct."
+        "text": "The home page's line count map while an early voting site or, on Election Day, a polling place is open, the early voting wait times page, the early voting part of a precinct's results while early voting is running, and, on Election Day, that page and the polling places part of a precinct's results while the polls are open, ask the line count layers of the {countyBoard} ({countyLayers}) and the {cityBoard} ({cityLayers}), both on Esri's ArcGIS Online, for the current counts every {seconds} seconds while they are open on your screen. On Election Day, a precinct's results ask only its own board's layer. These requests carry nothing about you: no address, location or precinct."
       },
       "website": {
         "heading": "This website",

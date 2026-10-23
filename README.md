@@ -42,8 +42,9 @@ same.)
 
 The site has no accounts, no analytics, no cookies and no server of its own: the browser talks
 straight to the public services that look up the address and the precinct, and to the boards'
-line count layers on the wait times page and on the results page while early voting runs or, on
-Election Day, while the polls are open (then a precinct's results ask only its own board's). It
+line count layers on the home page's line count map, the wait times page and the results page
+while early voting runs or, on Election Day, while the polls are open (then a precinct's results
+ask only its own board's; the home page's map asks only while a site is open, #184). It
 never saves a
 typed address or a device location, in the URL, browser storage, cookies or the browser's
 cache, and a share link holds only the precinct code, like `/p/CC007`. The plain-language
