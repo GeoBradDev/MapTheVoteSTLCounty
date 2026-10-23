@@ -178,13 +178,17 @@ describe('a City precinct page (#89)', () => {
     for (const host of hosts) expect(county).not.toContain(host);
   });
 
-  it('points the cards not built for the City yet at the City Board', async () => {
+  it('shows the City sample ballot card: the citywide PDF, never a precinct ballot (#92)', async () => {
     routeFetch();
     renderAt(CODE);
     await ready(CODE);
-    const card = screen.getByRole('region', { name: copy.cards.ballot });
-    const link = within(card).getByRole('link', { name: copy.map.city });
-    expect(link).toHaveAttribute('href', referrals.stlCityBoard.url);
+    const card = () => screen.getByRole('region', { name: copy.cards.ballot });
+    await waitFor(() => expect(card()).toHaveTextContent(copy.ballot.introCity));
+    const links = [...card().querySelectorAll('a[href]')].map((a) => a.getAttribute('href'));
+    expect(links).toEqual([cityResults.sampleBallot.url, cityResults.sampleBallot.sources[0]]);
+    // Not the County card's words or its precinct PDF link.
+    expect(card()).not.toHaveTextContent(copy.ballot.open);
+    expect(card().querySelector('a[href*="/sharing/rest/content/items/"]')).toBeNull();
   });
 
   it('shows the City districts card: the districts layer names, with its source (#90)', async () => {

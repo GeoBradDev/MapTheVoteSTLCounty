@@ -197,6 +197,8 @@ describe('production build', () => {
       // The districts card's offices (#90); not the short ones, like "State
       // Senate", which a County label shares.
       ...cityResults.districts.rows.flatMap((row) => row.offices).filter((o) => o.length > 20),
+      // The sample ballot card's PDF (#92).
+      cityResults.sampleBallot.url.split('/').pop(),
     ];
     for (const f of firstLoad) {
       for (const mark of marks) expect(js[f].includes(mark), `${f}: ${mark}`).toBe(false);

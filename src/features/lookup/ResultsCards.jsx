@@ -1,5 +1,4 @@
 import { Suspense, useId } from 'react';
-import election from '../../config/election.js';
 import DistrictsCard from './DistrictsCard.jsx';
 import { cityComponent } from './cityComponent.js';
 import EarlyVotingCard from './EarlyVotingCard.jsx';
@@ -8,13 +7,12 @@ import SampleBallotCard from './SampleBallotCard.jsx';
 import { useJurisdiction } from './jurisdictionContext.js';
 import { copy } from './resultsCopy.js';
 
-const linkClass = 'text-primary underline';
-
 // The City's own cards, from the City chunk (#147).
 const CityEarlyVotingCard = cityComponent('CityEarlyVotingCard');
 const CityDistrictsCard = cityComponent('CityDistrictsCard');
+const CitySampleBallotCard = cityComponent('CitySampleBallotCard');
 
-// The card order the issue sets. Each card's own issue replaces its body.
+// The card order the issue sets.
 const CARDS = [
   { key: 'polls', ballot: false },
   { key: 'ballot', ballot: true },
@@ -34,51 +32,32 @@ function Card({ title, children }) {
   );
 }
 
-// A card not built yet: the County's lookup, or for a City precinct the City
-// Board's site (#89), until the City card's own issue (#92).
-function PendingCard() {
-  const { id, boardSiteUrl } = useJurisdiction();
-  if (id === 'city') {
-    return (
-      <p className="mt-2">
-        {copy.cards.pendingCity}{' '}
-        <a href={boardSiteUrl} rel="noreferrer" className={linkClass}>
-          {copy.map.city}
-        </a>
-        .
-      </p>
-    );
-  }
-  return (
-    <p className="mt-2">
-      {copy.cards.pending}{' '}
-      <a href={election.officialLookupUrl} rel="noreferrer" className={linkClass}>
-        {copy.officialLookup}
-      </a>
-      .
-    </p>
-  );
-}
-
 /**
  * The result cards, in order.
  * @param {{ code: string, origin: { lat: number, lng: number } | null,
  *   showBallot: boolean, ballotHtml: unknown, precinct: object }} props
  *   `origin` is the looked-up point, in memory only. `showBallot` false hides
  *   the sample ballot card, for a precinct with nothing on the ballot.
- *   `ballotHtml` is the precinct's `html` field, which only the sample ballot
- *   parser reads; the card checks its link against `code`. `precinct` is the
+ *   `ballotHtml` is a County precinct's `html` field, which only the sample
+ *   ballot parser reads; the card checks its link against `code`. A City
+ *   precinct's card never reads it. `precinct` is the
  *   precinct's attributes, for its districts.
  */
 export default function ResultsCards({ code, origin, showBallot, ballotHtml, precinct }) {
   const { id } = useJurisdiction();
   const polls = () => <PollsCard code={code} origin={origin} />;
-  // The City has its polling places (#89), early voting (#91) and districts
-  // (#90) cards so far; its sample ballot card is #92.
+  // The City's cards: polling places (#89), its one sample ballot for all
+  // precincts (#92, never the precinct's `html` field), early voting (#91) and
+  // districts (#90).
   const body =
     id === 'city'
       ? {
           polls,
+          ballot: () => (
+            <Suspense fallback={null}>
+              <CitySampleBallotCard />
+            </Suspense>
+          ),
           earlyVoting: () => (
             // The chunk is already loaded with the City data, so this
             // suspends only for a moment.
@@ -102,7 +81,7 @@ export default function ResultsCards({ code, origin, showBallot, ballotHtml, pre
     <div className="mt-6 flex flex-col gap-4">
       {CARDS.filter((card) => showBallot || !card.ballot).map(({ key }) => (
         <Card key={key} title={copy.cards[key]}>
-          {body[key] ? body[key]() : <PendingCard />}
+          {body[key]()}
         </Card>
       ))}
     </div>

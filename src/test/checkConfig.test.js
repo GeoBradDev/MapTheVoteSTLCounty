@@ -22,6 +22,7 @@ import {
   countyFresh,
   ELECTION_DAY_SHIFT_MS,
 } from '../data/waitTimes.fixtures.js';
+import cityResults from '../config/cityResults.js';
 import election from '../config/election.js';
 import {
   BALLOT_SAMPLE_SIZE,
@@ -154,6 +155,10 @@ function healthyWorld() {
       disposition: disposition(servedFileName(url)),
     }),
     city: healthyCity(),
+    // The City Board's one sample ballot for all precincts (#92), and the
+    // requests made for it, kept apart from the County's ballot HEADs.
+    cityBallot: () => ({ status: 200, type: 'application/pdf' }),
+    cityBallotCalls: [],
     calls: [],
     waitQueries: [],
     cityQueries: [],
@@ -261,6 +266,11 @@ const json = (body, status = 200) =>
 function stubFetch(world) {
   return async (input, init = {}) => {
     const url = new URL(input);
+    if (url.href === cityResults.sampleBallot.url) {
+      world.cityBallotCalls.push(init.method ?? 'GET');
+      const { status, type } = world.cityBallot();
+      return new Response(null, { status, headers: type ? { 'content-type': type } : {} });
+    }
     world.calls.push({ url: url.href, method: init.method ?? 'GET' });
     if (world.fail) {
       const answer = world.fail(url, init);
@@ -385,6 +395,7 @@ describe('runHealthCheck', () => {
       'city voting locations',
       'city early voting sites',
       'city known points',
+      'city sample ballot',
     ]);
     expect(results['city precincts'].detail).toBe('207 precincts, wards 1 to 14');
     expect(results['city voting locations'].detail).toBe(
@@ -1603,6 +1614,42 @@ describe('the City layers (#87)', () => {
       status: 'fail',
       detail: `${id} has no hours in earlyVoting.sites in src/config/cityResults.js`,
     });
+  });
+
+  it('HEADs the City sample ballot once and passes on a PDF, saying no precinct match applies (#92)', async () => {
+    const world = healthyWorld();
+    const results = await run(world);
+    expect(world.cityBallotCalls).toEqual(['HEAD']);
+    expect(results['city sample ballot']).toEqual({
+      name: 'city sample ballot',
+      status: 'pass',
+      detail:
+        `sampleBallot (${cityResults.sampleBallot.url}) answers HEAD with a PDF. ` +
+        'It is one ballot for all City precincts, so no precinct match applies.',
+    });
+  });
+
+  it.each([
+    ['not a PDF', { status: 200, type: 'text/html; charset=utf-8' }, 'Content-Type text/html'],
+    ['no content type', { status: 200 }, 'Content-Type missing'],
+    ['missing', { status: 404 }, 'HTTP 404'],
+  ])('fails the City sample ballot when it is %s (#92)', async (_, answer, why) => {
+    const world = healthyWorld();
+    world.cityBallot = () => answer;
+    const { status, detail } = (await run(world))['city sample ballot'];
+    expect(status).toBe('fail');
+    expect(detail).toBe(
+      `sampleBallot (${cityResults.sampleBallot.url}): ${why}. ` +
+        'Check it in src/config/cityResults.js.',
+    );
+  });
+
+  it('checks the City sample ballot even when the City layers fail (#92)', async () => {
+    const world = healthyWorld();
+    world.city.layers = {};
+    const results = await run(world);
+    expect(results['city layer sites'].status).toBe('fail');
+    expect(results['city sample ballot'].status).toBe('pass');
   });
 
   it('fails when a site filter finds nothing, and warns when the list is not the expected count', async () => {

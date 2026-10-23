@@ -70,9 +70,8 @@ const ROUTES = [
   },
   {
     // A City precinct (#95): the City Board's Election Day rule, each nearest
-    // polling place's real name, and the districts card (#90). The City's
-    // sample ballot card links the City Board's site until #92, so no ballot
-    // link is checked.
+    // polling place's real name, the districts card (#90) and the City Board's
+    // sample ballot PDF for all precincts (#92).
     path: `/p/${CITY_CODE}`,
     code: CITY_CODE,
     shows: (code) => {
@@ -83,6 +82,7 @@ const ROUTES = [
         !document.querySelector('[role="alert"]')?.textContent.trim() &&
         main.includes('The St. Louis City Board of Election Commissioners says:') &&
         main.includes('Missouri House District') &&
+        Boolean(document.querySelector('a[href^="https://www.stlouis-mo.gov/"][href$=".pdf"]')) &&
         rows.length > 0 &&
         rows.every((li) => {
           const name = li.querySelector('h3')?.textContent ?? '';

@@ -108,10 +108,6 @@ export const copy = translated((t) => ({
     ballot: t('results.cards.ballot'),
     earlyVoting: t('results.cards.earlyVoting'),
     districts: t('results.cards.districts'),
-    // For a card that is not built yet: the County's lookup, or for a City
-    // precinct the City Board's site (#89).
-    pending: t('results.cards.pending'),
-    pendingCity: t('results.cards.pendingCity'),
   },
   polls: {
     listLabel: t('results.polls.listLabel'),
@@ -203,6 +199,12 @@ export const copy = translated((t) => ({
     // than show it in the new tab.
     newTab: t('results.ballot.newTab'),
     missing: t('results.ballot.missing'),
+    // The City's one ballot for all precincts (#92): it must never read as
+    // the voter's own precinct ballot.
+    introCity: t('results.ballot.introCity'),
+    openCity: t('results.ballot.openCity'),
+    allPrecincts: t('results.ballot.allPrecincts'),
+    districtsPointer: t('results.ballot.districtsPointer'),
   },
   earlyVoting: {
     // The board's own dates, hours and sites; no eligibility rules here.

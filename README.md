@@ -7,8 +7,8 @@ location and gets their precinct, the nearest polling places, their sample ballo
 districts and the in-person absentee voting sites and hours, plus short "How to vote" guides
 built from official sources. A voter with a St. Louis City address is sent to their City precinct's
 page (#88), with its nearest City polling places, the City Board's Election Day rule and the
-map (#89), the City's early voting sites and hours (#91) and its districts (#90; its sample
-ballot card links the City Board's site until #92); when the precinct cannot be found, they are referred to the City's own Board of
+map (#89), the City's early voting sites and hours (#91), its districts (#90) and the City
+Board's one sample ballot for all precincts (#92); when the precinct cannot be found, they are referred to the City's own Board of
 Election Commissioners.
 
 It is for St. Louis City and County voters, on a phone first, and for whoever runs it for the next
@@ -180,7 +180,10 @@ may need new values too. Work on a branch and merge through the usual pull reque
    for voting by mail. And it includes the City districts card's rows (`districts` in
    `cityResults.js`, #90): check each row's `electedoffice` names against the districts layer,
    and recheck which congressional map is in effect and that the whole City is still in one
-   district under it (its `sources`). If a field the app reads was renamed, search `src/` and `scripts/` for
+   district under it (its `sources`). And it includes the City's sample ballot
+   (`sampleBallot` in `cityResults.js`, #92): the City Board's one PDF for all precincts, linked
+   from its Elections page (its `sources`). Open the new PDF and confirm it is the new
+   election's ballot before setting `url` and `lastVerified`. If a field the app reads was renamed, search `src/` and `scripts/` for
    the old name and change every use, including `PRECINCT_FIELDS` and `POLL_FIELDS` in
    `src/data/arcgis.js` and the field lists in `scripts/check-config.mjs`. See
    [Election config](#election-config).
@@ -433,14 +436,14 @@ County voters. The results page gets its jurisdiction's data adapter and officia
 from `src/data/jurisdictions.js`, picked from the precinct code's shape (`/p/CC007` is the County,
 `/p/W01P12` the City; [docs/data.md](docs/data.md#jurisdictions-and-precinct-codes)), and
 the results' own links to a board follow that jurisdiction: on a City precinct's page, the
-official lookup, the polling places card, the cards still to come, the map credit and the error
+official lookup, the polling places card, the map credit and the error
 screen link the City Board (#89). The footer lists both boards on every page. The test also fails on a City block's layer, service, filter or field name (except the common
 words `name` and `district`) written outside the config.
 
 **The City chunk (owner decision on #147).** Code and config only St. Louis City needs load on
 demand, in one chunk, `src/cityChunk.js`, through `loadCityClient()` in
 `src/data/jurisdictions.js`: the City's data client, `src/data/cityArcgis.js` (#87), the City-only
-results UI (its early voting card, Election Day rule and districts card) and `src/config/cityResults.js`. The City
+results UI (its early voting card, Election Day rule, districts card and sample ballot card) and `src/config/cityResults.js`. The City
 results, `locate()` (#88) and the wait times page load it. A City-only component is read from it
 with `cityComponent(name)` (`src/features/lookup/cityComponent.js`) inside a `Suspense`; never
 `React.lazy` a file of its own, which splits code the first load shares into another chunk and
@@ -622,7 +625,10 @@ precincts are a sane count and every ID reads as a City code, that the Election 
 voting filters find sites with an id, name and address (a WARN when the Election Day count is
 not the config's `pollsListed`, the count the City Board's page gives), and that City Hall lands
 in a City precinct, a ward and the City outline while a County point lands in neither a City
-precinct nor the outline. A site filter that finds no site fails. For each
+precinct nor the outline, and that the City's sample ballot (`sampleBallot` in
+`src/config/cityResults.js`, #92) answers HEAD with a PDF. The City publishes one ballot for
+all precincts, so the County's rule that a ballot names its precinct does not apply to it. A
+site filter that finds no site fails. For each
 wait time source in `waitTimes` that is turned on (County and City early voting
 line counts, or on Election Day each board's Election Day source, judged against every polling
 place and Election Day hours; before Election Day the County's Election Day filter is run on its

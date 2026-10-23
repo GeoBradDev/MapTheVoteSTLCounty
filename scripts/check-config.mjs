@@ -249,6 +249,8 @@ export async function runHealthCheck(
     now: fixedNow,
     // The City's early voting hours (src/config/cityResults.js, #91).
     cityEarlyVoting = cityResults.earlyVoting,
+    // The City's one sample ballot for all precincts (src/config/cityResults.js, #92).
+    citySampleBallot = cityResults.sampleBallot,
   } = {},
 ) {
   const results = [];
@@ -1098,6 +1100,30 @@ export async function runHealthCheck(
       const failed = ['precincts', 'districts', 'boundary'].find((k) => !ok[k]);
       record('city known points', 'skip', `the city layer ${failed} check failed`);
     }
+
+    // 10. The City's sample ballot (#92) answers HEAD with a PDF. The City
+    // Board publishes one ballot for all precincts, not one per precinct or
+    // ward, so the County's rule that a ballot names its precinct (#82, #111)
+    // has nothing to match here; the card says it is the citywide ballot.
+    await check('city sample ballot', async () => {
+      const where = `sampleBallot (${citySampleBallot?.url})`;
+      const hint = 'Check it in src/config/cityResults.js.';
+      let res;
+      try {
+        res = await request(citySampleBallot.url, { method: 'HEAD' });
+      } catch (error) {
+        if (!(error instanceof CheckError)) throw error;
+        throw new CheckError(`${where}: ${error.message}. ${hint}`);
+      }
+      const type = (res.headers.get('content-type') ?? '').split(';')[0].trim();
+      if (type !== 'application/pdf') {
+        throw new CheckError(`${where}: Content-Type ${type || 'missing'}. ${hint}`);
+      }
+      return (
+        `${where} answers HEAD with a PDF. ` +
+        'It is one ballot for all City precincts, so no precinct match applies.'
+      );
+    });
   }
 }
 
