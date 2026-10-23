@@ -17,19 +17,18 @@ const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
  * @param {import('./content/topic.js').TopicSummary | null} summary
  */
 function useTopicBody(summary) {
-  const [, setLoaded] = useState(null);
+  const [shown, setShown] = useState(null);
   const [error, setError] = useState(null);
-  const shown = useRef(null);
   const ready = summary ? loadedTopic(summary) : null;
-  const topic = ready ?? (summary && shown.current?.id === summary.id ? shown.current : null);
-  useEffect(() => {
-    if (ready) shown.current = ready;
-  }, [ready]);
+  // Remembers the topic last shown, as React's "adjusting state when a prop
+  // changes" pattern does: during render, not in an effect.
+  if (ready && ready !== shown) setShown(ready);
+  const topic = ready ?? (summary && shown?.id === summary.id ? shown : null);
   useEffect(() => {
     if (!summary || ready) return undefined;
     let live = true;
     loadTopic(summary).then(
-      (loaded) => live && setLoaded(loaded),
+      (loaded) => live && setShown(loaded),
       (failure) => live && setError(failure),
     );
     return () => {
