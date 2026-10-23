@@ -42,8 +42,9 @@ same.)
 
 The site has no accounts, no analytics, no cookies and no server of its own: the browser talks
 straight to the public services that look up the address and the precinct, and to the boards'
-early voting line count layers on the wait times page and, while early voting runs, the results
-page. It never saves a
+line count layers on the wait times page and on the results page while early voting runs or, on
+Election Day, while the polls are open (a precinct's results ask only its own board's). It never
+saves a
 typed address or a device location, in the URL, browser storage, cookies or the browser's
 cache, and a share link holds only the precinct code, like `/p/CC007`. The plain-language
 notice at [`/privacy`](https://mapthevotestl.com/privacy) says what each service gets; the
@@ -462,6 +463,21 @@ the first day a board's counts appear, and again after either board changes its 
 4. If a check fails or counts are wrong, set that source's `enabled` to `false` and deploy. The
    page then shows the sites and the official links without counts.
 
+### Wait times: Election Day
+
+On Election Day (`electionDate`, in the config's time zone) the same client reads each board's
+Election Day source instead (#107): `waitTimes.county.electionDay` (its own layer, filter and
+polls layer join field, `username` today) and `waitTimes.city.electionDay` (the City's
+Election Day polling places), open by `electionDayHours` rather than the early voting hours.
+The polling places card then shows each listed place's count from its own board only, a
+"Shortest line within 5 miles" sort and a link to `/early-voting`, which lists every polling
+place of both boards that day; the precinct map colors its markers by the same bins as the wait
+times map. On 2026-10-22 the County's view kept only early voting reports (docs/data.md, Wait
+times), so until the County publishes Election Day counts every County place shows no count.
+When it does, point `waitTimes.county.electionDay.layer` (and `where`) at the view it names and
+run `node scripts/check-config.mjs`: a config change, nothing else. Set an `electionDay.enabled`
+to `false` to turn one board's Election Day counts off.
+
 ## Learn content
 
 Each voter education topic is one Markdown file, `content/<locale>/learn/<id>.md`, with front
@@ -594,7 +610,9 @@ not the config's `pollsListed`, the count the City Board's page gives), and that
 in a City precinct, a ward and the City outline while a County point lands in neither a City
 precinct nor the outline. A site filter that finds no site fails. For each
 wait time source in `waitTimes` that is turned on (County and City early voting
-line counts), it checks the layer has every field the config names, then prints one line naming
+line counts, or on Election Day each board's Election Day source, judged against every polling
+place and Election Day hours; a separate County Election Day layer is checked for its fields every
+day), it checks the layer has every field the config names, then prints one line naming
 the board and whether its counts are fresh: open sites, how many have a count the app would show
 now, County reports that match no early voting site, and the newest report time. An empty County
 view while sites are closed passes. Sites open with no fresh count, County reports that match
@@ -610,9 +628,10 @@ the script.
 `.github/workflows/data-health.yml` runs this check, `scripts/check-geocoder.mjs` and
 `scripts/check-content-links.mjs` every day at 12:00 UTC until Election Day is over in the
 config's time zone, and on demand from the Actions tab (**Data health**, **Run workflow**).
-During early voting (the first `from` to the last `to` in `earlyVoting.schedules`) it also runs
-this check alone every 2 hours from 14:00 to 22:00 UTC, so a board that starts or stops
-reporting line counts is noticed the same day; `scripts/electionWindow.mjs` decides which run
+During early voting (the first `from` to the last `to` in `earlyVoting.schedules`) and on
+Election Day it also runs this check alone every 2 hours from 14:00 to 22:00 UTC, and on
+Election Day at 23:00 and 00:00 UTC too (one of them is 6 p.m. Central), so a board that starts
+or stops reporting line counts is noticed the same day; `scripts/electionWindow.mjs` decides which run
 does what, and imports nothing, because it runs before `npm ci`. Warnings go on each run's
 summary page. On
 a failure it opens an issue labeled `data health`, or comments on the one already open; close
@@ -760,7 +779,8 @@ filled by its bin: teal, tan or brown, from ColorBrewer's BrBG ramp (`--color-wa
 `src/index.css`, used only for markers and the legend, each marker outlined in ink so it is at
 least 3:1 against the basemap,
 `src/features/waitTimes/mapColors.test.js`), and the legend names the unit and is hidden when
-no site has a count.
+no site has a count. On Election Day the precinct map's markers and legend follow the same rule
+while the polls are open (#107).
 
 The basemap is [OpenFreeMap](https://openfreemap.org)'s Positron style: free, with no API key
 or account, and its terms allow embedding it. Its attribution (OpenFreeMap, OpenMapTiles,
@@ -769,7 +789,7 @@ its interstate shields slate blue, so the map draws every label in the muted tok
 interstates with the gray road shield. Tile requests tell OpenFreeMap (and
 Cloudflare, its CDN) which area is on screen: the precinct and its nearest polling places,
 which depend a little on the searched point within the precinct, or, on the wait times page,
-the early voting sites. The `no-referrer` policy
+the early voting sites (on Election Day, the polling places). The `no-referrer` policy
 keeps the page URL out of them. `src/features/lookup/basemap.js` holds the style URL and the
 credits; to change the basemap, change that file and the origin in `render.yaml`'s
 `connect-src` together, and check the new style's colors and sprite icons for red or blue.
