@@ -18,15 +18,50 @@
 */
 @theme {
   --color-*: initial;
-  --color-surface: oklch(0.99 0.003 90);
-  --color-surface-raised: oklch(0.97 0.004 90);
-  --color-ink: oklch(0.22 0.005 90);
-  --color-muted: oklch(0.48 0.008 90);
-  --color-border: oklch(0.88 0.006 90);
-  --color-primary: oklch(0.42 0.07 165);
-  --color-on-primary: oklch(0.99 0.003 90);
-  --color-accent: oklch(0.72 0.12 80);
-  --color-on-accent: oklch(0.22 0.005 90);
+  /*
+    Neutrals: near-gray (chroma at or under 0.012) with a faint cast of the
+    brand teal. Minimum contrasts are WCAG 2.1 AA, checked in
+    src/test/contrast.test.js.
+  */
+  /* The page. */
+  --color-surface: oklch(0.99 0.002 185);
+  /* A raised box on the page: the lead card, menus, link rows. */
+  --color-surface-raised: oklch(0.97 0.004 185);
+  /* A recessed area, such as a placeholder well. */
+  --color-surface-sunken: oklch(0.945 0.006 185);
+  /* Body text, 4.5:1 on every surface and fill (about 15:1); the focus ring. */
+  --color-ink: oklch(0.22 0.008 185);
+  /* Secondary text (hints, distances, sources), 4.5:1 on every surface and fill. */
+  --color-muted: oklch(0.47 0.012 185);
+  /* Decorative lines only (dividers, card edges): no contrast minimum. */
+  --color-border: oklch(0.88 0.008 185);
+  /* The edge of a control that has no fill (quiet buttons, link rows), 3:1 on every surface. */
+  --color-border-strong: oklch(0.6 0.012 185);
+  /*
+    The one brand hue (#76, owner's choice): deep teal near hue 185, clear of
+    the blue range that starts at 200. Links, buttons, the lead card's edge.
+    4.5:1 as text on every surface and fill; on-primary 4.5:1 on all three.
+  */
+  --color-primary: oklch(0.45 0.075 185);
+  --color-primary-hover: oklch(0.39 0.066 185);
+  --color-primary-pressed: oklch(0.34 0.058 185);
+  --color-on-primary: oklch(0.99 0.002 185);
+  /*
+    Semantic pairs for the Notice component (#76): a fill for its background
+    and an ink for its icon and edge (4.5:1 on the fill and on surface, so the
+    edge also passes 3:1). Text inside a notice stays ink. No red or blue: the
+    danger color is burnt orange (hue 50), warning amber, info the brand teal,
+    success green (free because the brand is teal). Color is never the only
+    cue: each kind also has its own icon.
+  */
+  --color-info-fill: oklch(0.96 0.02 185);
+  --color-info-ink: oklch(0.43 0.07 185);
+  --color-warning-fill: oklch(0.955 0.05 90);
+  --color-warning-ink: oklch(0.46 0.09 75);
+  --color-danger-fill: oklch(0.955 0.025 55);
+  --color-danger-ink: oklch(0.48 0.12 50);
+  --color-success-fill: oklch(0.955 0.035 150);
+  --color-success-ink: oklch(0.44 0.1 150);
   /*
     The maps' people-in-line scale (#104, #172), for markers and their legend
     only: five steps of a BrBG-style ramp (owner's choice), teal for the
@@ -40,13 +75,6 @@
   --color-wait-3: oklch(0.86 0.1 87.5);
   --color-wait-4: oklch(0.67 0.12 65);
   --color-wait-5: oklch(0.47 0.11 55);
-  /*
-    The Notice component's three kinds (#78), as aliases of the palette above,
-    so the palette work (#76) can retune them here without touching a page.
-  */
-  --color-notice-info: var(--color-primary);
-  --color-notice-warning: var(--color-accent);
-  --color-notice-danger: var(--color-ink);
   /* Ink at low opacity, the one color the shadows below are drawn in. */
   --color-shadow: color-mix(in oklch, var(--color-ink) 12%, transparent);
 

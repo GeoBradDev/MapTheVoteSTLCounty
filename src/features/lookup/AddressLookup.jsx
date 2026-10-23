@@ -186,9 +186,9 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
           sources' terms ask. */}
       <GeocoderAttribution />
       {/* Last, so it pushes nothing down when it appears (#27). */}
-      <p role="status" className="mt-2 empty:hidden">
-        {slow ? errorCopy.slow : ''}
-      </p>
+      <div role="status" className="mt-2 empty:hidden">
+        {slow && <Notice>{errorCopy.slow}</Notice>}
+      </div>
       {outcome?.kind && (
         <div ref={outcomeRef} tabIndex={-1} className="mt-6">
           <OutOfCountyNotice kind={outcome.kind} headingLevel={noticeHeadingLevel} />

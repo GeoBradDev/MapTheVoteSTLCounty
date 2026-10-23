@@ -31,9 +31,19 @@ const UTILITIES = {
   // Tailwind writes a shadow's value into the rule; its color stays a token.
   'shadow-card': '--color-shadow',
   'shadow-popover': '--color-shadow',
-  'border-notice-info': '--color-notice-info',
-  'border-notice-warning': '--color-notice-warning',
-  'border-notice-danger': '--color-notice-danger',
+  // The Notice kinds (#76), control edges and the primary button's states.
+  ...Object.fromEntries(
+    ['info', 'warning', 'danger', 'success'].flatMap((kind) => [
+      [`bg-${kind}-fill`, `--color-${kind}-fill`],
+      [`border-${kind}-ink`, `--color-${kind}-ink`],
+      [`text-${kind}-ink`, `--color-${kind}-ink`],
+    ]),
+  ),
+  'border-border-strong': '--color-border-strong',
+  // The primary button's hover and pressed fills, written as plain utilities
+  // here (the variants nest the rule).
+  'bg-primary-hover': '--color-primary-hover',
+  'bg-primary-pressed': '--color-primary-pressed',
 };
 
 describe('design tokens', () => {
@@ -44,12 +54,5 @@ describe('design tokens', () => {
     expect(rule[1]).toContain(`var(${token}`);
     // The token itself is defined, so the var() resolves.
     expect(out).toMatch(new RegExp(`${token}:\\s*[^;]+;`));
-  });
-
-  it('keeps the Notice colors as aliases of the palette (#76 tunes them there)', async () => {
-    const css = await readFile(path.join(ROOT, 'src/index.css'), 'utf8');
-    for (const kind of ['info', 'warning', 'danger']) {
-      expect(css).toMatch(new RegExp(`--color-notice-${kind}: var\\(--color-[a-z-]+\\);`));
-    }
   });
 });

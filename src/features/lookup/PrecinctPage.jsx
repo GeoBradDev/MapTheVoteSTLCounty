@@ -223,9 +223,9 @@ function PrecinctResults({ code }) {
 
       {/* Below the skeleton and the error, so it pushes nothing down when it
           appears (#27). */}
-      <p role="status" className="mt-6 empty:hidden">
-        {slow ? errorCopy.slow : ''}
-      </p>
+      <div role="status" className="mt-6 empty:hidden">
+        {slow && <Notice>{errorCopy.slow}</Notice>}
+      </div>
 
       {result?.error === 'notFound' && (
         <section aria-labelledby={searchHeadingId} className="mt-6">

@@ -11,11 +11,14 @@ describe('Button', () => {
     const button = screen.getByRole('button', { name: 'Find' });
     expect(button).toHaveAttribute('type', 'button');
     expect(button).toHaveClass('min-h-11', 'bg-primary', 'text-on-primary', 'rounded-control');
+    // Its hover and pressed fills (#76).
+    expect(button).toHaveClass('hover:bg-primary-hover', 'active:bg-primary-pressed');
   });
 
   it.each([
     ['secondary', ['border-2', 'border-primary', 'text-primary']],
-    ['quiet', ['border', 'border-border', 'text-primary']],
+    // A visible 3:1 edge (#76), so it reads as a button.
+    ['quiet', ['border', 'border-border-strong', 'text-primary']],
   ])('has the %s look', (variant, classes) => {
     render(<Button variant={variant}>Go</Button>);
     const button = screen.getByRole('button', { name: 'Go' });
