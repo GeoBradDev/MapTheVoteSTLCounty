@@ -5,8 +5,10 @@ A nonpartisan voter guide for St. Louis County, Missouri, live at
 location and gets their precinct, the nearest polling places, their sample ballot, their
 districts and the in-person absentee voting sites and hours, plus short "How to vote" guides
 built from official sources. A voter with a St. Louis City address is sent to their City precinct's
-page (#88; its results arrive with #89); when the precinct cannot be found, they are referred
-to the City's own Board of Election Commissioners.
+page (#88), with its nearest City polling places, the City Board's Election Day rule and the
+map (#89; its sample ballot, early voting and districts cards link the City Board's site until
+#90 to #92); when the precinct cannot be found, they are referred to the City's own Board of
+Election Commissioners.
 
 It is for St. Louis County voters, on a phone first, and for whoever runs it for the next
 election: the sections below say how to set it up, where its data comes from and how to
@@ -111,6 +113,7 @@ against, and why. In short:
   [ArcGIS portal](https://stlouiscovotes.maps.arcgis.com). The app shows the link only when it
   matches the config's pattern and names the precinct.
 - **Dates, hours and rules:** not in any layer. They come from the board's own Instant Apps,
+  the City Board's polling places page (the City's Election Day rule, quoted),
   the [Missouri Secretary of State](https://www.sos.mo.gov) and the
   [Revised Statutes of Missouri](https://revisor.mo.gov), and live in `src/config/election.js`
   with their sources and the date each was last checked.
@@ -149,8 +152,9 @@ may need new values too. Work on a branch and merge through the usual pull reque
    including every link to that election's own Instant Apps, each with its `sources` and
    `lastVerified` where it has them. Re-read every source; do not copy a value forward
    unchecked. That includes the City Board's Election Day rule (`electionDayRule` in the City
-   block), quoted from its polling places page: re-quote it from the page, with its new date
-   (a test fails while the quote names another election's date). If a field the app reads was renamed, search `src/` and `scripts/` for the old
+   block), quoted from its polling places page (its URL is in `src/config/referrals.js`, named
+   by the rule's `source`): re-quote it from the page, with its new date (a test fails while
+   the quote names another election's date). If a field the app reads was renamed, search `src/` and `scripts/` for the old
    name and change every use, including `PRECINCT_FIELDS` and `POLL_FIELDS` in
    `src/data/arcgis.js` and the field lists in `scripts/check-config.mjs`. See
    [Election config](#election-config).
@@ -398,7 +402,8 @@ The config holds the shared election values and one block per jurisdiction, `cou
 County voters. The results page gets its jurisdiction's data adapter and official lookup link
 from `src/data/jurisdictions.js`, picked from the precinct code's shape (`/p/CC007` is the County,
 `/p/W01P12` the City; [docs/data.md](docs/data.md#jurisdictions-and-precinct-codes)), and
-each card's links follow that jurisdiction: a City page links the City Board (#89). The City's
+the page's links to a board follow that jurisdiction: a City page links the City Board's
+lookup and site, never the County's (#89). The City's
 data client, `src/data/cityArcgis.js` (#87), is loaded on demand, by the City results and by
 `locate()` (#88) when it asks the City's precinct layer. The
 test also fails on a City block's layer, service, filter or field name (except the common words

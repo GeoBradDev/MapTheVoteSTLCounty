@@ -809,7 +809,8 @@ OpenMapTiles, OpenStreetMap contributors. Tile requests reveal the area on scree
 Cloudflare: the precinct plus its nearest polling places, which depend a little on the
 searched point within the precinct (and widen on "Show more"). No address or coordinates are
 sent as such. The map
-is extra help only: precincts and polling places still come from the county layers above.
+is extra help only: precincts and polling places still come from the board layers above (the
+County's, or on a City precinct's page the City Board's, #89).
 
 ## Official website domain
 
@@ -957,7 +958,8 @@ inside the full polygon for all 207.
 St. Louis` on 73 and empty on 3 (Julia Davis Library, St. Joan of Arc, and Henry Elementary,
 which is not public), so the filters do not use it. The same layer is the City wait time source (Wait times
 above). The app reads `facilityid` (unique, the site's id, `loc` in the cards), `name`,
-`fulladdr` (no ZIP in it) and `pollingPlaceZipCode`. Never `*`: it also holds staff contact
+`fulladdr` (no ZIP in it), `pollingPlaceZipCode`, and the entrance notes `entrydetails` and
+`disabledentry` (below). Never `*`: it also holds staff contact
 fields (`pocname`, `pocemail`, `pocphone`).
 
 - **Election Day list (`pollsWhere`):** `publicview = 'Yes' AND facilityid <>
@@ -976,8 +978,8 @@ fields (`pocname`, `pocemail`, `pocphone`).
   no ZIP there. `accessible` is empty on every row, so the app does not read it;
   `disabledentry` and `entrydetails` are filled on all 57, and the polling places card shows
   them as published (#89, the config's `siteFields.accessibleEntry` and `entry`): short notes
-  like "off parking lot accessed from Vista Ave.", on the same rows the City Board publishes
-  for November 3, 2026. The names, addresses and notes are published in mixed case, so the
+  like "off parking lot accessed from Vista Ave.", from the layer's current rows (all with
+  `nextelectdate` 2026-11-03). The names, addresses and notes are published in mixed case, so the
   card shows them as they are (the County's all-caps text is title-cased). `imageurl` and
   `boxlocdesc` are not read yet (#146).
 - **Early voting sites (`earlyVotingWhere`):** `publicview = 'Yes' AND earlyvoting = 'Yes'`,
