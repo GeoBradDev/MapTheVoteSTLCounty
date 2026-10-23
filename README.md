@@ -265,6 +265,13 @@ headers and the cache rules. `src/test/render.test.js` checks it.
 - **Content-Security-Policy:** it allows only the origins the app calls. Code that fetches a
   new origin (a geocoder, map tiles, fonts) must add it to the policy in `render.yaml` in the
   same change, or the browser blocks the request in production.
+- **Preconnect on precinct pages:** `/p/*` is served with a `Link` header that preconnects to
+  the ArcGIS host the page asks for its precinct first (`PRECINCT_PRECONNECT` in
+  `src/prerender/plugin.js`, built from the County's and the City's election service roots).
+  It names only hosts already in `connect-src` and in the privacy notice; `npm run preview`
+  sends the same header. Like a route change, a header change shows only on production: check
+  it with `curl -I https://mapthevotestl.com/p/CC007` after the deploy. Lighthouse's simulated
+  network does not credit a preconnect, so the Lighthouse run cannot measure its gain.
 - **Cache-Control:** no two header rules may match the same path; Render does not document
   how they combine. The app shell and the pre-rendered pages send `no-cache` and hashed `/assets/` files are
   `immutable`; `/robots.txt` and `/sitemap.xml` are cached for an hour. A new route needs its

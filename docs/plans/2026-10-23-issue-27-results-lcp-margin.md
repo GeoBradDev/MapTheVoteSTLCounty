@@ -162,6 +162,20 @@ Files, in addition to the ones above:
 - `README.md`, Deploy and Performance: the header, checked on production after deploy (PR
   previews keep the service's existing header rules).
 
+## Finding: Lighthouse's simulation does not credit the preconnect (needs the owner again)
+
+With criteria 7 to 10 done, `npm run test:perf` measured /p/CC007 at 3021 ms (after early
+voting) and 3019 ms (Election Day), /p/W01P12 at 3014 and 3015 ms; the early voting states
+pass (1504 and 1654 ms). A control run with the preview's `Link` header removed measured the
+Election Day states at 3023 and 3013 ms: no difference. Lighthouse's Lantern simulation
+starts every connection cold (`TCPConnection` `warmed = false`) and warms one only after a
+simulated request on it finishes (`Simulator.js`), so a preconnect never shortens the
+simulated ArcGIS requests. Chrome's own network throttling adds latency per request, not per
+handshake, so it cannot show the gain either. The preconnect helps real phones, but no lab
+run in CI can measure it. The LCP element in those states is the summary's "The sample ballot
+shows the contests and measures on your ballot." paragraph, painted with the first batch of
+five ArcGIS requests. Not merged; the question is back on #27.
+
 ## Order of work
 
 1. Red: change the loading test to expect the Election Day heading and line while the

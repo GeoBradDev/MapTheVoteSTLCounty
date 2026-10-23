@@ -13,7 +13,8 @@ import { HOSTED_URL, LIVE_URL } from '../data/countyAddress.js';
 import { DEFAULT_BASE_URL as PHOTON } from '../data/photon.js';
 import { BASEMAP_STYLE_URL } from '../features/lookup/basemap.js';
 import { ASSET_HEADERS, SHELL_HEADERS } from '../../scripts/smoke.mjs';
-import { SHELL_FILE } from '../prerender/plugin.js';
+import { PRECINCT_PRECONNECT, SHELL_FILE } from '../prerender/plugin.js';
+import { hosts as privacyHosts } from '../features/privacy/privacyCopy.js';
 import { outputFile } from '../prerender/outputFile.js';
 import { publicPaths } from '../config/publicPages.js';
 import { readSitemapTopics } from '../features/learn/content/searchEngines.js';
@@ -223,6 +224,35 @@ describe('render.yaml headers', () => {
     expect(headersFor(site.headers, '/').get('permissions-policy')).toBe(
       'geolocation=(self), camera=(), microphone=()',
     );
+  });
+});
+
+// Precinct pages preconnect to the ArcGIS host their data comes from (#27,
+// #156, owner decision): only there, and only to hosts the app already calls
+// and the privacy notice names. vite preview sends the same value
+// (src/prerender/plugin.js), so the Lighthouse run measures it.
+describe('the precinct page preconnect', () => {
+  it('is one /p/* rule with the value vite preview sends', () => {
+    const rules = site.headers.filter((rule) => rule.name.toLowerCase() === 'link');
+    expect(rules).toEqual([{ path: '/p/*', name: 'Link', value: PRECINCT_PRECONNECT }]);
+  });
+
+  it.each(PROBE_PATHS)('is sent on %s only when it is a precinct page', (requestPath) => {
+    const link = headersFor(site.headers, requestPath).get('link');
+    expect(link).toBe(requestPath.startsWith('/p/') ? PRECINCT_PRECONNECT : null);
+  });
+
+  it('names only origins in connect-src and hosts the privacy notice lists', () => {
+    const connect = cspDirectives(
+      headersFor(site.headers, '/').get('content-security-policy'),
+    ).find(([name]) => name === 'connect-src')[1];
+    const named = Object.values(privacyHosts).flatMap((h) => h.split(', '));
+    const origins = [...PRECINCT_PRECONNECT.matchAll(/<([^>]+)>/g)].map((m) => m[1]);
+    expect(origins.length).toBeGreaterThan(0);
+    for (const origin of origins) {
+      expect(connect).toContain(origin);
+      expect(named).toContain(new URL(origin).host);
+    }
   });
 });
 

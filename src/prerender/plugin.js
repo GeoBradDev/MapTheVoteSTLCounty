@@ -14,16 +14,46 @@
 // those files the way Render does: a directory's index.html for its path with
 // or without the trailing slash, and the shell for any path with no file.
 //
+// It also sends render.yaml's precinct page preconnect (`PRECINCT_PRECONNECT`).
+//
 // This file is loaded by vite.config.js in plain Node, so it must not import
-// app code; the app is loaded only through the Vite server below.
+// app code; the app is loaded only through the Vite server below. The one
+// exception is src/config/election.js, plain data with no imports.
 
 import { existsSync, statSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { Worker } from 'node:worker_threads';
+import { jurisdictions } from '../config/election.js';
 
 /** The client-rendered shell, served for every path with no file. */
 export const SHELL_FILE = 'shell.html';
+
+/**
+ * The `Link` header a precinct page (/p/*) is served with: a preconnect to
+ * each distinct origin of the County's and the City's election services, the
+ * host the page asks for its precinct first (#27, #156, owner decision on
+ * #27). The connection is set up while the app's script downloads, so the
+ * data, and the text painted with it, arrive sooner. `crossorigin` because
+ * the app's fetches are CORS requests without credentials. render.yaml's
+ * /p/* rule has this value (src/test/render.test.js checks it).
+ */
+export const PRECINCT_PRECONNECT = [
+  ...new Set(Object.values(jurisdictions).map((j) => new URL(j.serviceRoot).origin)),
+]
+  .map((origin) => `<${origin}>; rel=preconnect; crossorigin`)
+  .join(', ');
+
+/**
+ * The headers `vite preview` adds for a page at `pathname` (decoded, without
+ * the query string), as render.yaml's rules for it do: the preconnect on a
+ * precinct page. The other render.yaml headers are not mirrored.
+ * @param {string} pathname
+ * @returns {Record<string, string>}
+ */
+export function previewHeaders(pathname) {
+  return /^\/p\/./.test(pathname) ? { Link: PRECINCT_PRECONNECT } : {};
+}
 
 /** Runs src/prerender/worker.js with `data`; rejects with its error. */
 function runWorker(data) {
@@ -105,7 +135,7 @@ export function previewRoutes() {
     apply: (_, env) => env.isPreview === true,
     configurePreviewServer(server) {
       const outDir = path.resolve(server.config.root, server.config.build.outDir);
-      server.middlewares.use((req, _res, next) => {
+      server.middlewares.use((req, res, next) => {
         if (!isPageRequest(req)) return next();
         const [pathname, query] = req.url.split(/\?(.*)/s);
         let decoded;
@@ -113,6 +143,9 @@ export function previewRoutes() {
           decoded = decodeURIComponent(pathname);
         } catch {
           return next();
+        }
+        for (const [name, value] of Object.entries(previewHeaders(decoded))) {
+          res.setHeader(name, value);
         }
         const target = previewTarget(outDir, decoded);
         if (target) req.url = query === undefined ? target : `${target}?${query}`;

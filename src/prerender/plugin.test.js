@@ -5,7 +5,8 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { outputFile } from './outputFile.js';
-import { isPageRequest, previewTarget } from './plugin.js';
+import election, { jurisdictions } from '../config/election.js';
+import { isPageRequest, PRECINCT_PRECONNECT, previewHeaders, previewTarget } from './plugin.js';
 
 let outDir;
 
@@ -82,4 +83,30 @@ describe('isPageRequest', () => {
   ])('leaves anything else to Vite', (request) => {
     expect(isPageRequest(request)).toBe(false);
   });
+});
+
+// A precinct page preconnects to the ArcGIS host its data comes from (#27,
+// #156), as render.yaml's /p/* rule does, so the Lighthouse run measures it.
+describe('previewHeaders', () => {
+  it('preconnects a precinct page to each election service origin, once', () => {
+    const origins = [
+      ...new Set(
+        [jurisdictions.county, jurisdictions.city].map((j) => new URL(j.serviceRoot).origin),
+      ),
+    ];
+    expect(origins).toContain(new URL(election.serviceRoot).origin);
+    expect(PRECINCT_PRECONNECT).toBe(
+      origins.map((origin) => `<${origin}>; rel=preconnect; crossorigin`).join(', '),
+    );
+    for (const pathname of ['/p/CC007', '/p/W01P12', '/p/anything']) {
+      expect(previewHeaders(pathname)).toEqual({ Link: PRECINCT_PRECONNECT });
+    }
+  });
+
+  it.each(['/', '/p', '/p/', '/early-voting', '/learn/voter-id', '/privacy', '/assets/a.js'])(
+    'sends no Link header on %s',
+    (pathname) => {
+      expect(previewHeaders(pathname)).toEqual({});
+    },
+  );
 });

@@ -461,6 +461,10 @@ for (const [code, width] of [
 // summary, whose data driven text can be larger still.
 for (const code of [CODE, CITY_CODE]) {
   test(`/p/${code} paints its largest text before the data answers`, async ({ page }) => {
+    // During early voting: outside it the summary's layout differs (its sample
+    // ballot paragraph moves into view), measured by the Lighthouse run's
+    // pinned clocks instead (e2e/lighthouse.js).
+    await page.clock.setFixedTime(WAITS_RECORDED_AT);
     await page.setViewportSize({ width: 360, height: 640 });
     await page.addInitScript(() => {
       window.lcpEntries = [];
