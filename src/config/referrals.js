@@ -1,6 +1,8 @@
 // Official offices a voter outside St. Louis County is sent to (a City voter
 // when the City precinct cannot be found, #88), and the City
-// board's lookup a City precinct page links (#86). These do not change
+// board's lookup a City precinct page links (#86). The City board's site and
+// lookup also sit beside the County's wherever no jurisdiction is known yet:
+// the home and learn pages, lookup errors and the error screen (#93). These do not change
 // between elections, so they are not in election.js. Check each link
 // still answers before every election.
 
