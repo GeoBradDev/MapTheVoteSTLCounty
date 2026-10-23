@@ -365,7 +365,7 @@ The target is WCAG 2.1 AA (#26). `npm run test:e2e` runs `e2e/a11y.e2e.js` (and 
 against the production build (`vite preview`), at 360 px and 1280 px. On each key route it
 runs axe-core (WCAG 2.1 A and AA plus best practice, contrast included) and checks for
 horizontal scroll (also with the WCAG text spacing override), one `h1`, the page language,
-the skip link and touch targets: every link drawn as a box of its own (not `display: inline`)
+the skip link, the site header in one row at most 56 px tall (#79), and touch targets: every link drawn as a box of its own (not `display: inline`)
 and every other control (button, summary, form control, or a link alone in its block) is at
 least 44 px tall. A link set inline in a line of text is exempt, as WCAG's target size
 criteria exempt it. It also checks focus after an in-app link and reduced motion. The county's
@@ -443,7 +443,10 @@ The palette is nonpartisan: no red or blue. Define colors only as oklch `--color
 CSS under `src` or in the built CSS, and on any `data:` URI in the CSS under `src` (put icons in
 SVG components that use `currentColor`). Only CSS is checked: a color written anywhere else
 (`index.html`, JSX props or SVG attributes, JavaScript strings) is not, so use token classes
-there instead of color values.
+there instead of color values. The one exception is the site icons in `public/` (#79): a favicon
+cannot read the page's CSS, so `favicon.svg` writes `--color-primary` and `--color-on-primary`
+as hex, and `favicon.ico` and `apple-touch-icon.png` are drawn from it. A build test fails on
+red or blue there; when those tokens change, redraw the icons.
 
 ## Election config
 
