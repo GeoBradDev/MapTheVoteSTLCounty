@@ -416,10 +416,16 @@ fails on any web font: the app uses the system font stack. Rules the scores rely
 - Give a loading placeholder at least the size of what replaces it, so the page does not jump.
 - Show text that needs no data while the data loads, in the place and at the size the loaded
   page shows it, so the page's largest text paints without waiting for a request (#151,
-  #156).
+  #156). Which text is largest can change with the election calendar (the results summary
+  has an early voting part only while early voting runs), so the Lighthouse run measures each
+  results page at pinned clocks (during early voting, the evening after it closes, Election
+  Day morning) and `e2e/a11y.e2e.js` checks at the same clocks that every LCP entry at
+  360 x 640 comes before the data.
 - Start the requests a page needs together, not one after another: the results page asks for
   the polling places, the early voting sites, the County's polling place rooms and (without a
-  looked-up point) the outline while the precinct loads.
+  looked-up point) the outline while the precinct loads. Precinct pages also preconnect to
+  the ArcGIS host those requests go to (the `Link` header, see Deploy), which Lighthouse's
+  simulation does not credit.
 - Ask ArcGIS only for the fields the app reads: `PRECINCT_FIELDS`, `POLL_FIELDS` and
   `ROOM_FIELDS` in `src/data/arcgis.js` (the room layer also holds staffing, photo, turnout and
   task fields, which the app never asks for). A query that names a field the layer lacks fails, so
