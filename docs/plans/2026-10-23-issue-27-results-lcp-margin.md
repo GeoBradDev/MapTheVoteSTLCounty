@@ -215,3 +215,51 @@ five ArcGIS requests. Not merged; the question is back on #27.
 - Live drive: Playwright against `vite preview` with the precinct response held back shows
   the Election Day line before the precinct answers, then the loaded page with one
   "Election Day" heading.
+
+## Owner decision, second round (2026-10-23): the sample ballot intro while loading
+
+The owner kept the preconnect and chose to show the sample ballot section's fixed intro
+text while a precinct loads, for County and City, so the LCP element paints before the data
+in every election-calendar state. The placeholder must not move, or be replaced by larger
+data driven text, when the data arrives; the e2e LCP guard extends to the after early voting
+and Election Day clocks. Every pinned clock state must pass the unchanged 2500 ms budget
+with the 600 ms fixture wait; otherwise stop and ask again, loosening nothing.
+
+11. One shared `BallotPart` (in `ResultsSummary.jsx`) renders the summary's "Sample ballot"
+    heading and the jurisdiction's fixed intro (County `copy.ballot.intro`, City
+    `copy.ballot.introCity`), then `children`. The loaded summary and the skeleton both use
+    it, so the two cannot drift. `SampleBallotCard` and `CitySampleBallotCard` render only
+    what follows the intro. A County precinct whose link fails the checks now shows the
+    intro, then the "could not find" line, so the intro is never replaced by other text.
+12. While a precinct loads, the skeleton's summary mirrors the loaded summary's parts for
+    the precinct's jurisdiction and the clock: the Election Day part (with the hours note's
+    real text, its sources as plain text, nothing focusable, and the place placeholder),
+    then, only while that jurisdiction's early voting runs, the early voting placeholder,
+    else the `BallotPart` with a placeholder for its button, hidden from screen readers.
+    During early voting the sample ballot part sits below the early voting part, whose
+    height depends on per-site hours and line counts, outside the 360 x 640 view; the skeleton keeps
+    the placeholder there and the Election Day line stays the LCP (guarded).
+13. The County's schedules are in the first load; the City's are in the City chunk, which
+    the City precinct request loads first. So a City skeleton renders its season-dependent
+    rest (the early voting placeholder or the `BallotPart`, then the cards' placeholders)
+    from the City chunk (`CitySummarySkeletonRest`, via `cityComponent`), appended below
+    the Election Day part when the chunk arrives, before the data: appended, so nothing
+    visible moves. The County's renders the same shared component with its schedules at
+    once.
+14. The intro does not move when the results replace the skeleton: County and City, at
+    360 px and 1280 px, at the after early voting and Election Day clocks (e2e), and the
+    loaded intro is the same text and size in the same place.
+15. The e2e LCP guard "paints its largest text before the data answers" runs at the early
+    voting, after early voting and Election Day clocks, for both test precincts.
+16. `npm run test:perf`: every state of /p/CC007 and /p/W01P12 under 2500 ms with margin
+    (target under about 2200 ms), with the 600 ms fixture wait.
+
+Files: `ResultsSummary.jsx` (`BallotPart`, `HoursNote` plain text mode, shared
+`SummarySkeletonRest`), `SampleBallotCard.jsx`, `CitySampleBallotCard.jsx`,
+`CityEarlyVotingCard.jsx` and `src/cityChunk.js` (`CitySummarySkeletonRest`),
+`ResultsCards.jsx` (`ResultsSkeleton` by jurisdiction), their tests, `e2e/a11y.e2e.js`.
+
+Residual, accepted: a County precinct not in the election (banner, no ballot part) loses the
+intro when it loads, and the banner, painted with the data, can be the LCP there, as on
+main. The same for any boundary moment where the season changes between the skeleton and
+the loaded summary.
