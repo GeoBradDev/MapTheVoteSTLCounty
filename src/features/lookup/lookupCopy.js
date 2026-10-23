@@ -13,8 +13,9 @@ export const copy = translated((t) => ({
     failed: t('lookup.errors.failed'),
     offline: t('lookup.errors.offline'),
   },
-  // The credit next to the address box. The service and data names and links
-  // come from the geocoder module (attribution in src/data/geocoder.js).
+  // The credit under the address search, after "Use my location" (#80). The
+  // service and data names and links come from the geocoder module
+  // (attribution in src/data/geocoder.js).
   attribution: {
     searchBy: t('lookup.attribution.searchBy'),
     then: t('lookup.attribution.then'),

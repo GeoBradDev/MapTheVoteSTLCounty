@@ -72,7 +72,7 @@ export { GeocoderUnavailableError };
  *   place.
  */
 
-/** Who to credit for address search, shown next to the address box. */
+/** Who to credit for address search, shown under the address search. */
 export const attribution = Object.freeze({
   county: countyAttribution,
   fallback: photonAttribution,

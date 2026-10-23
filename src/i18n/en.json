@@ -49,7 +49,7 @@
     "unofficial": "This is an independent, nonpartisan guide, not an official county or city site.",
     "waitTimes": "See early voting wait times",
     "waitTimesElectionDay": "See Election Day line counts",
-    "electionDay": "Election Day is {date}.",
+    "electionDay": "Election Day: {date}",
     "moreInfo": "More information",
     "howToVote": "How to vote",
     "countySite": "St. Louis County Board of Elections website",

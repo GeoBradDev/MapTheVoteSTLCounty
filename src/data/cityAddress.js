@@ -29,7 +29,7 @@ import { GeocoderUnavailableError } from './geocoderError.js';
 export const CITY_GEOCODER_URL =
   'https://maps6.stlouis-mo.gov/arcgis/rest/services/GEOCODERS/COMPOSITE_GEOCODE/GeocodeServer';
 
-/** Who runs the City check, credited next to the address box. */
+/** Who runs the City check, credited under the address search. */
 export const attribution = Object.freeze({
   by: 'City of St. Louis',
   service: 'address search',

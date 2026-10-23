@@ -13,7 +13,7 @@ import { GeocoderUnavailableError } from './geocoderError.js';
 
 export const DEFAULT_BASE_URL = 'https://photon.komoot.io';
 
-/** Who to credit, shown next to the address box. */
+/** Who to credit, shown under the address search. */
 export const attribution = Object.freeze({
   service: 'Photon',
   serviceBy: 'komoot',

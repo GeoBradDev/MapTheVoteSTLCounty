@@ -19,15 +19,16 @@ function renderHome() {
 }
 
 describe('HomePage', () => {
-  it('names the guide, the election and Election Day from the config', () => {
-    renderHome();
+  it('names the guide and Election Day from the config, as one compact line (#80)', () => {
+    const { container } = renderHome();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(copy.heading);
-    expect(screen.getByText(election.electionName)).toBeInTheDocument();
     const date = screen.getByText(copy.electionDay(election.electionDate, election.timeZone));
-    expect(date.closest('time') ?? date.querySelector('time')).toHaveAttribute(
-      'datetime',
-      election.electionDate,
-    );
+    expect(date.closest('time')).toHaveAttribute('datetime', election.electionDate);
+    // One date line: no separate eyebrow repeating the date.
+    expect(screen.queryByText(election.electionName)).toBeNull();
+    // The page's own header: inside the app's main it has no banner role.
+    const header = container.querySelector('header');
+    expect(header.querySelectorAll('time')).toHaveLength(1);
   });
 
   // The first action next to the address search (#104): no address needed.
@@ -58,7 +59,7 @@ describe('HomePage', () => {
 
   it('formats Election Day in the election time zone', () => {
     expect(copy.electionDay('2030-11-05', 'America/Chicago')).toBe(
-      'Election Day is Tuesday, November 5, 2030.',
+      'Election Day: Tue, Nov 5, 2030',
     );
   });
 
@@ -83,6 +84,42 @@ describe('HomePage', () => {
     for (const url of [...sources, phoneSource]) {
       expect(container.querySelector(`a[href="${url}"]`)).toBeNull();
     }
+  });
+
+  // The app focuses the h1 after an in-app link (App.jsx), so a screen reader
+  // reads on from there: the date must come after the heading, not before it.
+  it('puts the election date after the heading, where reading from the focused h1 reaches it', () => {
+    renderHome();
+    const h1 = screen.getByRole('heading', { level: 1 });
+    const date = screen
+      .getByText(copy.electionDay(election.electionDate, election.timeZone))
+      .closest('time');
+    expect(h1.compareDocumentPosition(date) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  // #80: the hero is the heading, the date, the intro and the nonpartisan
+  // line, then the wait times link and the address search.
+  it('puts the wait times link between the header and the address box', () => {
+    const { container } = renderHome();
+    const header = container.querySelector('header');
+    const link = screen.getByRole('link', { name: copy.waitTimes });
+    expect(header.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(header.contains(link)).toBe(false);
+    expect(
+      link.compareDocumentPosition(screen.getByRole('combobox')) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('shows "How to vote" and both boards as full-width rows in its own list', () => {
+    renderHome();
+    const nav = screen.getByRole('navigation', { name: copy.moreInfo });
+    const links = within(nav).getAllByRole('link');
+    expect(links.map((a) => a.textContent)).toEqual([
+      copy.howToVote,
+      copy.countySite,
+      copy.citySite,
+    ]);
+    for (const a of links) expect(a).toHaveClass('flex', 'min-h-11', 'w-full', 'border');
   });
 
   it('links to "How to vote" and both official election sites (#93)', () => {

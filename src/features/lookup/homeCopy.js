@@ -12,12 +12,13 @@ export const copy = translated((t) => ({
   waitTimes: t('home.waitTimes'),
   // On Election Day the same page lists the polling places (#107).
   waitTimesElectionDay: t('home.waitTimesElectionDay'),
+  // One compact line in the hero (#80), short enough for a 360 px phone.
   /** @param {string} isoDate YYYY-MM-DD @param {string} timeZone */
   electionDay: (isoDate, timeZone) => {
     const formatted = formatCalendarDate(isoDate, {
-      weekday: 'long',
+      weekday: 'short',
       year: 'numeric',
-      month: 'long',
+      month: 'short',
       day: 'numeric',
       timeZone,
     });

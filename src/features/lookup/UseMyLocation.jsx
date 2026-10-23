@@ -92,7 +92,7 @@ export default function UseMyLocation({ onLocate, onStart, addressInputRef }) {
         onClick={handleClick}
         aria-disabled={busy || undefined}
         aria-describedby={notesId}
-        className="min-h-11 rounded-md border border-primary px-4 py-2 font-medium text-primary aria-disabled:cursor-wait aria-disabled:opacity-70"
+        className="min-h-11 w-full rounded-md border-2 border-primary bg-surface px-4 py-2 font-semibold text-primary aria-disabled:cursor-wait aria-disabled:opacity-70 sm:w-auto"
       >
         {busy ? copy.busy : copy.button}
       </button>
