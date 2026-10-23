@@ -150,7 +150,7 @@ export function ResultsSkeleton() {
         <div aria-hidden="true" className="mt-6 flex flex-col gap-4">
           {CARDS.map((key) => (
             <div key={key} className={CARD}>
-              <div className={`h-7 w-40 ${bar}`} />
+              <div className={`h-7.5 w-40 ${bar}`} />
               <div className={`mt-3 h-4 w-full ${bar}`} />
               <div className={`mt-2 h-4 w-2/3 ${bar}`} />
             </div>

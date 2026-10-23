@@ -69,7 +69,7 @@ Domain skills:
 - `src/index.css`: tokens; heading focus rule.
 - `src/i18n/LanguageSwitcher.jsx`: `rounded-control` (same radius).
 - New: `src/components/Button.jsx`, `buttonClass.js`, `TextLink.jsx`, `Card.jsx`, `Notice.jsx`,
-  `Disclosure.jsx` (moved), tests `src/components/{Button,TextLink,Card,Notice}.test.jsx`,
+  `Disclosure.jsx` and its test (moved), tests `src/components/{Button,TextLink,Card,Notice}.test.jsx`,
   `src/test/sharedStyles.test.js` (no local class strings).
 - Removed: `src/features/lookup/Disclosure.jsx` (moved).
 - `src/features/lookup/RetryButton.jsx` (wraps Button).
@@ -117,7 +117,10 @@ Domain skills:
   directions button gets a surface fill on the raised summary box), the filename line of the
   sample ballot button keeps its normal weight, the results `h1` is 28 px on every width (it
   was 24 on phones and 30 from the `sm` breakpoint), and the address suggestions list uses
-  `shadow-popover` instead of Tailwind's `shadow-md`.
+  `shadow-popover` instead of Tailwind's `shadow-md`. The precinct status banner takes the
+  Notice's `py-3` (it had `p-4`), and the address lookup's out-of-county box becomes an info
+  Notice (a bar on the left instead of a full border). The results skeleton's card title bar
+  matches the 30 px `text-heading` line.
 - Form fields (the address box, the share field, the language select) take `rounded-control`,
   the same 6 px as the `rounded-md` they had: the token only, no new look.
 
