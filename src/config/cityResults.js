@@ -33,7 +33,7 @@ const hoursSource = referrals.stlCityLookup.url;
 // The No Excuse Absentee page, under the board's site, has the dates and who
 // may vote this way; the card links it instead of saying the rules (#91).
 const noExcuseUrl = `${referrals.stlCityBoard.url}voter/absentee/no-excuse-absentee.cfm`;
-// Its Vote by Absentee Ballot page covers both ways to vote absentee, by mail
+// Its Apply to Vote Absentee page covers both ways to vote absentee, by mail
 // too, which the No Excuse page says it does not; the card's mail line links it.
 const absenteeUrl = `${referrals.stlCityBoard.url}voter/absentee/vote-by-absentee-ballot.cfm`;
 

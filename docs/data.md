@@ -1009,7 +1009,7 @@ fields (`pocname`, `pocemail`, `pocphone`).
   open, as the City Board's dashboard does. `node scripts/check-config.mjs` fails while a site the
   filter returns has no hours in the config. The City early voting card and the wait times page
   show these sites; the card cites the No Excuse Absentee page rather than stating who may vote
-  this way, and for voting by mail links the City Board's Vote by Absentee Ballot page
+  this way, and for voting by mail links the City Board's Apply to Vote Absentee page
   (`.../voter/absentee/vote-by-absentee-ballot.cfm`, which covers both ways to vote absentee;
   the No Excuse page says it has no mail option), not the absentee topic, which is written for
   County voters (a City topic is #94).

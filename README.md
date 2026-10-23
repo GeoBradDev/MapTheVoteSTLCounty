@@ -159,8 +159,10 @@ may need new values too. Work on a branch and merge through the usual pull reque
    election's date). It also includes the City's early voting dates and hours
    (`earlyVoting` in `cityResults.js`), from the same page's No Excuse Absentee hours and the
    City Board's No Excuse Absentee page, one schedule per site keyed by the voting locations
-   layer's site id: the health check fails while a City early voting site has none. If a field the app reads was renamed, search `src/` and `scripts/` for the old
-   name and change every use, including `PRECINCT_FIELDS` and `POLL_FIELDS` in
+   layer's site id: the health check fails while a City early voting site has none. Its
+   `sources` also name the City Board's Apply to Vote Absentee page, which the City card links
+   for voting by mail. If a field the app reads was renamed, search `src/` and `scripts/` for
+   the old name and change every use, including `PRECINCT_FIELDS` and `POLL_FIELDS` in
    `src/data/arcgis.js` and the field lists in `scripts/check-config.mjs`. See
    [Election config](#election-config).
 4. **Update `docs/data.md`** with what the inspection found, and why for anything that

@@ -56,7 +56,7 @@ function CityDetail({ site, now }) {
  * own dates and hours from the City config, and while early voting runs its
  * current line count, with the County card's code (EarlyVotingSites). No
  * eligibility rules: it cites the City Board's No Excuse Absentee page and
- * links its Vote by Absentee Ballot page for voting by mail. Not the absentee
+ * links its Apply to Vote Absentee page for voting by mail. Not the absentee
  * topic, which is the County's (#94). In the City chunk (src/cityChunk.js).
  * @param {{ code: string, origin: { lat: number, lng: number } | null,
  *   waitSource?: object }} props `waitSource` is for tests.

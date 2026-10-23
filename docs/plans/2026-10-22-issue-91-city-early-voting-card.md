@@ -36,8 +36,8 @@ budget, all City-only results UI in one on-demand chunk with the City data clien
    to `/early-voting`, as the County card does since #105.
 4. No eligibility rules in the card: it cites the City Board's No Excuse Absentee page
    with its hours source, and its mail line ("To vote by mail or with an absentee ballot,
-   see the St. Louis City Board of Election Commissioners") links the Board's Vote by
-   Absentee Ballot page, which covers voting by mail (the No Excuse page says there is no
+   see the St. Louis City Board of Election Commissioners") links the Board's Apply to
+   Vote Absentee page, which covers voting by mail (the No Excuse page says there is no
    mail option). No County text on a City page. (Revised after review: the issue also
    asks for the learn topic, but today's absentee topic is written for County voters (its
    hours, office and mailing address), so a City page does not link it until the City
