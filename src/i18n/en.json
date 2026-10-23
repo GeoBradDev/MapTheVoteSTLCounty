@@ -374,7 +374,7 @@
   "learn": {
     "pageHeading": "How to vote",
     "pageTitle": "{name} | St. Louis Voter Guide",
-    "intro": "St. Louis County voting guides, checked against official sources. For now, City voters should see the St. Louis City Board of Election Commissioners.",
+    "intro": "Voting guides for St. Louis City and St. Louis County voters, checked against official sources. Each guide says where the two boards differ.",
     "groups": {
       "before-you-vote": "Before you vote",
       "ways-to-vote": "Ways to vote",

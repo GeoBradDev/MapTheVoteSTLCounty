@@ -14,6 +14,12 @@ sources:
   - id: sos-id-flyer
     label: Missouri Secretary of State, Acceptable forms of voter ID (PDF)
     url: https://www.sos.mo.gov/CMSImages/ElectionGoVoteMissouri/AcceptableFormsVoterID.pdf
+  - id: city-no-excuse
+    label: St. Louis City Board of Election Commissioners, Vote No Excuse Absentee
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/absentee/no-excuse-absentee.cfm
+  - id: city-absentee-requirements
+    label: St. Louis City Board of Election Commissioners, Absentee Voting Requirements
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/absentee/absentee-requirements.cfm
 ---
 
 In Missouri, you must show a photo ID when you vote in person.[^rsmo-115-427] This is true on
@@ -46,6 +52,9 @@ one of these happens:[^sos-voter-id]
   7 p.m. on Election Day instead.[^rsmo-115-427]
 - Or the election office checks that the signature on your ballot envelope matches the
   signature on your voter record.[^sos-voter-id]
+
+To vote early in the City of St. Louis, bring a photo ID: the City Board says no provisional
+ballots are available at its no excuse absentee sites.[^city-no-excuse][^city-absentee-requirements]
 
 You get a stub with steps to find out if your provisional ballot was counted.[^sos-voter-id]
 See [Provisional ballots](/learn/provisional-ballots).

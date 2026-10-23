@@ -23,11 +23,17 @@ sources:
   - id: county-polling-places
     label: St. Louis County Board of Elections, Polling Places
     url: https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/elections/polling-places/
+  - id: city-polling-places
+    label: St. Louis City Board of Election Commissioners, Voting Locations (Polling Places)
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/polling-places/index.cfm
+  - id: city-no-excuse
+    label: St. Louis City Board of Election Commissioners, Vote No Excuse Absentee
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/absentee/no-excuse-absentee.cfm
 ---
 
 A provisional ballot lets you vote when there is a question about your ID or your
 registration.[^rsmo-115-430][^rsmo-115-427] Your ballot goes in a sealed envelope.[^rsmo-115-430] It is
-counted after the county board checks that you can vote.[^rsmo-115-430]
+counted after your election board checks that you can vote.[^rsmo-115-430]
 
 ## When you might vote a provisional ballot
 
@@ -53,17 +59,28 @@ If you voted provisionally because you had no photo ID, your ballot counts if:[^
 - You come back to your polling place by 7 p.m. on Election Day with a photo ID from the list.
   If you voted absentee in person, you go back to the election office by 7 p.m.
   instead.[^rsmo-115-427]
-- Or the county board finds that the signature on your envelope matches the one on your voter
+- Or your election board finds that the signature on your envelope matches the one on your voter
   record.[^rsmo-115-427][^sos-voter-id]
 
-Any provisional ballot counts only if the county board finds that you are registered and
+The City Board says no provisional ballots are available at its no excuse absentee sites, so
+bring a photo ID to vote early in the City.[^city-no-excuse]
+
+Any provisional ballot counts only if your election board finds that you are registered and
 eligible to vote in this election.[^rsmo-115-430]
 
 ## Where to vote
 
-In St. Louis County, a registered voter may vote at any polling place in St. Louis County on
-Election Day.[^county-polling-places] This does not apply in the City of St. Louis, which has
-its own rule.
+### St. Louis County
+
+A registered voter may vote at any polling place in St. Louis County on Election
+Day.[^county-polling-places]
+
+### City of St. Louis
+
+Any voter registered at an address in the City can vote at any of the City's 56 listed
+polling places on November 3, 2026.[^city-polling-places]
+
+### At the wrong polling place
 
 Under Missouri law, a provisional ballot cast at the wrong polling place is not
 counted.[^rsmo-115-430] If the election judges find you are at the wrong place, they tell you where to go.[^rsmo-115-430] You can go to your

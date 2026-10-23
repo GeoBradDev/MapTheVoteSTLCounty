@@ -1,6 +1,7 @@
 // Fixture topics are built in memory from the config's election date: files
 // under src/ may not repeat election dates (election-hardcoding.test.js).
 import election from '../../../config/election.js';
+import referrals from '../../../config/referrals.js';
 import { isOfficialUrl } from './officialSources.js';
 import { addDays, parseTopic, readTopicFile, topicSummary } from './topic.js';
 
@@ -277,6 +278,8 @@ describe('isOfficialUrl', () => {
     // Not a county site URL: src/ may not repeat config URLs, even as a prefix.
     'https://stlouiscountymo.gov/st-louis-county-government/',
     'https://stlouiscovotes.maps.arcgis.com/apps/instant/lookup/index.html',
+    // The City Board's pages, on the City's .gov site (#94).
+    referrals.stlCityLookup.url,
   ])('accepts %s', (url) => {
     expect(isOfficialUrl(url)).toBe(true);
   });

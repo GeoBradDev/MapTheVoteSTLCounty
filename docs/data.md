@@ -1107,8 +1107,8 @@ fields (`pocname`, `pocemail`, `pocphone`).
   show these sites; the card cites the No Excuse Absentee page rather than stating who may vote
   this way, and for voting by mail links the City Board's Apply to Vote Absentee page
   (`.../voter/absentee/vote-by-absentee-ballot.cfm`, which covers both ways to vote absentee;
-  the No Excuse page says it has no mail option), not the absentee topic, which is written for
-  County voters (a City topic is #94).
+  the No Excuse page says it has no mail option), not the absentee topic. That topic has had a
+  City section since #94; whether the card should link it is #168.
 - **Not the Election Day list:** `ElectionGeography_public_*` layer 0 has the same 57 public
   rows (it is a view, `publicview = 'Yes'`, of the same data) without the ZIP fields.
   `Polling_Centers_WFL1/FeatureServer/1` is the page's own embedded map ("Active Polling

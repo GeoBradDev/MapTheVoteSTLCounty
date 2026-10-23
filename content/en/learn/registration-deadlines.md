@@ -17,6 +17,9 @@ sources:
   - id: sos-other-questions
     label: Missouri Secretary of State, Other Voting Questions
     url: https://www.sos.mo.gov/elections/goVoteMissouri/votingquestions
+  - id: city-register
+    label: St. Louis City Board of Election Commissioners, Register to Vote
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/voter-registration.cfm
 ---
 
 ## The deadline for November 3, 2026 has passed
@@ -37,7 +40,7 @@ mailed form must be postmarked by that day.[^sos-register]
 
 Some members of the military, and people who just finished a job overseas, can register late.[^rsmo-115-135]
 This is for people who were discharged, came back from deployment, or left a job outside the
-United States after the deadline.[^rsmo-115-135] They can register in person at the county
+United States after the deadline.[^rsmo-115-135] They can register in person at their election
 board until 5 p.m. on the Friday before the election.[^rsmo-115-135] They must bring papers
 that show they qualify.[^rsmo-115-135] See
 [Military and overseas voters](/learn/military-overseas).
@@ -46,3 +49,6 @@ that show they qualify.[^rsmo-115-135] See
 
 You can register online, by mail or in person.[^sos-register] Start on the Secretary of
 State's [Register to Vote page](https://www.sos.mo.gov/elections/goVoteMissouri/register).
+
+In the City of St. Louis, you can also register in person at the City Board's office,
+300 N. Tucker Blvd., or at any public library.[^city-register]

@@ -33,9 +33,9 @@ same.)
   no comment on any candidate, party or ballot measure, and it never ranks or orders
   candidates or measures.
 - **Official sources only.** Voter information comes from the St. Louis County Board of
-  Elections, the Missouri Secretary of State, Missouri statutes and other official sources.
-  Ballots are the board's own sample ballot PDFs, linked as published, never retyped or
-  summarized.
+  Elections, the St. Louis City Board of Election Commissioners, the Missouri Secretary of
+  State, Missouri statutes and other official sources. Ballots are the board's own sample
+  ballot PDFs, linked as published, never retyped or summarized.
 - **Neutral design.** No red or blue anywhere (see [Colors](#colors)).
 
 ## Privacy statement
@@ -534,10 +534,20 @@ more than 60 days before Election Day or after it; was written for another `elec
 contains `TODO`; has an `id` that differs from its file name, or a front matter key it does
 not know; cites a source it does not list; uses Markdown outside the list above; or links
 anywhere but an `https` URL on an official host or a path on this site. The official hosts are
-any `.gov` site (the county board's website is on the county's `.gov` site) and the board's
-ArcGIS portal, listed in
+any `.gov` site (the County Board's website is on the county's `.gov` site, and the City
+Board's on the City's, `www.stlouis-mo.gov`) and the County Board's ArcGIS portal, listed in
 `src/features/learn/content/officialSources.js`; add a host there in a reviewed change, never
 per topic.
+
+Each topic serves City and County voters alike (#94). Where the two boards' facts differ, give
+each its own short `### City of St. Louis` and `### St. Louis County` section (or a `##` section
+for a City-only topic), or one sentence per board, each citing that board's own page; say "your
+election board" where a sentence holds for both. The tests hold a weaker line:
+`src/test/cityContent.test.js` fails when a paragraph or list item that names the City cites
+only County Board sources or none (a City Board page, a state source or any other non-County
+source passes), and when a topic that names the City lists no City Board source;
+`src/test/citySections.test.js` does the same for blocks under a City heading and blocks that
+say "the City", and counts County URLs on `www.` as County sources.
 
 A new topic also needs its rewrite in `render.yaml` (see [Deploy](#deploy)); the tests fail
 until it has one.
@@ -559,7 +569,7 @@ page reads belongs in the body, not the summary. `src/test/build.test.js` fails 
 text reaches the first load.
 
 The "How to vote" pages (#23) are `/learn`, the index, and `/learn/<id>`, one topic. With no
-topics, `/learn` says the guides are not ready and links to the county board's site and the
+topics, `/learn` says the guides are not ready and links to both boards' sites and the
 address lookup. A topic page folds each `##` section with at least `LONG_SECTION_CHARS`
 characters of text (in `TopicArticle.jsx`) into a `<details>` with its heading in the summary,
 and opens the folded ones while printing. The polling places card links to the `voter-id` topic and
@@ -830,12 +840,12 @@ credits; to change the basemap, change that file and the origin in `render.yaml`
 Open a pull request against `main`. Every pull request runs the CI gate above and needs it
 green; run it locally first.
 
-- **Voter information needs an official source.** Any fact a voter acts on (dates, hours,
-  places, ID rules, deadlines, phone numbers) comes from an official source: the county
-  board, the Missouri Secretary of State, Missouri statutes or another government site.
-  Cite it next to the value (`sources` and `lastVerified` in `src/config/election.js`, or a
-  topic's front matter under `content/`). The build rejects a topic link outside the official
-  hosts (`src/features/learn/content/officialSources.js`). News sites, advocacy groups,
+- **Voter information needs an official source.** Any fact a voter acts on (dates, hours, places,
+  ID rules, deadlines, phone numbers) comes from an official source: the County or City board,
+  the Missouri Secretary of State, Missouri statutes or another government site. Cite it next to
+  the value (`sources` and `lastVerified` in `src/config/election.js`, or a topic's front matter
+  under `content/`). The build rejects a topic link outside the official hosts
+  (`src/features/learn/content/officialSources.js`). News sites, advocacy groups,
   campaigns and parties are not sources.
 - **Stay nonpartisan.** Follow the [Nonpartisan statement](#nonpartisan-statement): no
   endorsements, candidate or measure commentary, or rankings, and no red or blue.

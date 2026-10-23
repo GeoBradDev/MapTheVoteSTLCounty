@@ -20,6 +20,18 @@ sources:
   - id: sos-calendar
     label: Missouri Secretary of State, 2026 Election Calendar
     url: https://www.sos.mo.gov/elections/calendar
+  - id: city-check-registration
+    label: St. Louis City Board of Election Commissioners, Check your Voter Registration
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/check-registration.cfm
+  - id: city-register
+    label: St. Louis City Board of Election Commissioners, Register to Vote
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/voter-registration.cfm
+  - id: city-update-registration
+    label: St. Louis City Board of Election Commissioners, Update Voter Registration Name or Address
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/name-change.cfm
+  - id: city-inactive
+    label: St. Louis City Board of Election Commissioners, Check for Your Name on the Inactive Voter List
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/inactive-voter-list.cfm
 ---
 
 You must be registered to vote.[^sos-voting-rights] Here is how to check your registration.
@@ -30,6 +42,18 @@ You must be registered to vote.[^sos-voting-rights] Here is how to check your re
   [Register to Vote page](https://www.sos.mo.gov/elections/goVoteMissouri/register) and choose
   "Check Your Voter Registration."[^sos-register]
 - Questions? Call the St. Louis County Board of Elections at 314-615-1800.[^county-polls-app]
+- In the City of St. Louis, call the City Board at 314-622-4336, weekdays 8 a.m. to 5 p.m., or
+  visit its office at 300 N. Tucker Blvd.[^city-check-registration] Staff can help if your
+  name is not found.[^city-check-registration]
+
+## If you cannot find your City registration
+
+You may be on the City Board's inactive voter list.[^city-check-registration] That list holds
+voters whose address the City Board could not confirm.[^city-inactive] Search for your name
+on the City Board's
+[Inactive Voter List page](https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/inactive-voter-list.cfm).[^city-inactive]
+If you are on it and still live in the City, you can still vote, but it takes a few extra
+steps at the polls.[^city-inactive]
 
 ## Who can register in Missouri
 
@@ -39,8 +63,14 @@ You must be registered to vote.[^sos-voting-rights] Here is how to check your re
 
 ## If you registered by mail
 
-The election office sends you a notice after it gets your form.[^sos-other-questions] If you do not get it within
-seven to ten days, call the county board to make sure your form was received.[^sos-other-questions]
+The Secretary of State says the election office sends you a notice after it gets your
+form.[^sos-other-questions] If you do not get it within seven to ten days, call your election
+board to make sure your form was received.[^sos-other-questions]
+
+The City Board says it does not send a confirmation for a new registration, so City voters
+should check their registration online or call 314-622-4336.[^city-register] For a change of
+name or address, the City Board confirms by mail within seven business
+days.[^city-update-registration]
 
 ## If you are not registered
 

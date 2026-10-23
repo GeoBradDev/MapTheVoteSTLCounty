@@ -23,6 +23,15 @@ sources:
   - id: sos-voter-id
     label: Missouri Secretary of State, Voter ID
     url: https://www.sos.mo.gov/voterid
+  - id: city-board
+    label: St. Louis City Board of Election Commissioners
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/
+  - id: city-absentee-ballot
+    label: St. Louis City Board of Election Commissioners, Vote By Absentee Ballot
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/absentee/absentee-ballot-and-voting.cfm
+  - id: city-polling-places
+    label: St. Louis City Board of Election Commissioners, Voting Locations (Polling Places)
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/polling-places/index.cfm
 ---
 
 ## St. Louis County Board of Elections
@@ -39,6 +48,23 @@ County.[^county-polls-app]
 
 During absentee voting, the office is also open on Saturday, October 24 and Saturday,
 October 31, 9 a.m. to 1 p.m., and until 5 p.m. on Monday, November 2.[^county-absentee-app] See
+[Absentee and early in-person voting](/learn/absentee).
+
+## St. Louis City Board of Election Commissioners
+
+Contact the City Board with questions about voting and elections in the City of
+St. Louis.[^city-board]
+
+- **Phone:** 314-622-4336[^city-board]
+- **Absentee voting:** 314-622-3230 or 314-622-3319[^city-absentee-ballot]
+- **Email:** electionboard@stlouis-mo.gov[^city-board]
+- **Absentee email:** stlcityabsentee@stlouis-mo.gov[^city-absentee-ballot]
+- **Office:** 300 N. Tucker Blvd., St. Louis, MO 63101[^city-board]
+- **Office hours:** Monday through Friday, 8 a.m. to 5 p.m.[^city-board]
+- **Website:** [St. Louis City Board of Election Commissioners](https://www.stlouis-mo.gov/government/departments/board-election-commissioners/)[^city-board]
+
+During absentee voting, the office is also open on Saturday, October 31, 9 a.m. to
+1 p.m.[^city-polling-places] See
 [Absentee and early in-person voting](/learn/absentee).
 
 ## Missouri Secretary of State, Elections
