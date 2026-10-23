@@ -211,7 +211,11 @@ describe('CityEarlyVotingCard', () => {
     ).toBeInTheDocument();
     const links = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
     expect(links).toContain(cityEarlyVoting.sources[1]);
-    expect(links.some((href) => href.startsWith('/learn'))).toBe(true);
+    // Not the absentee topic: it is the County's (a City topic is #94).
+    expect(links.some((href) => href.startsWith('/learn'))).toBe(false);
+    expect(document.body).toHaveTextContent(
+      `To vote by mail or with an absentee ballot, see the ${copy.polls.sourceNames['www.stlouis-mo.gov']}.`,
+    );
     expect(document.body.textContent).not.toMatch(/county/i);
   });
 

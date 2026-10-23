@@ -34,7 +34,7 @@ function Card({ title, children }) {
 }
 
 // A card not built yet: the County's lookup, or for a City precinct the City
-// Board's site (#89), until the City card's own issue (#90 to #92).
+// Board's site (#89), until the City card's own issue (#90, #92).
 function PendingCard() {
   const { id, boardSiteUrl } = useJurisdiction();
   if (id === 'city') {

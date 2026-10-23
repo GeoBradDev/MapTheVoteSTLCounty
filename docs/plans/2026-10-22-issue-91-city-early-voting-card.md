@@ -34,8 +34,12 @@ budget, all City-only results UI in one on-demand chunk with the City data clien
    on the site `name`; revised during implementation from "the shared loop", which also
    asks County layers), the nearby sort and the link
    to `/early-voting`, as the County card does since #105.
-4. No eligibility rules in the card: it links the absentee learn topic and the City
-   Board's No Excuse Absentee page. No County text on a City page.
+4. No eligibility rules in the card: it links the City Board's No Excuse Absentee page
+   ("To vote by mail or with an absentee ballot, see the St. Louis City Board of Election
+   Commissioners"). No County text on a City page. (Revised after review: the issue also
+   asks for the learn topic, but today's absentee topic is written for County voters (its
+   hours, office and mailing address), so a City page does not link it until the City
+   topic of #94 exists. One new string, `results.earlyVoting.mailCity`.)
 5. Tests for a weekday, a Saturday, a Sunday (closed), the last day (November 2), and
    after early voting ends (the card says it has ended, as the County card does).
 6. `/early-voting` lists the City sites with the County's, with their hours, status and

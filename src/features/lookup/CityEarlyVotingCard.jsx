@@ -1,11 +1,11 @@
 import cityResults from '../../config/cityResults.js';
 import election from '../../config/election.js';
 import { getCityWaits } from '../../data/arcgis.js';
-import { translated } from '../../i18n/index.js';
+import { t as message, translated } from '../../i18n/index.js';
 import { createWaitTimesStore } from '../waitTimes/useWaitTimes.js';
 import { cityHours, cityScheduleFor, citySchedules } from './cityEarlyVoting.js';
 import { earlyVotingStatus, formatLongDate } from './earlyVoting.js';
-import { EarlyVotingSites, MailLine } from './EarlyVotingCard.jsx';
+import { EarlyVotingSites } from './EarlyVotingCard.jsx';
 import { copy, sourceName } from './resultsCopy.js';
 
 const linkClass = 'text-primary underline';
@@ -55,8 +55,8 @@ function CityDetail({ site, now }) {
  * early voting (No Excuse Absentee) sites, each with its status today, its
  * own dates and hours from the City config, and while early voting runs its
  * current line count, with the County card's code (EarlyVotingSites). No
- * eligibility rules: the City Board's No Excuse Absentee page and How to vote
- * have them. In the City chunk (src/cityChunk.js).
+ * eligibility rules: the City Board's No Excuse Absentee page has them, and
+ * how to vote by mail. Not the absentee topic, which is the County's (#94). In the City chunk (src/cityChunk.js).
  * @param {{ code: string, origin: { lat: number, lng: number } | null,
  *   waitSource?: object }} props `waitSource` is for tests.
  */
@@ -83,7 +83,13 @@ export default function CityEarlyVotingCard({ code, origin, waitSource = cityWai
         </a>
         . {t.lastVerified(formatLongDate(lastVerified, { year: true }))}
       </p>
-      <MailLine href={noExcuseUrl} label={sourceName(noExcuseUrl)} />
+      <p className="mt-3">
+        {message('results.earlyVoting.mailCity')}{' '}
+        <a href={noExcuseUrl} rel="noreferrer" className={linkClass}>
+          {sourceName(noExcuseUrl)}
+        </a>
+        .
+      </p>
     </EarlyVotingSites>
   );
 }
