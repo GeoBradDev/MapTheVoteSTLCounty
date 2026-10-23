@@ -12,7 +12,7 @@ Domain skills: superpowers:test-driven-development invoke; frontend-design not a
 - `src/features/lookup/HomePage.jsx`: drop the `CountyElectionDayRule` import and its box.
 - `src/features/lookup/HomePage.test.jsx`: replace the #152 rule test with one asserting the home page shows no Election Day rule (owner-approved behavior change).
 - `src/test/build.test.js`: assert the pre-rendered home page holds none of the rule text.
-- `src/features/lookup/countyElectionDayRuleCopy.js`, `src/features/lookup/CountyElectionDayRule.jsx`: comments no longer say the home page uses it.
+- `src/features/lookup/countyElectionDayRuleCopy.js`: its comment no longer says the home page uses it (`CountyElectionDayRule.jsx` never named the home page, so it is unchanged).
 - `docs/data.md`: the polling place section no longer says "like the home page".
 - Strings in `src/i18n/en.json` stay: PollsCard still uses all of them.
 
