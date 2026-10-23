@@ -359,10 +359,11 @@
       "intro": "How many people are in line right now at each St. Louis County and St. Louis City polling place, as each board's staff report it. No address needed.",
       "city": "Each board's polling places are for its own voters: a St. Louis County voter may vote at any St. Louis County polling place, and a St. Louis City voter at any City polling place.",
       "listLabel": "Polling places",
-      "closed": "Polls closed at {close}.",
+      "closed": "Polls closed at {close}",
       "failed": "We could not load polling places right now. Find them with the",
       "none": "We could not find polling places. Find them with the",
-      "mapLabel": "Map of polling places"
+      "mapLabel": "Map of polling places",
+      "countyLink": "{board} polling place lookup"
     }
   },
   "learn": {

@@ -3,12 +3,13 @@ import { Link } from 'wouter';
 import { usePageTitle } from '../../components/usePageTitle.js';
 import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
-import { getAbsenteeSites } from '../../data/arcgis.js';
+import { getAbsenteeSites, getPolls } from '../../data/arcgis.js';
 import { loadCityClient } from '../../data/jurisdictions.js';
 import { isFresh, layerMaxAgeMs } from '../../data/freshness.js';
 import { focusHeadingOnArrival } from '../../hydrate.js';
 import { getDeviceLocation } from '../lookup/deviceLocation.js';
 import { earlyVotingStatus, formatLongDate, hoursOn, zonedNow } from '../lookup/earlyVoting.js';
+import { electionDaySchedule, isElectionDay } from '../lookup/electionDay.js';
 import { distanceMiles, directionsLinks, isAppleMobile, pollRows } from '../lookup/nearbyPolls.js';
 import { Entrances } from '../lookup/PollsCard.jsx';
 import { copy as resultsCopy } from '../lookup/resultsCopy.js';
@@ -76,6 +77,15 @@ async function loadCitySites() {
   };
 }
 
+/**
+ * The City's Election Day polling places (#107), from the City chunk.
+ * @returns {Promise<object>}
+ */
+async function loadCityPolls() {
+  const chunk = await loadCityClient();
+  return chunk.getCityPolls();
+}
+
 // Each board's part of a load: its rows, each with its `jurisdiction`, the
 // schedule it keeps and its key in that board's line counts, and when they
 // loaded.
@@ -100,6 +110,31 @@ function cityPart(value) {
   return { rows, loadedAt: layer.loadedAt ?? Date.now(), schedules: value.schedules };
 }
 
+// On Election Day (#107): every polling place, open by Election Day hours,
+// keyed by its Election Day key in its board's counts, with no early voting
+// kind or note.
+function countyDayPart(layer) {
+  const rows = pollRows(layer).map((row) => ({
+    ...row,
+    jurisdiction: 'county',
+    absType: null,
+    absNote: null,
+    waitKey: row.dayKey,
+    schedule: electionDaySchedule,
+  }));
+  return { rows, loadedAt: layer.loadedAt ?? Date.now() };
+}
+
+function cityDayPart(layer) {
+  const rows = pollRows(layer).map((row) => ({
+    ...row,
+    jurisdiction: 'city',
+    waitKey: row.name,
+    schedule: electionDaySchedule,
+  }));
+  return { rows, loadedAt: layer.loadedAt ?? Date.now(), schedules: null };
+}
+
 /**
  * Both boards' sites as one list, as each board's part settles: a part is
  * undefined while it loads and null when it failed, and a board whose part
@@ -108,14 +143,17 @@ function cityPart(value) {
  * names a board with no rows once its load failed. Both failing is an error;
  * nothing loaded yet keeps `prev` (null on the first load: the skeleton).
  */
-function combine(prev, parts, attempt) {
+function combine(prev, parts, attempt, mode) {
+  // A load for the other mode (the day turned to or from Election Day) is
+  // never kept.
+  if (prev && prev.mode !== mode) prev = null;
   // Loaded now; else, while loading, what it was; else, failed now, what it
   // last loaded or null.
   const pick = (key) =>
     parts[key] || (parts[key] === undefined ? prev?.[key] : prev?.[key] || null);
   const county = pick('county');
   const city = pick('city');
-  if (county === null && city === null) return { error: true, attempt };
+  if (county === null && city === null) return { error: true, attempt, mode };
   if (!county && !city) return prev;
   const loaded = [county, city].filter(Boolean);
   return {
@@ -125,6 +163,7 @@ function combine(prev, parts, attempt) {
     loadedAt: Math.min(...loaded.map((part) => part.loadedAt)),
     failed: county === null ? 'county' : city === null ? 'city' : null,
     attempt,
+    mode,
     citySchedules: city?.schedules ?? null,
   };
 }
@@ -132,9 +171,10 @@ function combine(prev, parts, attempt) {
 /**
  * Both boards' sites, loaded once with a retry on failure (#18), and loaded
  * again when the tab is shown after the layer max age (#84). A refresh that
- * fails, in whole or in part, keeps the rows of a load that did not.
+ * fails, in whole or in part, keeps the rows of a load that did not. On
+ * Election Day (#107) the boards' parts are their polling places instead.
  */
-function useSites(loadSites, loadCity) {
+function useSites(loadSites, loadCity, loadPolls, loadCityPolls, electionDay) {
   const [result, setResult] = useState(null);
   const { attempt, loading, retry, done, targetRef } = useRetry();
   const [refresh, setRefresh] = useState(0);
@@ -172,19 +212,22 @@ function useSites(loadSites, loadCity) {
       if (retrying && !all) return;
       // A copy: the updater may run later, after the other part settles too.
       const settled = { ...parts };
-      setResult((prev) => combine(prev?.error ? null : prev, settled, attempt));
+      setResult((prev) => combine(prev?.error ? null : prev, settled, attempt, mode));
       if (all) done();
     };
-    loadSites()
-      .then(countyPart)
-      .then(settle('county'), () => settle('county')(null));
-    loadCity()
-      .then(cityPart)
-      .then(settle('city'), () => settle('city')(null));
+    const mode = electionDay ? 'electionDay' : 'earlyVoting';
+    (electionDay ? loadPolls().then(countyDayPart) : loadSites().then(countyPart)).then(
+      settle('county'),
+      () => settle('county')(null),
+    );
+    (electionDay ? loadCityPolls().then(cityDayPart) : loadCity().then(cityPart)).then(
+      settle('city'),
+      () => settle('city')(null),
+    );
     return () => {
       current = false;
     };
-  }, [loadSites, loadCity, attempt, done, refresh]);
+  }, [loadSites, loadCity, loadPolls, loadCityPolls, electionDay, attempt, done, refresh]);
 
   return { result, loading, retry, targetRef };
 }
@@ -198,6 +241,15 @@ function OfficialLookupLink({ id = 'county' }) {
       {resultsCopy.officialLookupFor(id)}
     </a>
   );
+}
+
+// A site's status line: on Election Day (#107), "Polls closed at 7 p.m."
+// once they have, not the early voting "ended".
+function statusText(site) {
+  if (site.schedule === electionDaySchedule && site.status.kind === 'ended') {
+    return copy.electionDay.closed(election.electionDayHours.close);
+  }
+  return resultsCopy.earlyVoting.status(site.status, formatLongDate);
 }
 
 function SiteRow({ site, now, apple }) {
@@ -215,7 +267,7 @@ function SiteRow({ site, now, apple }) {
       <WaitReport wait={site.wait} now={now} showNone />
       <p>
         {kind && `${kind}. `}
-        {schedule && resultsCopy.earlyVoting.status(site.status, formatLongDate)}
+        {schedule && statusText(site)}
       </p>
       {today && <p>{copy.todayHours(today.open, today.close)}</p>}
       <p>{resultsCopy.polls.address(site.address, site.zip)}</p>
@@ -334,14 +386,17 @@ function LocationButton({ onLocate }) {
   );
 }
 
-function Sources() {
+function Sources({ electionDay }) {
+  // On Election Day (#107), the County's Polling Place Lookup app.
+  const countyUrl = electionDay ? county.electionDay.sourceUrl : county.sourceUrl;
+  const countyLink = electionDay ? copy.electionDay.countyLink : copy.countyLink;
   return (
     <section aria-labelledby="wait-sources" className="mt-8 text-sm">
       <p>{copy.disclaimer}</p>
       <p id="wait-sources" className="mt-2">
         {copy.sources}{' '}
-        <a href={county.sourceUrl} rel="noreferrer" className={linkClass}>
-          {copy.countyLink(county.source)}
+        <a href={countyUrl} rel="noreferrer" className={linkClass}>
+          {countyLink(county.source)}
         </a>
         ,{' '}
         <a href={city.sourceUrl} rel="noreferrer" className={linkClass}>
@@ -362,18 +417,26 @@ function latestCheck(waits) {
 /**
  * The early voting wait times page (#104): every County and City (#91) early
  * voting site with its current line count, hours and status, no address
- * needed. Counts come from the shared #103 loop; the list is the accessible
- * version of everything the optional map shows.
+ * needed. On Election Day (#107) it lists every polling place of both boards
+ * instead, each with its board's count. Counts come from the shared #103
+ * loop; the list is the accessible version of everything the optional map
+ * shows.
  * @param {{ loadSites?: () => Promise<object>, loadCity?: typeof loadCitySites,
+ *   loadPolls?: () => Promise<object>, loadCityPolls?: () => Promise<object>,
  *   waitSource?: Parameters<typeof useWaitTimes>[0] }} props For tests.
  */
 export default function WaitTimesPage({
   loadSites = getAbsenteeSites,
   loadCity = loadCitySites,
+  loadPolls = getPolls,
+  loadCityPolls: loadCityDay = loadCityPolls,
   waitSource,
 }) {
   const headingRef = useRef(null);
-  usePageTitle(copy.heading);
+  const now = useNow();
+  const electionDay = isElectionDay(now);
+  const text = electionDay ? copy.electionDay : copy;
+  usePageTitle(text.heading);
   useEffect(() => {
     // The page's code loads on demand (a lazy route), so on a hard load the
     // voter may already have moved focus (to the skip link, the language
@@ -383,8 +446,13 @@ export default function WaitTimesPage({
     focusHeadingOnArrival(headingRef.current);
   }, []);
 
-  const now = useNow();
-  const { result, loading, retry, targetRef } = useSites(loadSites, loadCity);
+  const { result, loading, retry, targetRef } = useSites(
+    loadSites,
+    loadCity,
+    loadPolls,
+    loadCityDay,
+    electionDay,
+  );
   // Both boards' schedules, the City's once its chunk is here; keyed apart so
   // no County and City schedule share a key.
   const cityKeyed = result?.citySchedules;
@@ -395,7 +463,10 @@ export default function WaitTimesPage({
     }),
     [cityKeyed],
   );
-  const season = earlyVotingSeason(allSchedules, now, election.timeZone);
+  // On Election Day the list is the polling places, whatever early voting did.
+  const season = electionDay
+    ? { kind: 'during' }
+    : earlyVotingSeason(allSchedules, now, election.timeZone);
   // When early voting ends with the page open, the list and its controls go:
   // if focus went with them, put it on the heading, which reads the news next.
   useLayoutEffect(() => {
@@ -477,10 +548,10 @@ export default function WaitTimesPage({
       {/* The route's loading fallback in src/App.jsx repeats this heading and
           the two paragraphs, text and classes (#151): change both together. */}
       <h1 ref={headingRef} tabIndex={-1} className="text-2xl font-semibold">
-        {copy.heading}
+        {text.heading}
       </h1>
-      <p className="mt-2">{copy.intro}</p>
-      <p className="mt-2">{copy.city}</p>
+      <p className="mt-2">{text.intro}</p>
+      <p className="mt-2">{text.city}</p>
 
       {season.kind === 'ended' ? (
         <p className="mt-4">
@@ -496,7 +567,7 @@ export default function WaitTimesPage({
             <p className="mt-4 font-semibold">{copy.season.before(season.from, season.to)}</p>
           )}
           <h2 id="wait-sites-heading" className="mt-6 text-xl font-semibold">
-            {copy.listLabel}
+            {text.listLabel}
           </h2>
           <p data-testid="wait-status" aria-live="polite" className="sr-only">
             {statusText}
@@ -527,7 +598,7 @@ export default function WaitTimesPage({
               <>
                 <p role="alert">
                   <span key={result.attempt}>
-                    {copy.failed} <OfficialLookupLink /> {resultsCopy.earlyVoting.or}{' '}
+                    {text.failed} <OfficialLookupLink /> {resultsCopy.earlyVoting.or}{' '}
                     <OfficialLookupLink id="city" />.
                   </span>
                 </p>
@@ -538,7 +609,7 @@ export default function WaitTimesPage({
               <>
                 <p role="alert">
                   <span key={result.attempt}>
-                    {copy.failed} <OfficialLookupLink id={result.failed} />.
+                    {text.failed} <OfficialLookupLink id={result.failed} />.
                   </span>
                 </p>
                 <RetryButton onRetry={retry} busy={loading} className="mt-2 mb-4" />
@@ -546,7 +617,7 @@ export default function WaitTimesPage({
             )}
             {shown && shown.length === 0 && !result.failed && (
               <p>
-                {copy.none} <OfficialLookupLink /> {resultsCopy.earlyVoting.or}{' '}
+                {text.none} <OfficialLookupLink /> {resultsCopy.earlyVoting.or}{' '}
                 <OfficialLookupLink id="city" />.
               </p>
             )}
@@ -563,7 +634,11 @@ export default function WaitTimesPage({
                   </button>
                 )}
                 {canShowMap && showMap && (
-                  <WaitTimesMap sites={mapSites} onFail={() => setMapFailed(true)} />
+                  <WaitTimesMap
+                    sites={mapSites}
+                    label={electionDay ? copy.electionDay.mapLabel : copy.map.label}
+                    onFail={() => setMapFailed(true)}
+                  />
                 )}
                 <ol
                   aria-labelledby="wait-sites-heading"
@@ -579,7 +654,7 @@ export default function WaitTimesPage({
         </>
       )}
 
-      <Sources />
+      <Sources electionDay={electionDay} />
 
       <p className="mt-8">
         <Link href="/" className={tapLinkClass}>

@@ -26,10 +26,11 @@ function loadView() {
  * only: everything on it is in the list, so it is removed whenever anything
  * fails. The legend shows only when some site has a count.
  * @param {{ sites: { lat: number, lng: number, bin: number | null }[],
- *   onFail?: () => void }} props `sites` in list order; markers are numbered
- *   to match. `onFail` is called once if the map fails.
+ *   onFail?: () => void, label?: string }} props `sites` in list order;
+ *   markers are numbered to match. `onFail` is called once if the map fails.
+ *   `label` names the map region (the polling places on Election Day, #107).
  */
-export default function WaitTimesMap({ sites, onFail }) {
+export default function WaitTimesMap({ sites, onFail, label = copy.map.label }) {
   const [state, setState] = useState('loading');
   const containerRef = useRef(null);
   const viewRef = useRef(null);
@@ -93,7 +94,7 @@ export default function WaitTimesMap({ sites, onFail }) {
   const hasCounts = sites.some((site) => site.bin !== null);
 
   return (
-    <div role="region" aria-label={copy.map.label} className="mt-3">
+    <div role="region" aria-label={label} className="mt-3">
       <div className="relative h-72 overflow-hidden rounded-md border border-border">
         {/* MapLibre adds its own classes to this element: React never changes its className. */}
         <div ref={containerRef} className="isolate h-full w-full" />

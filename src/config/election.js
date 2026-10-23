@@ -113,7 +113,7 @@
  * @property {string} lastVerified
  * @property {WaitTimesSource & { pollsField: string, electionDay: {
  *   enabled: boolean, serviceRoot: string, layer: string, where: string,
- *   pollsField: string } }} county `pollsField` is the polls layer field
+ *   pollsField: string, sourceUrl: string } }} county `pollsField` is the polls layer field
  *   `siteField` matches. `electionDay` replaces those values on the election
  *   date (#107).
  * @property {WaitTimesSource & { hoursField: string, commentsField: string,
@@ -127,6 +127,11 @@
 // The county's Absentee Voting Lookup app shows its counts.
 const countyWaitSource =
   'https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=9301b4594bef4d9c9271778e4648179d';
+// The county's November 3, 2026 Polling Place Lookup app (web map
+// 5e98818fdb354d719193ec562d359050), where Election Day counts would show
+// (#107).
+const countyPollingPlaceLookup =
+  'https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=13fb36e785c84dbdbcc5219f999652ba';
 // The City Board's public Election Wait Times Dashboard.
 const cityWaitSource = 'https://www.arcgis.com/apps/dashboards/8548fe3a065a455182181399909102ef';
 
@@ -258,8 +263,7 @@ const county = {
     ],
     lastVerified: '2026-10-22',
     phone: '314-615-1800',
-    phoneSource:
-      'https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=13fb36e785c84dbdbcc5219f999652ba',
+    phoneSource: countyPollingPlaceLookup,
   },
 };
 
@@ -355,7 +359,7 @@ const shared = {
     refreshSeconds: 30,
     maxAgeMinutes: 120,
     skewMinutes: 5,
-    sources: [countyWaitSource, cityWaitSource],
+    sources: [countyWaitSource, cityWaitSource, countyPollingPlaceLookup],
     lastVerified: '2026-10-22',
     county: {
       enabled: true,
@@ -386,6 +390,7 @@ const shared = {
         layer: 'Voters_in_Line_View/FeatureServer/0',
         where: '1=1',
         pollsField: 'username',
+        sourceUrl: countyPollingPlaceLookup,
       },
     },
     city: {

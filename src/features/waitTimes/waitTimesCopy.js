@@ -69,6 +69,21 @@ export const copy = translated((t) => ({
     noCount: t('waitTimes.map.noCount'),
   },
   city: t('waitTimes.city'),
+  // The page on Election Day (#107): every polling place of both boards.
+  electionDay: {
+    heading: t('waitTimes.electionDay.heading'),
+    intro: t('waitTimes.electionDay.intro'),
+    city: t('waitTimes.electionDay.city'),
+    listLabel: t('waitTimes.electionDay.listLabel'),
+    // No closing period: every time already ends in "a.m." or "p.m.".
+    /** @param {string} close HH:MM */
+    closed: (close) => t('waitTimes.electionDay.closed', { close: formatTime(close) }),
+    failed: t('waitTimes.electionDay.failed'),
+    none: t('waitTimes.electionDay.none'),
+    mapLabel: t('waitTimes.electionDay.mapLabel'),
+    /** @param {string} board From the config. */
+    countyLink: (board) => t('waitTimes.electionDay.countyLink', { board }),
+  },
   /** @param {string} board From the config. */
   cityLink: (board) => t('waitTimes.cityLink', { board }),
   disclaimer: t('waitTimes.disclaimer'),

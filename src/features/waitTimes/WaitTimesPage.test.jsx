@@ -365,7 +365,9 @@ describe('WaitTimesPage', () => {
   });
 
   it('says early voting has ended after it ends, with a link to the polling place lookup', () => {
-    vi.setSystemTime(Date.UTC(2026, 10, 3, 18, 0));
+    // 6 p.m. Central on Monday, November 2: early voting is over, and
+    // Election Day, when the page lists the polling places (#107), is next.
+    vi.setSystemTime(Date.UTC(2026, 10, 3, 0, 0));
     renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
     expect(screen.getByText(copy.season.ended, { exact: false })).toBeInTheDocument();
     // The County's Election Day rule (#152), never "assigned". The City's
@@ -448,7 +450,9 @@ describe('WaitTimesPage', () => {
   });
 
   it('still links both boards once early voting has ended', () => {
-    vi.setSystemTime(Date.UTC(2026, 10, 3, 18, 0));
+    // 6 p.m. Central on Monday, November 2: early voting is over, and
+    // Election Day, when the page lists the polling places (#107), is next.
+    vi.setSystemTime(Date.UTC(2026, 10, 3, 0, 0));
     renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
     expect(screen.getByRole('link', { name: copy.countyLink(county.source) })).toBeInTheDocument();
     expect(
