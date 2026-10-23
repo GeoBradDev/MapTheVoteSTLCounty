@@ -140,7 +140,9 @@ const congressionalField = 'congressional_district_20';
  * of them (#150). A named export, not part of the default object, so the app's
  * bundle leaves it out: only the health check reads it.
  */
-export const congressionalMap = deepFreeze({ year: '2022', districts: ['1', '2'] });
+// Marked pure so the bundler can drop the call: deepFreeze is a call it would
+// otherwise keep.
+export const congressionalMap = /* @__PURE__ */ deepFreeze({ year: '2022', districts: ['1', '2'] });
 
 /** Freezes a config object and everything in it, except a RegExp. */
 export function deepFreeze(value) {
