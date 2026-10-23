@@ -54,6 +54,18 @@ describe('linkManifest', () => {
     expect(MANIFEST_DELAY_MS).toBeGreaterThanOrEqual(10_000);
   });
 
+  // An idle callback with no timeout can wait forever on a page that never
+  // goes idle (seen in headless Chromium after an in-app navigation).
+  it('bounds the idle wait with a timeout', () => {
+    const { win } = fakeWindow({ complete: true });
+    linkManifest(document, win);
+    vi.advanceTimersByTime(MANIFEST_DELAY_MS);
+    expect(win.requestIdleCallback).toHaveBeenCalledWith(expect.any(Function), {
+      timeout: expect.any(Number),
+    });
+    expect(win.requestIdleCallback.mock.calls[0][1].timeout).toBeLessThanOrEqual(5_000);
+  });
+
   it('starts the delay at once when the page has already loaded', () => {
     const { win, runIdle } = fakeWindow({ complete: true });
     linkManifest(document, win);

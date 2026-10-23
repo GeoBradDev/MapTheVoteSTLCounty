@@ -48,7 +48,7 @@ task to do before its worker ships.
 4. The built home page and shell (so every pre-rendered page too) link
    `/apple-touch-icon.png` with `rel="apple-touch-icon"`. No other icon link is added. The
    manifest is linked by the first-load script (`src/linkManifest.js`) 10 seconds after the
-   load event, at idle time, never from the HTML (revised during Phase 4, see below).
+   load event, at idle time (bounded to 2 s, added in Phase 7), never from the HTML (revised during Phase 4, see below).
 5. Chromium reports no installability errors for `/` on the production build
    (`Page.getInstallabilityErrors` in Playwright), the issue's "Lighthouse PWA
    installability checks" criterion, since Lighthouse 13 no longer has a PWA category.
@@ -62,7 +62,8 @@ task to do before its worker ships.
 9. CI's build output check checks `dist/manifest.webmanifest` and the icons.
 10. The README says what is installable, that there is no service worker and why, where
     the icons come from and how to redraw them, and points every remaining "#25" offline
-    reference at #183.
+    reference in the README and code comments at #183 (revised in Phase 7: `docs/progress.md` is
+    not edited by issue runs, and dated plans under `docs/plans/` are historical records).
 11. First-load JS and Lighthouse budgets unchanged and green.
 
 ## Files that change

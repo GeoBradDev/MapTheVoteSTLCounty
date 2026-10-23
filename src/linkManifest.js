@@ -14,7 +14,8 @@ export const MANIFEST_DELAY_MS = 10_000;
 
 /**
  * Adds `<link rel="manifest">` to `doc`'s head `MANIFEST_DELAY_MS` after
- * `win`'s load event, at the next idle time. Adds at most one.
+ * `win`'s load event, at the next idle time or 2 s later at most (a page that
+ * never goes idle would otherwise never get it). Adds at most one.
  * @param {Document} doc
  * @param {Window} win
  */
@@ -28,7 +29,7 @@ export function linkManifest(doc, win) {
   };
   const later = () =>
     setTimeout(
-      () => (win.requestIdleCallback ? win.requestIdleCallback(add) : add()),
+      () => (win.requestIdleCallback ? win.requestIdleCallback(add, { timeout: 2_000 }) : add()),
       MANIFEST_DELAY_MS,
     );
   if (win.document.readyState === 'complete') later();
