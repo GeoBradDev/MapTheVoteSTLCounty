@@ -164,7 +164,10 @@ may need new values too. Work on a branch and merge through the usual pull reque
    City Board's No Excuse Absentee page, one schedule per site keyed by the voting locations
    layer's site id: the health check fails while a City early voting site has none. Its
    `sources` also name the City Board's Apply to Vote Absentee page, which the City card links
-   for voting by mail. If a field the app reads was renamed, search `src/` and `scripts/` for
+   for voting by mail. And it includes the City districts card's rows (`districts` in
+   `cityResults.js`, #90): check each row's `electedoffice` names against the districts layer,
+   and recheck which congressional map is in effect and that the whole City is still in one
+   district under it (its `sources`). If a field the app reads was renamed, search `src/` and `scripts/` for
    the old name and change every use, including `PRECINCT_FIELDS` and `POLL_FIELDS` in
    `src/data/arcgis.js` and the field lists in `scripts/check-config.mjs`. See
    [Election config](#election-config).
@@ -421,7 +424,7 @@ words `name` and `district`) written outside the config.
 **The City chunk (owner decision on #147).** Code and config only St. Louis City needs load on
 demand, in one chunk, `src/cityChunk.js`, through `loadCityClient()` in
 `src/data/jurisdictions.js`: the City's data client, `src/data/cityArcgis.js` (#87), the City-only
-results UI (its early voting card and Election Day rule) and `src/config/cityResults.js`. The City
+results UI (its early voting card, Election Day rule and districts card) and `src/config/cityResults.js`. The City
 results, `locate()` (#88) and the wait times page load it. A City-only component is read from it
 with `cityComponent(name)` (`src/features/lookup/cityComponent.js`) inside a `Suspense`; never
 `React.lazy` a file of its own, which splits code the first load shares into another chunk and

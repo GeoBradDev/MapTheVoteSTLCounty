@@ -158,6 +158,14 @@ describe('CityDistrictsCard', () => {
     expect(await screen.findByText(copy.districts.missing, { exact: false })).toBeInTheDocument();
   });
 
+  it('says the districts are missing, with no Try again, when the precinct is not found', async () => {
+    fetchMock.mockImplementation(() => respond({ type: 'FeatureCollection', features: [] }));
+    const card = renderCard();
+    expect(await screen.findByText(copy.districts.missing, { exact: false })).toBeInTheDocument();
+    expect(within(card).queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
   it('says it could not load them on a failure, and loads them on Try again', async () => {
     // The client tries twice before it gives up.
     routeFetch({ fail: (n) => n <= 2 });

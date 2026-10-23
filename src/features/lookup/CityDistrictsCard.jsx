@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
+import { NotFound } from '../../data/arcgis.js';
 import { getCityDistrictsForPrecinct } from '../../data/cityArcgis.js';
 import { cityDistrictRows } from './cityDistricts.js';
 import { OfficialLookupLink } from './PollsCard.jsx';
@@ -27,8 +28,11 @@ export default function CityDistrictsCard({ code }) {
       (districts) => {
         if (live) setResult({ code, attempt, rows: cityDistrictRows(districts) });
       },
-      () => {
-        if (live) setResult({ code, attempt, error: true });
+      (error) => {
+        if (!live) return;
+        // No such precinct: Try again would not find it either.
+        if (error instanceof NotFound) setResult({ code, attempt, rows: [] });
+        else setResult({ code, attempt, error: true });
       },
     );
     return () => {

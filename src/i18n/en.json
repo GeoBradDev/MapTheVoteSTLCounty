@@ -271,7 +271,7 @@
       },
       "source": "From the St. Louis County Board of Elections precinct data.",
       "sourceCity": "From the St. Louis City Board of Election Commissioners' election data.",
-      "multipleCity": "The City's data lists more than one district for an office here, so both are shown. Check yours with the",
+      "multipleCity": "The City's data lists more than one district for an office here, so each is shown. Check yours with the",
       "failed": "We could not load your districts right now. Find them with the",
       "missing": "We could not find the districts for this precinct. Find them with the"
     },

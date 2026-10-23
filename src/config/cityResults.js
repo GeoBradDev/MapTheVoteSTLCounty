@@ -119,6 +119,14 @@ export default deepFreeze({
       },
       { key: 'school', offices: ['Board of Education of the City of St. Louis'] },
     ],
+    // The congressional row's check: the 2022 map's first district and the
+    // Revisor's note that it stays in effect for November 2026, and H.B. 1's
+    // (2025) first district as truly agreed.
+    sources: [
+      'https://revisor.mo.gov/main/OneSection.aspx?section=128.461',
+      'https://revisor.mo.gov/main/OneSection.aspx?section=128.346',
+      'https://documents.house.mo.gov/billtracking/bills254/hlrbillspdf/3344H.01T.pdf',
+    ],
     lastVerified: '2026-10-22',
   },
 
