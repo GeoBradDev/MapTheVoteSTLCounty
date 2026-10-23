@@ -1,8 +1,9 @@
 // Vite plugin that turns each voter education topic file,
 // content/<locale>/learn/<id>.md, into a JSON module at build time (#21).
-// topics.js loads them with import.meta.glob, so the browser gets plain data:
-// no YAML or Markdown parser ships, and the topics work offline and can be
-// pre-rendered. A topic that fails any check in topic.js fails the dev server,
+// topics.js loads them with import.meta.glob, so the browser gets plain data
+// and no YAML or Markdown parser ships, and the topics can be pre-rendered:
+// each topic's summary (`?meta`) in the first load, and its whole text in a
+// chunk of its own that loads with its page (#147). A topic that fails any check in topic.js fails the dev server,
 // the tests and the build, naming the file and every problem.
 //
 // Every topic file is checked when the build (or dev server) starts, whether
@@ -12,7 +13,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import election from '../../../config/election.js';
-import { parseTopic } from './topic.js';
+import { parseTopic, topicSummary } from './topic.js';
 
 const TOPIC_FILE = /\/content\/[^/]+\/learn\/[^/]+\.md$/;
 
@@ -68,8 +69,12 @@ export default function learnContent({ electionDate = election.electionDate } = 
       if (problems.length) this.error(problems.join('\n'));
     },
     transform(code, id) {
-      // A query (?raw, ?url) means Vite or another plugin owns this import.
-      if (id.includes('?')) return null;
+      // `?meta` asks for the topic's summary (#147): what the first load
+      // carries. Any other query (?raw, ?url) means Vite or another plugin owns
+      // this import.
+      const summary = id.endsWith('?meta');
+      if (summary) id = id.slice(0, -'?meta'.length);
+      else if (id.includes('?')) return null;
       const file = id.replaceAll('\\', '/');
       if (!TOPIC_FILE.test(file)) return null;
       let topic;
@@ -78,7 +83,8 @@ export default function learnContent({ electionDate = election.electionDate } = 
       } catch (error) {
         this.error(error.message);
       }
-      return { code: `export default ${JSON.stringify(topic)};\n`, map: null };
+      const data = summary ? topicSummary(topic) : topic;
+      return { code: `export default ${JSON.stringify(data)};\n`, map: null };
     },
   };
 }

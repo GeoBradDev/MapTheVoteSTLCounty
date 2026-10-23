@@ -241,3 +241,44 @@ export function parseTopic(text, { file, electionDate }) {
     blocks: markdown.blocks,
   };
 }
+
+function inlineText(nodes) {
+  return nodes
+    .map((node) => {
+      if (node.type === 'text') return node.value;
+      if (node.type === 'cite') return '';
+      return inlineText(node.children ?? []);
+    })
+    .join('');
+}
+
+/**
+ * @typedef {object} TopicSummary What the first load carries for a topic (#147).
+ * @property {string} id
+ * @property {string} locale
+ * @property {string} title
+ * @property {string} group
+ * @property {string | null} intro The first paragraph as plain text, without
+ *   citation marks, when it comes before the topic's first heading; else null.
+ *   A paragraph under a heading describes that section, not the page (owner
+ *   decision on #99). The page's description is cut from it.
+ */
+
+/**
+ * A topic without its body: what /learn, the result cards' links and the page
+ * heads read. The body (blocks and sources) loads with the topic's own page.
+ * @param {Topic} topic
+ * @returns {TopicSummary}
+ */
+export function topicSummary(topic) {
+  const firstHeading = topic.blocks.findIndex((block) => block.type === 'heading');
+  const intro = firstHeading === -1 ? topic.blocks : topic.blocks.slice(0, firstHeading);
+  const first = intro.find((block) => block.type === 'paragraph');
+  return {
+    id: topic.id,
+    locale: topic.locale,
+    title: topic.title,
+    group: topic.group,
+    intro: first ? inlineText(first.children) : null,
+  };
+}

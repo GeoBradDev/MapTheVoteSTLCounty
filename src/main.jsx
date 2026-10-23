@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 import { Router } from 'wouter';
 import App from './App.jsx';
-import { shouldHydrate, startHydration } from './hydrate.js';
+import { loadForHydration, shouldHydrate, startHydration } from './hydrate.js';
 import './index.css';
 
 // The same tree src/entry-server.jsx renders at build time (#99), so a
@@ -24,10 +24,19 @@ const root = document.getElementById('root');
 // A public page arrives pre-rendered (#99) and is hydrated in place. Every
 // other page (a precinct, an unknown path) arrives as the empty shell, and
 // markup rendered for another path is replaced, not hydrated.
-if (shouldHydrate(root, window.location.pathname)) {
-  startHydration();
-  hydrateRoot(root, app, options);
-} else {
+// A topic page's body loads on demand (#147), so it is loaded first: the
+// pre-rendered page stays on screen meanwhile, and the first render matches it.
+// If it cannot load, the page renders fresh, and the topic page tries again.
+function renderFresh() {
   root.replaceChildren();
   createRoot(root, options).render(app);
+}
+
+if (shouldHydrate(root, window.location.pathname)) {
+  loadForHydration(window.location.pathname).then(() => {
+    startHydration();
+    hydrateRoot(root, app, options);
+  }, renderFresh);
+} else {
+  renderFresh();
 }

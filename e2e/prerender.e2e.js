@@ -144,6 +144,36 @@ test.describe('hydration', () => {
     expect(problems).toEqual([]);
   });
 
+  // A topic's body loads with its page (#147): from /learn it arrives on
+  // demand, with the footer held below the fold until it does.
+  test('a topic opened from /learn loads its text, with no jump and focus on its title', async ({
+    page,
+  }) => {
+    const problems = collectProblems(page);
+    await answerFromFixtures(page);
+    let release;
+    const released = new Promise((resolve) => {
+      release = resolve;
+    });
+    await page.route(/\/assets\/voter-id-[\w-]+\.js$/, async (route) => {
+      await released;
+      await route.continue();
+    });
+    await page.goto('/learn');
+    await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
+    await page.getByRole('link', { name: 'What ID to bring' }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(0);
+    const viewport = page.viewportSize();
+    const footerTop = await page.locator('footer').evaluate((el) => el.getBoundingClientRect().top);
+    expect(footerTop).toBeGreaterThanOrEqual(viewport.height);
+    release();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('What ID to bring');
+    await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
+    await expect(page.getByText(/In Missouri, you must show a photo ID/)).toBeVisible();
+    await expect(page).toHaveTitle('What ID to bring | St. Louis County Voter Guide');
+    expect(problems).toEqual([]);
+  });
+
   test('the home page search works after hydration', async ({ page }) => {
     const problems = collectProblems(page);
     await answerFromFixtures(page);

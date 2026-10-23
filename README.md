@@ -506,6 +506,16 @@ For each new election, re-read every topic's sources, then update its `election`
 `lastVerified`; the build fails until you do. `src/features/learn/topics.js` loads the topics
 (`getTopics`, `getTopic`) and `src/features/learn/TopicArticle.jsx` renders one.
 
+**Topic bodies load with their pages (owner decision on #147).** The first load carries only
+each topic's summary (id, locale, title, group and the intro its description is cut from, made
+by `topicSummary` in `src/features/learn/content/topic.js`), which `/learn`, the result cards'
+links and the page heads read. A topic's text and sources are a chunk of their own, loaded by
+`loadTopic()` when its page renders; until then the page holds a screen-tall placeholder. The
+build loads every body before it pre-renders, and `src/main.jsx` loads a pre-rendered topic's
+body before hydrating it, so its static HTML stays on screen. Anything new that only a topic's
+page reads belongs in the body, not the summary. `src/test/build.test.js` fails when a topic's
+text reaches the first load.
+
 The "How to vote" pages (#23) are `/learn`, the index, and `/learn/<id>`, one topic. With no
 topics, `/learn` says the guides are not ready and links to the county board's site and the
 address lookup. A topic page folds each `##` section with at least `LONG_SECTION_CHARS`

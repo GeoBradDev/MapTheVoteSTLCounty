@@ -6,10 +6,19 @@ import { StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
 import { Router } from 'wouter';
 import App from './App.jsx';
+import { loadAllTopics } from './features/learn/topics.js';
 import { pageHead, prerenderPaths } from './pageHead.js';
 import { renderPage } from './prerender/html.js';
 
 export { prerenderPaths };
+
+/**
+ * Loads what the pages need before any renders: every topic's body, which the
+ * browser loads on demand (#147). The pre-render awaits it first.
+ */
+export function prepare() {
+  return loadAllTopics();
+}
 
 /**
  * The app's markup at `route`, as the browser's first render makes it, so it

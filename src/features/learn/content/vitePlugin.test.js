@@ -46,6 +46,23 @@ describe('learnContent plugin', () => {
     });
   });
 
+  // The first load gets only the summary (#147); the body loads with its page.
+  it('turns a topic file imported with ?meta into its summary', () => {
+    const result = plugin.transform.call(
+      context,
+      topic(),
+      '/repo/content/en/learn/voter-id.md?meta',
+    );
+    const json = result.code.replace(/^export default /, '').replace(/;\n$/, '');
+    expect(JSON.parse(json)).toEqual({
+      id: 'voter-id',
+      locale: 'en',
+      title: 'Fixture topic, not voter guidance',
+      group: 'get-help',
+      intro: 'A fixture claim.',
+    });
+  });
+
   it('fails on a topic with a missing source', () => {
     expect(() =>
       plugin.transform.call(context, topic({ sources: false }), '/r/content/en/learn/voter-id.md'),

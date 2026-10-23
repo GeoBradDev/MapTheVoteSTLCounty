@@ -3,6 +3,8 @@
 // the host can serve a pre-rendered file at another path (dist/index.html,
 // the home page, is also /index.html), and hydrating the wrong page would
 // leave its markup on screen until React gave up on it.
+import { getTopic, loadTopic } from './features/learn/topics.js';
+import { getLocale } from './i18n/index.js';
 import { normalizePath } from './pageHead.js';
 
 /**
@@ -13,6 +15,18 @@ export function shouldHydrate(root, pathname) {
   const rendered = root.dataset.prerendered;
   if (!rendered || !root.hasChildNodes()) return false;
   return normalizePath(rendered) === normalizePath(pathname);
+}
+
+/**
+ * Loads what a pre-rendered page needs before it hydrates: a topic's body,
+ * which comes on demand (#147). Resolves at once for any other page.
+ * @param {string} pathname
+ * @returns {Promise<unknown>}
+ */
+export function loadForHydration(pathname) {
+  const id = normalizePath(pathname).match(/^\/learn\/([^/]+)$/)?.[1];
+  const topic = id ? getTopic(id, getLocale()) : null;
+  return topic ? loadTopic(topic) : Promise.resolve();
 }
 
 // True from a hydrated first load (#99) until the voter moves to another page.

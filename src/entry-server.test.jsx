@@ -3,11 +3,14 @@
 // @vitest-environment node
 import { getTopics } from './features/learn/topics.js';
 import { prerenderPaths } from './pageHead.js';
-import { render, renderRoute } from './entry-server.jsx';
+import { prepare, render, renderRoute } from './entry-server.jsx';
 
 const TEMPLATE =
   '<html><head><meta name="description" content="x"><title>x</title></head>' +
   '<body><div id="root"></div></body></html>';
+
+// The topic bodies load on demand in the browser (#147); the build loads them all first.
+beforeAll(() => prepare());
 
 describe('server render', () => {
   it('runs with no browser globals', () => {
