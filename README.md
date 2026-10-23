@@ -147,7 +147,8 @@ may need new values too. Work on a branch and merge through the usual pull reque
    `scripts/inspect-data.mjs` (and the new lookup app's id in `INSTANT_APP_ID` if it changed),
    then run `node scripts/inspect-data.mjs`. It writes each layer's fields, counts and sample
    rows to `docs/raw/`. Compare them with `docs/data.md`: the field names, the congressional
-   district field and the sample ballot link format. The script saves only 3 sample rows per
+   district field (which map is in effect for the election: check the Revisor's note on RSMo
+128.346 and a few sample ballots, see `docs/data.md`) and the sample ballot link format. The script saves only 3 sample rows per
    layer, so query the layer for the distinct `in_election` and `abs_type` values.
 3. **Update `src/config/election.js` and `src/config/cityResults.js`.** Every value that
    changes between elections is in one of them (the second holds what only the City's results
@@ -564,7 +565,9 @@ node scripts/check-config.mjs [--layer <key>=<path>] [--ballot-sample <n|all>] [
 It checks that each configured layer answers with the geometry and every field the app reads,
 that the precinct count is in a sane range, that every `In Election` precinct's sample ballot
 link parses and its file name names that precinct (and that 5 random links serve a PDF whose
-`Content-Disposition` file name names the same precinct), that the absentee filter finds sites with
+`Content-Disposition` file name names the same precinct), that every precinct's congressional
+district is a district on the map in effect (`CONGRESSIONAL_MAP`, the 2022 map for November 2026,
+#150), that the absentee filter finds sites with
 hours in the config, and that one known point per County Council district lands in a precinct
 in that district and inside the county boundary layer, while a point in St. Louis City lands in
 neither. For the City block (#87), it checks each City layer has the fields the app reads, that the
