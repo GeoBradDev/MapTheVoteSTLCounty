@@ -309,6 +309,15 @@ describe('production build', () => {
       expect(canonicalOf(html)).toBe('https://mapthevotestl.com/');
     });
 
+    // #165: the pre-rendered home page states no Election Day rule either.
+    it('states no Election Day rule on the pre-rendered home page', async () => {
+      const root = rootOf(html);
+      expect(root).toContain('role="combobox"');
+      expect(root).not.toMatch(/any polling place|assigned polling place/i);
+      expect(root).not.toContain(election.electionDayPollingPlace.phone);
+      expect(root).not.toContain(cityResults.electionDayRule.quote.slice(0, 40));
+    });
+
     it('keeps the client-rendered shell for every other path, with no page in it', async () => {
       const shell = await page('shell.html');
       expect(rootOf(shell)).toBe('');

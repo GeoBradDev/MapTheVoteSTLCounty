@@ -3,7 +3,6 @@ import { Link } from 'wouter';
 import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
 import AddressLookup from './AddressLookup.jsx';
-import CountyElectionDayRule from './CountyElectionDayRule.jsx';
 import { isElectionDay } from './electionDay.js';
 import { copy } from './homeCopy.js';
 
@@ -47,12 +46,9 @@ export default function HomePage() {
         <AddressLookup />
       </div>
 
-      <div className="mt-8 rounded-md bg-surface-raised p-4">
-        {/* Its links sit inside sentences, so they keep the plain link style. */}
-        <CountyElectionDayRule />
-      </div>
-
-      <nav aria-label={copy.moreInfo} className="mt-6">
+      {/* No Election Day rule here (#165): each precinct page states its own
+          jurisdiction's rule, County or City. */}
+      <nav aria-label={copy.moreInfo} className="mt-8">
         <ul className="flex flex-col gap-1">
           <li>
             <Link href="/learn" className={linkClass}>

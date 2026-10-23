@@ -114,7 +114,7 @@ voter needs none: any County polling place will do. The "Polling places near you
 the closest N (suggest 3 to 5) by straight-line distance from the looked-up point (geocoded
 address or "Use my location"), or from the precinct's center when the page was opened without
 a lookup (a reload or a shared link). It says the voter may vote at any polling place in St.
-Louis County, and, like the home page, states the rule with its source and the county board's
+Louis County, and states the rule with its source and the county board's
 number for help, 314-615-1800, from the county's Polling Place Lookup app (`13fb36e7...`,
 whose live config says "call 314.615.1800", read 2026-10-21; the Contact Us page that listed it
 was retired, see Official website domain).
