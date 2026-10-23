@@ -125,6 +125,19 @@ const ROUTES = [
   },
 ];
 
+/**
+ * How long the local server waits before it answers a layer or the basemap
+ * style, in ms. The real ArcGIS hosts never answer within a frame: a new
+ * connection alone is several round trips. Answering at once let the data
+ * arrive before the first frame painted, so the run saw data driven content
+ * as the page's first paint and Lighthouse counted the layers' connections
+ * toward LCP even for text that needs no data (#156). The wait puts the
+ * answer after the first frame, as on a phone; Lighthouse's simulation then
+ * counts it as server time, so content that waits for data is measured as
+ * slower, never faster.
+ */
+const ANSWER_DELAY_MS = 100;
+
 const RUNS = 3;
 const PORT = 4174;
 const REPORTS = new URL('../lighthouse-reports/', import.meta.url);
@@ -188,6 +201,7 @@ async function answer(request, response) {
   }
   const href = `https://${request.headers.host}${request.url}`;
   const form = await formBody(request);
+  await new Promise((resolve) => setTimeout(resolve, ANSWER_DELAY_MS));
   const body = href === BASEMAP_STYLE_URL ? BLANK_STYLE : fixtureBody(href, form);
   if (body === null) {
     response.writeHead(404).end();

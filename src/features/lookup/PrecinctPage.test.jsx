@@ -16,7 +16,8 @@ import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
 import { createFakeGeocoder } from '../../test/fakeGeocoder.js';
 import { nearestPolls, polygonCenter } from './nearbyPolls.js';
-import { copy } from './resultsCopy.js';
+import { formatLongDate } from './earlyVoting.js';
+import { copy, formatTime, sourceName } from './resultsCopy.js';
 
 let fetchMock;
 let PrecinctPage;
@@ -187,11 +188,35 @@ describe('PrecinctPage', () => {
     expect(liveRegion()).toBeInTheDocument();
     expect(liveRegion()).toHaveTextContent(/^$/);
     const skeleton = screen.getByTestId('results-skeleton');
-    expect(skeleton).toHaveAttribute('aria-hidden', 'true');
     // At least a screen tall, so the footer does not jump when results arrive (#27).
     expect(skeleton).toHaveClass('min-h-screen');
     expect(skeleton.querySelector('.motion-reduce\\:animate-none')).not.toBeNull();
-    expect(screen.queryAllByRole('heading', { level: 2 })).toEqual([]);
+    // Every placeholder bar is hidden from screen readers.
+    for (const bar of skeleton.querySelectorAll('.animate-pulse')) {
+      expect(bar.closest('[aria-hidden="true"]')).not.toBeNull();
+    }
+    // The summary's Election Day part needs no data, so it shows while the
+    // precinct loads: its line is the page's largest text, and painting it
+    // before the precinct answers keeps LCP off the request (#27, #156).
+    const { open, close } = election.electionDayHours;
+    expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
+      copy.summary.electionDay,
+    ]);
+    expect(
+      within(skeleton).getByText(
+        copy.summary.when(
+          formatLongDate(election.electionDate),
+          formatTime(open),
+          formatTime(close),
+        ),
+      ),
+    ).toBeVisible();
+    for (const url of election.electionDayHours.sources) {
+      expect(within(skeleton).getByRole('link', { name: sourceName(url) })).toHaveAttribute(
+        'href',
+        url,
+      );
+    }
     expect(screen.getByRole('link', { name: copy.searchAnother })).toHaveAttribute('href', '/');
   });
 

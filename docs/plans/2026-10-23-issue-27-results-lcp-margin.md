@@ -56,8 +56,24 @@ request answers, so the simulated new connection to the ArcGIS host counts towar
 - `src/features/lookup/ResultsCards.jsx`: `ResultsSkeleton`'s summary box renders
   `ElectionDayPart` with a `PlaceSkeleton`, then the remaining placeholder bars
   (`aria-hidden`), with the loaded summary's box classes.
+- `e2e/lighthouse.js` (revision, see below): the local fixture server waits 100 ms before it
+  answers a layer or the basemap style.
 - `src/features/lookup/PrecinctPage.test.jsx`: the loading test asserts the Election Day
   heading and line show while loading, and the placeholders stay hidden.
+
+## Revision: the Lighthouse run's fixture server
+
+With the skeleton change alone, `npm run test:perf` still measured /p/CC007 at 2420 ms. In
+a real browser (Playwright, 360 px, layers answered after 800 ms) the only LCP entry is the
+skeleton's date line, at about 64 ms. In the Lighthouse run the local fixture server answered
+in about 2 ms, before Chromium painted the first frame (requests at 68 ms, answers at 71 ms,
+first paint at 75 ms), so the skeleton never painted, the loaded summary's line was the
+observed LCP, and the simulation counted the ArcGIS connections toward it. No real ArcGIS
+host answers within a frame, so the fixture server now waits 100 ms before answering.
+Lighthouse's simulation counts that wait as server time, so it makes data driven content
+slower, never faster. Control: main's code with this harness change measures /p/CC007 at
+2520 ms and /p/W01P12 at 2513 ms (both fail the unchanged 2500 ms budget), so the harness
+does not hide the old cause.
 
 ## Order of work
 
@@ -79,7 +95,8 @@ request answers, so the simulated new connection to the ArcGIS host counts towar
 
 - `PrecinctPage.test.jsx` loading test: criterion 1.
 - Existing summary tests (`ResultsSummary.test.jsx`, `PrecinctPage.test.jsx`): criterion 2.
-- `npm run test:perf` output: criterion 3. `npm test` build test: criterion 4.
+- `npm run test:perf` output: criterion 3, plus the control run of main with the revised
+  harness. `npm test` build test: criterion 4.
 - Live drive: Playwright against `vite preview` with the precinct response held back shows
   the Election Day line before the precinct answers, then the loaded page with one
   "Election Day" heading.

@@ -19,6 +19,9 @@ const CitySampleBallotCard = cityComponent('CitySampleBallotCard');
 const CityEarlyVoteSummary = cityComponent('CityEarlyVoteSummary');
 
 const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
+/** The summary's box, also the results skeleton's (ResultsCards.jsx). */
+export const SUMMARY_BOX =
+  'mt-4 flex flex-col gap-3 rounded-md border-2 border-primary bg-surface-raised p-4';
 // Local until the shared Button and Link components land (#78).
 const directionsClass =
   'inline-flex min-h-11 items-center gap-2 rounded-md border border-primary px-4 font-semibold text-primary';
@@ -62,7 +65,7 @@ const line = (height, width) => (
 // with `early` the line of an early voting site's status, with `count` the
 // two of its line count, and its directions button, so nothing below moves
 // when it loads (#27).
-function PlaceSkeleton({ testId, early = false, count = false }) {
+export function PlaceSkeleton({ testId, early = false, count = false }) {
   return (
     <div data-testid={testId} aria-hidden="true" className="mt-2">
       {line('h-5', 'w-1/2')}
@@ -119,14 +122,15 @@ function HoursNote() {
   );
 }
 
-// Election Day's date and hours, and the nearest polling place. A failed or
-// empty list shows nothing here: the polling places card below says so and
-// offers Try again (#18).
-function ElectionDay({ code, origin }) {
-  const { getPolls } = useJurisdiction();
-  const { result } = useNearestSites(getPolls, code, origin);
+/**
+ * The summary's Election Day part: its heading, Election Day's date and
+ * hours, and the hours note, then `children`. Data independent, so the results
+ * skeleton shows it too while the precinct loads (#27, #156): the date line is
+ * the page's largest text, and the loaded summary repaints it at the same
+ * size, so LCP does not wait for the precinct request.
+ */
+export function ElectionDayPart({ children }) {
   const { open, close } = election.electionDayHours;
-  const nearest = result?.rows?.[0];
   return (
     <Part title={copy.summary.electionDay}>
       <p className="mt-1 font-semibold sm:text-lg">
@@ -137,9 +141,23 @@ function ElectionDay({ code, origin }) {
         )}
       </p>
       <HoursNote />
+      {children}
+    </Part>
+  );
+}
+
+// Election Day's date and hours, and the nearest polling place. A failed or
+// empty list shows nothing here: the polling places card below says so and
+// offers Try again (#18).
+function ElectionDay({ code, origin }) {
+  const { getPolls } = useJurisdiction();
+  const { result } = useNearestSites(getPolls, code, origin);
+  const nearest = result?.rows?.[0];
+  return (
+    <ElectionDayPart>
       {!result && <PlaceSkeleton testId="summary-poll-skeleton" />}
       {nearest && <Place label={copy.summary.nearestPoll} place={nearest} />}
-    </Part>
+    </ElectionDayPart>
   );
 }
 
@@ -238,7 +256,7 @@ export default function ResultsSummary({ code, origin, showBallot, ballotHtml, w
   const { id } = useJurisdiction();
   const isCity = id === 'city';
   return (
-    <div className="mt-4 flex flex-col gap-3 rounded-md border-2 border-primary bg-surface-raised p-4">
+    <div className={SUMMARY_BOX}>
       <ElectionDay code={code} origin={origin} />
       {isCity ? (
         <Suspense fallback={null}>

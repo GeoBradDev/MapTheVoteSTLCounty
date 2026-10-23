@@ -3,7 +3,7 @@ import DistrictsCard from './DistrictsCard.jsx';
 import { cityComponent } from './cityComponent.js';
 import EarlyVotingCard from './EarlyVotingCard.jsx';
 import PollsCard from './PollsCard.jsx';
-import ResultsSummary from './ResultsSummary.jsx';
+import ResultsSummary, { ElectionDayPart, PlaceSkeleton, SUMMARY_BOX } from './ResultsSummary.jsx';
 import { useJurisdiction } from './jurisdictionContext.js';
 import { copy } from './resultsCopy.js';
 
@@ -86,25 +86,26 @@ export function SkeletonLine({ className }) {
 }
 
 /**
- * Placeholders the size of the cards, hidden from screen readers. At least a
- * screen tall, so the footer starts below the fold and is not pushed down
- * when the longer results replace it (#27).
+ * While the precinct loads: the summary's Election Day part for real, as the
+ * summary renders it (it needs no data, and its date line is the page's
+ * largest text, #156), then placeholders the size of the rest of the summary
+ * and the cards, hidden from screen readers. At least a screen tall, so the
+ * footer starts below the fold and is not pushed down when the longer results
+ * replace it (#27).
  */
 export function ResultsSkeleton() {
   return (
-    <div data-testid="results-skeleton" aria-hidden="true" className="min-h-screen">
-      <div
-        data-testid="summary-skeleton"
-        className="mt-4 rounded-md border-2 border-border bg-surface-raised p-4"
-      >
-        <div className={`h-4 w-28 ${bar}`} />
-        <div className={`mt-2 h-6 w-full ${bar}`} />
-        <div className={`mt-4 h-4 w-3/4 ${bar}`} />
-        <div className={`mt-2 h-4 w-1/2 ${bar}`} />
-        <div className={`mt-3 h-11 w-40 ${bar}`} />
-        <div className={`mt-4 h-11 w-full ${bar}`} />
+    <div data-testid="results-skeleton" className="min-h-screen">
+      <div data-testid="summary-skeleton" className={SUMMARY_BOX}>
+        <ElectionDayPart>
+          <PlaceSkeleton />
+        </ElectionDayPart>
+        <div aria-hidden="true" className="border-t border-border pt-3">
+          <div className={`h-4 w-28 ${bar}`} />
+          <div className={`mt-3 h-11 w-40 ${bar}`} />
+        </div>
       </div>
-      <div className="mt-6 flex flex-col gap-4">
+      <div aria-hidden="true" className="mt-6 flex flex-col gap-4">
         {CARDS.map((key) => (
           <div key={key} className="rounded-md border border-border p-4">
             <div className={`h-6 w-40 ${bar}`} />
