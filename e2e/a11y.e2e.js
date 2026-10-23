@@ -426,8 +426,18 @@ test('Election Day with no Election Day reports shows only the no-data state', a
 // While a precinct loads, the summary's Election Day line already shows (its
 // largest text, #156). The header holds the share row's place, so the line
 // does not move when the results replace the skeleton (#27).
-for (const code of [CODE, CITY_CODE]) {
-  test(`the Election Day line stays put when /p/${code} loads`, async ({ page }) => {
+// At each project's width, and at 412 px (a common Android width, above the
+// 400 px where the header stops holding two lines for a County precinct's line).
+for (const [code, width] of [
+  [CODE, null],
+  [CITY_CODE, null],
+  [CODE, 412],
+  [CITY_CODE, 412],
+]) {
+  test(`the Election Day line stays put when /p/${code} loads${width ? ` at ${width} px` : ''}`, async ({
+    page,
+  }) => {
+    if (width) await page.setViewportSize({ width, height: 800 });
     await answerFromFixtures(page, { delayMs: 1500 });
     await page.goto(`/p/${code}`);
     const line = page

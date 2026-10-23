@@ -143,6 +143,7 @@ function PrecinctResults({ code }) {
   }
 
   const isCity = jurisdiction.id === 'city';
+  const placeHold = isCity ? 'min-h-12 min-[30rem]:min-h-0' : 'min-h-12 min-[25rem]:min-h-0';
   let status = null;
   if (precinct) status = isCity ? CITY_STATUS : precinctStatus(precinct);
   const municipality = placeLine(jurisdiction, code, precinct);
@@ -162,10 +163,12 @@ function PrecinctResults({ code }) {
         </h1>
         {/* Only a code-shaped value is shown: a link could otherwise put any
             text there. */}
-        {/* While loading, two lines are held on a phone, where the code and
-            the municipality or ward usually take two (#27). */}
+        {/* While loading, two lines are held where the code and the place
+            line take two: below 400 px for a County precinct (an
+            unincorporated one's is the longest) and below 480 px for a
+            City ward and precinct (#27). */}
         {titled && (
-          <p className={`mt-1 sm:text-lg ${result ? '' : 'min-h-12 sm:min-h-0'}`}>
+          <p className={`mt-1 sm:text-lg ${result ? '' : placeHold}`}>
             {copy.precinct(code)}
             {municipality && (
               <>
