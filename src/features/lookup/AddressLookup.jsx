@@ -162,7 +162,6 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
   return (
     <div>
       <AddressSearch onSubmit={handleAddress} onEdit={handleEdit} busy={busy} inputRef={inputRef} />
-      <GeocoderAttribution />
       <p role="alert" className="mt-2">
         {outcome?.error && (
           <span key={outcome.run}>
@@ -173,13 +172,17 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
         )}
       </p>
       {outcome?.canRetry && <RetryButton onRetry={handleRetry} busy={retrying} className="mt-2" />}
-      <div className="mt-4">
+      {/* Right under "Find my precinct": the other way in (#80). */}
+      <div className="mt-2">
         <UseMyLocation
           onLocate={handleLocation}
           onStart={forgetLookupPoint}
           addressInputRef={inputRef}
         />
       </div>
+      {/* The credits follow both actions (#80), still on the page as the
+          sources' terms ask. */}
+      <GeocoderAttribution />
       {/* Last, so it pushes nothing down when it appears (#27). */}
       <p role="status" className="mt-2 empty:hidden">
         {slow ? errorCopy.slow : ''}
