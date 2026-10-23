@@ -282,7 +282,7 @@ describe('production build', () => {
 
     it('writes a topic with its heading, text, title and description', async () => {
       const doc = await page('learn/voter-id/index.html');
-      expect(doc).toContain('<title>What ID to bring | St. Louis County Voter Guide</title>');
+      expect(doc).toContain('<title>What ID to bring | St. Louis Voter Guide</title>');
       expect(doc).toMatch(/<h1[^>]*>What ID to bring<\/h1>/);
       expect(doc).toContain('In Missouri, you must show a photo ID when you vote in person.');
       expect(doc).toMatch(
@@ -315,7 +315,7 @@ describe('production build', () => {
       expect(shell).toContain('<div id="root"></div>');
       expect(canonicalOf(shell)).toBeNull();
       expect(shell).not.toMatch(/property="og:/);
-      expect(shell).toContain('<title>St. Louis County Voter Guide</title>');
+      expect(shell).toContain('<title>St. Louis Voter Guide</title>');
       const scripts = (doc) =>
         [...doc.matchAll(/(?:src|href)="(\/assets\/[^"]+)"/g)].map((m) => m[1]);
       expect(scripts(shell)).toEqual(scripts(html));

@@ -5,7 +5,7 @@ import { formatCalendarDate, translated } from '../../i18n/index.js';
 export const copy = translated((t) => ({
   heading: t('home.heading'),
   intro: t('home.intro'),
-  // Says up front that this is not the county's own site (#71); the footer
+  // Says up front that this is not either board's own site (#71); the footer
   // names the official boards.
   unofficial: t('home.unofficial'),
   // The first action next to the address search (#104).
@@ -24,4 +24,5 @@ export const copy = translated((t) => ({
   moreInfo: t('home.moreInfo'),
   howToVote: t('home.howToVote'),
   countySite: t('home.countySite'),
+  citySite: t('home.citySite'),
 }));

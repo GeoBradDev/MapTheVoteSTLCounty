@@ -1,7 +1,7 @@
 {
   "name": "mapthevote-stl-county",
   "version": "0.1.0",
-  "description": "Nonpartisan voter guide for St. Louis County, Missouri",
+  "description": "St. Louis Voter Guide: a nonpartisan voter guide for St. Louis City and St. Louis County, Missouri",
   "private": true,
   "type": "module",
   "scripts": {

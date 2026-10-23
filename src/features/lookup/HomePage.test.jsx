@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import election from '../../config/election.js';
+import referrals from '../../config/referrals.js';
 import { copy as searchCopy } from './addressSearchCopy.js';
 import { copy as ruleCopy } from './countyElectionDayRuleCopy.js';
 import { copy } from './homeCopy.js';
@@ -66,13 +67,28 @@ describe('HomePage', () => {
     expect(container).not.toHaveTextContent(/assigned polling place/i);
   });
 
-  it('links to "How to vote" and the official county election site', () => {
+  it('links to "How to vote" and both official election sites (#93)', () => {
     renderHome();
-    expect(screen.getByRole('link', { name: copy.howToVote })).toHaveAttribute('href', '/learn');
-    expect(screen.getByRole('link', { name: copy.countySite })).toHaveAttribute(
+    const nav = screen.getByRole('navigation', { name: copy.moreInfo });
+    expect(within(nav).getByRole('link', { name: copy.howToVote })).toHaveAttribute(
+      'href',
+      '/learn',
+    );
+    expect(within(nav).getByRole('link', { name: copy.countySite })).toHaveAttribute(
       'href',
       election.countySiteUrl,
     );
+    expect(within(nav).getByRole('link', { name: copy.citySite })).toHaveAttribute(
+      'href',
+      referrals.stlCityBoard.url,
+    );
+  });
+
+  // #93: the guide is for City and County voters alike.
+  it('says it covers both the City and the County', () => {
+    renderHome();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('St. Louis Voter Guide');
+    expect(screen.getByText(copy.intro)).toHaveTextContent(/St\. Louis City and St\. Louis County/);
   });
 
   it('says in its header, under the intro, that this is an independent, nonpartisan guide', () => {

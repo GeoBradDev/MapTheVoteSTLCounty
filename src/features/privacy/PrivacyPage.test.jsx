@@ -36,6 +36,14 @@ describe('PrivacyPage', () => {
     }
   });
 
+  // #93: the notice is for City and County voters alike.
+  it("names the election boards' sites, not only the county's, under links", () => {
+    render(<PrivacyPage />);
+    const links = section(copy.links.heading);
+    expect(links).toHaveTextContent(/election boards'/);
+    expect(links).not.toHaveTextContent(/county/i);
+  });
+
   // A new third party in the policy means a new place data goes: the notice
   // must say so in the same change.
   it('names every third-party origin the Content-Security-Policy allows', async () => {

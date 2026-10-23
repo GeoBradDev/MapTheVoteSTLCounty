@@ -530,8 +530,8 @@ Typing a suggestion's own label back always matches. So the Galleria (Photon's a
 gives no match instead of a nearby building. Photon also answers "8025 Maryland Ave"
 with 8025 Bonhomme Ave, which the check turns into no match. Neither apartment
 address above is in OpenStreetMap; both give no match. A no match tells the voter
-to add the ZIP, pick a suggestion, try "Use my location" or use the county's official
-lookup.
+to add the ZIP, pick a suggestion, try "Use my location" or use either board's official
+lookup (#93).
 Photon gives St. Louis City, an independent city, as `city: Saint Louis` with no
 `county`; the provider fills `county: St. Louis city` for that case so `locate` asks the
 City's precinct layer first (#88).
@@ -605,7 +605,7 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
   the address has more than one point, and capped at 4 s. Records that are partly in
   St. Louis City and partly in the county (6200 Enright Ave 63130: 27 City units, 31 in
   University City) or two precincts is no match, with no fallback; the voter is pointed
-  to "Use my location" and the county's official lookup, or can type the unit. A failed
+  to "Use my location" and both boards' official lookups (#93), or can type the unit. A failed
   or slow check is no match too, with no fallback, but the app asks for
   `reportUnavailable` and so tells the voter that address search is not working and to
   try again (#18). A scan of the hosted copy found about 20 such
@@ -723,7 +723,7 @@ answer with the typed text itself:
   ZIP of the place found: 6135 Horton Pl 63133, county UNV202; 1 Brookings Dr 63130,
   Washington University, county HAD018): no match, since the lookup cannot tell which one
   the voter means (owner decision, 2026-10-21). The voter is pointed to "Use my location"
-  and the county's official lookup.
+  and both boards' official lookups (#93).
 - **The county and the City list the address in different ZIPs** (6135 Washington Ave:
   63134 in the county, FER022; 63112 in the City), owner decision of 2026-10-22 (#88):
   text with no ZIP (`6135 Washington Ave`, `6135 Washington Ave, St. Louis, MO`) is no
@@ -739,7 +739,7 @@ answer with the typed text itself:
 - **The City geocoder unavailable** (network error, non-2xx, error body, malformed body,
   or no answer in 4 s): never the county place. Without `reportUnavailable` it is no
   match; the app passes it (#18), so the voter is told address search is not working,
-  with Try again, "Use my location" and the county's official lookup.
+  with Try again, "Use my location" and both boards' official lookups (#93).
 - **Cost:** a voter whose number and street the county and the City list in different
   ZIPs and who types no ZIP is asked for one (since #88; under #58 that text got the City
   referral). Typing a ZIP, or picking the suggestion that names their own jurisdiction, gets

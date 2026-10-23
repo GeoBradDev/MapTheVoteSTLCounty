@@ -84,7 +84,7 @@ describe('topicDescription', () => {
   // A paragraph under a heading describes that section, not the page (owner
   // decision on #99): the "How to vote" intro stands in for it.
   const LEARN_INTRO =
-    'Short guides to voting in St. Louis County, each checked against official sources.';
+    'St. Louis County voting guides, checked against official sources. For now, City voters should see the St. Louis City Board of Election Commissioners.';
   const text = (value) => [{ type: 'text', value }];
 
   it('is the learn intro when the topic starts with a heading', () => {
@@ -133,17 +133,22 @@ describe('topicDescription', () => {
 describe('pageHead', () => {
   it('describes the home page with the site description and its canonical', () => {
     expect(pageHead('/')).toEqual({
-      title: 'St. Louis County Voter Guide',
+      title: 'St. Louis Voter Guide',
       description: shellHead().description,
       canonical: `${siteUrl}/`,
     });
   });
 
+  // #93: the description is for City and County voters alike.
+  it('describes the site as a guide for St. Louis City and County voters', () => {
+    expect(shellHead().description).toMatch(/St\. Louis City and County voters/);
+  });
+
   it('gives /learn its title, its intro and its canonical, trailing slash or not', () => {
     const head = pageHead('/learn/');
     expect(head).toEqual({
-      title: 'How to vote | St. Louis County Voter Guide',
-      description: expect.stringMatching(/^Short guides to voting in St. Louis County/),
+      title: 'How to vote | St. Louis Voter Guide',
+      description: expect.stringMatching(/^St\. Louis County voting guides/),
       canonical: `${siteUrl}/learn`,
     });
   });
@@ -151,7 +156,7 @@ describe('pageHead', () => {
   it('gives each topic its own title, description and canonical', () => {
     for (const topic of getTopics()) {
       const head = pageHead(`/learn/${topic.id}`);
-      expect(head.title).toBe(`${topic.title} | St. Louis County Voter Guide`);
+      expect(head.title).toBe(`${topic.title} | St. Louis Voter Guide`);
       expect(head.description).toBe(topicDescription(topic));
       expect(head.description.length).toBeGreaterThan(20);
       expect(head.canonical).toBe(`${siteUrl}/learn/${topic.id}`);
@@ -160,7 +165,7 @@ describe('pageHead', () => {
 
   it('gives the privacy notice its title and the start of its intro', () => {
     const head = pageHead('/privacy');
-    expect(head.title).toBe('Privacy | St. Louis County Voter Guide');
+    expect(head.title).toBe('Privacy | St. Louis Voter Guide');
     expect(head.description).toMatch(/^This site is an independent, nonpartisan guide\./);
     expect(head.description.length).toBeLessThanOrEqual(155);
     expect(head.canonical).toBe(`${siteUrl}/privacy`);
@@ -211,7 +216,7 @@ describe('headTags', () => {
       { tag: 'meta', attrs: { name: 'description', content: head.description } },
       { tag: 'link', attrs: { rel: 'canonical', href: head.canonical } },
       { tag: 'meta', attrs: { property: 'og:type', content: 'website' } },
-      { tag: 'meta', attrs: { property: 'og:site_name', content: 'St. Louis County Voter Guide' } },
+      { tag: 'meta', attrs: { property: 'og:site_name', content: 'St. Louis Voter Guide' } },
       { tag: 'meta', attrs: { property: 'og:title', content: head.title } },
       { tag: 'meta', attrs: { property: 'og:description', content: head.description } },
       { tag: 'meta', attrs: { property: 'og:url', content: head.canonical } },

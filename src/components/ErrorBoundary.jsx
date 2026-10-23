@@ -1,14 +1,14 @@
 import { Component, useEffect, useRef } from 'react';
-import election from '../config/election.js';
 import { applyHead } from '../pageHead.js';
 import { copy } from './errorBoundaryCopy.js';
+import OfficialLookups from './OfficialLookups.jsx';
 import { usePageTitle } from './usePageTitle.js';
 
 const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
 
 // What shows instead of a page that threw while rendering. It names no error
 // and shows none of its text, which could hold anything the page had.
-function ErrorScreen({ city }) {
+function ErrorScreen({ jurisdiction }) {
   const headingRef = useRef(null);
   usePageTitle(copy.heading);
   useEffect(() => {
@@ -25,13 +25,18 @@ function ErrorScreen({ city }) {
       </h1>
       <p role="alert" className="mt-4">
         {copy.body}{' '}
-        <a
-          href={city?.officialLookupUrl ?? election.officialLookupUrl}
-          rel="noreferrer"
-          className="text-primary underline"
-        >
-          {city ? copy.officialLookupCity : copy.officialLookup}
-        </a>
+        {jurisdiction ? (
+          <a
+            href={jurisdiction.officialLookupUrl}
+            rel="noreferrer"
+            className="text-primary underline"
+          >
+            {jurisdiction.id === 'city' ? copy.officialLookupCity : copy.officialLookup}
+          </a>
+        ) : (
+          // Not a precinct page, so no jurisdiction is known (#93).
+          <OfficialLookups className="text-primary underline" />
+        )}
         .
       </p>
       <p className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
@@ -56,8 +61,9 @@ function ErrorScreen({ city }) {
  * way forward instead of a blank screen. It logs nothing: main.jsx turns off
  * React's own logging of caught errors, since an error could carry what the
  * page held. Give it a `key` that changes with the page, so moving to another
- * page starts fresh. `city` is the City adapter on a City precinct's page,
- * so the way forward is the City's own lookup (#89).
+ * page starts fresh. `jurisdiction` is the precinct's on a precinct's page,
+ * so the way forward is that board's own lookup (#89); on any other page it
+ * is both boards' lookups (#93).
  */
 export default class ErrorBoundary extends Component {
   state = { failed: false };
@@ -67,6 +73,10 @@ export default class ErrorBoundary extends Component {
   }
 
   render() {
-    return this.state.failed ? <ErrorScreen city={this.props.city} /> : this.props.children;
+    return this.state.failed ? (
+      <ErrorScreen jurisdiction={this.props.jurisdiction} />
+    ) : (
+      this.props.children
+    );
   }
 }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
-import election from '../../config/election.js';
+import OfficialLookups from '../../components/OfficialLookups.jsx';
 import { GeocoderUnavailableError } from '../../data/geocoder.js';
 import {
   city as cityJurisdiction,
@@ -167,14 +167,8 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
         {outcome?.error && (
           <span key={outcome.run}>
             <span>{copy.errors[outcome.error]}</span> {copy.errorAfterLink}{' '}
-            <a
-              href={election.officialLookupUrl}
-              rel="noreferrer"
-              className="text-primary underline"
-            >
-              {copy.officialLookup}
-            </a>
-            .
+            {/* The address could be in either, so both boards' (#93). */}
+            <OfficialLookups className="text-primary underline" />.
           </span>
         )}
       </p>

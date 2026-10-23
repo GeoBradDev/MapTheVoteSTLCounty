@@ -11,6 +11,7 @@ import precinctAtCity from '../../../docs/raw/fixtures/precinct-at-city.json';
 import precinctGeometry from '../../../docs/raw/fixtures/precinct-geometry.json';
 import byId from '../../../docs/raw/fixtures/precinct-by-id.json';
 import nonresidential from '../../../docs/raw/fixtures/precinct-nonresidential.json';
+import { copy as lookupsCopy } from '../../components/officialLookupsCopy.js';
 import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
 import { createFakeGeocoder } from '../../test/fakeGeocoder.js';
@@ -473,6 +474,48 @@ describe('PrecinctPage', () => {
     // No result cards: only the search offered instead.
     expect(cardHeadings()).toEqual([copy.searchInstead]);
     expect(screen.getByRole('link', { name: copy.searchAnother })).toHaveAttribute('href', '/');
+  });
+
+  // #93: no jurisdiction is known for text that is not a precinct code.
+  it("links both boards' lookups for text that is not a precinct code", async () => {
+    renderAt('nope');
+    const alert = await alertSaying(copy.errors.notFound);
+    expect(within(alert).getByRole('link', { name: lookupsCopy.county })).toHaveAttribute(
+      'href',
+      election.officialLookupUrl,
+    );
+    expect(within(alert).getByRole('link', { name: lookupsCopy.city })).toHaveAttribute(
+      'href',
+      referrals.stlCityLookup.url,
+    );
+  });
+
+  it("links only the County's lookup for a County code that is not found", async () => {
+    fetchMock.mockImplementation(() => respond({ ...byId, features: [] }));
+    renderAt('ZZ999');
+    const alert = await alertSaying(copy.errors.notFound);
+    expect(within(alert).getAllByRole('link')).toHaveLength(1);
+    expect(within(alert).getByRole('link', { name: copy.officialLookup })).toHaveAttribute(
+      'href',
+      election.officialLookupUrl,
+    );
+  });
+
+  // #93: a County voter's page names no City board, the reverse of the City
+  // page's own check (PrecinctPage.city89.test.jsx).
+  it('names no City board and links no City site on a County precinct page', async () => {
+    routeFetch(byId);
+    renderAt('CC007');
+    await ready('CC007');
+    await screen.findByRole('list', { name: copy.polls.listLabel });
+    expect(document.body.textContent).not.toMatch(/Board of Election Commissioners/i);
+    const cityHosts = [referrals.stlCityBoard.url, referrals.stlCityLookup.url].map(
+      (u) => new URL(u).host,
+    );
+    const hosts = [...document.querySelectorAll('a[href^="http"]')].map(
+      (a) => new URL(a.href).host,
+    );
+    for (const host of hosts) expect(cityHosts).not.toContain(host);
   });
 
   it.each(['nope', 'ZZ999'])(

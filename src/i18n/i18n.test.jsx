@@ -29,7 +29,7 @@ afterEach(async () => {
 
 describe('t', () => {
   it('reads a message by its dotted key and fills in its values', () => {
-    expect(t('home.heading')).toBe('St. Louis County Voter Guide');
+    expect(t('home.heading')).toBe('St. Louis Voter Guide');
     expect(t('results.heading', { code: 'CC007' })).toBe('Precinct CC007');
   });
 
@@ -62,7 +62,7 @@ describe('t', () => {
 describe('translated', () => {
   it('builds a copy object in the current language and keeps it until the language changes', async () => {
     const copy = translated((tr) => ({ heading: tr('home.heading'), keys: { a: 1 } }));
-    expect(copy.heading).toBe('St. Louis County Voter Guide');
+    expect(copy.heading).toBe('St. Louis Voter Guide');
     expect(copy.keys).toBe(copy.keys);
     expect(Object.keys(copy)).toEqual(['heading', 'keys']);
     addStandIn();

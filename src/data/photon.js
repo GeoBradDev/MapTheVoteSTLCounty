@@ -4,8 +4,8 @@
 // address points (issue #49). Requests carry no cookies, no referrer and no
 // browser cache. Photon's public instance asks for
 // fair use and promises no availability, so every failure becomes a
-// GeocoderUnavailableError and the lookup offers "Use my location" and the
-// county's official lookup instead. A match is never stretched into a guess:
+// GeocoderUnavailableError and the lookup offers "Use my location" and both
+// boards' official lookups instead. A match is never stretched into a guess:
 // only results with a house number count, and typed text must name that
 // number and the whole street (direction, name and type).
 import { countyOf, labelOf, matchesTyped } from './addressMatch.js';

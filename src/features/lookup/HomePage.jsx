@@ -1,5 +1,6 @@
 import { Link } from 'wouter';
 import election from '../../config/election.js';
+import referrals from '../../config/referrals.js';
 import AddressLookup from './AddressLookup.jsx';
 import CountyElectionDayRule from './CountyElectionDayRule.jsx';
 import { copy } from './homeCopy.js';
@@ -51,6 +52,11 @@ export default function HomePage() {
           <li>
             <a href={election.countySiteUrl} rel="noreferrer" className={linkClass}>
               {copy.countySite}
+            </a>
+          </li>
+          <li>
+            <a href={referrals.stlCityBoard.url} rel="noreferrer" className={linkClass}>
+              {copy.citySite}
             </a>
           </li>
         </ul>

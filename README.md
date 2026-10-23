@@ -1,6 +1,7 @@
 # MapTheVoteSTLCounty
 
-A nonpartisan voter guide for St. Louis County, Missouri, live at
+St. Louis Voter Guide is a nonpartisan guide for voters in St. Louis City and St. Louis County,
+Missouri, live at
 [mapthevotestl.com](https://mapthevotestl.com). A voter types an address or uses their
 location and gets their precinct, the nearest polling places, their sample ballot, their
 districts and the in-person absentee voting sites and hours, plus short "How to vote" guides
@@ -10,7 +11,7 @@ map (#89), the City's early voting sites and hours (#91) and its districts (#90;
 ballot card links the City Board's site until #92); when the precinct cannot be found, they are referred to the City's own Board of
 Election Commissioners.
 
-It is for St. Louis County voters, on a phone first, and for whoever runs it for the next
+It is for St. Louis City and County voters, on a phone first, and for whoever runs it for the next
 election: the sections below say how to set it up, where its data comes from and how to
 point it at a new election.
 
@@ -50,7 +51,7 @@ notice at [`/privacy`](https://mapthevotestl.com/privacy) says what each service
 
 ## Disclaimer
 
-This is not an official St. Louis County app. For official information, contact the
+This is not an official St. Louis County or St. Louis City app. For official information, contact the
 [St. Louis County Board of Elections](https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/)
 (314-615-1800). St. Louis City voters should contact the
 [St. Louis City Board of Election Commissioners](https://www.stlouis-mo.gov/government/departments/board-election-commissioners/).
@@ -665,8 +666,8 @@ precinct, and that addresses the county and the City both list in one ZIP (6135 
 wrong precinct, a City address does not open a City precinct, an address outside both gets a
 precinct, a pick does not open its label's jurisdiction, a shared address or a twin typed with
 no ZIP is not no match, or one of those gets a precinct with the City geocoder blocked. "No match" is
-allowed: the app then points the voter to "Use my location" and the county's official
-lookup. Results are recorded in `docs/data.md` under Geocoding.
+allowed: the app then points the voter to "Use my location" and both boards' official
+lookups. Results are recorded in `docs/data.md` under Geocoding.
 
 ## Errors
 
@@ -682,8 +683,8 @@ layer down, the 2023 hosted copy's no match counts as an answer.)
 Every source down was already a `GeocoderUnavailableError`; `createGeocoder` reports the
 other cases that way only when the caller passes `reportUnavailable`, which the app does;
 without it the chain answers no match for them, as the #49 and #58 tests and
-`scripts/check-geocoder.mjs` expect. Every lookup error links the
-county's official lookup next to Use my location, and every one but a no match has a Try
+`scripts/check-geocoder.mjs` expect. Every lookup error links both
+boards' official lookups next to Use my location (the address could be in either, #93), and every one but a no match has a Try
 again button that repeats the same search, or the same device location without asking the
 device again, until the voter edits the address. The precinct page and its polling places
 and early voting cards show their own failures, each with Try again (the map still removes
@@ -692,7 +693,8 @@ shown keeps its rows and says when they were loaded instead (#84).
 After `SLOW_MS` (`src/features/lookup/slowNotice.js`), the lookup and the precinct page say
 they are still working. When the browser reports no connection, the lookup's and the precinct
 page's messages say the voter appears to be offline (cached polling places wait for the PWA, #25). A page that throws
-while rendering shows a plain error screen (`src/components/ErrorBoundary.jsx`), and
+while rendering shows a plain error screen (`src/components/ErrorBoundary.jsx`) with the
+precinct's own board's lookup on a precinct page, and both boards' lookups anywhere else (#93), and
 `src/main.jsx` keeps React from logging caught errors. `e2e/failures.e2e.js` breaks each
 service in turn (network refusal, a request that never answers, 5xx) in a real browser.
 

@@ -45,7 +45,7 @@ const ROUTES = [
   {
     path: '/',
     shows: () =>
-      document.querySelector('h1')?.textContent === 'St. Louis County Voter Guide' &&
+      document.querySelector('h1')?.textContent === 'St. Louis Voter Guide' &&
       Boolean(document.querySelector('[role="combobox"]')),
   },
   {

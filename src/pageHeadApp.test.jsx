@@ -74,13 +74,13 @@ describe('head on navigation', () => {
     expect(canonical()).toBe(`${siteUrl}/`);
 
     act(() => location.navigate('/p/CC007'));
-    expect(document.title).toBe('Precinct CC007 | St. Louis County Voter Guide');
+    expect(document.title).toBe('Precinct CC007 | St. Louis Voter Guide');
     expect(description()).toBe(shellHead().description);
     expect(canonical()).toBeNull();
     expect(ogUrl()).toBeNull();
 
     act(() => location.navigate('/nope'));
-    expect(document.title).toBe('Page not found | St. Louis County Voter Guide');
+    expect(document.title).toBe('Page not found | St. Louis Voter Guide');
     expect(canonical()).toBeNull();
   });
 
@@ -90,7 +90,7 @@ describe('head on navigation', () => {
     const location = arriveAt('/learn/voter-id');
     act(() => location.navigate('/privacy'));
     act(() => location.navigate('/'));
-    expect(document.title).toBe('St. Louis County Voter Guide');
+    expect(document.title).toBe('St. Louis Voter Guide');
   });
 
   it('never puts a query string or hash in the canonical', () => {
@@ -109,7 +109,7 @@ describe('head on navigation', () => {
       privacyThrows = true;
       act(() => location.navigate('/privacy'));
       expect(document.querySelector('h1')).toHaveTextContent(errorCopy.heading);
-      expect(document.title).toBe(`${errorCopy.heading} | St. Louis County Voter Guide`);
+      expect(document.title).toBe(`${errorCopy.heading} | St. Louis Voter Guide`);
       expect(canonical()).toBeNull();
       expect(ogUrl()).toBeNull();
       expect(description()).toBe(shellHead().description);

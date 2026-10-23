@@ -164,7 +164,7 @@ test('going home from a page focuses the home heading at the top', async ({ page
   expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
   await page.keyboard.press('Enter');
   const heading = page.getByRole('heading', { level: 1 });
-  await expect(heading).toHaveText('St. Louis County Voter Guide');
+  await expect(heading).toHaveText('St. Louis Voter Guide');
   await expect(heading).toBeFocused();
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
 });
@@ -186,7 +186,7 @@ test('Back and Forward leave the scroll position to the browser', async ({ page 
   // A link to a new page starts it at the top.
   expect(await page.evaluate(() => window.scrollsToTop)).toBe(1);
   await page.goBack();
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('St. Louis County Voter Guide');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('St. Louis Voter Guide');
   await page.goForward();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('How to vote');
   expect(await page.evaluate(() => window.scrollsToTop)).toBe(1);

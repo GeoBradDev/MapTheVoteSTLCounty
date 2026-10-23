@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef } from 'react';
 import { Route, Switch, useLocation } from 'wouter';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
-import { cityOnPath } from './data/jurisdictions.js';
+import { jurisdictionOnPath } from './data/jurisdictions.js';
 import NotFoundPage from './components/NotFoundPage.jsx';
 import SiteFooter from './components/SiteFooter.jsx';
 import LearnPage from './features/learn/LearnPage.jsx';
@@ -119,7 +119,7 @@ export default function App() {
       <main id="main" tabIndex={-1} className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
         {/* A page that throws shows a way forward, not a blank screen (#18);
             a new location starts fresh. */}
-        <ErrorBoundary key={location} city={cityOnPath(location)}>
+        <ErrorBoundary key={location} jurisdiction={jurisdictionOnPath(location)}>
           <Switch>
             <Route path="/" component={HomePage} />
             <Route path="/p/:precinct" component={PrecinctPage} />

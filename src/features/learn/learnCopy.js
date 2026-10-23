@@ -24,10 +24,13 @@ const build = (t) => ({
   empty: {
     notReady: t('learn.empty.notReady'),
     countySite: t('learn.empty.countySite'),
+    or: t('learn.empty.or'),
+    citySite: t('learn.empty.citySite'),
   },
   moreHelp: t('learn.moreHelp'),
   lookup: t('learn.lookup'),
   countySite: t('learn.countySite'),
+  citySite: t('learn.citySite'),
   allTopics: t('learn.allTopics'),
   sourcesHeading: t('learn.sourcesHeading'),
   /** @param {number} n @param {string} label */

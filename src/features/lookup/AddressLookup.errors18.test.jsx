@@ -5,7 +5,9 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
+import { copy as lookupsCopy } from '../../components/officialLookupsCopy.js';
 import election from '../../config/election.js';
+import referrals from '../../config/referrals.js';
 import { GeocoderUnavailableError } from '../../data/geocoder.js';
 import AddressLookup from './AddressLookup.jsx';
 import { copy as searchCopy } from './addressSearchCopy.js';
@@ -77,9 +79,14 @@ describe('AddressLookup failure states (#18)', () => {
     expect(alert).not.toHaveTextContent(copy.errors.noMatch);
     expect(copy.errors.unavailable).toMatch(/Try again/);
     expect(copy.errors.unavailable).toMatch(/Use my location/);
-    expect(screen.getByRole('link', { name: copy.officialLookup })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: lookupsCopy.county })).toHaveAttribute(
       'href',
       election.officialLookupUrl,
+    );
+    // No jurisdiction is known yet (#93): both boards' lookups.
+    expect(screen.getByRole('link', { name: lookupsCopy.city })).toHaveAttribute(
+      'href',
+      referrals.stlCityLookup.url,
     );
     expect(screen.getByRole('button', { name: /use my location/i })).toBeInTheDocument();
     expect(retryButton()).toBeInTheDocument();

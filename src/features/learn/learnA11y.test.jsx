@@ -25,7 +25,7 @@ vi.mock('./topics.js', async (importOriginal) => {
 // As index.html sets them.
 beforeAll(() => {
   document.documentElement.lang = 'en';
-  document.title = 'St. Louis County Voter Guide';
+  document.title = 'St. Louis Voter Guide';
 });
 
 afterEach(() => {

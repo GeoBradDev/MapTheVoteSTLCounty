@@ -9,14 +9,14 @@ import { CODE, fixtureBody } from './fixtures.js';
 const SITE = 'https://mapthevotestl.com';
 
 const PAGES = [
-  { path: '/', heading: 'St. Louis County Voter Guide', title: 'St. Louis County Voter Guide' },
-  { path: '/learn', heading: 'How to vote', title: 'How to vote | St. Louis County Voter Guide' },
+  { path: '/', heading: 'St. Louis Voter Guide', title: 'St. Louis Voter Guide' },
+  { path: '/learn', heading: 'How to vote', title: 'How to vote | St. Louis Voter Guide' },
   {
     path: '/learn/voter-id',
     heading: 'What ID to bring',
-    title: 'What ID to bring | St. Louis County Voter Guide',
+    title: 'What ID to bring | St. Louis Voter Guide',
   },
-  { path: '/privacy', heading: 'Privacy', title: 'Privacy | St. Louis County Voter Guide' },
+  { path: '/privacy', heading: 'Privacy', title: 'Privacy | St. Louis Voter Guide' },
 ];
 
 async function answerFromFixtures(page) {
@@ -139,7 +139,7 @@ test.describe('hydration', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('How to vote');
     await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
     expect(await page.evaluate(() => window.notReloaded)).toBe(true);
-    await expect(page).toHaveTitle('How to vote | St. Louis County Voter Guide');
+    await expect(page).toHaveTitle('How to vote | St. Louis Voter Guide');
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `${SITE}/learn`);
     expect(problems).toEqual([]);
   });
@@ -170,7 +170,7 @@ test.describe('hydration', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('What ID to bring');
     await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
     await expect(page.getByText(/In Missouri, you must show a photo ID/)).toBeVisible();
-    await expect(page).toHaveTitle('What ID to bring | St. Louis County Voter Guide');
+    await expect(page).toHaveTitle('What ID to bring | St. Louis Voter Guide');
     expect(problems).toEqual([]);
   });
 
@@ -263,7 +263,7 @@ for (const path of ['//', '/learn/voter-id//']) {
     // A full URL: a bare // would be read as a host.
     await page.goto(`${baseURL}${path}`);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Page not found');
-    await expect(page).toHaveTitle('Page not found | St. Louis County Voter Guide');
+    await expect(page).toHaveTitle('Page not found | St. Louis Voter Guide');
     await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
     expect(problems).toEqual([]);
   });

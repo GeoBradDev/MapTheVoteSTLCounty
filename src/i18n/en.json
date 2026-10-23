@@ -1,8 +1,8 @@
 {
   "site": {
-    "name": "St. Louis County Voter Guide",
-    "description": "A nonpartisan, unofficial guide for St. Louis County voters: find your precinct, polling places and sample ballot. Not affiliated with any board of elections.",
-    "pageTitle": "{name} | St. Louis County Voter Guide"
+    "name": "St. Louis Voter Guide",
+    "description": "A nonpartisan, unofficial guide for St. Louis City and County voters: find your precinct, polling places and sample ballot. Not affiliated with any board of elections.",
+    "pageTitle": "{name} | St. Louis Voter Guide"
   },
   "app": {
     "skipLink": "Skip to main content",
@@ -14,6 +14,11 @@
     "countySite": "St. Louis County Board of Elections website",
     "citySite": "St. Louis City Board of Election Commissioners website",
     "privacy": "Privacy"
+  },
+  "officialLookups": {
+    "county": "St. Louis County official lookup",
+    "or": "or the",
+    "city": "St. Louis City official lookup"
   },
   "notFound": {
     "heading": "Page not found",
@@ -39,14 +44,15 @@
     "slow": "Still working... This is taking longer than usual."
   },
   "home": {
-    "heading": "St. Louis County Voter Guide",
-    "intro": "Find your precinct, polling places near you and your sample ballot.",
+    "heading": "St. Louis Voter Guide",
+    "intro": "For voters in St. Louis City and St. Louis County: find your precinct, polling places near you and your sample ballot.",
     "unofficial": "This is an independent, nonpartisan guide, not an official county or city site.",
     "waitTimes": "See early voting wait times",
     "electionDay": "Election Day is {date}.",
     "moreInfo": "More information",
     "howToVote": "How to vote",
-    "countySite": "St. Louis County Board of Elections website"
+    "countySite": "St. Louis County Board of Elections website",
+    "citySite": "St. Louis City Board of Election Commissioners website"
   },
   "addressSearch": {
     "label": "Enter your address",
@@ -72,12 +78,11 @@
     }
   },
   "lookup": {
-    "officialLookup": "county's official lookup",
     "errorAfterLink": "You can also use the",
     "errors": {
       "noMatch": "We could not find that address. Check it, add your ZIP code, pick a suggestion as you type, or try Use my location.",
       "unavailable": "Address search is not working right now, so we could not check that address. Try again in a minute, or try Use my location.",
-      "failed": "We could not look up your precinct right now: the county's precinct map did not answer. Try again in a minute.",
+      "failed": "We could not look up your precinct right now: the election board's precinct map did not answer. Try again in a minute.",
       "offline": "You appear to be offline. Check your internet connection, then try again."
     },
     "attribution": {
@@ -142,8 +147,8 @@
     "ready": "Results for precinct {code} are ready.",
     "officialLookup": "county's official lookup",
     "officialLookupCity": "City's official lookup",
-    "pageTitle": "Precinct {code} | St. Louis County Voter Guide",
-    "notFoundTitle": "Precinct not found | St. Louis County Voter Guide",
+    "pageTitle": "Precinct {code} | St. Louis Voter Guide",
+    "notFoundTitle": "Precinct not found | St. Louis Voter Guide",
     "searchInstead": "Search for your address",
     "share": {
       "button": "Share this page",
@@ -348,8 +353,8 @@
   },
   "learn": {
     "pageHeading": "How to vote",
-    "pageTitle": "{name} | St. Louis County Voter Guide",
-    "intro": "Short guides to voting in St. Louis County, each checked against official sources.",
+    "pageTitle": "{name} | St. Louis Voter Guide",
+    "intro": "St. Louis County voting guides, checked against official sources. For now, City voters should see the St. Louis City Board of Election Commissioners.",
     "groups": {
       "before-you-vote": "Before you vote",
       "ways-to-vote": "Ways to vote",
@@ -358,11 +363,14 @@
     },
     "empty": {
       "notReady": "Our voting guides are not ready yet. For official information on how to vote, see the",
-      "countySite": "St. Louis County Board of Elections website"
+      "countySite": "St. Louis County Board of Elections website",
+      "or": "or the",
+      "citySite": "St. Louis City Board of Election Commissioners website"
     },
     "moreHelp": "More help",
     "lookup": "Look up your precinct, nearby polling places, sample ballot and districts",
     "countySite": "St. Louis County Board of Elections website",
+    "citySite": "St. Louis City Board of Election Commissioners website",
     "allTopics": "All voting guides",
     "sourcesHeading": "Sources",
     "citationLabel": "Source {n}: {label}",
@@ -407,7 +415,7 @@
     },
     "links": {
       "heading": "Links to other sites",
-      "text": "Links to other sites, like the county's, take you to those sites. They are not told which page of this site you came from."
+      "text": "Links to other sites, like the election boards', take you to those sites. They are not told which page of this site you came from."
     },
     "backHome": "Back to home"
   }
