@@ -169,9 +169,7 @@
       "polls": "Polling places near you",
       "ballot": "Sample ballot",
       "earlyVoting": "Early voting",
-      "districts": "Your districts",
-      "pending": "For now, find this in the",
-      "pendingCity": "For now, find this on the website of the"
+      "districts": "Your districts"
     },
     "polls": {
       "listLabel": "Nearest polling places",
@@ -216,7 +214,11 @@
       "intro": "The sample ballot shows the contests and measures on your ballot.",
       "open": "Open your sample ballot (PDF)",
       "newTab": "(opens a PDF in a new tab, or downloads it)",
-      "missing": "We could not find the sample ballot for this precinct. Find it with the"
+      "missing": "We could not find the sample ballot for this precinct. Find it with the",
+      "introCity": "The City of St. Louis publishes one sample ballot for all precincts, with every contest on a ballot anywhere in the City. Your own ballot has only the contests for where you live.",
+      "openCity": "Open the City's sample ballot (PDF)",
+      "allPrecincts": "All precincts",
+      "districtsPointer": "Your districts are listed under Your districts, below."
     },
     "earlyVoting": {
       "intro": "Places to vote in person before Election Day, with their dates and hours.",

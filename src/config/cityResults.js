@@ -130,6 +130,18 @@ export default deepFreeze({
     lastVerified: '2026-10-22',
   },
 
+  // The City Board's sample ballot (#92): one PDF for all precincts, with every
+  // race in the City, not one per precinct or ward. Supplied by the owner on
+  // 2026-10-23; its first page reads "Sample Ballot, General Election, City of
+  // St. Louis, November 3, 2026, All Precincts", and the City Board's Elections
+  // page (`sources`) links it as the 11/03/26 General Election's sample ballot.
+  // The card never calls it the voter's own ballot. Replace it each election.
+  sampleBallot: {
+    url: `${referrals.stlCityBoard.url}documents/upload/Nov26-All-Races-Sample-Ballot.pdf`,
+    sources: [`${referrals.stlCityBoard.url}elections/index.cfm`],
+    lastVerified: '2026-10-23',
+  },
+
   // Where a City voter may vote on Election Day, in the City Board's own words
   // from its polling places page, re-read on 2026-10-22 (#89). Any City voter
   // may vote at any of the listed locations; the County has its own rule

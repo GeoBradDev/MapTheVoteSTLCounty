@@ -9,3 +9,4 @@ export { cityHours, cityScheduleFor, citySchedules } from './features/lookup/cit
 export { default as CityDistrictsCard } from './features/lookup/CityDistrictsCard.jsx';
 export { default as CityEarlyVotingCard } from './features/lookup/CityEarlyVotingCard.jsx';
 export { default as CityElectionDayRule } from './features/lookup/CityElectionDayRule.jsx';
+export { default as CitySampleBallotCard } from './features/lookup/CitySampleBallotCard.jsx';
