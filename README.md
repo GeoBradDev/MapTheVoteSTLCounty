@@ -445,7 +445,8 @@ The palette is nonpartisan: no red or blue. Define colors only as oklch `--color
 CSS under `src` or in the built CSS, and on any `data:` URI in the CSS under `src` (put icons in
 SVG components that use `currentColor`). Only CSS is checked: a color written anywhere else
 (`index.html`, JSX props or SVG attributes, JavaScript strings) is not, so use token classes
-there instead of color values. The one exception is the site icons in `public/` (#79): a favicon
+there instead of color values. Two exceptions are checked on their own: the `theme-color` meta in
+`index.html` (#76, below) and the site icons in `public/` (#79): a favicon
 cannot read the page's CSS, so `favicon.svg` writes `--color-primary` and `--color-on-primary`
 as hex, and `favicon.ico` and `apple-touch-icon.png` are drawn from it. A build test fails on
 red or blue in `favicon.svg` (not in the two raster icons); when those tokens change, redraw all
@@ -466,7 +467,8 @@ The tokens (#76), each with its role and minimum contrast beside it in `src/inde
   colors (the icon then in the system text color), and its text stays `ink`.
 - The wait time ramp, `wait-1` to `wait-5`, for map markers and their legend only (see Map).
 
-`src/test/contrast.test.js` checks every text and control pair the tokens make against WCAG 2.1 AA (the wait markers are checked in `mapColors.test.js`): text 4.5:1 on
+`src/test/contrast.test.js` checks every text and control pair the tokens make against WCAG
+2.1 AA (the wait markers are checked in `mapColors.test.js`): text 4.5:1 on
 every surface and fill, `border-strong` 3:1. A new token or pair goes into it. The browser's
 chrome color, `<meta name="theme-color">` in `index.html`, is `surface` written as hex;
 `src/test/theme.test.js` checks it matches `surface` and is not red or blue, so change both
