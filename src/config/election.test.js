@@ -106,8 +106,11 @@ describe('election config', () => {
     expect(election.absenteeWhere).toMatch(/^abs_type IN \(/);
   });
 
-  it('names a congressional district field', () => {
-    expect(election.congressionalField).toMatch(/^congressional_district_\d+$/);
+  // The 2022 map applies on November 3, 2026: the Missouri Supreme Court held
+  // the 2025 map (H.B. 1) does not take effect unless voters approve it, and
+  // the County's sample ballots follow the 2022 map (#150).
+  it('names the 2022 congressional map field', () => {
+    expect(election.congressionalField).toBe('congressional_district_20');
   });
 
   it('links an https official lookup app', () => {
@@ -188,7 +191,7 @@ describe('district fields', () => {
     expect(new Set(fields.map((f) => f.field)).size).toBe(fields.length);
   });
 
-  it('shows the current congressional map first, and no other congressional field', () => {
+  it('shows the congressional map in effect first, and no other congressional field', () => {
     expect(fields[0]).toEqual({ key: 'congressional', field: election.congressionalField });
     const congressional = fields.filter((f) => f.field.startsWith('congressional'));
     expect(congressional).toEqual([fields[0]]);
