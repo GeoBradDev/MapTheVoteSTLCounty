@@ -1113,7 +1113,8 @@ export async function runHealthCheck(
         res = await request(citySampleBallot.url, { method: 'HEAD' });
       } catch (error) {
         if (!(error instanceof CheckError)) throw error;
-        throw new CheckError(`${where}: ${error.message}. ${hint}`);
+        // An outage is not the config's fault; anything else may be.
+        throw new CheckError(`${where}: ${error.message}${error.transient ? '' : `. ${hint}`}`);
       }
       const type = (res.headers.get('content-type') ?? '').split(';')[0].trim();
       if (type !== 'application/pdf') {

@@ -940,8 +940,8 @@ are in `src/config/referrals.js`. `src/data/jurisdictions.js` pairs each block w
 the County's is `src/data/arcgis.js`. The City's data client is `src/data/cityArcgis.js`
 (#87), loaded on demand through `loadCityClient()` in the City chunk (`src/cityChunk.js`, #147),
 with the City-only results UI and `src/config/cityResults.js`, the values only the City's cards
-read (its early voting hours, #91, its Election Day rule, #89, and its districts card's
-rows, #90). The City adapter (#89, #91)
+read (its early voting hours, #91, its Election Day rule, #89, its districts card's rows, #90,
+and its sample ballot, #92). The City adapter (#89, #91)
 reads the precinct, its outline, the Election Day voting locations and the early voting sites
 through it.
 
@@ -983,8 +983,8 @@ Representative district, for example. The City Board's Elections page
 (`.../board-election-commissioners/elections/index.cfm`) lists "11/03/26 General Election"
 with a "Sample Ballot" link to it. Neither page says which races a voter sees, so the card says
 plainly that this is the City's ballot for all precincts and that the voter's own ballot has
-only the contests where they vote: the citywide and statewide ones and those for their ward and
-districts. It never calls it the voter's precinct ballot, and
+only the contests for where they live. This ballot has no ward (aldermanic) contest, so the card
+does not say a ward contest is on it. It never calls it the voter's precinct ballot, and
 never reads a precinct's data to pick it. The URL is `sampleBallot` in
 `src/config/cityResults.js`; `node scripts/check-config.mjs` checks it answers HEAD with a PDF.
 The County's per-precinct match (#82, #111) has nothing to match on a citywide ballot.

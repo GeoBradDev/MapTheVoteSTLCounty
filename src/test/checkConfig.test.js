@@ -1644,6 +1644,16 @@ describe('the City layers (#87)', () => {
     );
   });
 
+  it('fails the City sample ballot on an outage without blaming the config (#92)', async () => {
+    const world = healthyWorld();
+    world.cityBallot = () => ({ status: 503 });
+    const { status, detail } = (await run(world))['city sample ballot'];
+    expect(status).toBe('fail');
+    expect(detail.startsWith(`sampleBallot (${cityResults.sampleBallot.url}): `)).toBe(true);
+    expect(detail).not.toContain('cityResults.js');
+    expect(world.cityBallotCalls.length).toBeGreaterThan(1);
+  });
+
   it('checks the City sample ballot even when the City layers fail (#92)', async () => {
     const world = healthyWorld();
     world.city.layers = {};
