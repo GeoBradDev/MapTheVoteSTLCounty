@@ -122,14 +122,45 @@ fonts (Noto Sans, DejaVu Sans) the date line wraps to two lines and wins. Fixes:
 - The fixture server's wait is four simulated round trips (600 ms) rather than 100 ms, for
   margin on slower runners (CI's first paint was at 111 ms, its answers at about 210 ms).
 
-## Open: outside early voting (needs the owner's decision)
+## Outside early voting: owner decision (option 1, 2026-10-23)
 
-The review rerun found that the fix holds only while early voting runs. Outside it (from
-Election Day, and after), the early voting part of the summary is gone, so the summary's
-sample ballot paragraph sits inside 360 x 640 and, painted with the precinct data, becomes
-the LCP on every font (pinned clock, Election Day: entries at about 1600 ms against 1500 ms
-answers in the e2e test). With the 600 ms fixture wait, Lighthouse would then measure about
-3 s on both results pages from November 3. Not merged; options are on #27.
+The review rerun found that the fix holds only while early voting runs. Outside it (after
+early voting closes on November 2, on Election Day, and after), the early voting part of the
+summary is gone, so the summary's sample ballot paragraph sits inside 360 x 640 and, painted
+with the precinct data, becomes the LCP on every font (pinned clock, Election Day: entries at
+about 1600 ms against 1500 ms answers in the e2e test). With the 600 ms fixture wait,
+Lighthouse would then measure about 3 s on both results pages from November 3.
+
+The owner chose option 1 on #27: preconnect to the ArcGIS host precinct pages query, for
+`/p/*` only, so the data driven paint gets the connection set up while the script downloads.
+
+7. A precinct page (`/p/*`) is served with `Link: <https://services6.arcgis.com>;
+   rel=preconnect; crossorigin`: one entry per distinct origin of the County's and the
+   City's election `serviceRoot` (today both are services6.arcgis.com), and nothing else. No
+   other path gets a `Link` header. Each origin is in connect-src and is a host the privacy
+   notice names.
+8. `vite preview` (the e2e and Lighthouse runs) sends the same header on the same paths,
+   from the same constant, so CI measures it.
+9. `npm run test:perf` measures /p/CC007 and /p/W01P12 at three pinned clocks: during
+   early voting, the evening after early voting closes (November 2, 8 p.m. Central) and
+   Election Day morning (`ELECTION_DAY_AT`). Every state passes the unchanged 2500 ms budget
+   with the 600 ms fixture wait, and each run checks that the clock was pinned.
+10. The e2e guard "paints its largest text before the data answers" pins an early voting
+    clock, so it keeps testing the early voting layout after November 2 instead of failing
+    on the real date.
+
+Files, in addition to the ones above:
+
+- `src/prerender/plugin.js`: `PRECINCT_PRECONNECT` (the header value, from the config's
+  service roots) and `previewHeaders(pathname)`; `previewRoutes` sets them on page requests.
+- `render.yaml`: the `/p/*` `Link` rule, with a comment.
+- `src/test/render.test.js`: the rule equals `PRECINCT_PRECONNECT`, only `/p/*` gets it,
+  its origins are in connect-src and in the privacy notice's hosts.
+- `src/prerender/plugin.test.js`: `previewHeaders`.
+- `e2e/lighthouse.js`: the pinned clock states for the two results routes.
+- `e2e/a11y.e2e.js`: the LCP guard's pinned early voting clock.
+- `README.md`, Deploy and Performance: the header, checked on production after deploy (PR
+  previews keep the service's existing header rules).
 
 ## Order of work
 
@@ -157,6 +188,10 @@ answers in the e2e test). With the 600 ms fixture wait, Lighthouse would then me
 - First-load JS: a few bytes; checked by the build test.
 
 ## Proof
+
+- Criteria 7 and 8: `src/test/render.test.js` and `src/prerender/plugin.test.js`; a curl of
+  `vite preview` and, after deploy, of production `/p/CC007`.
+- Criteria 9 and 10: `npm run test:perf` and `npm run test:e2e` output.
 
 - `PrecinctPage.test.jsx` loading test: criterion 1.
 - `e2e/a11y.e2e.js` "the Election Day line stays put": criterion 6.
