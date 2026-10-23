@@ -371,7 +371,7 @@ and every other control (button, summary, form control, or a link alone in its b
 least 44 px tall. A link set inline in a line of text is exempt, as WCAG's target size
 criteria exempt it. It also checks focus after an in-app link and reduced motion, and dark
 mode (#77): axe again on each route with the system dark, the page color from the first
-styled frame, dark print, and the maps' basemap switch. The county's
+styled frame, dark print, and the wait times map's basemap switch (the precinct map's is a unit test, `precinctMapView.test.js`). The county's
 layers, the City Board's layers, and the County and City wait time layers, are answered from
 `docs/raw/fixtures/` (the wait times route and the County and City results routes at the time
 those were recorded, so counts show) and every other outside request is blocked, so
