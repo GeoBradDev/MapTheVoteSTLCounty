@@ -40,6 +40,12 @@ function renderAt(path) {
   return location;
 }
 
+// jsdom's roles count a page's own <header> inside main as a banner too,
+// which browsers do not; the site header (#79) is the one outside main.
+function siteHeader() {
+  return screen.getAllByRole('banner').find((el) => !el.closest('main'));
+}
+
 function heading() {
   return screen.getByRole('heading', { level: 1 });
 }
@@ -201,6 +207,46 @@ describe('App', () => {
     expect(screen.getByRole('link', { name: /home page/i })).toHaveAttribute('href', '/');
     expect(screen.getByRole('combobox', { name: 'Enter your address' })).toBeInTheDocument();
   });
+
+  it.each(['/', '/p/CC007', '/learn', '/learn/voter-id', '/privacy', '/early-voting', '/nope'])(
+    'shows the site header above main on %s (#79)',
+    (path) => {
+      renderAt(path);
+
+      const banner = siteHeader();
+      expect(screen.getByRole('main')).not.toContainElement(banner);
+      expect(banner.compareDocumentPosition(screen.getByRole('main'))).toBe(
+        Node.DOCUMENT_POSITION_FOLLOWING,
+      );
+      expect(within(banner).getByRole('link', { name: 'St. Louis Voter Guide' })).toHaveAttribute(
+        'href',
+        '/',
+      );
+    },
+  );
+
+  it('keeps the skip link before the site header (#79)', async () => {
+    renderAt('/');
+    const skip = screen.getByRole('link', { name: 'Skip to main content' });
+    expect(skip.compareDocumentPosition(siteHeader())).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+
+  it.each([
+    ['/privacy', 'St. Louis Voter Guide', 'St. Louis Voter Guide'],
+    ['/privacy', 'Look up', 'St. Louis Voter Guide'],
+    ['/p/CC007', 'How to vote', 'How to vote'],
+  ])(
+    'moves focus to the new heading after a header link from %s to %s (#79)',
+    async (path, name, expected) => {
+      renderAt(path);
+      const banner = siteHeader();
+
+      await userEvent.click(within(banner).getByRole('link', { name }));
+
+      expect(heading()).toHaveTextContent(expected);
+      expect(heading()).toHaveFocus();
+    },
+  );
 
   it('starts every page with a skip link to main', async () => {
     renderAt('/p/CC007');

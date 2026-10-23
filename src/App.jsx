@@ -4,6 +4,7 @@ import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { jurisdictionOnPath } from './data/jurisdictions.js';
 import NotFoundPage from './components/NotFoundPage.jsx';
 import SiteFooter from './components/SiteFooter.jsx';
+import SiteHeader from './components/SiteHeader.jsx';
 import LearnPage from './features/learn/LearnPage.jsx';
 import LearnTopicPage from './features/learn/LearnTopicPage.jsx';
 import HomePage from './features/lookup/HomePage.jsx';
@@ -64,7 +65,8 @@ if (typeof window !== 'undefined') {
  * After an in-app navigation (not the first load), starts the new page at the
  * top, and when the link that was followed went away with the old page,
  * leaving focus on the body (or on main, where Safari puts it after a click),
- * moves focus to the new page's heading so a screen reader announces it.
+ * or was a site header link, which stays on screen (#79), moves focus to the
+ * new page's heading so a screen reader announces it.
  * Pages that focus their own heading do it in their own effects, which run
  * first, so they are left alone; a page loaded on demand (the wait times
  * page, #104) mounts after this effect found no heading, and focuses its own
@@ -90,8 +92,15 @@ function usePageArrival() {
     poppedPath = null;
     previous.current = location;
     if (!fromHistory) window.scrollTo(0, 0);
+    // A link in the site header (#79) stays on screen after it is followed,
+    // so focus left on it still moves on to the new page's heading.
     const focused = document.activeElement;
-    if (focused && focused !== document.body && focused.id !== 'main') return;
+    const left =
+      !focused ||
+      focused === document.body ||
+      focused.id === 'main' ||
+      Boolean(focused.closest('[data-site-header]'));
+    if (!left) return;
     document.querySelector('main h1[tabindex="-1"]')?.focus({ preventScroll: fromHistory });
   }, [location]);
 }
@@ -131,6 +140,7 @@ export default function App() {
       >
         {t('app.skipLink')}
       </a>
+      <SiteHeader />
       <main id="main" tabIndex={-1} className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
         {/* A page that throws shows a way forward, not a blank screen (#18);
             a new location starts fresh. */}

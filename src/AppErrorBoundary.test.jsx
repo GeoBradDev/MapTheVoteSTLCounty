@@ -58,6 +58,13 @@ describe('App error screen (#93)', () => {
     expect(lookupLinks()).toEqual([referrals.stlCityLookup.url]);
   });
 
+  it('keeps the site header on the error screen (#79)', () => {
+    renderAt('/p/CC007');
+    expect(alert()).toBeInTheDocument();
+    expect(screen.getByRole('banner')).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Site' })).toBeInTheDocument();
+  });
+
   it("links both boards' lookups on any other page", () => {
     renderAt('/privacy');
     expect(screen.getByRole('link', { name: lookupsCopy.county })).toBeInTheDocument();
