@@ -34,21 +34,25 @@ page (2417 ms). The budget is right; the page paints its main content too late.
 
 ## Files that change
 
-- `src/features/waitTimes/WaitTimesIntro.jsx` (new): the heading and the two intro
-  paragraphs, taking an optional heading ref and tabIndex, used by both the page and the
-  fallback so the two cannot drift.
-- `src/features/waitTimes/WaitTimesPage.jsx`: renders `WaitTimesIntro` with its ref.
-- `src/App.jsx`: the Suspense fallback renders `WaitTimesIntro` (no tabIndex) above the
-  `min-h-screen` placeholder.
+- `src/App.jsx`: the Suspense fallback renders the heading (no tabIndex) and the two intro
+  paragraphs, with the page's own copy and classes, inside the `min-h-screen` placeholder.
 - `src/waitTimesFallback.test.jsx` (new): with the page chunk held back by a mock, the
   fallback shows the heading and intro, its heading has no tabindex, and the page replaces
   it once the chunk resolves. A file of its own, since `src/App.test.jsx` loads the real
   chunk, which is then cached.
 
+Revision during implementation: the first version moved the heading and intro into a
+shared `WaitTimesIntro` component used by both the page and the fallback. That put the
+first-load JavaScript at 122909 bytes gzipped, over the 120 KB budget in
+`src/test/build.test.js` (main is at 122865, 15 bytes under). Inlining the three elements
+in the fallback costs 10 bytes (122875), since the copy object and the class strings are
+already in the entry chunk. The page's markup is unchanged; the fallback repeats its
+classes, and a comment says so.
+
 ## Order of work
 
 1. Red test in `src/waitTimesFallback.test.jsx` for criteria 1 and 2.
-2. Add `WaitTimesIntro`, use it in the page and the fallback.
+2. Render the heading and intro in the fallback.
 3. Full gate, then `npm run test:perf` to record the before and after.
 
 ## Risks

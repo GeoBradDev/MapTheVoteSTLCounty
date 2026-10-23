@@ -9,6 +9,7 @@ import LearnTopicPage from './features/learn/LearnTopicPage.jsx';
 import HomePage from './features/lookup/HomePage.jsx';
 import PrecinctPage from './features/lookup/PrecinctPage.jsx';
 import PrivacyPage from './features/privacy/PrivacyPage.jsx';
+import { copy as waitCopy } from './features/waitTimes/waitTimesCopy.js';
 import { t, useLocale } from './i18n/index.js';
 import LanguageSwitcher from './i18n/LanguageSwitcher.jsx';
 import { endHydration } from './hydrate.js';
@@ -125,9 +126,21 @@ export default function App() {
             <Route path="/learn" component={LearnPage} />
             <Route path="/learn/:topic" component={LearnTopicPage} />
             <Route path="/early-voting">
-              {/* Holds the page's height while its code loads, so the footer
-                  does not show and then jump down (#27). */}
-              <Suspense fallback={<div className="min-h-screen" />}>
+              {/* While its code loads, the page's heading and intro show,
+                  as the page renders them: the intro is its largest text, so
+                  it paints before the chunk and the page's data requests
+                  (#151). The height is held, so the footer does not show and
+                  then jump down (#27). No tabindex: the page focuses its own
+                  heading when it arrives. */}
+              <Suspense
+                fallback={
+                  <div className="min-h-screen">
+                    <h1 className="text-2xl font-semibold">{waitCopy.heading}</h1>
+                    <p className="mt-2">{waitCopy.intro}</p>
+                    <p className="mt-2">{waitCopy.city}</p>
+                  </div>
+                }
+              >
                 <WaitTimesPage />
               </Suspense>
             </Route>
