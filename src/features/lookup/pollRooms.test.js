@@ -32,6 +32,9 @@ describe('roomCase', () => {
     ['VFW BANQUET ROOM', 'VFW Banquet Room'],
     ['THE GRUB HUB', 'The Grub Hub'],
     ['  MULTIPURPOSE ROOM ', 'Multipurpose Room'],
+    ['LOBBY BY ELEVATOR', 'Lobby by Elevator'],
+    ['GYM OR CAFETERIA', 'Gym or Cafeteria'],
+    ['UP STAIRS', 'Up Stairs'],
   ])('cases %j as %j', (text, expected) => {
     expect(roomCase(text)).toBe(expected);
   });

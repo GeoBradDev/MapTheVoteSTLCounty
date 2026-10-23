@@ -9,8 +9,10 @@ import { caseWord } from './nearbyPolls.js';
 
 // Kept with the word, cased on each side: FOYER/HALLWAY, A&B, (LOWER LEVEL).
 const SEPARATOR = /([/&+()"])/;
-// Two-letter words, not room letters like AB or codes like RM.
-const SHORT_WORDS = new Set(['AN', 'AT', 'DE', 'IN', 'OF', 'ON', 'TO']);
+// Two-letter words, not room letters like AB or codes like RM. The small ones
+// stay lower case except at the start.
+const SMALL_WORDS = new Set(['AN', 'AS', 'AT', 'BY', 'DE', 'IN', 'IS', 'OF', 'ON', 'OR', 'TO']);
+const SHORT_WORDS = new Set([...SMALL_WORDS, 'UP']);
 
 function casePart(part, first) {
   if (!/[a-z]/i.test(part)) return part;
@@ -19,6 +21,7 @@ function casePart(part, first) {
   if (/^\d+(ST|ND|RD|TH)$/.test(upper)) return upper.toLowerCase();
   // Room codes and letters stay as written: MP1, HS109A, GYM A, ROOM AB.
   if (/\d/.test(part) || (/^[A-Z]{1,2}$/.test(upper) && !SHORT_WORDS.has(upper))) return upper;
+  if (!first && SMALL_WORDS.has(upper)) return upper.toLowerCase();
   return caseWord(part, first);
 }
 

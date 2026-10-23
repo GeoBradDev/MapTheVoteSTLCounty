@@ -396,10 +396,11 @@ fails on any web font: the app uses the system font stack. Rules the scores rely
 - Load anything large or slow to start only when it is needed, as the map is (see Map).
 - Give a loading placeholder at least the size of what replaces it, so the page does not jump.
 - Start the requests a page needs together, not one after another: the results page asks for
-  the polling places, the early voting sites and (without a looked-up point) the outline while
-  the precinct loads.
-- Ask ArcGIS only for the fields the app reads: `PRECINCT_FIELDS` and `POLL_FIELDS` in
-  `src/data/arcgis.js`. A query that names a field the layer lacks fails, so
+  the polling places, the early voting sites, the County's polling place rooms and (without a
+  looked-up point) the outline while the precinct loads.
+- Ask ArcGIS only for the fields the app reads: `PRECINCT_FIELDS`, `POLL_FIELDS` and
+  `ROOM_FIELDS` in `src/data/arcgis.js` (the room layer also holds staffing, photo, turnout and
+  task fields, which the app never asks for). A query that names a field the layer lacks fails, so
   `scripts/check-config.mjs` checks every one of them (a test fails if it does not).
 
 Lighthouse in CI cannot stand in for a phone. Before each election, open a results page and a
