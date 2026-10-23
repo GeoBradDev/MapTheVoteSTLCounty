@@ -57,6 +57,11 @@ County text (#89). The learn topics themselves are County-sourced; City topics a
 - Tests and e2e that pin the old name or copy; `e2e/lighthouse.js`.
 - `README.md`: name and the opening's audience, and the copy lines that say only "county's
   official lookup" where that is now both.
+- `src/data/jurisdictions.js`: `cityOnPath` becomes `jurisdictionOnPath` (County or City),
+  so the error screen knows a County precinct page too.
+- `e2e/failures.e2e.js` (the lookup error's links), `docs/data.md` and the comment in
+  `scripts/check-geocoder.mjs` (both lookups where they said the county's). The unused
+  `lookup.officialLookup` key goes.
 
 ## Order of work
 

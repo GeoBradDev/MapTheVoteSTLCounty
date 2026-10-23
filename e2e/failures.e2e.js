@@ -7,6 +7,7 @@
 // connection looks like to the page), a timeout or an HTTP 5xx.
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import { copy as lookupsCopy } from '../src/components/officialLookupsCopy.js';
 import election from '../src/config/election.js';
 import { CITY_GEOCODER_URL } from '../src/data/cityAddress.js';
 import { HOSTED_URL, LIVE_URL } from '../src/data/countyAddress.js';
@@ -144,9 +145,13 @@ async function expectNoAxeViolations(page) {
 async function expectLookupError(page, message) {
   await expect(page.getByText(message)).toBeVisible();
   await expect(page.getByText(lookupCopy.errors.noMatch)).toHaveCount(0);
-  await expect(page.getByRole('link', { name: lookupCopy.officialLookup })).toHaveAttribute(
+  await expect(page.getByRole('link', { name: lookupsCopy.county })).toHaveAttribute(
     'href',
     election.officialLookupUrl,
+  );
+  await expect(page.getByRole('link', { name: lookupsCopy.city })).toHaveAttribute(
+    'href',
+    referrals.stlCityLookup.url,
   );
   await expect(page.getByRole('button', { name: 'Use my location' })).toBeVisible();
   await expect(page.getByRole('button', { name: errorCopy.retry })).toBeVisible();

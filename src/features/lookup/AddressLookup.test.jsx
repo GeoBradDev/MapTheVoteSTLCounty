@@ -2,7 +2,9 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
+import { copy as lookupsCopy } from '../../components/officialLookupsCopy.js';
 import election from '../../config/election.js';
+import referrals from '../../config/referrals.js';
 import { GeocoderUnavailableError } from '../../data/geocoder.js';
 import { createFakeGeocoder } from '../../test/fakeGeocoder.js';
 import AddressLookup from './AddressLookup.jsx';
@@ -156,9 +158,14 @@ describe('AddressLookup', () => {
     renderLookup();
     await search('1 Nowhere St');
     expect(await screen.findByText(copy.errors.noMatch)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: copy.officialLookup })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: lookupsCopy.county })).toHaveAttribute(
       'href',
       election.officialLookupUrl,
+    );
+    // No jurisdiction is known yet (#93): both boards' lookups.
+    expect(screen.getByRole('link', { name: lookupsCopy.city })).toHaveAttribute(
+      'href',
+      referrals.stlCityLookup.url,
     );
     expect(locate).not.toHaveBeenCalled();
     expect(copy.errors.noMatch).toMatch(/Use my location/);
@@ -176,11 +183,21 @@ describe('AddressLookup', () => {
     await search();
     expect(await screen.findByText(copy.errors.unavailable)).toBeInTheDocument();
     expect(copy.errors.unavailable).toMatch(/Use my location/);
-    expect(screen.getByRole('link', { name: copy.officialLookup })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: lookupsCopy.county })).toHaveAttribute(
       'href',
       election.officialLookupUrl,
     );
+    // No jurisdiction is known yet (#93): both boards' lookups.
+    expect(screen.getByRole('link', { name: lookupsCopy.city })).toHaveAttribute(
+      'href',
+      referrals.stlCityLookup.url,
+    );
     expect(locate).not.toHaveBeenCalled();
+  });
+
+  // #93: the address may be in the City or the County, so no message names one board's map.
+  it('names neither board alone in its error messages', () => {
+    for (const message of Object.values(copy.errors)) expect(message).not.toMatch(/county|city/i);
   });
 
   it('says the lookup failed, not unavailable, when the geocoder errors', async () => {

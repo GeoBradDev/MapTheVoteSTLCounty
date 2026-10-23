@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'wouter';
 import election from '../../config/election.js';
+import referrals from '../../config/referrals.js';
 import { TOPIC_GROUPS } from './groups.js';
 import { getLocale, useLocale } from '../../i18n/index.js';
 import { copy } from './learnCopy.js';
@@ -47,6 +48,10 @@ export default function LearnPage() {
           {copy.empty.notReady}{' '}
           <a href={election.countySiteUrl} rel="noreferrer" className="text-primary underline">
             {copy.empty.countySite}
+          </a>{' '}
+          {copy.empty.or}{' '}
+          <a href={referrals.stlCityBoard.url} rel="noreferrer" className="text-primary underline">
+            {copy.empty.citySite}
           </a>
           .
         </p>
@@ -80,11 +85,18 @@ export default function LearnPage() {
             </Link>
           </li>
           {groups.length > 0 && (
-            <li>
-              <a href={election.countySiteUrl} rel="noreferrer" className={linkClass}>
-                {copy.countySite}
-              </a>
-            </li>
+            <>
+              <li>
+                <a href={election.countySiteUrl} rel="noreferrer" className={linkClass}>
+                  {copy.countySite}
+                </a>
+              </li>
+              <li>
+                <a href={referrals.stlCityBoard.url} rel="noreferrer" className={linkClass}>
+                  {copy.citySite}
+                </a>
+              </li>
+            </>
           )}
         </ul>
       </nav>

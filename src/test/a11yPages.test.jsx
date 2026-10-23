@@ -11,7 +11,7 @@ import App from '../App.jsx';
 
 beforeAll(() => {
   document.documentElement.lang = 'en';
-  document.title = 'St. Louis County Voter Guide';
+  document.title = 'St. Louis Voter Guide';
 });
 
 // The precinct page loads its precinct; nothing reaches the network.

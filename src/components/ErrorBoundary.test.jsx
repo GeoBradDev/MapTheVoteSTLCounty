@@ -3,9 +3,10 @@ import path from 'node:path';
 import { render, screen } from '@testing-library/react';
 import election from '../config/election.js';
 import referrals from '../config/referrals.js';
-import { cityOnPath } from '../data/jurisdictions.js';
+import { jurisdictionOnPath } from '../data/jurisdictions.js';
 import ErrorBoundary from './ErrorBoundary.jsx';
 import { copy } from './errorBoundaryCopy.js';
+import { copy as lookupsCopy } from './officialLookupsCopy.js';
 
 function Broken() {
   throw new Error('7700 Fine Rd at 38.5,-90.3');
@@ -37,19 +38,39 @@ describe('ErrorBoundary (#18)', () => {
     const heading = screen.getByRole('heading', { level: 1, name: copy.heading });
     expect(heading).toHaveFocus();
     expect(screen.getByRole('alert')).toHaveTextContent(copy.body);
+    // No precinct page, so no jurisdiction (#93): both boards' lookups.
+    expect(screen.getByRole('link', { name: lookupsCopy.county })).toHaveAttribute(
+      'href',
+      election.officialLookupUrl,
+    );
+    expect(screen.getByRole('link', { name: lookupsCopy.city })).toHaveAttribute(
+      'href',
+      referrals.stlCityLookup.url,
+    );
+    expect(screen.getByRole('button', { name: copy.reload })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: copy.home })).toHaveAttribute('href', '/');
+    expect(document.title).toBe(`${copy.heading} | St. Louis Voter Guide`);
+  });
+
+  // #89: on a City precinct's page, the way forward is the City's own lookup.
+  // #93: on a County precinct's page, the County's lookup only, as before.
+  it("links only the County's lookup when a County precinct page throws", () => {
+    render(
+      <ErrorBoundary jurisdiction={jurisdictionOnPath('/p/CC007')}>
+        <Broken />
+      </ErrorBoundary>,
+    );
     expect(screen.getByRole('link', { name: copy.officialLookup })).toHaveAttribute(
       'href',
       election.officialLookupUrl,
     );
-    expect(screen.getByRole('button', { name: copy.reload })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: copy.home })).toHaveAttribute('href', '/');
-    expect(document.title).toBe(`${copy.heading} | St. Louis County Voter Guide`);
+    expect(screen.getAllByRole('link', { name: /lookup/i })).toHaveLength(1);
+    expect(screen.getByRole('alert')).not.toHaveTextContent(/city/i);
   });
 
-  // #89: on a City precinct's page, the way forward is the City's own lookup.
   it("links the City's lookup when a City precinct page throws", () => {
     render(
-      <ErrorBoundary city={cityOnPath('/p/W01P12')}>
+      <ErrorBoundary jurisdiction={jurisdictionOnPath('/p/W01P12')}>
         <Broken />
       </ErrorBoundary>,
     );
@@ -58,13 +79,16 @@ describe('ErrorBoundary (#18)', () => {
     expect(screen.getByRole('alert')).not.toHaveTextContent(/county/i);
   });
 
-  it('finds the City only on a City precinct path', () => {
+  it('finds the jurisdiction only on a precinct path', () => {
     // The forms the /p/:precinct route also matches: a trailing slash, any case.
     for (const path of ['/p/W01P12', '/p/W01P12/', '/P/W01P12']) {
-      expect(cityOnPath(path)?.id, path).toBe('city');
+      expect(jurisdictionOnPath(path)?.id, path).toBe('city');
     }
-    for (const path of ['/p/CC007', '/p/W1P12', '/', '/p/W01P12/x', '/learn']) {
-      expect(cityOnPath(path)).toBeUndefined();
+    for (const path of ['/p/CC007', '/p/CC007/', '/P/CC007']) {
+      expect(jurisdictionOnPath(path)?.id, path).toBe('county');
+    }
+    for (const path of ['/p/W1P12', '/p/nope', '/', '/p/W01P12/x', '/learn']) {
+      expect(jurisdictionOnPath(path)).toBeUndefined();
     }
   });
 

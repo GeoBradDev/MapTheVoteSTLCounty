@@ -13,7 +13,7 @@
 // list in one ZIP must be no match. The chain asks the City's own geocoder
 // (src/data/cityAddress.js) before it trusts a county match, and as a source
 // when the county has no match. "no match" is safe (the voter is sent to "Use my
-// location" and the county's official lookup); a wrong precinct is not.
+// location" and both boards' official lookups); a wrong precinct is not.
 // Usage: node scripts/check-geocoder.mjs [photon base URL]   (default: public Photon)
 // Exits 1 when any address lands in the wrong precinct with the app's chain
 // or the blocked chain, a City address does not open its City precinct, an

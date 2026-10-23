@@ -53,7 +53,7 @@ it('turns on Spanish with es.json and one config line', async () => {
   globalThis.document = { documentElement: { lang: 'en' } };
   try {
     const i18n = await server.ssrLoadModule(path.join(dir, 'index.js'));
-    expect(i18n.t('home.heading')).toBe('St. Louis County Voter Guide');
+    expect(i18n.t('home.heading')).toBe('St. Louis Voter Guide');
 
     // Picking English while Spanish is still loading: the last pick wins.
     const slow = i18n.setLocale('es');
@@ -65,7 +65,7 @@ it('turns on Spanish with es.json and one config line', async () => {
     await i18n.setLocale('es');
     expect(i18n.t('home.heading')).toBe('Guia del votante');
     expect(i18n.t('home.intro')).toBe(
-      'Find your precinct, polling places near you and your sample ballot.',
+      'For voters in St. Louis City and St. Louis County: find your precinct, polling places near you and your sample ballot.',
     );
     expect(globalThis.document.documentElement.lang).toBe('es');
   } finally {

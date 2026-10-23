@@ -1,5 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useLocation, useParams } from 'wouter';
+import OfficialLookups from '../../components/OfficialLookups.jsx';
 import { NotFound } from '../../data/arcgis.js';
 import {
   cityWardPrecinct,
@@ -61,7 +62,8 @@ function PrecinctResults({ code }) {
   const headingRef = useRef(null);
   // The code's shape picks the jurisdiction (#86). Anything else goes to the
   // County, whose lookup says "not found" without a request, as it always has.
-  const jurisdiction = jurisdictionFor(code) ?? county;
+  const known = jurisdictionFor(code);
+  const jurisdiction = known ?? county;
   const validCode = isPrecinctCode(code);
   const searchHeadingId = useId();
 
@@ -177,9 +179,14 @@ function PrecinctResults({ code }) {
             // A new node per attempt, so a repeated failure is announced again.
             <span key={result.attempt ?? 0}>
               {copy.errors[result.error]}{' '}
-              <a href={jurisdiction.officialLookupUrl} rel="noreferrer" className={linkClass}>
-                {copy.officialLookupFor(jurisdiction.id)}
-              </a>
+              {known ? (
+                <a href={jurisdiction.officialLookupUrl} rel="noreferrer" className={linkClass}>
+                  {copy.officialLookupFor(jurisdiction.id)}
+                </a>
+              ) : (
+                // Not a precinct code, so either board's (#93).
+                <OfficialLookups className={linkClass} />
+              )}
               .
             </span>
           )}

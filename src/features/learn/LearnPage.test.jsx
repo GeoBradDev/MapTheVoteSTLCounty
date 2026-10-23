@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import election from '../../config/election.js';
+import referrals from '../../config/referrals.js';
 import { fixtureTopics } from '../../test/learnFixtures.js';
 import LearnPage from './LearnPage.jsx';
 import { learnCopy } from './learnCopy.js';
@@ -31,7 +32,7 @@ function renderPage() {
 
 afterEach(() => {
   shown.topics = [];
-  document.title = 'St. Louis County Voter Guide';
+  document.title = 'St. Louis Voter Guide';
 });
 
 describe('LearnPage with no topics yet', () => {
@@ -42,6 +43,10 @@ describe('LearnPage with no topics yet', () => {
     expect(screen.getByRole('link', { name: copy.empty.countySite })).toHaveAttribute(
       'href',
       election.countySiteUrl,
+    );
+    expect(screen.getByRole('link', { name: copy.empty.citySite })).toHaveAttribute(
+      'href',
+      referrals.stlCityBoard.url,
     );
     expect(screen.queryAllByRole('heading', { level: 2 })).toHaveLength(0);
   });
@@ -77,6 +82,24 @@ describe('LearnPage with topics', () => {
       ['Fixture ID topic', '/learn/voter-id'],
     ]);
     expect(screen.queryByText(copy.empty.notReady, { exact: false })).toBeNull();
+  });
+
+  // #93: the topics are the County's for now (City topics are #94), so the
+  // intro says so and points City voters to their own board.
+  it("says the guides are the County's and points City voters to the City Board", () => {
+    renderPage();
+    const intro = screen.getByText(copy.intro);
+    expect(intro).toHaveTextContent(/St\. Louis County/);
+    expect(intro).toHaveTextContent(/St\. Louis City/);
+    const nav = screen.getByRole('navigation', { name: copy.moreHelp });
+    expect(within(nav).getByRole('link', { name: copy.countySite })).toHaveAttribute(
+      'href',
+      election.countySiteUrl,
+    );
+    expect(within(nav).getByRole('link', { name: copy.citySite })).toHaveAttribute(
+      'href',
+      referrals.stlCityBoard.url,
+    );
   });
 
   it('leaves out a group with no topics', () => {

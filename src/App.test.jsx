@@ -49,14 +49,14 @@ describe('App', () => {
     renderAt('/');
 
     expect(screen.getByRole('main')).toBeInTheDocument();
-    expect(heading()).toHaveTextContent('St. Louis County Voter Guide');
+    expect(heading()).toHaveTextContent('St. Louis Voter Guide');
     expect(screen.getByRole('combobox', { name: 'Enter your address' })).toBeInTheDocument();
   });
 
   it('renders the home page from the real browser location without a Router', () => {
     render(<App />);
 
-    expect(heading()).toHaveTextContent('St. Louis County Voter Guide');
+    expect(heading()).toHaveTextContent('St. Louis Voter Guide');
   });
 
   it('shows the precinct code from /p/:precinct', () => {
@@ -213,7 +213,7 @@ describe('App', () => {
 
       await userEvent.click(screen.getByRole('link', { name }));
 
-      expect(heading()).toHaveTextContent('St. Louis County Voter Guide');
+      expect(heading()).toHaveTextContent('St. Louis Voter Guide');
       expect(heading()).toHaveFocus();
       expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
     },
@@ -236,7 +236,7 @@ describe('App', () => {
 
     act(() => location.navigate('/'));
 
-    expect(heading()).toHaveTextContent('St. Louis County Voter Guide');
+    expect(heading()).toHaveTextContent('St. Louis Voter Guide');
     expect(heading()).toHaveFocus();
   });
 
@@ -249,7 +249,7 @@ describe('App', () => {
       location.navigate('/');
     });
 
-    expect(heading()).toHaveTextContent('St. Louis County Voter Guide');
+    expect(heading()).toHaveTextContent('St. Louis Voter Guide');
     expect(window.scrollTo).not.toHaveBeenCalled();
     expect(heading()).toHaveFocus();
   });
@@ -295,10 +295,10 @@ describe('App', () => {
   });
 
   it.each([
-    ['/privacy', 'Privacy | St. Louis County Voter Guide'],
-    ['/nope', 'Page not found | St. Louis County Voter Guide'],
+    ['/privacy', 'Privacy | St. Louis Voter Guide'],
+    ['/nope', 'Page not found | St. Louis Voter Guide'],
   ])('titles %s and restores the old title on leaving', (path, title) => {
-    document.title = 'St. Louis County Voter Guide';
+    document.title = 'St. Louis Voter Guide';
     const { unmount } = render(
       <Router hook={memoryLocation({ path }).hook}>
         <App />
@@ -307,7 +307,7 @@ describe('App', () => {
 
     expect(document.title).toBe(title);
     unmount();
-    expect(document.title).toBe('St. Louis County Voter Guide');
+    expect(document.title).toBe('St. Louis Voter Guide');
   });
 
   it('navigates home from the not-found page without a full reload', async () => {
@@ -316,6 +316,6 @@ describe('App', () => {
     await userEvent.click(screen.getByRole('link', { name: /home page/i }));
 
     expect(location.history).toEqual(['/nope', '/']);
-    expect(heading()).toHaveTextContent('St. Louis County Voter Guide');
+    expect(heading()).toHaveTextContent('St. Louis Voter Guide');
   });
 });

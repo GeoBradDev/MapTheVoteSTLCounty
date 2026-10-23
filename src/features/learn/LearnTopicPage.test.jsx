@@ -53,7 +53,7 @@ function renderTopic(id) {
 }
 
 afterEach(() => {
-  document.title = 'St. Louis County Voter Guide';
+  document.title = 'St. Louis Voter Guide';
 });
 
 describe('LearnTopicPage', () => {
@@ -80,7 +80,7 @@ describe('LearnTopicPage', () => {
     renderTopic('no-such-topic');
     expect(screen.getByRole('heading', { level: 1, name: 'Page not found' })).toBeInTheDocument();
     // The not-found page's own title (#26), never the unknown id.
-    expect(document.title).toBe('Page not found | St. Louis County Voter Guide');
+    expect(document.title).toBe('Page not found | St. Louis Voter Guide');
   });
 
   it('opens every folded section before printing', () => {
