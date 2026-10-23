@@ -18,6 +18,7 @@ import RetryButton from './RetryButton.jsx';
 import { copy, sourceName } from './resultsCopy.js';
 import StaleNote from './StaleNote.jsx';
 import { useJurisdiction } from './jurisdictionContext.js';
+import { usePollRooms } from './usePollRooms.js';
 import { useNearestSites } from './useNearestSites.js';
 import { useNow } from './useNow.js';
 
@@ -49,6 +50,16 @@ export function Entrances({ entry, accessibleEntry }) {
       {accessibleEntry && <p>{copy.polls.accessibleEntry(accessibleEntry)}</p>}
     </>
   );
+}
+
+// The room inside a County place (#100); nothing when it has none.
+export function Room({ room }) {
+  return room ? <p>{copy.polls.room(room)}</p> : null;
+}
+
+// Under a list that shows a room: where the room names come from (#100).
+export function RoomSource({ shown }) {
+  return shown ? <p className="mt-3 text-sm">{copy.polls.roomSource}</p> : null;
 }
 
 function Hours() {
@@ -118,7 +129,7 @@ function ListSkeleton() {
 // polls layer `username`, the City site's name (waitTimes.city.siteField).
 const waitKeyOf = { county: (poll) => poll.dayKey, city: (poll) => poll.name };
 
-function PollRow({ poll, apple, headingRef, now }) {
+function PollRow({ poll, room, apple, headingRef, now }) {
   const name = poll.name ?? copy.polls.unnamed(poll.loc);
   const links = directionsLinks(poll);
   const target = <span className="sr-only">{copy.polls.linkTarget(name)}</span>;
@@ -129,6 +140,7 @@ function PollRow({ poll, apple, headingRef, now }) {
       </h3>
       <WaitReport wait={poll.wait} now={now} />
       <p>{copy.polls.address(poll.address, poll.zip)}</p>
+      <Room room={room} />
       <Entrances entry={poll.entry} accessibleEntry={poll.accessibleEntry} />
       <p className="text-muted">{copy.polls.distance(poll.miles)}</p>
       <p className="flex flex-wrap gap-x-4">
@@ -167,6 +179,9 @@ export default function PollsCard({ code, origin, waitSource, electionDayOn }) {
   const { id, getPolls } = useJurisdiction();
   const isCity = id === 'city';
   const { result, loading, retry, targetRef } = useNearestSites(getPolls, code, origin);
+  // Asked for beside the list, never before it: a place shows without its
+  // room until the rooms load, or when they fail (#100).
+  const rooms = usePollRooms('electionDay', result?.loadedAt);
   const [shown, setShown] = useState(election.nearbyPollCount);
   // The index of the first place a "Show more" revealed, which takes focus.
   const [focusFrom, setFocusFrom] = useState(null);
@@ -272,12 +287,14 @@ export default function PollsCard({ code, origin, waitSource, electionDayOn }) {
               <PollRow
                 key={poll.key}
                 poll={poll}
+                room={rooms?.get(poll.loc)}
                 apple={apple}
                 now={now}
                 headingRef={i === focusFrom ? focusRef : undefined}
               />
             ))}
           </ol>
+          <RoomSource shown={Boolean(rooms) && shownRows.some((poll) => rooms.has(poll.loc))} />
           {noCounts && <p className="mt-3 text-muted">{copy.polls.waits.none}</p>}
           {result.refreshFailed && <StaleNote loadedAt={result.loadedAt} />}
           {shown < rows.length && (

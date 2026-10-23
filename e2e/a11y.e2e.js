@@ -51,9 +51,13 @@ const ROUTES = [
     at: WAITS_RECORDED_AT,
     ready: async (page) => {
       await expect(page.getByText(`Results for precinct ${CODE} are ready.`)).toBeAttached();
-      await expect(page.getByRole('list', { name: 'Nearest polling places' })).toBeVisible();
+      const polls = page.getByRole('list', { name: 'Nearest polling places' });
+      await expect(polls).toBeVisible();
       const early = page.getByRole('list', { name: 'Nearest early voting sites' });
       await expect(early.getByText(/in line, reported/).first()).toBeVisible();
+      // The County's room lines (#100), so the axe run covers them.
+      await expect(polls.getByText(/^Room: /).first()).toBeVisible();
+      await expect(early.getByText(/^Room: /).first()).toBeVisible();
       await expect(page.getByRole('radiogroup', { name: 'Sort sites' })).toBeVisible();
       await expect(
         page.getByRole('link', { name: 'See wait times at every early voting site' }),

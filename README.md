@@ -107,6 +107,10 @@ against, and why. In short:
   The polls layer holds both Election Day and in-person absentee sites; no layer assigns a
   polling place to a precinct, so the app lists the nearest: a registered County voter may vote
   at any County polling place on Election Day (#152), as the board's Polling Places page says.
+- **Polling place rooms:** the room each County place and early voting site votes in, like
+  "Gym Lobby", from the board's polling place dashboard view (its `ACTIVE_ROOM` field only),
+  labeled as St. Louis County Board of Elections data (owner decision on #100). See
+  `docs/data.md`, Polling place rooms.
 - **St. Louis City:** the City Board of Election Commissioners' layers in the City's ArcGIS org
   (the one its polling places page's map comes from): precincts, districts (names and numbers only),
   the 56 Election Day sites and 8 early voting sites, and the City outline. See the St. Louis
@@ -144,7 +148,9 @@ may need new values too. Work on a branch and merge through the usual pull reque
    `precincts_YYYY_MM_view` and `polls_YYYY_MM_view`. List the services at the service root
    (append `?f=json`), or open the board's current lookup Instant App on its ArcGIS portal and
    read which layers its web map uses. Do not use the `lookup_view_*` services: their names
-   look current but they point at old data (`docs/data.md`).
+   look current but they point at old data (`docs/data.md`). The polling place rooms come
+   from the election's polling places dashboard view, named like
+   `November_3_2026_Polling_Places_Dashboard_view` (`layers.pollRooms`).
 2. **Inspect them.** Put the new service names in the `SERVICES` list at the top of
    `scripts/inspect-data.mjs` (and the new lookup app's id in `INSTANT_APP_ID` if it changed),
    then run `node scripts/inspect-data.mjs`. It writes each layer's fields, counts and sample
@@ -390,10 +396,11 @@ fails on any web font: the app uses the system font stack. Rules the scores rely
 - Load anything large or slow to start only when it is needed, as the map is (see Map).
 - Give a loading placeholder at least the size of what replaces it, so the page does not jump.
 - Start the requests a page needs together, not one after another: the results page asks for
-  the polling places, the early voting sites and (without a looked-up point) the outline while
-  the precinct loads.
-- Ask ArcGIS only for the fields the app reads: `PRECINCT_FIELDS` and `POLL_FIELDS` in
-  `src/data/arcgis.js`. A query that names a field the layer lacks fails, so
+  the polling places, the early voting sites, the County's polling place rooms and (without a
+  looked-up point) the outline while the precinct loads.
+- Ask ArcGIS only for the fields the app reads: `PRECINCT_FIELDS`, `POLL_FIELDS` and
+  `ROOM_FIELDS` in `src/data/arcgis.js` (the room layer also holds staffing, photo, turnout and
+  task fields, which the app never asks for). A query that names a field the layer lacks fails, so
   `scripts/check-config.mjs` checks every one of them (a test fails if it does not).
 
 Lighthouse in CI cannot stand in for a phone. Before each election, open a results page and a
@@ -606,7 +613,9 @@ link parses and its file name names that precinct (and that 5 random links serve
 `Content-Disposition` file name names the same precinct), that every precinct's congressional
 district is a district on the map in effect (`congressionalMap` in `src/config/election.js`,
 the 2022 map for November 2026, #150), that the absentee filter finds sites with hours in the
-config, and that one known point per County Council district lands in a precinct
+config, how many Election Day places (by `loc`) and early voting sites (by `loc_abs`) have no
+room in the polling place rooms layer (#100: a WARN naming them, never a failure, since a place
+then shows without its room), and that one known point per County Council district lands in a precinct
 in that district and inside the county boundary layer, while a point in St. Louis City lands in
 neither. For the City block (#87), it checks each City layer has the fields the app reads, that the
 precincts are a sane count and every ID reads as a City code, that the Election Day and early

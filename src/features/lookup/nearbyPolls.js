@@ -52,7 +52,13 @@ function capitalize(word) {
   return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
 
-function caseWord(word, first) {
+/**
+ * One word in careful title case: initialisms and compass points upper case,
+ * short words lower case unless `first`, each hyphenated part cased.
+ * @param {string} word
+ * @param {boolean} first Whether it starts the text.
+ */
+export function caseWord(word, first) {
   const upper = word.toUpperCase();
   if (UPPER.has(upper) || COMPASS.has(upper)) return upper;
   const lower = word.toLowerCase();
@@ -109,6 +115,8 @@ function zipOf(value) {
  *   County's line count reports (the polls layer's `absentee`, #103).
  * @property {string | null} dayKey The polling place's key in the County's
  *   Election Day line count reports (the polls layer's `username`, #107).
+ * @property {string | null} absLoc The early voting site's location number
+ *   (the polls layer's `loc_abs`), which its room is keyed by (#100).
  * @property {string | null} entry The City Board's entrance note (#89).
  * @property {string | null} accessibleEntry The City Board's accessible
  *   entrance note (#89).
@@ -143,6 +151,7 @@ export function pollRows(collection) {
       absNote: typeof props.notes_abs === 'string' ? props.notes_abs : null,
       waitKey: textOrNull(props[election.waitTimes.county.pollsField]),
       dayKey: textOrNull(props[election.waitTimes.county.electionDay.pollsField]),
+      absLoc: textOrNull(props.loc_abs),
       entry: textOrNull(props.entry),
       accessibleEntry: textOrNull(props.accessibleEntry),
       lat: point.lat,

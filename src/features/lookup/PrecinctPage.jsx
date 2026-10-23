@@ -94,6 +94,8 @@ function PrecinctResults({ code }) {
     if (validCode) {
       jurisdiction.getPolls().catch(ignore);
       jurisdiction.getEarlyVotingSites().catch(ignore);
+      // The County's polling place rooms (#100); the City has none.
+      jurisdiction.getPollRooms?.().catch(ignore);
       if (!origin) jurisdiction.getOutline(code).catch(ignore);
     }
     const done = (next) => {

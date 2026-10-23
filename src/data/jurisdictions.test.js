@@ -80,6 +80,23 @@ describe('adapters', () => {
     }
   });
 
+  it('the County adapter reads the polling place rooms; the City has none (#100)', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(() =>
+        Promise.resolve(new Response(JSON.stringify({ features: [] }), { status: 200 })),
+      );
+    try {
+      await county.getPollRooms();
+      const urls = fetchSpy.mock.calls.map(([input]) => String(input));
+      expect(urls).toHaveLength(1);
+      expect(urls[0]).toContain(`${election.layers.pollRooms}/query`);
+      expect(city.getPollRooms).toBeUndefined();
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
   it('the City adapter calls the City data client (#89)', async () => {
     expect(city.code).toBe(CITY_PRECINCT_CODE);
     const fetchSpy = vi

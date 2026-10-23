@@ -14,6 +14,8 @@ const fixture = (name) =>
 const FIXTURES = {
   polls: fixture('polls'),
   absentee: fixture('absentee-sites'),
+  // The room inside each polling place (#100).
+  rooms: fixture('poll-rooms'),
   geometry: fixture('precinct-geometry'),
   byId: fixture('precinct-by-id'),
   none: fixture('precinct-at-city'),
@@ -233,7 +235,9 @@ export function fixtureBody(href, form = null, { waits = {} } = {}) {
   }
   if (!href.startsWith(election.serviceRoot)) return null;
   let body;
-  if (url.pathname.includes(election.layers.polls)) {
+  if (url.pathname.includes(election.layers.pollRooms)) {
+    body = FIXTURES.rooms;
+  } else if (url.pathname.includes(election.layers.polls)) {
     body = params.get('where') === election.absenteeWhere ? FIXTURES.absentee : FIXTURES.polls;
   } else if (params.get('where') === `precinct='${CODE}'`) {
     body = params.get('f') === 'geojson' ? FIXTURES.geometry : FIXTURES.byId;

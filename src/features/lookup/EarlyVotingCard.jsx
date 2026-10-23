@@ -16,7 +16,8 @@ import StaleNote from './StaleNote.jsx';
 import { useJurisdiction } from './jurisdictionContext.js';
 import NearbySortControls from './NearbySortControls.jsx';
 import { useHeldOrder, withKeys } from './nearbySort.js';
-import { Entrances, OfficialLookupLink } from './PollsCard.jsx';
+import { Entrances, OfficialLookupLink, Room, RoomSource } from './PollsCard.jsx';
+import { usePollRooms } from './usePollRooms.js';
 import { useNearestSites } from './useNearestSites.js';
 import { useNow } from './useNow.js';
 
@@ -45,7 +46,7 @@ function CountyDetail({ site, now }) {
   );
 }
 
-function SiteRow({ site, now, apple, headingRef, Detail }) {
+function SiteRow({ site, room, now, apple, headingRef, Detail }) {
   const name = site.name ?? copy.polls.unnamed(site.loc);
   const links = directionsLinks(site);
   const target = <span className="sr-only">{copy.polls.linkTarget(name)}</span>;
@@ -57,6 +58,7 @@ function SiteRow({ site, now, apple, headingRef, Detail }) {
       <Detail site={site} now={now} />
       <WaitReport wait={site.wait} now={now} />
       <p>{copy.polls.address(site.address, site.zip)}</p>
+      <Room room={room} />
       <Entrances entry={site.entry} accessibleEntry={site.accessibleEntry} />
       <p className="text-muted">{copy.polls.distance(site.miles)}</p>
       {site.absNote && (
@@ -149,6 +151,8 @@ export function EarlyVotingSites({
   // left open past the max age refreshes when the tab is shown again (#84).
   const { getEarlyVotingSites } = useJurisdiction();
   const { result, loading, retry, targetRef } = useNearestSites(getEarlyVotingSites, code, origin);
+  // The County's early voting rooms (#100), keyed by `loc_abs`; none for the City.
+  const rooms = usePollRooms('absentee', result?.loadedAt);
   const [showAll, setShowAll] = useState(false);
   const focusRef = useRef(null);
   const now = useNow();
@@ -235,6 +239,7 @@ export function EarlyVotingSites({
               <SiteRow
                 key={site.key}
                 site={site}
+                room={site.absLoc ? rooms?.get(site.absLoc) : undefined}
                 now={now}
                 apple={apple}
                 Detail={Detail}
@@ -242,6 +247,11 @@ export function EarlyVotingSites({
               />
             ))}
           </ol>
+          <RoomSource
+            shown={
+              Boolean(rooms) && shownRows.some((site) => site.absLoc && rooms.has(site.absLoc))
+            }
+          />
           {noCounts && <p className="mt-3 text-muted">{t.waits.none}</p>}
           {result.refreshFailed && <StaleNote loadedAt={result.loadedAt} />}
           {!showAll && rows.length > first && (

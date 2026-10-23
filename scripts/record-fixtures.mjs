@@ -22,6 +22,7 @@ const OUT_DIR = path.resolve('docs/raw/fixtures');
 const precincts = `${election.serviceRoot}/${election.layers.precincts}/query`;
 const polls = `${election.serviceRoot}/${election.layers.polls}/query`;
 const boundary = `${election.serviceRoot}/${election.layers.countyBoundary}/query`;
+const pollRooms = `${election.serviceRoot}/${election.layers.pollRooms}/query`;
 
 const pointQuery = (lng, lat) => ({
   geometry: `${lng},${lat}`,
@@ -120,6 +121,20 @@ const FIXTURES = {
   'absentee-sites.json': [
     polls,
     { where: election.absenteeWhere, outFields: '*', outSR: '4326', f: 'geojson' },
+  ],
+  // The room inside each polling place (#100), asked for exactly as the app
+  // asks: the three fields it reads, never `*` (the layer also holds staffing,
+  // photo, turnout and task fields), and no geometry.
+  'poll-rooms.json': [
+    pollRooms,
+    {
+      where: election.pollRooms.where,
+      outFields: Object.values(election.pollRooms.fields).join(','),
+      outSR: '4326',
+      geometryPrecision: '6',
+      f: 'geojson',
+      returnGeometry: 'false',
+    },
   ],
   // The City's geocoder for the #58 addresses, City Hall and 1318 Ross Ave
   // (src/data/cityAddress.test.js).

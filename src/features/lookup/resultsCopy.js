@@ -136,6 +136,12 @@ export const copy = translated((t) => ({
     entry: (text) => t('results.polls.entry', { text }),
     /** @param {string} text */
     accessibleEntry: (text) => t('results.polls.accessibleEntry', { text }),
+    // The room inside a County place, from the County Board's data (#100).
+    /** @param {string} room */
+    room: (room) => t('results.polls.room', { room }),
+    roomSource: t('results.polls.roomSource', {
+      board: t('results.polls.sourceNames.countyBoard'),
+    }),
     directions: t('results.polls.directions'),
     appleMaps: t('results.polls.appleMaps'),
     /** @param {string} name For screen readers: which place the link is for. */

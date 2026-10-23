@@ -84,6 +84,7 @@ describe('nearestPolls', () => {
             notes_abs: 'Use the north door',
             absentee: 'abs612boec',
             username: 'loc180boec',
+            loc_abs: '620',
           }),
         ],
       },
@@ -99,6 +100,7 @@ describe('nearestPolls', () => {
         absNote: 'Use the north door',
         waitKey: 'abs612boec',
         dayKey: 'loc180boec',
+        absLoc: '620',
         entry: null,
         accessibleEntry: null,
         lat: 38.7,
@@ -130,6 +132,7 @@ describe('nearestPolls', () => {
     );
     expect(row.absType).toBeNull();
     expect(row.absNote).toBeNull();
+    expect(row.absLoc).toBeNull();
   });
 
   it('breaks distance ties by location number, so the order is stable', () => {

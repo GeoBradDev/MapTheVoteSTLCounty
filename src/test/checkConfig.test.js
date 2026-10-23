@@ -7,8 +7,9 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { parse } from 'yaml';
 import absenteeSites from '../../docs/raw/fixtures/absentee-sites.json';
+import pollRoomsFixture from '../../docs/raw/fixtures/poll-rooms.json';
 import pollsFixture from '../../docs/raw/fixtures/polls.json';
-import { POLL_FIELDS, PRECINCT_FIELDS } from '../data/arcgis.js';
+import { POLL_FIELDS, PRECINCT_FIELDS, ROOM_FIELDS } from '../data/arcgis.js';
 import {
   CITY_DISTRICT_FIELDS,
   CITY_POLL_FIELDS,
@@ -114,10 +115,18 @@ function healthyWorld() {
       abs_type: p.abs_type,
       [countyWait.pollsField]: p[countyWait.pollsField],
     })),
-    // Every polling place with its Election Day join field (#107).
+    // Every polling place with its Election Day join field (#107) and its
+    // early voting location number (#100).
     dayPolls: pollsFixture.features.map(({ properties: p }) => ({
       loc: p.loc,
+      loc_abs: p.loc_abs,
       [countyWait.electionDay.pollsField]: p[countyWait.electionDay.pollsField],
+    })),
+    // A room for each place and site (#100): the recorded rooms, with the one
+    // early voting row that had none filled.
+    rooms: pollRoomsFixture.features.map(({ properties: p }) => ({
+      ...p,
+      ACTIVE_ROOM: p.ACTIVE_ROOM ?? 'VOTING ROOM',
     })),
     // The wait time layers (#106), as recorded at 9:00 a.m. on 2026-10-22.
     waits: {
@@ -303,13 +312,18 @@ function stubFetch(world) {
         : features(world.precincts);
     }
     if (layerPath === election.layers.polls) {
-      // Every polling place, for the County's Election Day reports (#107).
+      // Every polling place, for the County's Election Day reports (#107) and
+      // the polling place rooms check (#100), which asks for loc_abs.
       if (params.get('where') === '1=1') {
-        world.dayPollsAsked = true;
+        if (!(params.get('outFields') ?? '').includes('loc_abs')) world.dayPollsAsked = true;
         return features(world.dayPolls);
       }
       expect(params.get('where')).toBe(election.absenteeWhere);
       return features(world.absentee);
+    }
+    if (layerPath === election.layers.pollRooms) {
+      world.roomQueries = [...(world.roomQueries ?? []), params];
+      return features(world.rooms);
     }
     const [lng, lat] = geometry.split(',').map(Number);
     return features(world.inBoundary(lng, lat) ? [{ OBJECTID: 1 }] : []);
@@ -350,11 +364,13 @@ describe('runHealthCheck', () => {
       'layer precincts',
       'layer polls',
       'layer countyBoundary',
+      'layer pollRooms',
       'precinct count',
       'sample ballot links',
       'sample ballot PDFs',
       'congressional districts',
       'absentee sites',
+      'polling place rooms',
       'known points',
       'wait layer county',
       'wait layer city',
@@ -380,6 +396,64 @@ describe('runHealthCheck', () => {
     expect(results['congressional districts'].detail).toBe(
       '1000 precincts on the 2022 map: District 1 (500), District 2 (500)',
     );
+  });
+
+  // The room inside each polling place (#100).
+  it('passes when every Election Day place and early voting site has a room', async () => {
+    const results = await run(healthyWorld());
+    expect(results['polling place rooms']).toEqual({
+      name: 'polling place rooms',
+      status: 'pass',
+      detail: 'a room for all 200 Election Day places and all 21 early voting sites',
+    });
+  });
+
+  it('asks the room layer only for the fields the app reads, never staffing or turnout', async () => {
+    const world = healthyWorld();
+    await run(world);
+    expect(world.roomQueries).toHaveLength(1);
+    expect(world.roomQueries[0].get('outFields')).toBe('LOCATION_ID,ACTIVE,ACTIVE_ROOM');
+    expect(world.roomQueries[0].get('where')).toBe(election.pollRooms.where);
+  });
+
+  it('warns, naming them, when places or sites have no room (the recorded layer)', async () => {
+    const world = healthyWorld();
+    world.rooms = pollRoomsFixture.features.map(({ properties }) => properties);
+    world.rooms = world.rooms.filter((r) => !(r.ACTIVE === 'ACTIVE' && r.LOCATION_ID === 7));
+    const results = await run(world);
+    expect(results['polling place rooms']).toEqual({
+      name: 'polling place rooms',
+      status: 'warn',
+      detail:
+        'Election Day places without a room: 1 of 200 (loc 007); ' +
+        'early voting sites without a room: 1 of 21 (loc_abs 614). The app shows them without one.',
+    });
+  });
+
+  it('matches a location number the polls layer writes unpadded, as the app does', async () => {
+    const world = healthyWorld();
+    world.dayPolls = world.dayPolls.map((p) => ({ ...p, loc: String(Number(p.loc)) }));
+    expect((await run(world))['polling place rooms'].status).toBe('pass');
+  });
+
+  it('warns when the room layer has no rows', async () => {
+    const world = healthyWorld();
+    world.rooms = [];
+    const results = await run(world);
+    expect(results['polling place rooms'].status).toBe('warn');
+    expect(results['polling place rooms'].detail).toMatch(
+      /^Election Day places without a room: 200 of 200 /,
+    );
+  });
+
+  it('fails the room layer when it lacks a field the app reads', async () => {
+    const world = healthyWorld();
+    const info = world.layers[election.layers.pollRooms];
+    info.fields = info.fields.filter((f) => f.name !== 'ACTIVE_ROOM');
+    const results = await run(world);
+    expect(results['layer pollRooms'].status).toBe('fail');
+    expect(results['layer pollRooms'].detail).toContain('missing fields ACTIVE_ROOM');
+    expect(results['polling place rooms'].status).toBe('skip');
   });
 
   it('fails with a clear message when the config names a wrong layer', async () => {
@@ -658,10 +732,15 @@ describe('runHealthCheck', () => {
       'abs_type',
       'notes_abs',
       'inline',
+      'loc_abs',
       election.waitTimes.county.pollsField,
       election.waitTimes.county.electionDay.pollsField,
     ]);
     expect(want.countyBoundary.fields).toEqual(['OBJECTID']);
+    expect(want.pollRooms).toEqual({
+      geometryType: 'esriGeometryPoint',
+      fields: ['LOCATION_ID', 'ACTIVE', 'ACTIVE_ROOM'],
+    });
     for (const field of ['precinct', 'in_election', 'html', election.congressionalField]) {
       expect(want.precincts.fields).toContain(field);
     }
@@ -1598,5 +1677,6 @@ describe('the fields the app asks for', () => {
     const want = expectedLayers(election);
     expect(want.precincts.fields).toEqual(expect.arrayContaining([...PRECINCT_FIELDS]));
     expect(want.polls.fields).toEqual(expect.arrayContaining([...POLL_FIELDS]));
+    expect(want.pollRooms.fields).toEqual([...ROOM_FIELDS]);
   });
 });
