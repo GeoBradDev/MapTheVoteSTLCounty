@@ -73,7 +73,8 @@ vercel-react-best-practices: not applicable because no React code changes.
   `main`, guarded so importing the module runs nothing.
 - `src/test/inspectData.test.js` (new): the City requests' fields.
 - `docs/raw/city_*.json` (new): one live run's output, if the City org answers.
-- `README.md`: the lines above.
+- `README.md`: the lines above, plus the Accessibility paragraph, which still said only the
+  county's layers and one results route are answered from fixtures (stale since #89).
 
 ## Order of work
 

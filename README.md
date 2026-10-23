@@ -376,7 +376,7 @@ polling place's name and ZIP; on the City results page the City Board's Election
 the districts card and each polling place's name; on the wait times page each site's name, or
 the note that early voting has ended). It writes the report of the run with the median score to
 `lighthouse-reports/` (CI keeps it as the `lighthouse-reports` artifact). No live service is
-called: Chromium resolves the county's ArcGIS host and the basemap host to a local HTTPS
+called: Chromium resolves the county's ArcGIS host (the City Board's layers are on it too) and the basemap host to a local HTTPS
 server, and every other host except `localhost` to nothing. That server answers the County
 and City layers (GET, or a point query's POST) from `docs/raw/fixtures/` (shaped to the query's `outFields` and `geometryPrecision`, gzipped
 like the county's service) and the basemap style with a blank style (`BLANK_STYLE` in
