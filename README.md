@@ -803,8 +803,8 @@ filled by its class (#172): the fresh counts listed, both boards on one scale, a
 natural breaks (`src/features/waitTimes/jenks.js`, its own chunk, out of the first load),
 recomputed whenever the counts change. The number of classes is one per distinct count when
 there are fewer than 3, else the smallest of 3, 4 or 5 (at most the number of distinct counts)
-whose goodness of variance fit reaches 0.9, else the largest of those. Each class is a range of whole numbers,
-lowest count to highest with no gaps. The colors are five steps of a BrBG-style ramp, teal
+whose goodness of variance fit reaches 0.9, else the largest of those. Each class runs from its own lowest count to
+its highest, so the legend names only counts shown. The colors are five steps of a BrBG-style ramp, teal
 through tan to brown (`--color-wait-*` in `src/index.css`, used only for markers and the legend;
 k classes use a fixed subset, `WAIT_RAMP` in `src/features/waitTimes/waitColors.js`), each
 marker outlined in ink so it is at least 3:1 against the basemap

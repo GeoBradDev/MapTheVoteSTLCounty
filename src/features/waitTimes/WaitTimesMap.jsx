@@ -7,7 +7,8 @@ import { copy } from './waitTimesCopy.js';
 const linkClass = 'text-primary underline';
 
 // How long the map may take, from when it starts loading (once in view), to
-// first render before it is dropped.
+// first render before it is dropped. Time while the page is hidden does not
+// count.
 const LOAD_TIMEOUT_MS = 15_000;
 
 // The map is open on arrival (#172) but waits until its box scrolls into
@@ -80,24 +81,53 @@ export default function WaitTimesMap({ sites, classes, onFail, label = copy.map.
 
   useEffect(() => {
     if (!inView) return undefined;
+    // `current` turns false on cleanup; `loading` once the map rendered or failed.
     let current = true;
     let loading = true;
+    // Opened on arrival (#172), the map may load in a tab the voter leaves: a
+    // hidden tab draws nothing, so the clock pauses while it is hidden and
+    // resumes with the time it had left, as on the precinct map.
+    let timer;
+    let remaining = LOAD_TIMEOUT_MS;
+    let startedAt = null;
+
+    function pauseClock() {
+      if (startedAt === null) return;
+      clearTimeout(timer);
+      remaining -= performance.now() - startedAt;
+      startedAt = null;
+    }
+    function runClock() {
+      if (startedAt !== null) return;
+      startedAt = performance.now();
+      timer = setTimeout(fail, Math.max(0, remaining));
+    }
+    function stopClock() {
+      pauseClock();
+      document.removeEventListener('visibilitychange', onVisibility);
+    }
+    function onVisibility() {
+      if (document.visibilityState === 'hidden') pauseClock();
+      else runClock();
+    }
     function ready() {
       if (!current || !loading) return;
       loading = false;
-      clearTimeout(timer);
+      stopClock();
       setState('ready');
     }
     function fail() {
       if (!current || !loading) return;
       loading = false;
-      clearTimeout(timer);
+      stopClock();
       viewRef.current?.remove();
       viewRef.current = null;
       setState('failed');
       onFailRef.current?.();
     }
-    const timer = setTimeout(fail, LOAD_TIMEOUT_MS);
+
+    if (document.visibilityState !== 'hidden') runClock();
+    document.addEventListener('visibilitychange', onVisibility);
     loadView()
       .then(({ createWaitTimesMap }) => {
         if (!current || !loading) return;
@@ -111,7 +141,7 @@ export default function WaitTimesMap({ sites, classes, onFail, label = copy.map.
       .catch(fail);
     return () => {
       current = false;
-      clearTimeout(timer);
+      stopClock();
       viewRef.current?.remove();
       viewRef.current = null;
     };

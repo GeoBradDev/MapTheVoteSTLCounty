@@ -106,10 +106,11 @@ export function gvf(values, groups) {
 }
 
 /**
- * The classes for the counts the map shows: contiguous whole number ranges
- * from the lowest count to the highest, so each count is in exactly one.
- * Anything that is not a whole number 0 or more is left out. No counts, no
- * classes.
+ * The classes for the counts the map shows, ascending: each runs from its own
+ * lowest count to its highest, so the legend names only counts on the map (a
+ * lone 10 reads "10 people", never "1 to 10"), and each count is in exactly
+ * one. Anything that is not a whole number 0 or more is left out. No counts,
+ * no classes.
  * @param {(number | null | undefined)[]} values
  * @returns {{ min: number, max: number }[]}
  */
@@ -128,7 +129,7 @@ export function waitClasses(values) {
       if (gvf(counts, groups) >= GVF_TARGET) break;
     }
   }
-  return groups.map(([lo, hi], i) => ({ min: i === 0 ? lo : groups[i - 1][1] + 1, max: hi }));
+  return groups.map(([min, max]) => ({ min, max }));
 }
 
 /**

@@ -36,7 +36,7 @@ Domain skills:
 ## Files that change
 
 - `src/features/waitTimes/jenks.js` (new): `jenksGroups(values, k)`, `gvf`, `waitClasses(values)`
-  returning `[{ min, max }]` contiguous integer ranges, `classOf(value, classes)` and
+  returning `[{ min, max }]`, each class's own lowest and highest count, `classOf(value, classes)` and
   `waitColor(value, classes)` (the marker's color step). Its own chunk.
 - `src/features/waitTimes/useWaitScale.js` (new, revision): PollsCard is in the first load,
   so it loads jenks.js with `import()` only while Election Day counts are on.
@@ -47,10 +47,11 @@ Domain skills:
 - `src/index.css`: `--color-wait-1` to `--color-wait-5` replace low/mid/high.
 - `src/features/waitTimes/mapColors.test.js`: five tokens, subsets.
 - `src/features/waitTimes/WaitLegend.jsx`: takes `classes`.
-- `src/features/waitTimes/WaitTimesMap.jsx` (+ test): takes `classes`; markers carry a class
-  index and the class count; waits for view (IntersectionObserver) like PrecinctMap.
+- `src/features/waitTimes/WaitTimesMap.jsx` (+ test): takes `classes`; each marker's `bin` is
+  its count's color step (`waitColor`); waits for view (IntersectionObserver) and pauses its
+  load timeout while the tab is hidden, like PrecinctMap.
 - `src/features/waitTimes/waitTimesMapView.js`, `src/features/lookup/precinctMapView.js`:
-  marker fill from `{ bin, classCount }`.
+  marker fill from `bin`, now a color step (an index into the five colors).
 - `src/features/waitTimes/WaitTimesPage.jsx` (+ tests): map open by default, classes from
   the shown fresh counts.
 - `src/features/lookup/PollsCard.jsx`, `PrecinctMap.jsx` (+ test): classes from the board's
@@ -73,8 +74,10 @@ Domain skills:
   below the first 640 px viewport in Lighthouse's mobile emulation) and the h-72 box.
 - A color meaning differs between the precinct map (one board) and `/early-voting` (both
   boards on Election Day): accepted; each legend shows its own ranges.
-- Ties and integers: classes are contiguous integer ranges from the data min to max, so
-  every shown value falls in exactly one class.
+- Ties: Jenks runs over the distinct counts, weighted, so equal counts share a class. Each
+  class runs from its own lowest count to its highest (review finding: contiguous ranges
+  labeled a lone 10 as "1 to 10 people", against criterion 3), so ranges may have gaps
+  between them, and every shown count falls in exactly one class.
 
 ## Proof
 
