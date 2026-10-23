@@ -153,8 +153,8 @@ may need new values too. Work on a branch and merge through the usual pull reque
    `lastVerified` where it has them. Re-read every source; do not copy a value forward
    unchecked. That includes the City Board's Election Day rule (`electionDayRule` in the City
    block), quoted from its polling places page (its URL is in `src/config/referrals.js`, named
-   by the rule's `source`): re-quote it from the page, with its new date (a test fails while
-   the quote names another election's date). If a field the app reads was renamed, search `src/` and `scripts/` for the old
+   by the rule's `source`): re-quote it from the page and set its `lastVerified` (a test fails
+   while the quote names another election's date). If a field the app reads was renamed, search `src/` and `scripts/` for the old
    name and change every use, including `PRECINCT_FIELDS` and `POLL_FIELDS` in
    `src/data/arcgis.js` and the field lists in `scripts/check-config.mjs`. See
    [Election config](#election-config).
@@ -402,8 +402,9 @@ The config holds the shared election values and one block per jurisdiction, `cou
 County voters. The results page gets its jurisdiction's data adapter and official lookup link
 from `src/data/jurisdictions.js`, picked from the precinct code's shape (`/p/CC007` is the County,
 `/p/W01P12` the City; [docs/data.md](docs/data.md#jurisdictions-and-precinct-codes)), and
-the page's links to a board follow that jurisdiction: a City page links the City Board's
-lookup and site, never the County's (#89). The City's
+the results' own links to a board follow that jurisdiction: on a City precinct's page, the
+official lookup, the polling places card, the cards still to come, the map credit and the error
+screen link the City Board (#89). The footer lists both boards on every page. The City's
 data client, `src/data/cityArcgis.js` (#87), is loaded on demand, by the City results and by
 `locate()` (#88) when it asks the City's precinct layer. The
 test also fails on a City block's layer, service, filter or field name (except the common words

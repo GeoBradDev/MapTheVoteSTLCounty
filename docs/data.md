@@ -809,8 +809,8 @@ OpenMapTiles, OpenStreetMap contributors. Tile requests reveal the area on scree
 Cloudflare: the precinct plus its nearest polling places, which depend a little on the
 searched point within the precinct (and widen on "Show more"). No address or coordinates are
 sent as such. The map
-is extra help only: precincts and polling places still come from the board layers above (the
-County's, or on a City precinct's page the City Board's, #89).
+is extra help only: precincts and polling places still come from the board's own layers (the
+County's above, or on a City precinct's page the City Board's, under St. Louis City below, #89).
 
 ## Official website domain
 
@@ -979,8 +979,9 @@ fields (`pocname`, `pocemail`, `pocphone`).
   `disabledentry` and `entrydetails` are filled on all 57, and the polling places card shows
   them as published (#89, the config's `siteFields.accessibleEntry` and `entry`): short notes
   like "off parking lot accessed from Vista Ave.", from the layer's current rows (all with
-  `nextelectdate` 2026-11-03). The names, addresses and notes are published in mixed case, so the
-  card shows them as they are (the County's all-caps text is title-cased). `imageurl` and
+  `nextelectdate` 2026-11-03). The names and addresses are published in mixed case, so the card keeps
+  them as published (the County's all-caps text is title-cased); the notes are always shown as
+  published. `imageurl` and
   `boxlocdesc` are not read yet (#146).
 - **Early voting sites (`earlyVotingWhere`):** `publicview = 'Yes' AND earlyvoting = 'Yes'`,
   the owner-confirmed wait time filter: 8 sites, the page's 8 No Excuse Absentee sites (Buder,
