@@ -12,6 +12,7 @@ const linkClass = 'text-primary underline';
 
 // The City's own cards, from the City chunk (#147).
 const CityEarlyVotingCard = cityComponent('CityEarlyVotingCard');
+const CityDistrictsCard = cityComponent('CityDistrictsCard');
 
 // The card order the issue sets. Each card's own issue replaces its body.
 const CARDS = [
@@ -34,7 +35,7 @@ function Card({ title, children }) {
 }
 
 // A card not built yet: the County's lookup, or for a City precinct the City
-// Board's site (#89), until the City card's own issue (#90, #92).
+// Board's site (#89), until the City card's own issue (#92).
 function PendingCard() {
   const { id, boardSiteUrl } = useJurisdiction();
   if (id === 'city') {
@@ -72,8 +73,8 @@ function PendingCard() {
 export default function ResultsCards({ code, origin, showBallot, ballotHtml, precinct }) {
   const { id } = useJurisdiction();
   const polls = () => <PollsCard code={code} origin={origin} />;
-  // The City has its polling places (#89) and early voting (#91) cards so far;
-  // its others are #90 and #92.
+  // The City has its polling places (#89), early voting (#91) and districts
+  // (#90) cards so far; its sample ballot card is #92.
   const body =
     id === 'city'
       ? {
@@ -83,6 +84,11 @@ export default function ResultsCards({ code, origin, showBallot, ballotHtml, pre
             // suspends only for a moment.
             <Suspense fallback={null}>
               <CityEarlyVotingCard code={code} origin={origin} />
+            </Suspense>
+          ),
+          districts: () => (
+            <Suspense fallback={null}>
+              <CityDistrictsCard code={code} />
             </Suspense>
           ),
         }

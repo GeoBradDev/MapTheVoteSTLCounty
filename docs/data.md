@@ -902,9 +902,9 @@ through it.
 
 Checked live on 2026-10-22 for #87, which settles the layer questions #87 needed from #57:
 the Election Day list and its filter, the early voting sites, the City boundary, and districts
-for a precinct. Two #57 questions stay open: what the City page's Assigned Polling Place Lookup
-calls (the layers assign no polling place to a precinct, below), and whether the U.S. House
-"First District" polygon follows the 2025 congressional map (for #90). The
+for a precinct. One #57 question stays open: what the City page's Assigned Polling Place Lookup
+calls (the layers assign no polling place to a precinct, below). The U.S. House "First
+District" question is settled below (Districts, #90). The
 City client is `src/data/cityArcgis.js`, with the same request rules as the County client
 (plain fetch, one retry, coordinates only in a POST body). The layers, fields and filters are
 in the City block of `src/config/election.js`; `node scripts/check-config.mjs` checks them
@@ -941,8 +941,7 @@ such as `City of St. Louis` or `State of Missouri`), and two placeholder rows, `
 `President of the United States` and `Vice-President of the United States` (`districtid`
 `President of the United States` and `Vice President of the United States`, no hyphen), each a
 polygon of about 1,100 m² in Web Mercator. A point query returns one row per office there: 22 at City Hall (8
-distinct `districtid` values). A districts card should drop the two placeholders and group the
-rows that share a `districtid` (#90). The `electedoffice` field's coded values also include party committee posts,
+distinct `districtid` values). The `electedoffice` field's coded values also include party committee posts,
 `Committeeman (R)`, `(D)`, `(L)`, `(C)`, `(G)` and the same for `Committeewoman`: no row has
 one on 2026-10-22, but a card must never show such a row's office, which names a party. The statewide and some district polygons reach past the City line (the
 county point -90.33, 38.62 gets 9 rows, among them Missouri Senate District 4), so a districts
@@ -951,8 +950,29 @@ answer is never the test of being in the City: the precinct and boundary queries
 details (`repname1` to `repname7`, `repimageurl*`, `party*`, `districturl*`, `phone*`,
 `email*`, `facebook*`, `twitter*`, `fulladdr*`); the app never asks for them (a test fails if
 it does), and never asks for `*`. `electedoffice` names the office as its holder is styled
-(`Alderman`, `Alderwoman`), so a districts card should label the district, not the office
-(#90).
+(`Alderman`, `Alderwoman`), so the districts card labels the district, not the office.
+
+**The districts card (#90)** lists six rows, in the order and with the `electedoffice` values
+`districts.rows` in `src/config/cityResults.js` names: U.S. House (`United States House of
+Representatives`), State Senate, State House (`State House Representative`), Ward (`Alderman`
+or `Alderwoman`), Community college subdistrict (`St. Louis Community College Trustee` on the
+rows; the field's coded values say `Community College Trustee`, so both are read) and School
+district (`Board of Education of the City of St. Louis`). Each shows the row's `district` text
+as published ("Ward 14", "Missouri House District 78"), never the office. The citywide and
+statewide offices are the same for every City voter and the County card has no such row, so
+they are left out, as are the two placeholders and any party committee office; a value that
+names a party is dropped too. The card asks with `getCityDistrictsForPrecinct` (below), never
+the voter's own point; if an answer ever has two values for one row, it lists both and says so.
+
+**U.S. House "First District"** (#90, settling the #57 question). The whole City is in the
+first congressional district under the 2022 map (RSMo 128.461, "County: St. Louis City MO",
+with no VTD or block list) and under the 2025 map in H.B. 1 as truly agreed (its section
+128.471, the same line). The Revisor's note on RSMo 128.346, read on 2026-10-22, says the
+Missouri Supreme Court found the H.B. 1 referendum petition sufficient on 2026-09-03 (Glahn v.
+Hoskins, No. SC101805), so H.B. 1 does not take effect unless voters approve it, and the 2022
+districts stay in effect for the November 2026 general election. The layer's single "First
+District" polygon is right under either map, so the card shows the row. Recheck when the map
+changes. (The County card reads the 2025 field; #150 tracks that.)
 
 **Districts for a precinct with no point** (a share link): `BOE/PRECINCTS_2023` on
 `maps6.stlouis-mo.gov`, which has `Ward`, `Senate`, `Rep` and `NewCC` on each precinct, still

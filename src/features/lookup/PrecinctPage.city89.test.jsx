@@ -9,6 +9,7 @@ import { memoryLocation } from 'wouter/memory-location';
 import cityEarlySites from '../../../docs/raw/fixtures/city-early-voting-sites.json';
 import cityPolls from '../../../docs/raw/fixtures/city-polls.json';
 import cityById from '../../../docs/raw/fixtures/city-precinct-by-id.json';
+import cityDistricts from '../../../docs/raw/fixtures/city-districts-at-point.json';
 import cityGeometry from '../../../docs/raw/fixtures/city-precinct-geometry.json';
 import cityResults from '../../config/cityResults.js';
 import election from '../../config/election.js';
@@ -38,8 +39,13 @@ function routeFetch({ fail = [] } = {}) {
   fetchMock.mockImplementation((input) => {
     const url = new URL(input);
     if (!url.href.startsWith(city.serviceRoot)) throw new Error(`Not a City layer: ${url.href}`);
-    const key = url.pathname.includes(city.layers.sites) ? 'sites' : 'precincts';
+    const key = url.pathname.includes(city.layers.sites)
+      ? 'sites'
+      : url.pathname.includes(city.layers.districts)
+        ? 'districts'
+        : 'precincts';
     if (fail.includes(key)) return respond({ error: 'down' }, 500);
+    if (key === 'districts') return respond(cityDistricts);
     if (key === 'sites') {
       const early = url.searchParams.get('where') === city.earlyVotingWhere;
       return respond(early ? cityEarlySites : cityPolls);
@@ -176,11 +182,19 @@ describe('a City precinct page (#89)', () => {
     routeFetch();
     renderAt(CODE);
     await ready(CODE);
-    for (const title of [copy.cards.ballot, copy.cards.districts]) {
-      const card = screen.getByRole('region', { name: title });
-      const link = within(card).getByRole('link', { name: copy.map.city });
-      expect(link).toHaveAttribute('href', referrals.stlCityBoard.url);
-    }
+    const card = screen.getByRole('region', { name: copy.cards.ballot });
+    const link = within(card).getByRole('link', { name: copy.map.city });
+    expect(link).toHaveAttribute('href', referrals.stlCityBoard.url);
+  });
+
+  it('shows the City districts card: the districts layer names, with its source (#90)', async () => {
+    routeFetch();
+    renderAt(CODE);
+    const card = () => screen.getByRole('region', { name: copy.cards.districts });
+    await waitFor(() => expect(card()).toHaveTextContent(copy.districts.sourceCity));
+    expect(within(card()).getByText(copy.districts.labels.cityWard)).toBeInTheDocument();
+    expect(card()).toHaveTextContent('Missouri House District 78');
+    expect(card().querySelector(`a[href="${referrals.stlCityBoard.url}"]`)).toBeNull();
   });
 
   it('asks only the City layers, the early voting sites with their own filter (#91)', async () => {
