@@ -52,7 +52,7 @@ async function kept() {
     ...entries(window.localStorage),
     ...entries(window.sessionStorage),
   ];
-  // Cache Storage (a service worker, #25): every cached request URL, not just
+  // Cache Storage (a service worker, #183): every cached request URL, not just
   // the cache names. jsdom has none, so this runs only where it exists.
   if (globalThis.caches) {
     for (const name of await globalThis.caches.keys()) {

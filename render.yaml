@@ -26,7 +26,7 @@ services:
     # Render adds www.mapthevotestl.com and redirects it here.
     domains:
       - mapthevotestl.com
-    # Render never rewrites a path where a file exists, so /assets/*, /sw.js,
+    # Render never rewrites a path where a file exists, so /assets/*, the manifest,
     # icons and the pre-rendered public pages (#99) are served as files. It
     # serves a directory's index.html only for the path with a trailing slash
     # (/learn/, not /learn: checked on PR #127's preview), so each pre-rendered
@@ -175,7 +175,15 @@ services:
       - path: /privacy/*
         name: Cache-Control
         value: no-cache
+      # No service worker ships yet (offline support is #183). The rule is kept
+      # so a worker, or a self-destroying one shipped as its kill switch, is
+      # never held in a cache.
       - path: /sw.js
+        name: Cache-Control
+        value: no-cache
+      # The web app manifest (#25): a changed name, color or icon list reaches
+      # installed copies at their next launch.
+      - path: /manifest.webmanifest
         name: Cache-Control
         value: no-cache
       # Built by src/features/learn/content/searchEngines.js (#97). An hour, so a fix reaches

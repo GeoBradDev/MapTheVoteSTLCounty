@@ -3,6 +3,7 @@ import { createRoot, hydrateRoot } from 'react-dom/client';
 import { Router } from 'wouter';
 import App from './App.jsx';
 import { loadForHydration, shouldHydrate, startHydration } from './hydrate.js';
+import { linkManifest } from './linkManifest.js';
 import './index.css';
 
 // The same tree src/entry-server.jsx renders at build time (#99), so a
@@ -44,3 +45,6 @@ if (shouldHydrate(root, window.location.pathname)) {
 } else {
   renderFresh();
 }
+
+// Installable (#25): the manifest, well after the page has loaded.
+linkManifest(document, window);
