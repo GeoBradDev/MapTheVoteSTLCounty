@@ -6,6 +6,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import byId from '../../docs/raw/fixtures/precinct-by-id.json';
 import election, { jurisdictions } from './election.js';
+import cityResults from './cityResults.js';
 import referrals from './referrals.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
@@ -329,7 +330,7 @@ describe('the Election Day polling place rule', () => {
 });
 
 describe("the City's Election Day rule (#89)", () => {
-  const rule = jurisdictions.city.electionDayRule;
+  const rule = cityResults.electionDayRule;
 
   // The City Board's own words, from its polling places page: any City voter
   // may vote at any listed location on Election Day.

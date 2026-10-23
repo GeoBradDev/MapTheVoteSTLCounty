@@ -6,13 +6,17 @@ import userEvent from '@testing-library/user-event';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import sites from '../../../docs/raw/fixtures/absentee-sites.json';
+import citySitesBody from '../../../docs/raw/fixtures/city-early-voting-sites.json';
 import cityFreshBody from '../../../docs/raw/fixtures/city-waits-fresh.json';
 import cityStaleBody from '../../../docs/raw/fixtures/city-waits-stale.json';
 import countyEmptyBody from '../../../docs/raw/fixtures/county-waits-empty.json';
 import countyFreshBody from '../../../docs/raw/fixtures/county-waits-fresh.json';
 import election from '../../config/election.js';
+import referrals from '../../config/referrals.js';
 import { reportedTimeParts, selectCityWaits, selectCountyWaits } from '../../data/waitTimes.js';
+import { cityScheduleFor, citySchedules } from '../lookup/cityEarlyVoting.js';
 import { titleCase } from '../lookup/nearbyPolls.js';
+import { copy as resultsCopy } from '../lookup/resultsCopy.js';
 import { createWaitTimesStore } from './useWaitTimes.js';
 import { createWaitTimesMap } from './waitTimesMapView.js';
 import WaitTimesPage from './WaitTimesPage.jsx';
@@ -31,13 +35,34 @@ const countyEmpty = async () => selectCountyWaits(rowsOf(countyEmptyBody), sites
 const cityFresh = async () => selectCityWaits(rowsOf(cityFreshBody));
 const cityStale = async () => selectCityWaits(rowsOf(cityStaleBody));
 
+// The City's sites as the City client returns them (src/data/cityArcgis.js),
+// with the City chunk's schedules (#91).
+const fields = election.jurisdictions.city.siteFields;
+const citySites = {
+  ...citySitesBody,
+  features: citySitesBody.features.map(({ properties: p, ...f }) => ({
+    ...f,
+    properties: {
+      loc: p[fields.id],
+      name: p[fields.name],
+      address: p[fields.address],
+      zipcode: p[fields.zip],
+      entry: p[fields.entry],
+      accessibleEntry: p[fields.accessibleEntry],
+    },
+  })),
+};
+const cityPart = (layer) => ({ layer, scheduleFor: cityScheduleFor, schedules: citySchedules });
+// The County tests' default: the City answers no sites.
+const noCity = async () => cityPart({ features: [] });
+
 // In StrictMode, as src/main.jsx renders the app: effects run twice on mount.
-function renderPage({ loadSites = async () => sites, waitSource } = {}) {
+function renderPage({ loadSites = async () => sites, loadCity = noCity, waitSource } = {}) {
   const location = memoryLocation({ path: '/early-voting' });
   return render(
     <StrictMode>
       <Router hook={location.hook}>
-        <WaitTimesPage loadSites={loadSites} waitSource={waitSource} />
+        <WaitTimesPage loadSites={loadSites} loadCity={loadCity} waitSource={waitSource} />
       </Router>
     </StrictMode>,
   );
@@ -434,5 +459,92 @@ describe('WaitTimesPage', () => {
     await userEvent.setup().click(screen.getByRole('button', { name: copy.location.button }));
     await screen.findByRole('radio', { name: copy.sort.nearest });
     expect(document.body.textContent).not.toMatch(/\b(best|worst|avoid|recommended)\b/i);
+  });
+});
+
+describe('WaitTimesPage: St. Louis City sites (#91)', () => {
+  const { city } = election.waitTimes;
+  const withCity = (options = {}) =>
+    renderPage({ loadCity: async () => cityPart(citySites), ...options });
+  const BOARD = 'St. Louis City Board of Elections';
+
+  it("lists the City's early voting sites with the County's, each naming its board", async () => {
+    withCity({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
+    await screen.findByRole('list', { name: copy.listLabel });
+    await waitFor(() =>
+      expect(items()).toHaveLength(sites.features.length + citySites.features.length),
+    );
+    for (const f of citySites.features) {
+      expect(itemFor(f.properties.name)).toHaveTextContent(city.source);
+    }
+    expect(itemFor('Board of Elections')).toHaveTextContent(county.source);
+    expect(itemFor('Board of Elections')).not.toHaveTextContent(city.source);
+  });
+
+  it("shows a City site's hours, status and address from the City config", async () => {
+    // Thursday 9 a.m.: the Board office is open, the libraries open at 11.
+    withCity({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
+    await waitFor(() => expect(itemFor(BOARD)).toBeDefined());
+    expect(itemFor(BOARD)).toHaveTextContent(copy.todayHours('08:00', '17:00'));
+    expect(itemFor(BOARD)).toHaveTextContent(/Open today until 5 p\.m\./);
+    expect(itemFor(BOARD)).toHaveTextContent('300 N Tucker Blvd');
+    expect(itemFor('Buder Library')).toHaveTextContent(/Opens today at 11 a\.m\./);
+    expect(itemFor('St. Joan of Arc')).toHaveTextContent(/Opens Tuesday, October 27 at 11 a\.m\./);
+  });
+
+  it("shows a City site's line count from the City source", async () => {
+    vi.setSystemTime(START + 30 * MINUTE);
+    const entry = {
+      siteId: BOARD,
+      jurisdiction: 'city',
+      unit: 'people',
+      value: 6,
+      reportedAt: new Date(START + 20 * MINUTE),
+      source: city.source,
+      openUntil: new Date(START + 8 * 60 * MINUTE),
+    };
+    withCity({
+      waitSource: createWaitTimesStore({ county: countyEmpty, city: async () => [entry] }),
+    });
+    await waitFor(() =>
+      expect(itemFor(BOARD)).toHaveTextContent(copy.count(6, reportedTimeParts(entry).time)),
+    );
+    expect(itemFor(BOARD)).toHaveTextContent(copy.reportedBy(city.source));
+    // Open with a count: first in the shortest line order.
+    expect(names()[0]).toBe(BOARD);
+  });
+
+  it("says counts are unavailable when the City's fail, and keeps the County's", async () => {
+    const entries = await countyFresh();
+    const failing = async () => {
+      throw new Error('down');
+    };
+    withCity({ waitSource: createWaitTimesStore({ county: countyFresh, city: failing }) });
+    await waitFor(() => expect(statusLine()).toHaveTextContent(copy.status.unavailable));
+    await waitFor(() => expect(screen.getAllByText(COUNT_TEXT)).toHaveLength(entries.length));
+  });
+
+  it('says each board serves its own voters, not that City sites are missing', async () => {
+    withCity({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
+    await screen.findByRole('list', { name: copy.listLabel });
+    expect(screen.getByText(copy.city)).toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(/not listed/i);
+    expect(copy.intro).toMatch(/St\. Louis City/);
+  });
+
+  it('still lists the County sites when the City sites fail, with the City lookup', async () => {
+    withCity({
+      loadCity: async () => {
+        throw new Error('down');
+      },
+      waitSource: createWaitTimesStore({ county: countyEmpty, city: null }),
+    });
+    const alert = (await screen.findByText(new RegExp(copy.failed))).closest('[role="alert"]');
+    expect(alert).toHaveTextContent(copy.failed);
+    expect(
+      screen.getByRole('link', { name: resultsCopy.officialLookupFor('city') }),
+    ).toHaveAttribute('href', referrals.stlCityLookup.url);
+    expect(items()).toHaveLength(sites.features.length);
+    expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
   });
 });

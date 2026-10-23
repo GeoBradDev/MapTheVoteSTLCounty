@@ -193,7 +193,7 @@ export const copy = translated((t) => ({
     missing: t('results.ballot.missing'),
   },
   earlyVoting: {
-    // Only the county's dates, hours and sites; no eligibility rules here.
+    // The board's own dates, hours and sites; no eligibility rules here.
     intro: t('results.earlyVoting.intro'),
     groupsLabel: t('results.earlyVoting.groupsLabel'),
     // Keyed by the polls layer's `abs_type`, like the schedules in the config.

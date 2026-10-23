@@ -1,4 +1,4 @@
-import { jurisdictions } from '../../config/election.js';
+import cityResults from '../../config/cityResults.js';
 import referrals from '../../config/referrals.js';
 import { formatLongDate } from './earlyVoting.js';
 import { copy, sourceName } from './resultsCopy.js';
@@ -13,7 +13,7 @@ import { copy, sourceName } from './resultsCopy.js';
  * @param {{ linkClass: string }} props
  */
 export default function CityElectionDayRule({ linkClass }) {
-  const { quote, source, lastVerified } = jurisdictions.city.electionDayRule;
+  const { quote, source, lastVerified } = cityResults.electionDayRule;
   const { url } = referrals[source];
   return (
     <>

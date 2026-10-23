@@ -78,9 +78,6 @@
  * @property {{ id: string, name: string, address: string, zip: string,
  *   entry: string, accessibleEntry: string }} [siteFields] The City voting
  *   locations layer's fields the app reads (#87, #89).
- * @property {{ quote: string, source: string, lastVerified: string }} [electionDayRule]
- *   The City Board's Election Day rule, quoted (#89); `source` names the
- *   referrals.js page it is quoted from.
  * @property {string} [pollsWhere] The City's Election Day voting locations filter.
  * @property {number} [pollsListed] How many Election Day sites the City Board lists.
  * @property {string} [earlyVotingWhere] The City's early voting sites filter.
@@ -130,7 +127,8 @@ const cityWaitSource = 'https://www.arcgis.com/apps/dashboards/8548fe3a065a45518
 // The 2025 map. congressional_district_20 is the old map; do not show it.
 const congressionalField = 'congressional_district_25';
 
-function deepFreeze(value) {
+/** Freezes a config object and everything in it, except a RegExp. */
+export function deepFreeze(value) {
   // A frozen RegExp has a read-only lastIndex, which breaks global matching.
   if (value === null || typeof value !== 'object' || value instanceof RegExp) return value;
   Object.values(value).forEach(deepFreeze);
@@ -244,7 +242,9 @@ const county = {
 // St. Louis City (#85). The City Board's layers, checked live on 2026-10-22
 // (docs/data.md, "St. Louis City"). The precincts layer's `precinctid` reads
 // `W <ward> P <precinct>`, like `W 1 P 12`: 207 precincts in wards 1 to 14.
-// #91 adds the early voting hours.
+// The values only the City's results cards read (its early voting hours, #91,
+// and its Election Day rule, #89) are in ./cityResults.js, loaded only with the
+// City chunk (#147).
 const cityServiceRoot = 'https://services6.arcgis.com/HZXbCkpCSqbGd0vK/ArcGIS/rest/services';
 const cityGeography = 'ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer';
 const cityLayers = {
@@ -292,20 +292,6 @@ const city = {
   // dashboard filter (waitTimes.city.where).
   earlyVotingWhere: "publicview = 'Yes' AND earlyvoting = 'Yes'",
   boundaryWhere: "districtid = 'City of St. Louis'",
-  // Where a City voter may vote on Election Day, in the City Board's own words
-  // from its polling places page, re-read on 2026-10-22 (#89). Unlike the
-  // County (electionDayPollingPlace), any City voter may vote at any of the
-  // listed locations. Shown as quoted; confirm it with the City Board before
-  // each election.
-  electionDayRule: {
-    quote:
-      'Any voter who is registered to vote at an address within the boundaries of St. Louis City can vote at any of the listed locations on November 3, 2026.',
-    // The page it is quoted from, by its name in referrals.js, where the City
-    // Board's stable pages are kept (this file must load on its own, before
-    // `npm ci`, for the health check's election window).
-    source: 'stlCityLookup',
-    lastVerified: '2026-10-22',
-  },
   // The layers above; docs/data.md has the inspection.
   sources: [...new Set(layerSources(cityServiceRoot, cityLayers))],
   // The City board's site and lookup page do not change between elections, so

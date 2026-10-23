@@ -1,6 +1,7 @@
-import { useId } from 'react';
+import { Suspense, useId } from 'react';
 import election from '../../config/election.js';
 import DistrictsCard from './DistrictsCard.jsx';
+import { cityComponent } from './cityComponent.js';
 import EarlyVotingCard from './EarlyVotingCard.jsx';
 import PollsCard from './PollsCard.jsx';
 import SampleBallotCard from './SampleBallotCard.jsx';
@@ -8,6 +9,9 @@ import { useJurisdiction } from './jurisdictionContext.js';
 import { copy } from './resultsCopy.js';
 
 const linkClass = 'text-primary underline';
+
+// The City's own cards, from the City chunk (#147).
+const CityEarlyVotingCard = cityComponent('CityEarlyVotingCard');
 
 // The card order the issue sets. Each card's own issue replaces its body.
 const CARDS = [
@@ -68,11 +72,20 @@ function PendingCard() {
 export default function ResultsCards({ code, origin, showBallot, ballotHtml, precinct }) {
   const { id } = useJurisdiction();
   const polls = () => <PollsCard code={code} origin={origin} />;
-  // The City has only its polling places card so far (#89); its other cards
-  // are #90 to #92.
+  // The City has its polling places (#89) and early voting (#91) cards so far;
+  // its others are #90 and #92.
   const body =
     id === 'city'
-      ? { polls }
+      ? {
+          polls,
+          earlyVoting: () => (
+            // The chunk is already loaded with the City data, so this
+            // suspends only for a moment.
+            <Suspense fallback={null}>
+              <CityEarlyVotingCard code={code} origin={origin} />
+            </Suspense>
+          ),
+        }
       : {
           polls,
           ballot: () => <SampleBallotCard html={ballotHtml} code={code} />,

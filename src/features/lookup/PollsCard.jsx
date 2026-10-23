@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'wouter';
 import election from '../../config/election.js';
 import { CARD_TOPICS } from '../learn/cardTopics.js';
 import { getLocale } from '../../i18n/index.js';
 import { getTopic } from '../learn/topics.js';
 import AssignedPollingPlace from './AssignedPollingPlace.jsx';
-import CityElectionDayRule from './CityElectionDayRule.jsx';
+import { cityComponent } from './cityComponent.js';
 import { directionsLinks, isAppleMobile } from './nearbyPolls.js';
 import PrecinctMap from './PrecinctMap.jsx';
 import RetryButton from './RetryButton.jsx';
@@ -14,12 +14,16 @@ import StaleNote from './StaleNote.jsx';
 import { useJurisdiction } from './jurisdictionContext.js';
 import { useNearestSites } from './useNearestSites.js';
 
+// In the City chunk (#147).
+const CityElectionDayRule = cityComponent('CityElectionDayRule');
+
 const linkClass = 'text-primary underline';
 const tapLinkClass = `inline-flex min-h-11 items-center ${linkClass}`;
 const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
 
-// The board's own lookup for this precinct's jurisdiction (#89).
-function OfficialLookupLink() {
+// The board's own lookup for this precinct's jurisdiction (#89); the early
+// voting cards' too (#91).
+export function OfficialLookupLink() {
   const { id, officialLookupUrl } = useJurisdiction();
   return (
     <a href={officialLookupUrl} rel="noreferrer" className={linkClass}>
@@ -30,7 +34,7 @@ function OfficialLookupLink() {
 
 // The City Board's entrance notes (#89), as published; one line when the
 // entrance and the accessible entrance are the same. The County has none.
-function Entrances({ entry, accessibleEntry }) {
+export function Entrances({ entry, accessibleEntry }) {
   if (entry && entry === accessibleEntry) return <p>{copy.polls.entryBoth(entry)}</p>;
   return (
     <>
@@ -231,7 +235,9 @@ export default function PollsCard({ code, origin }) {
 
       <div className="mt-3">
         {isCity ? (
-          <CityElectionDayRule linkClass={linkClass} />
+          <Suspense fallback={null}>
+            <CityElectionDayRule linkClass={linkClass} />
+          </Suspense>
         ) : (
           <AssignedPollingPlace linkClass={linkClass} />
         )}

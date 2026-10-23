@@ -436,6 +436,17 @@ describe('configLinks', () => {
     expect(urls).toContain(election.officialLookupUrl);
     expect(urls).not.toContain(election.serviceRoot);
   });
+
+  it("finds the City's early voting sources in their own file, labelled with it (#91)", async () => {
+    const { default: cityResults } = await import('../config/cityResults.js');
+    const links = configLinks(cityResults, 'src/config/cityResults.js');
+    for (const url of cityResults.earlyVoting.sources) {
+      expect(links).toContainEqual({
+        url,
+        files: ['src/config/cityResults.js (earlyVoting.sources)'],
+      });
+    }
+  });
 });
 
 describe('writeSkipped', () => {
