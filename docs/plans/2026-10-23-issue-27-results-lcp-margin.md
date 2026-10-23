@@ -283,3 +283,11 @@ before this change:
 - Below the intro, the button placeholder (60 px) does not match every loaded body: a County
   "could not find" line or the City card's two further paragraphs move the cards below it,
   not the intro.
+- A County precinct whose sample ballot link fails the checks (the verifier's finding): the
+  intro stays put, but the "could not find" line under it, painted with the data and larger
+  than the intro, enters the 360 x 640 view and becomes a later LCP (about 1600 ms with
+  1500 ms answers). Accepted: every precinct's link is checked against the same parser and
+  code by the daily data health check (`scripts/check-config.mjs`, "sample ballot links"),
+  so such a precinct is an anomaly the check reports, not a calendar state.
+- A not-found or failed code shows the sample ballot intro, like the Election Day line, for
+  the moment before its error; both are true for every voter of that jurisdiction.
