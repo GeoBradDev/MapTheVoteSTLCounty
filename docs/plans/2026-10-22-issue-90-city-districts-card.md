@@ -26,8 +26,10 @@ not applicable (a Vite React frontend).
    and no request asks for those fields. A row whose office names a party (`Committeeman (R)` and
    the rest) is never shown; the card never shows the office text at all. A test fails if party
    or officeholder text could reach the page.
-5. Missing data (no rows, an empty answer, or a failed request) shows the County card's
-   "could not find" message with the City's official lookup link.
+5. Missing data (no rows or an empty answer) shows the County card's "could not find" message
+   with the City's official lookup link. A failed request says it could not load them, with the
+   same link and a Try again button (the other cards' pattern, #18); focus moves to the
+   districts when a retry loads them.
 6. Source line: "From the St. Louis City Board of Election Commissioners' election data."
 7. The congressional row is verified against official sources: the whole City is in District 1
    under the 2022 map (RSMo 128.461) and under the 2025 HB 1 text (RSMo 128.471), and the
@@ -51,7 +53,8 @@ not applicable (a Vite React frontend).
 - Tests: `cityDistricts.test.js`, `CityDistrictsCard.test.jsx` (new),
   `PrecinctPage.city89.test.jsx` (districts card no longer pending), `src/test/build.test.js`
   (City districts config marks stay out of the first load).
-- e2e fixtures if the City page's districts query needs an answer there.
+- `e2e/fixtures.js` (the City districts layer answers its fixture) and `e2e/a11y.e2e.js` (the
+  City page waits for the districts card before the axe check).
 - Docs: `docs/data.md` (St. Louis City: districts card, the First District answer), `README.md`
   (the intro's "until #90 to #92").
 
@@ -68,6 +71,10 @@ not applicable (a Vite React frontend).
 - A layer rename of an office (`Community College Trustee` vs the row's `St. Louis Community
   College Trustee`): rows list every office name seen, and the health check is untouched.
 - The lazy card could add a first-load import: the build test checks the marks.
+- The first load had 16 bytes of room after #91; the new copy strings (en.json, which every
+  page loads, by the i18n rule of #19) take about 150 bytes gzipped. The owner's fix is #147
+  (learn topic Markdown out of the first load), run separately; this branch waits for it and
+  rebases rather than raising the budget or moving strings out of en.json.
 - A second outline request: `getCityPrecinctGeometry` shares the latest precinct's request.
 
 ## Proof
