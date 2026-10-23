@@ -4,15 +4,16 @@
 import { runInNewContext } from 'node:vm';
 import cityResults from '../../config/cityResults.js';
 import election from '../../config/election.js';
-import { homeMapWindow, inHomeMapWindow, windowScript, zonedInstant } from './homeMapWindow.js';
+import { HOME_MAP_WINDOW, inHomeMapWindow } from './homeMapMode.js';
+import { homeMapWindow, windowScript, zonedInstant } from './homeMapWindow.js';
 
 describe('zonedInstant', () => {
   it('reads a wall clock time in the zone, in daylight and standard time', () => {
-    expect(zonedInstant('2026-09-22', '00:00', 'America/Chicago')).toBe(
-      Date.UTC(2026, 8, 22, 5, 0),
+    expect(zonedInstant('2030-09-24', '00:00', 'America/Chicago')).toBe(
+      Date.UTC(2030, 8, 24, 5, 0),
     );
-    expect(zonedInstant('2026-11-03', '19:00', 'America/Chicago')).toBe(
-      Date.UTC(2026, 10, 4, 1, 0),
+    expect(zonedInstant('2030-11-05', '19:00', 'America/Chicago')).toBe(
+      Date.UTC(2030, 10, 6, 1, 0),
     );
   });
 });
@@ -47,6 +48,12 @@ describe('homeMapWindow', () => {
     });
     expect(homeMapWindow(off({ homeMap: false }), cityResults)).toBeNull();
     expect(homeMapWindow(off({ enabled: false }), cityResults)).toBeNull();
+  });
+});
+
+describe('the app’s window', () => {
+  it('is the config’s, defined by the build', () => {
+    expect(HOME_MAP_WINDOW).toEqual(homeMapWindow(election, cityResults));
   });
 });
 

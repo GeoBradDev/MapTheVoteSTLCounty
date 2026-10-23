@@ -141,8 +141,8 @@ export function buildModule({ view, projection, county, city }) {
     y0: round(projection.y0, 4),
   };
   return `${HEADER}
-// Sources: the County's ${election.layers.countyBoundary} layer and the City's
-// ${jurisdictions.city.layers.boundary} layer where ${jurisdictions.city.boundaryWhere}.
+// Sources: the County's \`countyBoundary\` layer and the City's \`boundary\`
+// layer with \`boundaryWhere\`, as src/config/election.js names them.
 // Rings are flat [x0, y0, x1, y1, ...] lists in view units; y grows down.
 
 /** The view box. */

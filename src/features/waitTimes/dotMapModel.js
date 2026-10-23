@@ -5,7 +5,6 @@
 // with no current count is a hollow ring, never a short line.
 import election from '../../config/election.js';
 import { earlyVotingStatus, zonedNow } from '../lookup/earlyVoting.js';
-import { homeMapWindow, inHomeMapWindow } from './homeMapWindow.js';
 import { waitClasses, waitColor } from './jenks.js';
 import { PROJECTION } from './outline.js';
 
@@ -27,21 +26,6 @@ export const SHORTEST_COUNT = 3;
 export function project(lng, lat) {
   const { lng0, lat0, kx, scale, x0, y0 } = PROJECTION;
   return [x0 + (lng - lng0) * kx * scale, y0 + (lat0 - lat) * scale];
-}
-
-/**
- * Which sites the home map shows at `now`: none outside the map window, the
- * polling places on Election Day, else the early voting sites (open, closed for
- * the night, or done for good on the evening before Election Day).
- * @param {number} now
- * @param {typeof election} [config]
- * @returns {'off' | 'earlyVoting' | 'electionDay'}
- */
-export function homeMapMode(now, config = election) {
-  if (!inHomeMapWindow(now, homeMapWindow(config))) return 'off';
-  return zonedNow(now, config.timeZone).date === config.electionDate
-    ? 'electionDay'
-    : 'earlyVoting';
 }
 
 const byName = (a, b) => (a.name ?? '').localeCompare(b.name ?? '') || a.key.localeCompare(b.key);

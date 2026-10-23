@@ -58,7 +58,23 @@
     "moreInfo": "More information",
     "howToVote": "How to vote",
     "countySite": "St. Louis County Board of Elections website",
-    "citySite": "St. Louis City Board of Election Commissioners website"
+    "citySite": "St. Louis City Board of Election Commissioners website",
+    "waitMap": {
+      "heading": "Lines at early voting now",
+      "headingElectionDay": "Lines at polling places now",
+      "mapLink": "Map of early voting sites by line length. See every site and line",
+      "mapLinkElectionDay": "Map of polling places by line length. See every polling place and line",
+      "county": "St. Louis County",
+      "city": "City",
+      "shortest": "Shortest lines now",
+      "site": "{name}, {board}: {count, plural, =0 {no one in line} one {# person} other {# people}}",
+      "noCounts": "No site has a current line count right now.",
+      "openToday": "Sites open again today at {time}",
+      "openOn": "Sites open again {date}, at {time}",
+      "pollsOpen": "Polls open today at {time}",
+      "ended": "Early voting has ended. Election Day is tomorrow, with polls open {open} to {close}",
+      "hollow": "Closed, or no current count"
+    }
   },
   "addressSearch": {
     "label": "Enter your address",

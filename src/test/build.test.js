@@ -145,6 +145,16 @@ describe('production build', () => {
     expect(html.indexOf(tag[0])).toBeLessThan(html.indexOf('type="module"'));
   });
 
+  // The home page's dot map (#184), its outlines and its model load on demand
+  // with the wait times page's chunk, never in the first load.
+  it('keeps the home dot map out of the first load, in the wait times page chunk', () => {
+    const firstLoad = [...html.matchAll(/(?:src|href)="\/assets\/([\w-]+\.js)"/g)].map((m) => m[1]);
+    const mapChunks = Object.keys(js).filter((f) => js[f].includes('data-outline'));
+    expect(mapChunks).toHaveLength(1);
+    expect(mapChunks[0]).toMatch(/^WaitTimesPage-/);
+    for (const f of firstLoad) expect(js[f].includes('data-outline'), f).toBe(false);
+  });
+
   // render.yaml's Content-Security-Policy allows only same-origin scripts,
   // styles, images and fonts, with no 'unsafe-inline'.
   it('needs nothing the Content-Security-Policy blocks', () => {

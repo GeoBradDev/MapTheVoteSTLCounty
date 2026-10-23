@@ -67,15 +67,6 @@ export function homeMapWindow(config = election, city = cityResults) {
 }
 
 /**
- * Whether `now` is inside `window`, its start included and its end not.
- * @param {number} now
- * @param {{ start: number, end: number } | null} window
- */
-export function inHomeMapWindow(now, window) {
-  return Boolean(window) && now >= window.start && now < window.end;
-}
-
-/**
  * The head script's text: marks <html> with `data-home-map` while the window
  * is open.
  * @param {{ start: number, end: number }} window

@@ -7,7 +7,9 @@
 // same-origin file, so the Content-Security-Policy (`script-src 'self'`) allows
 // it and it is cached for good; it loads alongside the stylesheet, which blocks
 // the first paint anyway. With the home map off (`waitTimes.homeMap`) nothing
-// is added.
+// is added. In every mode (build, dev, tests) it also defines the window as
+// `__HOME_MAP_WINDOW__` for src/features/waitTimes/homeMapMode.js,
+// so the app knows it without loading the City's config in the first load.
 //
 // vite.config.js loads this file in plain Node: it imports only the window
 // module, which reads the config.
@@ -23,16 +25,22 @@ export default function homeMapScript({ window = homeMapWindow() } = {}) {
   const source = window ? windowScript(window) : null;
   const hash = source && createHash('sha256').update(source).digest('hex').slice(0, 8);
   const fileName = source && `assets/home-map-${hash}.js`;
+  let build = false;
   return {
     name: 'mapthevote-home-map-script',
-    apply: 'build',
+    config() {
+      return { define: { __HOME_MAP_WINDOW__: JSON.stringify(window) } };
+    },
+    configResolved(config) {
+      build = config.command === 'build';
+    },
     generateBundle() {
-      if (source) this.emitFile({ type: 'asset', fileName, source });
+      if (source && build) this.emitFile({ type: 'asset', fileName, source });
     },
     transformIndexHtml: {
       order: 'post',
       handler() {
-        if (!source) return [];
+        if (!source || !build) return [];
         return [{ tag: 'script', attrs: { src: `/${fileName}` }, injectTo: 'head-prepend' }];
       },
     },

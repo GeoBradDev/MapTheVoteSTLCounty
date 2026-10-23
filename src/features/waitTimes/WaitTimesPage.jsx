@@ -492,3 +492,10 @@ export default function WaitTimesPage({
     </>
   );
 }
+
+// The home page's dot map (#184) ships in this page's chunk: the home page
+// loads it from here, so the two share one on-demand chunk (and the wait
+// times page is ready when the map's link is followed). A chunk of its own
+// made the bundler move shared modules out of the first load's entry, which
+// cost about 2 KB of the first load budget (#27).
+export { default as WaitDotMap } from './WaitDotMap.jsx';

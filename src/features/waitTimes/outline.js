@@ -1,6 +1,6 @@
 // Written by scripts/build-outline.mjs (#184). Do not edit; run the script again.
-// Sources: the County's St_Louis_County_Boundary/FeatureServer/0 layer and the City's
-// ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/2 layer where districtid = 'City of St. Louis'.
+// Sources: the County's `countyBoundary` layer and the City's `boundary`
+// layer with `boundaryWhere`, as src/config/election.js names them.
 // Rings are flat [x0, y0, x1, y1, ...] lists in view units; y grows down.
 
 /** The view box. */

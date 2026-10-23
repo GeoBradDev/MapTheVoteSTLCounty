@@ -7,7 +7,10 @@ import { selectCountyWaits } from '../../data/waitTimes.js';
 import { countyFresh } from '../../data/waitTimes.fixtures.js';
 import { electionDaySchedule } from '../lookup/electionDay.js';
 import { pollRows } from '../lookup/nearbyPolls.js';
-import { DOT_RADIUS, dotMap, HOLLOW_RADIUS, homeMapMode, project } from './dotMapModel.js';
+import cityResults from '../../config/cityResults.js';
+import { DOT_RADIUS, dotMap, HOLLOW_RADIUS, project } from './dotMapModel.js';
+import { homeMapMode } from './homeMapMode.js';
+import { homeMapWindow } from './homeMapWindow.js';
 import { CITY_RING, COUNTY_RING, VIEW } from './outline.js';
 
 // 9:05 a.m. Central, 2026-10-22, just after the fresh County counts.
@@ -32,7 +35,7 @@ const countyRows = pollRows(absentee).map((row) => ({
 // Two City sites, one open by a schedule that covers every day, by its own
 // key in the City's counts.
 const allDay = [
-  { from: '2026-09-01', to: '2026-11-02', days: 'daily', open: '00:00', close: '23:59' },
+  { from: '2026-09-01', to: '2026-12-31', days: 'daily', open: '00:00', close: '23:59' },
 ];
 const cityRows = [
   {
@@ -88,7 +91,7 @@ describe('homeMapMode', () => {
 
   it('is off all the time with the home map flag off', () => {
     const config = { ...election, waitTimes: { ...election.waitTimes, homeMap: false } };
-    expect(homeMapMode(OPEN_AT, config)).toBe('off');
+    expect(homeMapMode(OPEN_AT, homeMapWindow(config, cityResults))).toBe('off');
   });
 });
 
@@ -203,7 +206,10 @@ describe('dotMap, Election Day', () => {
 
   it('before the polls open, says they open at 6 a.m. today', () => {
     const map = dotMap({ rows, waits: [], now: BEFORE_POLLS_AT });
-    expect(map.nextOpen).toEqual({ date: '2026-11-03', time: '06:00' });
+    expect(map.nextOpen).toEqual({
+      date: election.electionDate,
+      time: election.electionDayHours.open,
+    });
     expect(map.stale).toBe(false);
   });
 

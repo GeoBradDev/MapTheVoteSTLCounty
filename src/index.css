@@ -214,3 +214,29 @@
     overflow-wrap: anywhere;
   }
 }
+
+/*
+  The home page's line count dot map box (#184). Hidden unless the map window
+  is open: before the app runs, the head script (src/prerender/homeMapScript.js)
+  marks <html> with data-home-map; after hydration the box's own data-open or
+  data-closed decides. Open, it holds its height before the map arrives, so
+  the address search below it never moves (e2e/a11y.e2e.js checks it).
+*/
+@layer components {
+  [data-home-map-box] {
+    display: none;
+  }
+
+  :root[data-home-map] [data-home-map-box]:not([data-closed]),
+  [data-home-map-box][data-open] {
+    display: block;
+    min-height: 36rem;
+  }
+
+  @media (width >= 40rem) {
+    :root[data-home-map] [data-home-map-box]:not([data-closed]),
+    [data-home-map-box][data-open] {
+      min-height: 32rem;
+    }
+  }
+}
