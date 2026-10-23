@@ -316,6 +316,18 @@ for (const { name, path, ready, at, waits, basemap } of ROUTES) {
       expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
     });
 
+    // The site header (#79): the page's banner, one row at most 56 px tall,
+    // also with wider text spacing.
+    test('shows the site header in one row', async ({ page }) => {
+      const banner = page.getByRole('banner');
+      await expect(banner).toBeVisible();
+      await expect(banner.getByRole('link', { name: 'St. Louis Voter Guide' })).toBeVisible();
+      await expect(banner.getByRole('link', { name: 'How to vote' })).toBeVisible();
+      expect((await banner.boundingBox()).height).toBeLessThanOrEqual(56);
+      await page.addStyleTag({ content: TEXT_SPACING });
+      expect((await banner.boundingBox()).height).toBeLessThanOrEqual(56);
+    });
+
     test('has no control under 44 px tall', async ({ page }) => {
       expect(await smallTargets(page)).toEqual([]);
     });
@@ -375,7 +387,8 @@ test('Back and Forward leave the scroll position to the browser', async ({ page 
   });
   await answerFromFixtures(page);
   await page.goto('/');
-  await page.getByRole('link', { name: 'How to vote' }).click();
+  // The home page's own row, not the site header's link with the same name (#79).
+  await page.getByRole('main').getByRole('link', { name: 'How to vote' }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('How to vote');
   // A link to a new page starts it at the top.
   expect(await page.evaluate(() => window.scrollsToTop)).toBe(1);
