@@ -35,13 +35,17 @@ skills, not applicable because no UI code or copy changes: the card already stri
 
 ## Files that change
 
-- `src/config/election.js`: the field and its comment.
+- `src/config/election.js`: the field and its comment, and `congressionalMap` (the map year
+  and the County's districts on it), which the health check reads so the next election's
+  map is a config change (added after review).
 - `src/config/election.test.js`: pin the field to the 2022 map.
 - `src/features/lookup/PrecinctPage.test.jsx`, `src/features/lookup/districts.test.js`:
   expectations for the 2022 map.
 - `scripts/check-config.mjs`: a `congressional districts` check over every precinct.
 - `src/test/checkConfig.test.js`: tests for it.
 - `docs/data.md`: field table and a note on the map.
+- `README.md`: the new-election checklist (check which map is in effect) and the health
+  check description.
 
 ## Order of work
 

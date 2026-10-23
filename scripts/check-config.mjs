@@ -18,7 +18,7 @@
 import { realpathSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import cityResults from '../src/config/cityResults.js';
-import election from '../src/config/election.js';
+import election, { congressionalMap } from '../src/config/election.js';
 import { PRECINCT_CODE } from '../src/data/arcgis.js';
 import { cityPrecinctCode } from '../src/data/cityPrecinctCode.js';
 import { fileNameMatchesPrecinct, parseSampleBallot } from '../src/data/sampleBallot.js';
@@ -30,16 +30,6 @@ export { isPastElection };
 
 /** A sane number of precincts. 1213 for November 2026. */
 export const PRECINCT_RANGE = { min: 900, max: 1600 };
-
-/**
- * The congressional map in effect for November 3, 2026, and the County's
- * districts on it (#150): the 2022 map, District 1 and District 2. A 2025 map
- * value means the layer or the config moved to a map that is not in effect.
- */
-export const CONGRESSIONAL_MAP = {
-  value: /^US Representative District (\d+) \(2022\)$/,
-  districts: ['1', '2'],
-};
 
 /**
  * How many sample ballot links get a HEAD request on a default run (#111). The
@@ -423,16 +413,20 @@ export async function runHealthCheck(
       record('sample ballot PDFs', 'skip', 'no valid sample ballot links to try');
     }
 
-    // 5. Every precinct is on the congressional map in effect (#150).
+    // 5. Every precinct is in a district on the congressional map in effect,
+    // `congressionalMap` in src/config/election.js (#150).
     if (countOk) {
       await check('congressional districts', async () => {
+        const { year, districts } = congressionalMap;
+        const want = new Map(
+          districts.map((d) => [`US Representative District ${d} (${year})`, d]),
+        );
         const bad = [];
         const counts = {};
         for (const p of precincts) {
           const value = p[config.congressionalField];
-          const district =
-            typeof value === 'string' ? value.trim().match(CONGRESSIONAL_MAP.value)?.[1] : null;
-          if (!district || !CONGRESSIONAL_MAP.districts.includes(district)) {
+          const district = typeof value === 'string' ? want.get(value.trim()) : undefined;
+          if (!district) {
             bad.push(`${p.precinct}: ${value === undefined ? 'undefined' : JSON.stringify(value)}`);
           } else {
             counts[district] = (counts[district] ?? 0) + 1;
@@ -443,10 +437,8 @@ export async function runHealthCheck(
           const more = bad.length > 20 ? `; and ${bad.length - 20} more` : '';
           throw new CheckError(`${bad.length} precincts fail: ${shown}${more}`);
         }
-        const list = CONGRESSIONAL_MAP.districts
-          .map((d) => `District ${d} (${counts[d] ?? 0})`)
-          .join(', ');
-        return `${precincts.length} precincts on the 2022 map: ${list}`;
+        const list = districts.map((d) => `District ${d} (${counts[d] ?? 0})`).join(', ');
+        return `${precincts.length} precincts on the ${year} map: ${list}`;
       });
     } else {
       record('congressional districts', 'skip', 'the precinct count check failed');

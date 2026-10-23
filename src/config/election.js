@@ -133,6 +133,15 @@ const cityWaitSource = 'https://www.arcgis.com/apps/dashboards/8548fe3a065a45518
 // Checked 2026-10-23. congressional_district_25 is the 2025 map; do not show it.
 const congressionalField = 'congressional_district_20';
 
+/**
+ * The map `congressionalField` holds, and the County's districts on it
+ * (Districts 1 and 2 on the 2022 map). The data health check fails a precinct
+ * whose value is not `US Representative District <district> (<year>)` for one
+ * of them (#150). A named export, not part of the default object, so the app's
+ * bundle leaves it out: only the health check reads it.
+ */
+export const congressionalMap = deepFreeze({ year: '2022', districts: ['1', '2'] });
+
 /** Freezes a config object and everything in it, except a RegExp. */
 export function deepFreeze(value) {
   // A frozen RegExp has a read-only lastIndex, which breaks global matching.
@@ -167,8 +176,8 @@ const county = {
   sampleBallotUrlPattern:
     /^https:\/\/stlouiscovotes\.maps\.arcgis\.com\/sharing\/rest\/content\/items\/[0-9a-f]{32}\/data$/,
   congressionalField,
-  // Never the pre-joined `districts` field: it includes the old congressional
-  // map. docs/data.md describes each field.
+  // Never the pre-joined `districts` field: it includes the 2025 congressional
+  // map, which is not in effect. docs/data.md describes each field.
   districtFields: [
     { key: 'congressional', field: congressionalField },
     { key: 'stateSenate', field: 'state_senate_20' },

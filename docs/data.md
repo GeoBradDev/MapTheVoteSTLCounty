@@ -166,7 +166,7 @@ election." The board's own sample ballots agree: 121 of the 1213 precincts have 
 districts in the two fields, 95 of those have a ballot, and on every one of the 95 the
 "U.S. REPRESENTATIVE - DISTRICT N" race matches `congressional_district_20` (checked
 2026-10-23 by reading each PDF). The health check fails if any precinct's value is not a 2022
-map district (`CONGRESSIONAL_MAP` in `scripts/check-config.mjs`). For a later election,
+map district (`congressionalMap` in `src/config/election.js`). For a later election,
 recheck which map is in effect before choosing the field. St. Louis City is in the first
 district under both maps (RSMo 128.461 and 128.471).
 

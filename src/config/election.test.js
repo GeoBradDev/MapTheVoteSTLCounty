@@ -5,7 +5,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import byId from '../../docs/raw/fixtures/precinct-by-id.json';
-import election, { jurisdictions } from './election.js';
+import election, { congressionalMap, jurisdictions } from './election.js';
 import cityResults from './cityResults.js';
 import referrals from './referrals.js';
 
@@ -118,6 +118,17 @@ describe('election config', () => {
     );
   });
 
+  it('names the congressional map and its County districts for the health check', () => {
+    const { year, districts } = congressionalMap;
+    expect(Object.isFrozen(congressionalMap.districts)).toBe(true);
+    expect(year).toMatch(/^\d{4}$/);
+    expect(districts.length).toBeGreaterThan(0);
+    for (const d of districts) expect(d).toMatch(/^\d+$/);
+    expect(byId.features[0].attributes[election.congressionalField]).toMatch(
+      new RegExp(`\\(${year}\\)$`),
+    );
+  });
+
   it('links an https official lookup app', () => {
     expect(election.officialLookupUrl).toMatch(/^https:\/\//);
   });
@@ -202,7 +213,7 @@ describe('district fields', () => {
     expect(congressional).toEqual([fields[0]]);
   });
 
-  it('never reads the pre-joined districts field, which includes the old congressional map', () => {
+  it('never reads the pre-joined districts field, which includes the 2025 congressional map', () => {
     expect(fields.map((f) => f.field)).not.toContain('districts');
   });
 
