@@ -61,20 +61,22 @@ Domain skills:
 ## Files that change
 
 - `src/config/election.js`: `waitTimes.county.electionDay` (`enabled`, `serviceRoot`,
-  `layer`, `where`, `pollsField`), `waitTimes.city.electionDay` (`enabled`, `where`); JSDoc.
+  `layer`, `where`, `pollsField`, `sourceUrl`: the County's Polling Place Lookup app, also
+  added to `waitTimes.sources`), `waitTimes.city.electionDay` (`enabled`, `where`); JSDoc.
 - `src/features/lookup/electionDay.js` (new): `isElectionDay(now)`,
   `electionDaySchedule` (one ScheduleEntry built from `electionDate` and
   `electionDayHours`), `electionDayStatus(now)`.
-- `src/data/waitTimes.js`: `selectCountyElectionDayWaits(reports, polls, now)`,
-  `selectCityWaits(rows, now, { electionDay })` gating by Election Day hours; shared helpers.
+- `src/data/waitTimes.js`: `selectCountyWaits(reports, sites, now, { electionDay })` and
+  `selectCityWaits(rows, now, { electionDay })`, gating by Election Day hours.
 - `src/data/arcgis.js`: `POLL_FIELDS` adds the Election Day join field; `getCountyWaits` and
   `getCityWaits` pick the Election Day source on Election Day.
 - `src/features/lookup/nearbyPolls.js`: rows carry `dayKey` (the polls row's Election Day
   join value).
-- `src/features/waitTimes/useWaitTimes.js`: `countyWaits` and `cityWaits` single-board
-  stores exported for the polls card.
-- `src/features/lookup/NearbySort.jsx` (new): the sort radios, `withKeys`, `inHeldOrder`,
-  moved from `EarlyVotingCard.jsx` and used by both cards.
+- `src/features/waitTimes/useWaitTimes.js`: `boardWaits` (one single-board store per
+  board) for the polls card, and `OFF_WAITS`, moved from `EarlyVotingCard.jsx`.
+- `src/features/lookup/NearbySortControls.jsx` (new, the sort radios) and
+  `src/features/lookup/nearbySort.js` (new, `withKeys` and `useHeldOrder`), moved from
+  `EarlyVotingCard.jsx` and used by both cards (split in two for the fast refresh lint rule).
 - `src/features/lookup/EarlyVotingCard.jsx`: imports the moved helpers.
 - `src/features/lookup/PollsCard.jsx`: counts, sort, held order, no-count line, link to
   `/early-voting`, bins to the map.
@@ -89,7 +91,11 @@ Domain skills:
 - `src/data/waitTimes.fixtures.js`, `e2e/fixtures.js`: Election Day fixtures derived from
   the recorded fresh County fixture.
 - Tests next to each module; `e2e/a11y.e2e.js` adds `/early-voting` and `/p/CC007` at
-  Election Day.
+  Election Day. Existing tests change only where the contract changed: the polls
+  `outFields` list, the polls fields the health check requires, the arcgis mocks of the
+  cards that now import the wait fetchers, the open-hours window on Election Day, the
+  workflow's cron list, and the `/early-voting` "ended" tests, moved from Election Day noon
+  to the evening before (on Election Day the page now lists the polling places).
 - Docs: `README.md`, `docs/data.md` where their text becomes wrong.
 
 ## Order of work

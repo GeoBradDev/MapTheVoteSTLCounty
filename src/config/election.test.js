@@ -426,4 +426,18 @@ describe('wait times', () => {
     expect(waitTimes.city.commentsField).toMatch(/^\w+$/);
     expect(waitTimes.city.closedText).toEqual(expect.any(String));
   });
+
+  it('names an Election Day source per board (#107), the County one fully', () => {
+    const { county, city } = waitTimes;
+    expect(typeof county.electionDay.enabled).toBe('boolean');
+    expect(county.electionDay.serviceRoot).toMatch(/^https:\/\/[^ ]+\/rest\/services$/);
+    expect(county.electionDay.layer).toMatch(/^[\w-]+\/FeatureServer\/\d+$/);
+    expect(county.electionDay.where).toEqual(expect.any(String));
+    expect(county.electionDay.pollsField).toMatch(/^\w+$/);
+    expect(county.electionDay.pollsField).not.toBe(county.pollsField);
+    expect(waitTimes.sources).toContain(county.electionDay.sourceUrl);
+    expect(typeof city.electionDay.enabled).toBe('boolean');
+    // The City's Election Day polling places, the same filter the cards use.
+    expect(city.electionDay.where).toBe(election.jurisdictions.city.pollsWhere);
+  });
 });
