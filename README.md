@@ -148,13 +148,18 @@ may need new values too. Work on a branch and merge through the usual pull reque
    rows to `docs/raw/`. Compare them with `docs/data.md`: the field names, the congressional
    district field and the sample ballot link format. The script saves only 3 sample rows per
    layer, so query the layer for the distinct `in_election` and `abs_type` values.
-3. **Update `src/config/election.js`.** Every value that changes between elections is there,
-   including every link to that election's own Instant Apps, each with its `sources` and
-   `lastVerified` where it has them. Re-read every source; do not copy a value forward
-   unchecked. That includes the City Board's Election Day rule (`electionDayRule` in the City
-   block), quoted from its polling places page (its URL is in `src/config/referrals.js`, named
-   by the rule's `source`): re-quote it from the page and set its `lastVerified` (a test fails
-   while the quote names another election's date). If a field the app reads was renamed, search `src/` and `scripts/` for the old
+3. **Update `src/config/election.js` and `src/config/cityResults.js`.** Every value that
+   changes between elections is in one of them (the second holds what only the City's results
+   cards read, see [Election config](#election-config)), including every link to that
+   election's own Instant Apps, each with its `sources` and `lastVerified` where it has them.
+   Re-read every source; do not copy a value forward unchecked. That includes the City Board's
+   Election Day rule (`electionDayRule` in `cityResults.js`), quoted from its polling places
+   page (its URL is in `src/config/referrals.js`, named by the rule's `source`): re-quote it
+   from the page and set its `lastVerified` (a test fails while the quote names another
+   election's date). It also includes the City's early voting dates and hours
+   (`earlyVoting` in `cityResults.js`), from the same page's No Excuse Absentee hours and the
+   City Board's No Excuse Absentee page, one schedule per site keyed by the voting locations
+   layer's site id: the health check fails while a City early voting site has none. If a field the app reads was renamed, search `src/` and `scripts/` for the old
    name and change every use, including `PRECINCT_FIELDS` and `POLL_FIELDS` in
    `src/data/arcgis.js` and the field lists in `scripts/check-config.mjs`. See
    [Election config](#election-config).
@@ -391,7 +396,8 @@ there instead of color values.
 ## Election config
 
 Everything that changes between elections (layer paths, dates, hours, election-specific links)
-lives in `src/config/election.js`, so the next election is an edit to that file. Do not write
+lives in `src/config/election.js`, or for what only the City's results cards read, in
+`src/config/cityResults.js` (below), so the next election is an edit to those files. Do not write
 those values anywhere else in `src/` or in `index.html`. A test fails when it finds the
 election name, an election-specific URL, a date, a layer or service name, the field name, the
 filter or the sample ballot pattern from the config there; it does not check hours, so read
@@ -404,11 +410,21 @@ from `src/data/jurisdictions.js`, picked from the precinct code's shape (`/p/CC0
 `/p/W01P12` the City; [docs/data.md](docs/data.md#jurisdictions-and-precinct-codes)), and
 the results' own links to a board follow that jurisdiction: on a City precinct's page, the
 official lookup, the polling places card, the cards still to come, the map credit and the error
-screen link the City Board (#89). The footer lists both boards on every page. The City's
-data client, `src/data/cityArcgis.js` (#87), is loaded on demand, by the City results and by
-`locate()` (#88) when it asks the City's precinct layer. The
-test also fails on a City block's layer, service, filter or field name (except the common words
-`name` and `district`) written outside the config.
+screen link the City Board (#89). The footer lists both boards on every page. The test also fails on a City block's layer, service, filter or field name (except the common
+words `name` and `district`) written outside the config.
+
+**The City chunk (owner decision on #147).** Code and config only St. Louis City needs load on
+demand, in one chunk, `src/cityChunk.js`, through `loadCityClient()` in
+`src/data/jurisdictions.js`: the City's data client, `src/data/cityArcgis.js` (#87), the City-only
+results UI (its early voting card and Election Day rule) and `src/config/cityResults.js`. The City
+results, `locate()` (#88) and the wait times page load it. A City-only component is read from it
+with `cityComponent(name)` (`src/features/lookup/cityComponent.js`) inside a `Suspense`; never
+`React.lazy` a file of its own, which splits code the first load shares into another chunk and
+costs more than it saves (#147). The City block in `election.js` keeps only what the first load
+reads (the address search, the adapter, the wait time loop); a City-only value only the City's
+cards read goes in `cityResults.js`. `src/test/build.test.js` fails when that file's values reach
+the first load. Copy is the exception: every string is in `src/i18n/en.json`, which the first load
+carries.
 
 The polling places layer the app keeps in memory (`getPolls` and `getAbsenteeSites`) has a max
 age (#84): `layerMaxAge` in the config, shorter on Election Day (the date in the config's time
@@ -426,11 +442,9 @@ the first day a board's counts appear, and again after either board changes its 
 
 1. Run `node scripts/check-config.mjs` while sites are open. Each wait source's line must say
    fresh, and the County line must say 0 reports match no site.
-2. County: open `/early-voting` next to the County board's own page (the link under Official
-   sources). Pick three sites and check the count and the report time match, and that the times
-   read as Central time (the two pages should agree to the minute). The page does not list City
-   sites yet (#91): for the City, compare the newest report time on the check's City line with
-   the City board's dashboard instead.
+2. Open `/early-voting` next to each board's own page (the links under Official sources). For
+   each board, pick three sites and check the count and the report time match, and that the
+   times read as Central time (the two pages should agree to the minute).
 3. Check the unit: both boards report people in line, not minutes (docs/data.md), and the page
    always says "people in line". If a board's page starts showing minutes, turn that source off
    (step 4) and open an issue: changing its `unit` alone does not change what the page says.

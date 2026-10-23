@@ -45,9 +45,18 @@ budget, all City-only results UI in one on-demand chunk with the City data clien
 
 ## Files that change
 
-- `src/config/cityEarlyVoting.js` (new): the City schedule, sources, lastVerified, the
-  site-to-schedule map. A config file loaded only with the City chunk.
+- `src/config/cityResults.js` (new): the values only the City's results cards read: the
+  City early voting schedule (sources, lastVerified, the site-to-schedule map) and #89's
+  Election Day rule, moved out of `election.js` to free first-load bytes. A config file
+  loaded only with the City chunk. (Revised during implementation: first planned as
+  `cityEarlyVoting.js` with the schedule alone; the card refactor left 11 bytes of room, so
+  the rule moved too.)
 - `src/test/election-hardcoding.test.js`: treat that file as config too.
+- `scripts/check-content-links.mjs`: link-check that file's sources too.
+- `e2e/fixtures.js`, `e2e/a11y.e2e.js`, `e2e/failures.e2e.js`: answer the City early voting
+  sites query (it shares the wait query's layer and filter, told apart by `f=geojson`),
+  axe the City card with a site's hours open, and expect the "unavailable" line when the
+  City's counts fail (the page now lists City sites).
 - `src/cityChunk.js` (new): the one City chunk: re-exports `src/data/cityArcgis.js`, the
   City UI components and the City schedule.
 - `src/data/jurisdictions.js`: `loadCityClient` imports the chunk; the City adapter's
@@ -57,13 +66,20 @@ budget, all City-only results UI in one on-demand chunk with the City data clien
 - `src/features/lookup/EarlyVotingCard.jsx`: the nearest-sites list split out as an
   exported `EarlyVotingSites` that takes the schedule lookup, the wait source key, the
   row detail and the lookup link; the County card uses it unchanged in behavior.
-- `src/features/lookup/CityEarlyVotingCard.jsx` (new, in the chunk): City card.
+- `src/features/lookup/CityEarlyVotingCard.jsx` (new, in the chunk): City card. It runs its
+  own City-only wait loop (`createWaitTimesStore` with the City fetcher), so a City page
+  asks no County layer (the shared loop also asks the County's absentee sites).
+- `src/features/lookup/cityComponent.js` (new): `cityComponent(name)`, `React.lazy` over
+  `loadCityClient()`.
 - `src/features/lookup/cityEarlyVoting.js` (new, in the chunk): expand the compact City
   schedule into the `ScheduleEntry` form `earlyVotingStatus` reads; weekday lines.
 - `src/features/lookup/ResultsCards.jsx`: City `earlyVoting` body, lazy from the chunk.
-- `src/features/waitTimes/WaitTimesPage.jsx`: City sites from the chunk, merged list.
+- `src/features/waitTimes/WaitTimesPage.jsx`: City sites from the chunk, merged list; each
+  row names its board; one board's sites failing keeps the other's, with that board's
+  lookup and a retry; the status line says unavailable when either board's counts fail.
 - `src/i18n/en.json`, copy modules: the card intro made jurisdiction neutral; wait times
-  intro covers both; the "City not listed" line goes.
+  intro covers both; the "City not listed" line becomes "each board's sites are for its own
+  voters". No new strings: every string is in the first load.
 - `scripts/check-config.mjs`: every City early voting site has a schedule.
 - Tests: new City card tests, schedule tests, wait page City tests, city89 test updates.
 - Docs: README (Election config, wait times steps), docs/data.md (City early voting).
