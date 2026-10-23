@@ -32,6 +32,16 @@ export { isPastElection };
 export const PRECINCT_RANGE = { min: 900, max: 1600 };
 
 /**
+ * The congressional map in effect for November 3, 2026, and the County's
+ * districts on it (#150): the 2022 map, District 1 and District 2. A 2025 map
+ * value means the layer or the config moved to a map that is not in effect.
+ */
+export const CONGRESSIONAL_MAP = {
+  value: /^US Representative District (\d+) \(2022\)$/,
+  districts: ['1', '2'],
+};
+
+/**
  * How many sample ballot links get a HEAD request on a default run (#111). The
  * "sample ballot links" check already compares every link's text with its
  * precinct; this sample catches the served files drifting from that text, which
@@ -316,7 +326,7 @@ export async function runHealthCheck(
     const countOk = await check('precinct count', async () => {
       const body = await query('precincts', {
         where: '1=1',
-        outFields: 'precinct,in_election,html',
+        outFields: `precinct,in_election,html,${config.congressionalField}`,
         returnGeometry: 'false',
         orderByFields: 'precinct',
       });
@@ -412,13 +422,47 @@ export async function runHealthCheck(
     } else {
       record('sample ballot PDFs', 'skip', 'no valid sample ballot links to try');
     }
+
+    // 5. Every precinct is on the congressional map in effect (#150).
+    if (countOk) {
+      await check('congressional districts', async () => {
+        const bad = [];
+        const counts = {};
+        for (const p of precincts) {
+          const value = p[config.congressionalField];
+          const district =
+            typeof value === 'string' ? value.trim().match(CONGRESSIONAL_MAP.value)?.[1] : null;
+          if (!district || !CONGRESSIONAL_MAP.districts.includes(district)) {
+            bad.push(`${p.precinct}: ${value === undefined ? 'undefined' : JSON.stringify(value)}`);
+          } else {
+            counts[district] = (counts[district] ?? 0) + 1;
+          }
+        }
+        if (bad.length) {
+          const shown = bad.slice(0, 20).join('; ');
+          const more = bad.length > 20 ? `; and ${bad.length - 20} more` : '';
+          throw new CheckError(`${bad.length} precincts fail: ${shown}${more}`);
+        }
+        const list = CONGRESSIONAL_MAP.districts
+          .map((d) => `District ${d} (${counts[d] ?? 0})`)
+          .join(', ');
+        return `${precincts.length} precincts on the 2022 map: ${list}`;
+      });
+    } else {
+      record('congressional districts', 'skip', 'the precinct count check failed');
+    }
   } else {
-    for (const name of ['precinct count', 'sample ballot links', 'sample ballot PDFs']) {
+    for (const name of [
+      'precinct count',
+      'sample ballot links',
+      'sample ballot PDFs',
+      'congressional districts',
+    ]) {
       skip(name, 'precincts');
     }
   }
 
-  // 5. The absentee filter finds sites, and each kind of site has hours.
+  // 6. The absentee filter finds sites, and each kind of site has hours.
   /** The absentee sites' attributes, kept for the County wait reports check. */
   let absenteeSites = null;
   const waitTimes = config.waitTimes;
@@ -457,7 +501,7 @@ export async function runHealthCheck(
     skip('absentee sites', 'polls');
   }
 
-  // 6. Known points land in a precinct in the right council district, inside
+  // 7. Known points land in a precinct in the right council district, inside
   // the county; a point in St. Louis City lands in neither.
   const councilField = config.districtFields.find((d) => d.key === 'countyCouncil')?.field;
   if (layerOk.precincts && layerOk.countyBoundary) {
@@ -488,7 +532,7 @@ export async function runHealthCheck(
     skip('known points', layerOk.precincts ? 'countyBoundary' : 'precincts');
   }
 
-  // 7. The wait time layers (#106, #132): each answers with the fields the app
+  // 8. The wait time layers (#106, #132): each answers with the fields the app
   // reads, then whether its board's reports are fresh. Fields, not rows, decide
   // pass or fail: the County view is empty whenever its sites are closed.
   // Open sites with nothing fresh, or County reports that match no site, are
@@ -688,7 +732,7 @@ export async function runHealthCheck(
     }
   }
 
-  // 8. The City's layers (#87): each answers with the fields the app reads,
+  // 9. The City's layers (#87): each answers with the fields the app reads,
   // the precincts read as City codes, the site filters find the City Board's
   // lists, and City Hall lands in a City precinct, a ward and the outline.
   if (config.jurisdictions?.city) await checkCity(config.jurisdictions.city);
