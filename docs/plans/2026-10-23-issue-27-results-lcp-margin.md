@@ -68,7 +68,7 @@ request answers, so the simulated new connection to the ArcGIS host counts towar
   header renders `ShareLinkPlaceholder` in the one slot `ShareLink` replaces (holding the
   share row's place while a code-shaped precinct loads), so "Search another address" keeps
   focus through a "not found" answer; while loading it holds two lines for the precinct line
-  below 400 px for a County precinct and below 480 px for a City one, in place of the old
+  below 400 px for a County precinct and below 448 px for a City one, in place of the old
   placeholder line.
 - `README.md` (Phase 8): the Performance section says the fixture server waits 100 ms and
   adds the rule to show text that needs no data while the data loads.
@@ -117,9 +117,10 @@ address").
   unknown status) gets the banner above the summary, which pushes the line down once; the
   banner depends on the precinct's data. Below the hold's width a municipality short enough
   for one line moves the line up 24 px; above it a line long enough for two moves it down
-  24 px. The holds (County below 400 px, City below 480 px) match the measured wrap of
-  "Unincorporated St. Louis County" and of the City ward line (the third finder measured a 24 px move at 402 to 639 px with the first
-  `sm` hold).
+  24 px. The holds sit at the width where the longest place line fits on one: County below
+  400 px ("Unincorporated St. Louis County", 368 px of text), City below 448 px (Ward 28,
+  Precinct 10, 414 px). So a shorter City line, such as W01P12's (405 px), still moves up
+  24 px from 437 to 447 px. Measured by the third and fourth finders.
 - A not-found or failed code shows the Election Day line for the moment before its error:
   the line is true for every St. Louis City and County voter, and the error replaces it.
 - First-load JS: a few bytes; checked by the build test.
