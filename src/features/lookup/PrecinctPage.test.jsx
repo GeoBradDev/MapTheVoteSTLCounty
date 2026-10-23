@@ -181,6 +181,9 @@ describe('PrecinctPage', () => {
   });
 
   it('shows the heading and skeletons, and an empty live region, while loading', () => {
+    // During early voting, so the summary's early voting part comes next.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(Date.UTC(2026, 9, 22, 15)));
     fetchMock.mockImplementation(() => new Promise(() => {}));
     renderAt('CC007');
     expect(heading()).toHaveTextContent(copy.heading);
@@ -220,6 +223,45 @@ describe('PrecinctPage', () => {
     // and all, when the skeleton goes.
     expect(skeleton.querySelectorAll('a, button, input, [tabindex]')).toHaveLength(0);
     expect(screen.getByRole('link', { name: copy.searchAnother })).toHaveAttribute('href', '/');
+  });
+
+  // Outside early voting the sample ballot part is the second in the summary,
+  // and its fixed intro is the largest text on a phone, so it shows while the
+  // precinct loads (#27, #156), with the hours note above it as text.
+  it.each([
+    ['after early voting closes', new Date(Date.UTC(2026, 10, 3, 2))],
+    ['on Election Day', new Date(Date.UTC(2026, 10, 3, 15))],
+  ])('shows the sample ballot intro while loading %s', (_, at) => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(at);
+    fetchMock.mockImplementation(() => new Promise(() => {}));
+    renderAt('CC007');
+    const skeleton = screen.getByTestId('results-skeleton');
+    expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
+      copy.summary.electionDay,
+      copy.cards.ballot,
+    ]);
+    const ballot = within(skeleton).getByRole('region', { name: copy.cards.ballot });
+    expect(within(ballot).getByText(copy.ballot.intro)).toBeVisible();
+    expect(within(skeleton).getByText(new RegExp(`${copy.polls.source}:`))).toBeVisible();
+    for (const bar of skeleton.querySelectorAll('.animate-pulse')) {
+      expect(bar.closest('[aria-hidden="true"]')).not.toBeNull();
+    }
+    expect(skeleton.querySelectorAll('a, button, input, [tabindex]')).toHaveLength(0);
+  });
+
+  it('keeps the sample ballot intro, then says the ballot was not found, when the link fails the checks', async () => {
+    routeFetch(
+      withAttributes(byId, {
+        html: 'Sample Ballot: <a href=https://example.org/b.pdf>CC-007.pdf</a>',
+      }),
+    );
+    renderAt('CC007');
+    await ready('CC007');
+    const card = screen.getByRole('region', { name: copy.cards.ballot });
+    const lines = [...card.querySelectorAll('p')].map((p) => p.textContent);
+    expect(lines[0]).toBe(copy.ballot.intro);
+    expect(lines[1]).toMatch(new RegExp(`^${copy.ballot.missing}`));
   });
 
   it('shows the header, no banner, the summary and the cards in order for an In Election precinct', async () => {

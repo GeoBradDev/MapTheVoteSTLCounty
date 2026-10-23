@@ -50,10 +50,9 @@ describe('SampleBallotCard', () => {
     expect(screen.getByText(copy.ballot.newTab)).toHaveClass('sr-only');
   });
 
-  it('shows one neutral line about what the sample ballot holds', () => {
-    render(<SampleBallotCard html={htmlOf(cc007)} code="CC007" />);
-    expect(screen.getByText(copy.ballot.intro)).toBeInTheDocument();
-    expect(copy.ballot.intro).not.toMatch(/candidate|party|democrat|republican/i);
+  it('leaves the intro to the summary part around it', () => {
+    const { container } = render(<SampleBallotCard html={htmlOf(cc007)} code="CC007" />);
+    expect(container.textContent).not.toContain(copy.ballot.intro);
   });
 
   // #82: a link is shown only when its file name names this precinct, so a

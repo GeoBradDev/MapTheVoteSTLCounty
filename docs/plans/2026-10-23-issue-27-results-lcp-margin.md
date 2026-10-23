@@ -242,10 +242,12 @@ with the 600 ms fixture wait; otherwise stop and ask again, loosening nothing.
 13. The County's schedules are in the first load; the City's are in the City chunk, which
     the City precinct request loads first. So a City skeleton renders its season-dependent
     rest (the early voting placeholder or the `BallotPart`, then the cards' placeholders)
-    from the City chunk (`CitySummarySkeletonRest`, via `cityComponent`), appended below
-    the Election Day part when the chunk arrives, before the data: appended, so nothing
-    visible moves. The County's renders the same shared component with its schedules at
-    once.
+    once the chunk is here (`useSchedules` in `ResultsCards.jsx` reads the chunk's
+    `citySchedules` through `loadedCityClient` and `loadCityClient`, no new request),
+    appended below the Election Day part before the data: appended, so nothing visible
+    moves. The County's renders at once with its schedules. (Implementation note: first
+    planned as a City chunk component through `cityComponent`; a hook keeps the skeleton
+    one component and leaves `src/cityChunk.js` unchanged.)
 14. The intro does not move when the results replace the skeleton: County and City, at
     360 px and 1280 px, at the after early voting and Election Day clocks (e2e), and the
     loaded intro is the same text and size in the same place.
@@ -254,10 +256,15 @@ with the 600 ms fixture wait; otherwise stop and ask again, loosening nothing.
 16. `npm run test:perf`: every state of /p/CC007 and /p/W01P12 under 2500 ms with margin
     (target under about 2200 ms), with the 600 ms fixture wait.
 
-Files: `ResultsSummary.jsx` (`BallotPart`, `HoursNote` plain text mode, shared
-`SummarySkeletonRest`), `SampleBallotCard.jsx`, `CitySampleBallotCard.jsx`,
-`CityEarlyVotingCard.jsx` and `src/cityChunk.js` (`CitySummarySkeletonRest`),
-`ResultsCards.jsx` (`ResultsSkeleton` by jurisdiction), their tests, `e2e/a11y.e2e.js`.
+Files: `ResultsSummary.jsx` (`BallotPart`, `HoursNote` plain text mode),
+`SampleBallotCard.jsx`, `CitySampleBallotCard.jsx`, `ResultsCards.jsx` (`ResultsSkeleton`
+by jurisdiction and clock, `useSchedules`), their tests (`PrecinctPage.test.jsx`,
+`PrecinctPage.city89.test.jsx`, `ResultsSummary.test.jsx`, `SampleBallotCard.test.jsx`,
+`CitySampleBallotCard.test.jsx`), `e2e/a11y.e2e.js`.
+
+Result: `npm run test:perf` with the 600 ms fixture wait: /p/CC007 1502, 1503 and 1503 ms
+(early voting, after early voting, Election Day), /p/W01P12 1655, 1654 and 1654 ms, CLS 0
+everywhere; the e2e guards pass at all three clocks, County and City, at 360 and 1280 px.
 
 Residual, accepted: a County precinct not in the election (banner, no ballot part) loses the
 intro when it loads, and the banner, painted with the data, can be the LCP there, as on

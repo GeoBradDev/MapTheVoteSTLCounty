@@ -7,7 +7,8 @@ const buttonClass =
   'mt-3 inline-flex min-h-11 flex-col justify-center rounded-md bg-primary px-4 py-2 text-on-primary';
 
 /**
- * The body of a City precinct's "Sample ballot" card (#92). The City Board
+ * The body of a City precinct's "Sample ballot" part (#92), after its fixed
+ * intro (BallotPart in ResultsSummary.jsx). The City Board
  * publishes one sample ballot for all precincts, with every contest in the City
  * (`sampleBallot` in src/config/cityResults.js), and no ballot per precinct or
  * ward, so the card links that one PDF as published and says plainly that the
@@ -24,7 +25,6 @@ export default function CitySampleBallotCard() {
   } = cityResults.sampleBallot;
   return (
     <>
-      <p className="mt-2">{copy.ballot.introCity}</p>
       <a href={url} target="_blank" rel="noopener noreferrer" className={buttonClass}>
         {/* The spaces keep the parts apart in the accessible name. */}
         <span className="font-semibold">{copy.ballot.openCity}</span>{' '}

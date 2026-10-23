@@ -103,8 +103,15 @@ function Place({ label, place, children }) {
   );
 }
 
-// Who may still vote at closing time, and where the hours come from.
-function HoursNote() {
+/**
+ * Who may still vote at closing time, and where the hours come from. With
+ * `linked` false, the sources' names are plain text in the links' place and
+ * style, for the results skeleton (ResultsCards.jsx), which holds nothing that
+ * takes focus: the same words, so the same lines, and nothing below moves when
+ * the loaded summary's note replaces it (#27).
+ * @param {{ linked?: boolean }} props
+ */
+export function HoursNote({ linked = true }) {
   const { close, inLineAtCloseMayVote, sources } = election.electionDayHours;
   return (
     <p className="text-xs">
@@ -113,12 +120,35 @@ function HoursNote() {
       {sources.map((url, i) => (
         <span key={url}>
           {i > 0 && ', '}
-          <a href={url} rel="noreferrer" className={linkClass}>
-            {sourceName(url)}
-          </a>
+          {linked ? (
+            <a href={url} rel="noreferrer" className={linkClass}>
+              {sourceName(url)}
+            </a>
+          ) : (
+            <span className={linkClass}>{sourceName(url)}</span>
+          )}
         </span>
       ))}
     </p>
+  );
+}
+
+/**
+ * The summary's sample ballot part: its heading and the jurisdiction's fixed
+ * intro, then `children` (the County precinct's link or the "could not find"
+ * line, or the City's one ballot). Data independent, so the results skeleton
+ * shows it too while the precinct loads, outside early voting (#27, #156):
+ * there the intro is the page's largest text on a phone, and the loaded
+ * summary repaints it at the same size and place, so LCP does not wait for the
+ * precinct request.
+ */
+export function BallotPart({ children }) {
+  const { id } = useJurisdiction();
+  return (
+    <Part title={copy.cards.ballot}>
+      <p className="mt-2">{id === 'city' ? copy.ballot.introCity : copy.ballot.intro}</p>
+      {children}
+    </Part>
   );
 }
 
@@ -277,7 +307,7 @@ export default function ResultsSummary({ code, origin, showBallot, ballotHtml, w
       )}
       {/* None for a precinct with nothing on the ballot: its banner says so. */}
       {showBallot && (
-        <Part title={copy.cards.ballot}>
+        <BallotPart>
           {isCity ? (
             <Suspense fallback={null}>
               <CitySampleBallotCard />
@@ -285,7 +315,7 @@ export default function ResultsSummary({ code, origin, showBallot, ballotHtml, w
           ) : (
             <SampleBallotCard html={ballotHtml} code={code} />
           )}
-        </Part>
+        </BallotPart>
       )}
       {!origin && <p className="text-sm text-muted">{copy.polls.fromCenter(code)}</p>}
     </div>
