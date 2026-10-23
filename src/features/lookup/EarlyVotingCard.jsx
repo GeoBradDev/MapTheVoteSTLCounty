@@ -193,6 +193,9 @@ function Schedules({ now }) {
  *   voting runs; `scheduleOf` a site's own. `waits` names the line count
  *   source and `waitKeyOf` a site's key in it. `Detail` renders a site's
  *   status lines. The failure lines end with the jurisdiction's own lookup.
+ *   `children` follow the list (the card's dates, hours and links), inside
+ *   the card, which takes focus when a retry or refresh removes the focused
+ *   element.
  */
 export function EarlyVotingSites({
   code,
@@ -203,6 +206,7 @@ export function EarlyVotingSites({
   waits: waitsKey,
   waitKeyOf,
   Detail,
+  children,
 }) {
   // { rows, loadedAt } once loaded, { error: true, attempt } on failure. A
   // failed load can be tried again; it stays shown while it is (#18). A list
@@ -261,7 +265,9 @@ export function EarlyVotingSites({
   const apple = isAppleMobile(globalThis.navigator);
 
   return (
-    <div ref={targetRef} tabIndex={-1}>
+    <div ref={targetRef} tabIndex={-1} className="mt-2">
+      <p>{t.intro}</p>
+
       {!result && (
         <div data-testid="early-voting-skeleton" aria-hidden="true" className="mt-3">
           <div className={`h-4 w-3/4 ${bar}`} />
@@ -337,6 +343,8 @@ export function EarlyVotingSites({
           </Link>
         </p>
       )}
+
+      {children}
     </div>
   );
 }
@@ -376,20 +384,18 @@ const countyWaitKey = (site) => site.waitKey;
 export default function EarlyVotingCard({ code, origin, waitSource }) {
   const now = useNow();
   return (
-    <div className="mt-2">
-      <p>{t.intro}</p>
-      <EarlyVotingSites
-        code={code}
-        origin={origin}
-        waitSource={waitSource}
-        schedules={schedules}
-        scheduleOf={countySchedule}
-        waits="county"
-        waitKeyOf={countyWaitKey}
-        Detail={CountyDetail}
-      />
+    <EarlyVotingSites
+      code={code}
+      origin={origin}
+      waitSource={waitSource}
+      schedules={schedules}
+      scheduleOf={countySchedule}
+      waits="county"
+      waitKeyOf={countyWaitKey}
+      Detail={CountyDetail}
+    >
       <Schedules now={now} />
       <MailLine href={election.countySiteUrl} label={t.countySite} />
-    </div>
+    </EarlyVotingSites>
   );
 }

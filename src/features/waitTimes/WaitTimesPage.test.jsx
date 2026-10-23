@@ -581,6 +581,31 @@ describe('WaitTimesPage: St. Louis City sites (#91)', () => {
     expect(screen.queryByText(new RegExp(copy.failed))).toBeNull();
   });
 
+  it('keeps the error and its busy Try again, focused, while a retry of both runs', async () => {
+    const user = userEvent.setup();
+    let cityCalls = 0;
+    const loadCity = () => {
+      cityCalls += 1;
+      return cityCalls <= 2 ? Promise.reject(new Error('down')) : new Promise(() => {});
+    };
+    withCity({
+      loadSites: async () => {
+        throw new Error('down');
+      },
+      loadCity,
+      waitSource: createWaitTimesStore({ county: countyEmpty, city: null }),
+    });
+    await screen.findByText(new RegExp(copy.failed));
+    const button = screen.getByRole('button', { name: /try again/i });
+    await user.click(button);
+    await waitFor(() => expect(cityCalls).toBeGreaterThan(2));
+    expect(button).toBeInTheDocument();
+    expect(button).toHaveFocus();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByText(new RegExp(copy.failed))).toBeInTheDocument();
+    expect(screen.queryByTestId('wait-sites-skeleton')).toBeNull();
+  });
+
   it("names both boards' lookups when both boards' sites fail", async () => {
     const down = async () => {
       throw new Error('down');

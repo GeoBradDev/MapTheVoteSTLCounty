@@ -66,18 +66,16 @@ export default function CityEarlyVotingCard({ code, origin, waitSource = cityWai
     lastVerified,
   } = cityResults.earlyVoting;
   return (
-    <div className="mt-2">
-      <p>{t.intro}</p>
-      <EarlyVotingSites
-        code={code}
-        origin={origin}
-        waitSource={waitSource}
-        schedules={citySchedules}
-        scheduleOf={scheduleOf}
-        waits="city"
-        waitKeyOf={waitKeyOf}
-        Detail={CityDetail}
-      />
+    <EarlyVotingSites
+      code={code}
+      origin={origin}
+      waitSource={waitSource}
+      schedules={citySchedules}
+      scheduleOf={scheduleOf}
+      waits="city"
+      waitKeyOf={waitKeyOf}
+      Detail={CityDetail}
+    >
       <p className="mt-3 text-sm">
         {copy.polls.source}:{' '}
         <a href={hoursSource} rel="noreferrer" className={linkClass}>
@@ -86,6 +84,6 @@ export default function CityEarlyVotingCard({ code, origin, waitSource = cityWai
         . {t.lastVerified(formatLongDate(lastVerified, { year: true }))}
       </p>
       <MailLine href={noExcuseUrl} label={sourceName(noExcuseUrl)} />
-    </div>
+    </EarlyVotingSites>
   );
 }

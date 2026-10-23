@@ -139,9 +139,12 @@ function useSites(loadSites, loadCity) {
   const { attempt, loading, retry, done, targetRef } = useRetry();
   const [refresh, setRefresh] = useState(0);
   const loadedAtRef = useRef(null);
+  // The result shown, read when a load starts.
+  const shownRef = useRef(null);
 
   useEffect(() => {
     loadedAtRef.current = result?.rows ? result.loadedAt : null;
+    shownRef.current = result;
   }, [result]);
 
   useEffect(() => {
@@ -157,15 +160,20 @@ function useSites(loadSites, loadCity) {
   useEffect(() => {
     let current = true;
     // Each board's part as it settles, so a slow board never holds up the
-    // other's list.
+    // other's list. A retry of a failure shows its answer only once both have
+    // settled, so the failure and its busy Try again stay in place (and focus
+    // on it) until then, and the alert is read again only if it still fails.
     const parts = { county: undefined, city: undefined };
+    const retrying = Boolean(shownRef.current?.error || shownRef.current?.failed);
     const settle = (key) => (part) => {
       if (!current) return;
       parts[key] = part;
+      const all = parts.county !== undefined && parts.city !== undefined;
+      if (retrying && !all) return;
       // A copy: the updater may run later, after the other part settles too.
       const settled = { ...parts };
       setResult((prev) => combine(prev?.error ? null : prev, settled, attempt));
-      if (parts.county !== undefined && parts.city !== undefined) done();
+      if (all) done();
     };
     loadSites()
       .then(countyPart)
