@@ -162,10 +162,10 @@ export async function getCityDistrictsAtPoint({ lat, lng }) {
 }
 
 /**
- * A precinct's districts, for a share link with no looked-up point. Every City
- * precinct lies inside one district per office (checked on all 207,
- * docs/data.md), so the districts at a point inside its outline are its
- * districts. Not a polygon intersect, which also returns the neighbors it
+ * A precinct's districts, for its districts card (#90), never asked at the
+ * voter's own point. Every City precinct lies inside one district per office
+ * (checked on all 207, docs/data.md), so the districts at a point inside its
+ * outline are its districts. Not a polygon intersect, which also returns the neighbors it
  * touches, and not the centroid, which can fall outside the precinct.
  * @param {string} code A City precinct code like W01P12.
  * @returns {Promise<CityDistrict[]>}

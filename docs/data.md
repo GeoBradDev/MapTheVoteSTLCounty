@@ -894,7 +894,8 @@ are in `src/config/referrals.js`. `src/data/jurisdictions.js` pairs each block w
 the County's is `src/data/arcgis.js`. The City's data client is `src/data/cityArcgis.js`
 (#87), loaded on demand through `loadCityClient()` in the City chunk (`src/cityChunk.js`, #147),
 with the City-only results UI and `src/config/cityResults.js`, the values only the City's cards
-read (its early voting hours, #91, and its Election Day rule, #89). The City adapter (#89, #91)
+read (its early voting hours, #91, its Election Day rule, #89, and its districts card's rows,
+#90). The City adapter (#89, #91)
 reads the precinct, its outline, the Election Day voting locations and the early voting sites
 through it.
 
@@ -974,7 +975,7 @@ districts stay in effect for the November 2026 general election. The layer's sin
 District" polygon is right under either map, so the card shows the row. Recheck when the map
 changes. (The County card reads the 2025 field; #150 tracks that.)
 
-**Districts for a precinct with no point** (a share link): `BOE/PRECINCTS_2023` on
+**Districts for a precinct** (the districts card asks this way on every City page, after a lookup too, so the voter's own point never goes to the districts layer): `BOE/PRECINCTS_2023` on
 `maps6.stlouis-mo.gov`, which has `Ward`, `Senate`, `Rep` and `NewCC` on each precinct, still
 fails every query that returns its fields or shapes on 2026-10-22 (`400 Unable to perform
 query operation` on the FeatureServer, `Failed to execute query` on the MapServer; only count
