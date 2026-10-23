@@ -173,8 +173,8 @@ export function EarlyVoteSummary({
   const during = earlyVotingSeason(schedules, now, election.timeZone).kind === 'during';
   const waits = useWaitTimes(during ? waitSource : OFF_WAITS)[waitsKey];
   if (!during) return null;
-  // A count can show only while some site is open now, so the placeholder
-  // holds its lines only then.
+  // A count can show only while some site is open now and the counts are on,
+  // so the placeholder holds its lines only then.
   const anyOpen = Object.values(schedules).some(
     (list) => earlyVotingStatus(list, now, election.timeZone).kind === 'openNow',
   );
@@ -192,7 +192,13 @@ export function EarlyVoteSummary({
   const wait = (key && waits.waits.find((entry) => entry.siteId === key)) || null;
   return (
     <Part title={copy.summary.early}>
-      {!result && <PlaceSkeleton testId="summary-early-skeleton" early count={anyOpen} />}
+      {!result && (
+        <PlaceSkeleton
+          testId="summary-early-skeleton"
+          early
+          count={anyOpen && waits.status !== 'off'}
+        />
+      )}
       {site && (
         <Place label={openSite ? copy.summary.nearestOpen : copy.summary.nearestSite} place={site}>
           {siteStatus && <p>{copy.earlyVoting.status(siteStatus, formatLongDate)}</p>}

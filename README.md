@@ -384,7 +384,7 @@ The target is a mid-range phone on a weak signal (#27). `npm run test:perf` runs
 4x CPU slowdown, three runs each of `/`, `/p/CC007`, the City precinct `/p/W01P12` (#95), `/early-voting` and `/learn` against the production build
 (`vite preview`). It fails when a page's median performance score is under 90, its median LCP
 is 2.5 s or more, or any run reports no LCP or ends without the page's own content (its
-heading, and on the results page the municipality, districts, sample ballot link and each
+heading, and on the results page the precinct line under it, the municipality, districts, sample ballot link and each
 polling place's name and ZIP; on the City results page the City Board's Election Day rule,
 the districts card, the City Board's sample ballot PDF link and each polling place's name; on the wait times page each site's name, or
 the note that early voting has ended). It writes the report of the run with the median score to
@@ -446,9 +446,11 @@ words `name` and `district`) written outside the config.
 **The City chunk (owner decision on #147).** Code and config only St. Louis City needs load on
 demand, in one chunk, `src/cityChunk.js`, through `loadCityClient()` in
 `src/data/jurisdictions.js`: the City's data client, `src/data/cityArcgis.js` (#87), the City-only
-results UI (its early voting card, Election Day rule, districts card and sample ballot card) and `src/config/cityResults.js`. The City
+results UI (its early voting card and its part of the results summary, Election Day rule, districts card and sample ballot card) and `src/config/cityResults.js`. The City
 results, `locate()` (#88) and the wait times page load it. A City-only component is read from it
-with `cityComponent(name)` (`src/features/lookup/cityComponent.js`) inside a `Suspense`; never
+with `cityComponent(name)` (`src/features/lookup/cityComponent.js`) inside a `Suspense`. Once
+the chunk has loaded (`loadedCityClient()`) it renders at once without suspending, so nothing at
+the top of a City results page appears late and pushes the page down (#81); never
 `React.lazy` a file of its own, which splits code the first load shares into another chunk and
 costs more than it saves (#147). The City block in `election.js` keeps only what the first load
 reads (the address search, the adapter, the wait time loop); a City-only value only the City's

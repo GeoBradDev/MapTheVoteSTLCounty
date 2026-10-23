@@ -147,3 +147,4 @@ Not done here: Election Day line counts in the summary (the card has them, #107)
 - The count placeholder in the summary holds both lines of a count (finder 4), and the a11y
   e2e run opens the County route's folded sections so axe still covers them (finder 4).
 - The early voting placeholder holds the count lines only while some site is open now (finder 5).
+- ...and only while the line counts are on in the config (finder 6). A nearest site the schedules do not cover, with no site open, still gets a status placeholder line it does not fill: the schedule is unknown until the sites load (accepted).

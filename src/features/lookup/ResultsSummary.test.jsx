@@ -175,6 +175,12 @@ describe('ResultsSummary', () => {
     ]);
   });
 
+  it('holds no count lines while the sites load when the count source is off', () => {
+    getAbsenteeSites.mockReturnValue(new Promise(() => {}));
+    renderSummary({ waitSource: createWaitTimesStore({ county: null, city: null }) });
+    expect(screen.getByTestId('summary-early-skeleton').children).toHaveLength(5);
+  });
+
   it("links to every site's wait even when the County count source is off", async () => {
     renderSummary({ waitSource: createWaitTimesStore({ county: null, city: null }) });
     const early = region(s().early);
