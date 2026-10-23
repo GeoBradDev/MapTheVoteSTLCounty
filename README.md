@@ -282,16 +282,17 @@ headers and the cache rules. `src/test/render.test.js` checks it.
   10 seconds after the page has loaded (`src/linkManifest.js`), so Chrome, Edge and Android can
   install the site and iOS Add to Home Screen gets the site's icon. Not in the HTML: a manifest
   link there is fetched at once, with an icon after it, beside the page's script and data, and
-  cost the Lighthouse runs about 150 ms of LCP.
-  `e2e/install.e2e.js` runs Chromium's own installability check on the build. The site
-  registers no service worker and works offline no better than before; offline support is
-  #183, deferred past the November 2026 election because a worker that served old hours,
-  polling places or wait times on Election Day would be worse than none. A build test fails if
-  a `sw.js`, or any mention of `serviceWorker` in the built HTML or scripts, appears before #183 replaces it with that
-  worker's own tests. With no worker, there is nothing to unregister; #183 adds the kill
-  switch (a self-destroying `/sw.js`, which `no-cache` lets a revert ship in one deploy)
-  before its worker. Before each election, check Add to Home Screen on a real iPhone (the
-  icon, the name and that it opens the home page) and install on an Android phone in Chrome.
+  cost the Lighthouse runs about 150 ms of LCP. `e2e/install.e2e.js` runs Chromium's own
+  installability check on the build. The site registers no service worker and works offline no
+  better than before; offline support is #183, deferred past the November 2026 election because
+  a worker that served old hours, polling places or wait times on Election Day would be worse
+  than none. A build test fails if a `sw.js`, or any mention of `serviceWorker` in the built HTML
+  or scripts, appears before #183 replaces it with that worker's own tests. With no worker,
+  there is nothing to unregister; #183 adds the kill switch (a self-destroying `/sw.js`, which
+  `no-cache` lets a revert ship in one deploy) before its worker. Before each election, check
+  Add to Home Screen on a real iPhone (the icon, the name and that it opens the home page; wait
+  10 seconds after the page loads, before then iOS has no manifest and saves the page itself)
+  and install on an Android phone in Chrome.
 - **Rollback:** in the Render Dashboard, open the service's **Deploys** page, find an earlier
   successful deploy and click **Rollback**. This redeploys that build's files only: headers,
   redirects and rewrites are not rolled back, so a bad header change needs a fix in
