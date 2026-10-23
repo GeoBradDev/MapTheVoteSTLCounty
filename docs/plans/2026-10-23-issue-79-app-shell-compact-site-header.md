@@ -30,8 +30,13 @@ compact and static so it never becomes a late-painting LCP element (#27, PR #178
 6. The header is not sticky, and is hidden in print.
 7. The footer keeps Privacy and #71's nonpartisan, unofficial statement naming both boards,
    with a layout matching the header (full-width rule, content in the same column).
-8. A favicon (SVG) and an Apple touch icon (180 px PNG) in the same mark and the palette's
-   primary color, linked from `index.html`, so the pre-rendered pages and the shell carry them.
+8. A favicon and an Apple touch icon (180 px PNG) in the same mark and the palette's primary
+   color, at the root paths browsers request on their own (`/favicon.ico`,
+   `/apple-touch-icon.png`), so every page, pre-rendered or the shell, gets them. Revised
+   during the work: the plan first linked `/favicon.svg` from `index.html`; a linked icon and
+   the root `/favicon.ico` cost the same in Lighthouse (one more early request, about 150 ms of
+   simulated LCP on the results pages), so the simpler root-path form was kept, with
+   `public/favicon.svg` as the source mark.
 9. Lighthouse budgets (`npm run test:perf`) still pass; the header causes no layout shift (it is
    in the pre-rendered markup and in the shell's first render, with fixed height).
 
@@ -45,7 +50,10 @@ compact and static so it never becomes a late-painting LCP element (#27, PR #178
 - `src/App.test.jsx`, `src/AppErrorBoundary.test.jsx`: header on every route and on the error
   screen; focus after a header link.
 - `src/components/SiteFooter.jsx`: full-width top rule, content in the same centered column.
-- `public/favicon.svg`, `public/apple-touch-icon.png` (new), `index.html`: icon links.
+- `public/favicon.svg`, `public/favicon.ico` (16, 32, 48 px), `public/apple-touch-icon.png`
+  (new). `index.html` is unchanged.
+- `src/test/build.test.js`: the icons ship at the root, colors of the mark are not red or blue,
+  and no page links an icon.
 - `e2e/a11y.e2e.js`: the existing "How to vote" click scoped to `main` (the header now has a
   link with the same name); a per-route check that the banner is shown and at most 56 px tall,
   also with the text spacing override.
@@ -77,7 +85,11 @@ compact and static so it never becomes a late-painting LCP element (#27, PR #178
 - Measured at 360 px: with "Look up" shown, the site name and both links wrap inside the row
   under the text spacing override, so "Look up" shows from `sm` (640 px) up, as the issue's
   "on wider screens" allows.
-- LCP: the header text is small; the largest element stays each page's own content.
+- LCP: the header text is small; the largest element stays each page's own content. Measured:
+  the header alone leaves every route's LCP as on main (results pages about 2.42 s). Any
+  favicon adds one early request that Lighthouse's simulation counts, about 150 ms on the
+  results pages, past the 2.5 s budget on main as it stands. PR #178 (#27) brings those pages
+  to about 1.5 s; this branch is rebased on it and merged only with `npm run test:perf` green.
 
 Not chosen: a sticky header (issue says not by default; noted in the PR for review), a
 `favicon.ico` (modern browsers use the SVG), and the PWA manifest icons (#25 owns them; the mark
@@ -88,7 +100,7 @@ in `public/favicon.svg` is the source for those sizes).
 - `src/components/SiteHeader.test.jsx`: criteria 2, 6.
 - `src/App.test.jsx`, `src/AppErrorBoundary.test.jsx`: criteria 1, 5.
 - `e2e/a11y.e2e.js` per route at 360 and 1280 px: criteria 1, 3, 4 (skip link test exists).
-- `npm run build` then `ls dist`: criterion 8.
+- `src/test/build.test.js` ("ships the icons at the root paths"): criterion 8.
 - `npm run test:perf`: criterion 9.
 - Live drive: build and preview, open `/`, `/p/CC007` and `/nope` at 360 px, tab from the top,
   follow both header links, check focus lands on each page's `h1`.

@@ -323,9 +323,18 @@ for (const { name, path, ready, at, waits, basemap } of ROUTES) {
       await expect(banner).toBeVisible();
       await expect(banner.getByRole('link', { name: 'St. Louis Voter Guide' })).toBeVisible();
       await expect(banner.getByRole('link', { name: 'How to vote' })).toBeVisible();
-      expect((await banner.boundingBox()).height).toBeLessThanOrEqual(56);
+      // The site name and the nav side by side, not stacked.
+      const oneRow = async () => {
+        const name = await banner
+          .getByRole('link', { name: 'St. Louis Voter Guide' })
+          .boundingBox();
+        const nav = await banner.getByRole('navigation').boundingBox();
+        expect(nav.x).toBeGreaterThanOrEqual(name.x + name.width);
+        expect((await banner.boundingBox()).height).toBeLessThanOrEqual(56);
+      };
+      await oneRow();
       await page.addStyleTag({ content: TEXT_SPACING });
-      expect((await banner.boundingBox()).height).toBeLessThanOrEqual(56);
+      await oneRow();
     });
 
     test('has no control under 44 px tall', async ({ page }) => {

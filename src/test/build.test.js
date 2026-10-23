@@ -267,16 +267,17 @@ describe('production build', () => {
     expect(js[view]).toContain(`/assets/${worker}`);
   });
 
-  // The site's mark (#79): every page, the shell included, links the icons,
-  // and they ship at the root, where render.yaml serves files as they are.
-  it('links and ships the favicon and the touch icon', async () => {
+  // The site's mark (#79), at the root paths browsers ask for on their own:
+  // /favicon.ico once the page has loaded, /apple-touch-icon.png when a page
+  // is added to an iPhone's home screen, so no page needs to link them.
+  // public/favicon.svg is the mark the others are drawn from (and the source
+  // for the PWA's icons, #25).
+  it('ships the icons at the root paths, linked from no page', async () => {
     const shell = await readFile(path.join(outDir, 'shell.html'), 'utf8');
-    for (const doc of [html, shell]) {
-      expect(doc).toContain('<link rel="icon" href="/favicon.svg" type="image/svg+xml" />');
-      expect(doc).toContain('<link rel="apple-touch-icon" href="/apple-touch-icon.png" />');
+    for (const doc of [html, shell]) expect(doc).not.toMatch(/<link[^>]+rel="[^"]*icon/);
+    for (const file of ['favicon.ico', 'apple-touch-icon.png', 'favicon.svg']) {
+      expect((await stat(path.join(outDir, file))).size, file).toBeGreaterThan(0);
     }
-    expect((await stat(path.join(outDir, 'favicon.svg'))).size).toBeGreaterThan(0);
-    expect((await stat(path.join(outDir, 'apple-touch-icon.png'))).size).toBeGreaterThan(0);
     const svg = await readFile(path.join(outDir, 'favicon.svg'), 'utf8');
     const colors = [...svg.matchAll(/#[0-9a-f]{6}\b/gi)].map((m) => m[0]);
     expect(colors.length).toBeGreaterThan(0);
