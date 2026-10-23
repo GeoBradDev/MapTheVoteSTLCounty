@@ -21,6 +21,7 @@ Still reproduces on main. Each page sets its tab title on arrival and puts back 
 - src/components/usePageTitle.js: useEffect to useLayoutEffect.
 - src/features/learn/LearnPage.jsx, src/features/learn/LearnTopicPage.jsx: their title effects to useLayoutEffect.
 - src/pageHeadApp.test.jsx: new regression tests.
+- README.md (Phase 8): the page rule says a page's own title effect is a layout effect, and why.
 
 ## Order of work
 
