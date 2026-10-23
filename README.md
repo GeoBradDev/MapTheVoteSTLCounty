@@ -117,7 +117,9 @@ against, and why. In short:
   City section of `docs/data.md`.
 - **Sample ballots:** each precinct's `html` field links its PDF on the board's
   [ArcGIS portal](https://stlouiscovotes.maps.arcgis.com). The app shows the link only when it
-  matches the config's pattern and names the precinct.
+  matches the config's pattern and names the precinct. St. Louis City publishes one sample
+  ballot PDF for all precincts on its Board's site (`sampleBallot` in `src/config/cityResults.js`,
+  #92), which a City precinct's card links as that, never as the precinct's own ballot.
 - **Dates, hours and rules:** not in any layer. They come from the board's own Instant Apps,
   the County Board's Polling Places page (the County's Election Day rule),
   the City Board's polling places page (the City's Election Day rule, quoted),
@@ -383,7 +385,7 @@ The target is a mid-range phone on a weak signal (#27). `npm run test:perf` runs
 is 2.5 s or more, or any run reports no LCP or ends without the page's own content (its
 heading, and on the results page the municipality, districts, sample ballot link and each
 polling place's name and ZIP; on the City results page the City Board's Election Day rule,
-the districts card and each polling place's name; on the wait times page each site's name, or
+the districts card, the City Board's sample ballot PDF link and each polling place's name; on the wait times page each site's name, or
 the note that early voting has ended). It writes the report of the run with the median score to
 `lighthouse-reports/` (CI keeps it as the `lighthouse-reports` artifact). No live service is
 called: Chromium resolves the county's ArcGIS host (the City Board's layers are on it too) and the basemap host to a local HTTPS

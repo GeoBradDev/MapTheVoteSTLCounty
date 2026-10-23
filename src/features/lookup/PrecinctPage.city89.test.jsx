@@ -227,7 +227,7 @@ describe('a City precinct page (#89)', () => {
       expect(names).toContain(within(row).getByRole('heading', { level: 3 }).textContent);
     }
     expect(card()).toHaveTextContent(copy.earlyVoting.groupsLabel);
-    // Not the pending card's link to the City Board's home page.
+    // No link to the City Board's home page in this card.
     expect(card().querySelector(`a[href="${referrals.stlCityBoard.url}"]`)).toBeNull();
   });
 

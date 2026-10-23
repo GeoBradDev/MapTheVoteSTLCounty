@@ -30,9 +30,12 @@ voter sees, so the wording is neutral and minimal.
 1. A City precinct page's "Sample ballot" card links the City Board's November 3, 2026
    all-races sample ballot PDF, from `cityResults.sampleBallot.url`, opening in a new tab
    with the same new-tab note as the County card.
-2. The card says plainly it is the City's sample ballot with every City race, and that
-   the voter's own ballot has only the races for their ward and districts. It never says
-   "your sample ballot" or names the precinct as the ballot's precinct.
+2. The card says plainly it is the City's sample ballot with every contest in the City, and
+   that the voter's own ballot has only the contests where they vote: the citywide and
+   statewide ones and those for their ward and districts. It never says "your sample
+   ballot" or names the precinct as the ballot's precinct. (Revised after review finder 1:
+   the first wording, "only the races for your ward and districts", left out the citywide
+   and statewide contests every City ballot carries.)
 3. The card cites its source (the City Board's Elections page) and its last-verified date.
 4. `cityResults.sampleBallot` holds `url`, `sources` and `lastVerified`; it is City-only
    config, so it reaches only the City chunk (build test marks it).

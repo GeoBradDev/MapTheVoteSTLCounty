@@ -8,10 +8,11 @@ const buttonClass =
 
 /**
  * The body of a City precinct's "Sample ballot" card (#92). The City Board
- * publishes one sample ballot for all precincts, with every race in the City
+ * publishes one sample ballot for all precincts, with every contest in the City
  * (`sampleBallot` in src/config/cityResults.js), and no ballot per precinct or
  * ward, so the card links that one PDF as published and says plainly that the
- * voter's own ballot has only the races for their ward and districts. It never
+ * voter's own ballot has only the contests where they vote: the citywide and
+ * statewide ones and those for their ward and districts. It never
  * reads the precinct's data, so it cannot show another precinct's ballot. In
  * the City chunk (src/cityChunk.js).
  */

@@ -215,7 +215,7 @@
       "open": "Open your sample ballot (PDF)",
       "newTab": "(opens a PDF in a new tab, or downloads it)",
       "missing": "We could not find the sample ballot for this precinct. Find it with the",
-      "introCity": "The City of St. Louis publishes one sample ballot for all precincts, with every race in the City. Your own ballot shows only the races for your ward and districts.",
+      "introCity": "The City of St. Louis publishes one sample ballot for all precincts, with every contest in the City. Your own ballot has only the contests where you vote: those for the whole City and state, and those for your ward and districts.",
       "openCity": "Open the City's sample ballot (PDF)",
       "allPrecincts": "All precincts",
       "districtsPointer": "Your ward and districts are under Your districts, below."
