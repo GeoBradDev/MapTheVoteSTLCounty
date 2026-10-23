@@ -448,8 +448,8 @@ SVG components that use `currentColor`). Only CSS is checked: a color written an
 (`index.html`, JSX props or SVG attributes, JavaScript strings) is not, so use token classes
 there instead of color values. Two exceptions are checked on their own: the `theme-color` metas in
 `index.html` (#76, #77, below) and the site icons in `public/` (#79): a favicon
-cannot read the page's CSS, so `favicon.svg` writes `--color-primary` and `--color-on-primary`
-as hex, and `favicon.ico` and `apple-touch-icon.png` are drawn from it. A build test fails on
+cannot read the page's CSS, so `favicon.svg` writes the light `--color-primary` and
+`--color-on-primary` as hex (one icon for both schemes), and `favicon.ico` and `apple-touch-icon.png` are drawn from it. A build test fails on
 red or blue in `favicon.svg` (not in the two raster icons); when those tokens change, redraw all
 three.
 

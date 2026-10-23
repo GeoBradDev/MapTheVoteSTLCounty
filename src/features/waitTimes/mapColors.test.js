@@ -24,8 +24,8 @@ import {
 const ROOT = path.resolve(import.meta.dirname, '../../..');
 // The land a marker sits on, at its worst for an outline of the theme's ink:
 // Positron's background (its `background` layer), the lightest thing on the
-// light map, and the dark style's woods and parks (`landuse_park`), the
-// lightest area fill on the dark one.
+// light map, and the dark style's parks (`landuse_park`), the lightest area
+// fill on the dark one (its woods name a pattern its sprite lacks, so are not drawn).
 const BASEMAP_LAND = { light: [242, 243, 240], dark: [32, 32, 32] };
 
 const channel = (c) => {

@@ -19,8 +19,10 @@ export const BASEMAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/positron'
  * same sprite, glyphs and tiles as Positron, so the policy needs nothing new.
  * Every fill, line and text color in it is a gray (its water is a near-black
  * with no visible hue), its labels are redrawn in the muted token like
- * Positron's, and the only sprite icons it uses are its one-way arrows and the
- * town dot. Checked 2026-10-23; recheck when changing it.
+ * Positron's. The only sprite icon it draws is its gray one-way arrow: the
+ * town dot (`circle-11`) and wood pattern it names are not in the sprite, so
+ * MapLibre skips them with a console warning, not an error. Checked
+ * 2026-10-23; recheck when changing it.
  */
 export const BASEMAP_DARK_STYLE_URL = 'https://tiles.openfreemap.org/styles/dark';
 
