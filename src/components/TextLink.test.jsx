@@ -39,7 +39,7 @@ describe('TextLink', () => {
 
   it.each([
     ['tap', ['inline-flex', 'min-h-11', 'items-center', 'underline']],
-    ['row', ['flex', 'min-h-11', 'w-full', 'border', 'underline']],
+    ['row', ['flex', 'min-h-11', 'w-full', 'border', 'border-border-strong', 'underline']],
     ['nav', ['inline-flex', 'min-h-11', 'hover:underline']],
   ])('has a 44 px %s look', (variant, classes) => {
     inRouter(

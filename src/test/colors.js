@@ -1,6 +1,7 @@
 // CSS color helpers for the palette guards (theme.test.js reads our source CSS,
 // build.test.js reads the built CSS). Not a full CSS parser: a regression net.
 import { JSDOM } from 'jsdom';
+import { oklchToRgb } from '../features/lookup/mapBounds.js';
 
 // OKLCH hue ranges that read as red or blue. Chroma below the floor is gray.
 const CHROMA_FLOOR = 0.04;
@@ -160,4 +161,36 @@ export function toOklch(literal) {
 // The rules inside those blocks are still checked.
 export function stripSupportsConditions(css) {
   return css.replace(/@supports[^{]*\{/g, '@supports {');
+}
+
+// The --color-* tokens written as oklch() in a stylesheet, by name without the
+// `--color-` prefix. Aliases (var()) and color-mix() values are left out.
+export function oklchTokens(css) {
+  return Object.fromEntries(
+    [...stripComments(css).matchAll(/--color-([\w-]+):\s*(oklch\([^)]*\))/g)].map((m) => [
+      m[1],
+      m[2],
+    ]),
+  );
+}
+
+// WCAG 2 relative luminance of an oklch() literal, through the same sRGB
+// conversion the maps use (oklchToRgb), so a token is measured as drawn.
+function luminance(literal) {
+  const rgb = oklchToRgb(literal);
+  if (!rgb) throw new Error(`Not an oklch color: ${literal}`);
+  const [r, g, b] = rgb
+    .match(/\d+/g)
+    .map(Number)
+    .map((c) => {
+      const v = c / 255;
+      return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+// The WCAG 2 contrast ratio of two oklch() literals, from 1 to 21.
+export function contrastRatio(a, b) {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
 }

@@ -180,7 +180,11 @@ describe('AddressLookup failure states (#18)', () => {
     await search();
     expect(screen.queryByText(errorCopy.slow)).not.toBeInTheDocument();
     await act(async () => vi.advanceTimersByTime(SLOW_MS + 10));
-    expect(screen.getByText(errorCopy.slow)).toHaveAttribute('role', 'status');
+    // In its live region, set apart as an info notice with its icon (#76).
+    const slow = screen.getByText(errorCopy.slow);
+    expect(slow.closest('[role="status"]')).not.toBeNull();
+    expect(slow.closest('p')).toHaveClass('bg-info-fill');
+    expect(slow.closest('p').querySelector('svg[aria-hidden="true"]')).not.toBeNull();
     await act(async () => finish(null));
     expect(screen.queryByText(errorCopy.slow)).not.toBeInTheDocument();
   });

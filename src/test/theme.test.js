@@ -10,8 +10,11 @@ import {
   declarations,
   parseOklch,
   partyColor,
+  oklchTokens,
   stripComments,
+  toOklch,
 } from './colors.js';
+import { oklchToRgb } from '../features/lookup/mapBounds.js';
 
 const SRC = path.resolve(import.meta.dirname, '..');
 
@@ -143,7 +146,16 @@ describe('design tokens', () => {
 
   it('defines the core color tokens', () => {
     const tokens = found.map((f) => f.property);
-    for (const name of ['surface', 'ink', 'muted', 'border', 'primary', 'accent']) {
+    for (const name of [
+      'surface',
+      'ink',
+      'muted',
+      'border',
+      'border-strong',
+      'primary',
+      'danger-ink',
+      'warning-ink',
+    ]) {
       expect(tokens).toContain(`--color-${name}`);
     }
   });
@@ -170,5 +182,24 @@ describe('design tokens', () => {
       dataUris(readFileSync(file, 'utf8')).map((uri) => `${path.relative(SRC, file)}: ${uri}`),
     );
     expect(uris).toEqual([]);
+  });
+});
+
+// The browser's own chrome color (#76). It is outside CSS, so the guards above
+// never see it: it must match the page's surface and be neither red nor blue.
+describe('theme-color meta', () => {
+  const html = readFileSync(path.join(SRC, '../index.html'), 'utf8');
+  const css = readFileSync(path.join(SRC, 'index.css'), 'utf8');
+
+  it('is the surface token, neither red nor blue', () => {
+    const value = html.match(/<meta\s+name="theme-color"\s+content="([^"]+)"/)?.[1];
+    expect(value).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(partyColor(toOklch(value))).toBeNull();
+    // The surface token as sRGB hex, as the browser draws it.
+    const hex = `#${oklchToRgb(oklchTokens(css).surface)
+      .match(/\d+/g)
+      .map((c) => Number(c).toString(16).padStart(2, '0'))
+      .join('')}`;
+    expect(value.toLowerCase()).toBe(hex);
   });
 });

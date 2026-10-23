@@ -9,7 +9,7 @@ const VARIANTS = {
   // On a line of its own: a 44 px box.
   tap: `inline-flex min-h-11 items-center ${LINK}`,
   // A full-width tappable row, as in a list of places to go (#80).
-  row: `flex min-h-11 w-full items-center rounded-control border border-border bg-surface-raised px-4 py-2 font-medium ${LINK}`,
+  row: `flex min-h-11 w-full items-center rounded-control border border-border-strong bg-surface-raised px-4 py-2 font-medium ${LINK}`,
   // The site header's links (#79): underlined on hover and on the current page.
   nav: 'inline-flex min-h-11 items-center px-1 text-primary underline-offset-4 hover:underline aria-[current=page]:font-semibold aria-[current=page]:underline',
 };

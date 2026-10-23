@@ -110,4 +110,22 @@ describe('line count colors', () => {
       }
     }
   });
+
+  // The precinct map's outline sits beside these markers and their legend on
+  // Election Day (#107), so it must not look like a step (#76: the brand teal
+  // is within a shade of wait-1, so the outline is drawn in ink).
+  it('draws the precinct outline in a color no step resembles, 3:1 on the basemap', async () => {
+    const view = await readFile(path.join(ROOT, 'src/features/lookup/precinctMapView.js'), 'utf8');
+    const name = view.match(
+      /const color = oklchToRgb\(tokens\.getPropertyValue\('--color-([\w-]+)'\)\)/,
+    )?.[1];
+    expect(name).toBeDefined();
+    const outline = tokens[`--color-${name}`];
+    expect(contrast(rgbOf(oklchToRgb(outline)), BASEMAP_LAND)).toBeGreaterThanOrEqual(3);
+    for (const token of WAIT_TOKENS) {
+      const step = oklab(tokens[`--color-${token}`]);
+      const distance = Math.hypot(...oklab(outline).map((v, k) => v - step[k]));
+      expect(distance, token).toBeGreaterThanOrEqual(0.15);
+    }
+  });
 });

@@ -2,21 +2,48 @@ import { render, screen } from '@testing-library/react';
 import Notice from './Notice.jsx';
 
 describe('Notice', () => {
-  it.each([
-    ['info', 'border-notice-info'],
-    ['warning', 'border-notice-warning'],
-    ['danger', 'border-notice-danger'],
-  ])('has the %s look', (variant, border) => {
-    render(<Notice variant={variant}>Text</Notice>);
-    const notice = screen.getByText('Text');
-    expect(notice).toHaveClass('border-l-4', border, 'bg-surface-raised');
+  // #76: a fill, an edge and an icon per kind, so a notice never relies on
+  // color alone (the edge and icon stay in forced colors).
+  it.each(['info', 'warning', 'danger', 'success'])('has the %s look and icon', (variant) => {
+    const { container } = render(<Notice variant={variant}>Text</Notice>);
+    const notice = container.firstElementChild;
+    expect(notice).toHaveClass(
+      'border-l-4',
+      `border-${variant}-ink`,
+      `bg-${variant}-fill`,
+      'text-ink',
+    );
+    const icon = notice.querySelector('svg');
+    expect(icon).toHaveAttribute('aria-hidden', 'true');
+    expect(icon).toHaveAttribute('stroke', 'currentColor');
+    expect(icon).toHaveClass(`text-${variant}-ink`);
+    expect(icon.getAttribute('data-notice-icon')).toBe(variant);
+    expect(notice).toHaveTextContent(/^Text$/);
   });
 
-  it('is a paragraph of the info look by default', () => {
-    render(<Notice>Text</Notice>);
-    const notice = screen.getByText('Text');
+  it('gives each kind its own icon', () => {
+    const shapes = ['info', 'warning', 'danger', 'success'].map((variant) => {
+      const { container } = render(<Notice variant={variant}>Text</Notice>);
+      return container.querySelector('svg').innerHTML;
+    });
+    expect(new Set(shapes).size).toBe(4);
+  });
+
+  it('is a paragraph of the info look by default, its text in a span', () => {
+    const { container } = render(<Notice>Text</Notice>);
+    const notice = container.firstElementChild;
     expect(notice.tagName).toBe('P');
-    expect(notice).toHaveClass('border-notice-info');
+    expect(notice).toHaveClass('border-info-ink');
+    expect(screen.getByText('Text').tagName).toBe('SPAN');
+  });
+
+  it('holds block content in a div when it is not a paragraph', () => {
+    render(
+      <Notice as="section" aria-label="Status">
+        <p>Body</p>
+      </Notice>,
+    );
+    expect(screen.getByText('Body').parentElement.tagName).toBe('DIV');
   });
 
   it('renders as another element with its role and label', () => {
@@ -38,4 +65,15 @@ describe('Notice', () => {
     );
     expect(screen.getByRole('alert')).toHaveTextContent('Failed');
   });
+
+  // In forced colors Chromium keeps an SVG's own color (preserve-parent-color),
+  // so a kind's ink stays dark on a dark theme's black, under 3:1 (#76). There
+  // the icon takes the text's system color instead.
+  it.each(['info', 'warning', 'danger', 'success'])(
+    'draws the %s icon in the system text color in forced colors',
+    (variant) => {
+      const { container } = render(<Notice variant={variant}>Text</Notice>);
+      expect(container.querySelector('svg')).toHaveClass('forced-colors:text-current');
+    },
+  );
 });

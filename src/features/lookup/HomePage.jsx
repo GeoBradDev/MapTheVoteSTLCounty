@@ -28,7 +28,7 @@ export default function HomePage() {
         <p className="mt-2">
           <time
             dateTime={election.electionDate}
-            className="inline-block rounded-full bg-accent px-3 py-1 text-sm font-semibold text-on-accent"
+            className="inline-block rounded-full bg-info-fill px-3 py-1 text-sm font-semibold text-info-ink"
           >
             {copy.electionDay(election.electionDate, election.timeZone)}
           </time>

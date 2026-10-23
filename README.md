@@ -445,11 +445,36 @@ The palette is nonpartisan: no red or blue. Define colors only as oklch `--color
 CSS under `src` or in the built CSS, and on any `data:` URI in the CSS under `src` (put icons in
 SVG components that use `currentColor`). Only CSS is checked: a color written anywhere else
 (`index.html`, JSX props or SVG attributes, JavaScript strings) is not, so use token classes
-there instead of color values. The one exception is the site icons in `public/` (#79): a favicon
+there instead of color values. Two exceptions are checked on their own: the `theme-color` meta in
+`index.html` (#76, below) and the site icons in `public/` (#79): a favicon
 cannot read the page's CSS, so `favicon.svg` writes `--color-primary` and `--color-on-primary`
 as hex, and `favicon.ico` and `apple-touch-icon.png` are drawn from it. A build test fails on
 red or blue in `favicon.svg` (not in the two raster icons); when those tokens change, redraw all
 three.
+
+The tokens (#76), each with its role and minimum contrast beside it in `src/index.css`:
+
+- Neutrals, near gray with a faint teal cast: `surface` (the page), `surface-raised`,
+  `surface-sunken`, `ink` (text and the focus ring), `muted` (secondary text), `border`
+  (decorative lines only) and `border-strong` (the edge of a control with no fill, 3:1).
+- Brand: one hue, deep teal near 185 (the owner's choice; blue starts at 200): `primary` for
+  links, buttons and the lead card's edge, `primary-hover`, `primary-pressed` and
+  `on-primary`.
+- Semantic pairs, `*-fill` for a notice's background and `*-ink` for its edge and icon:
+  `danger` (burnt orange, never red), `warning` (amber), `info` (the brand teal) and
+  `success` (green, free because the brand is teal). Color is never the only cue: a notice
+  also has its kind's icon and edge (`Notice` in `src/components/`), which stay in forced
+  colors (the icon then in the system text color), and its text stays `ink`.
+  The home page's election date pill also uses the `info` pair, its ink as text on its fill.
+- The wait time ramp, `wait-1` to `wait-5`, for map markers and their legend only (see Map).
+- `shadow`: `ink` at 12%, the one color the `shadow-card` and `shadow-popover` shadows use.
+
+`src/test/contrast.test.js` checks every text and control pair the tokens make against WCAG
+2.1 AA (the wait markers are checked in `mapColors.test.js`): text 4.5:1 on
+every surface and fill, `border-strong` 3:1. A new token or pair goes into it. The browser's
+chrome color, `<meta name="theme-color">` in `index.html`, is `surface` written as hex;
+`src/test/theme.test.js` checks it matches `surface` and is not red or blue, so change both
+together.
 
 ## UI
 
@@ -468,8 +493,9 @@ link's or a button's classes in a feature file (`src/test/sharedStyles.test.js` 
   placeholder that holds its place.
 - `Card`: a titled section of secondary detail (the results cards). `CARD` is its box, for a
   placeholder; `CARD_EMPHASIS` is the box of the one answer a page leads with.
-- `Notice`: a message set apart, `info` (where to go instead), `warning` (this precinct has
-  nothing to vote on) or `danger` (something failed, with `role="alert"`). Where the alert's
+- `Notice`: a message set apart, with its kind's fill, edge and icon: `info` (where to go
+  instead, still working), `warning` (this precinct has nothing to vote on), `danger`
+  (something failed, with `role="alert"`) or `success`. Where the alert's
   live region must stay mounted while empty, keep the region and render the Notice inside it.
 - `Disclosure`: folded secondary detail (hour lists, sources), opened for printing.
 
@@ -884,7 +910,9 @@ The basemap is [OpenFreeMap](https://openfreemap.org)'s Positron style: free, wi
 or account, and its terms allow embedding it. Its attribution (OpenFreeMap, OpenMapTiles,
 OpenStreetMap contributors) is shown as links under the map. Its water labels are blue and
 its interstate shields slate blue, so the map draws every label in the muted token and
-interstates with the gray road shield. Tile requests tell OpenFreeMap (and
+interstates with the gray road shield. The precinct outline is drawn in ink, not the brand
+teal, which is within a shade of the ramp's first step (`mapColors.test.js` keeps it apart
+from every step). Tile requests tell OpenFreeMap (and
 Cloudflare, its CDN) which area is on screen: the precinct and its nearest polling places,
 which depend a little on the searched point within the precinct, or, on the wait times page,
 the early voting sites (on Election Day, the polling places). The `no-referrer` policy

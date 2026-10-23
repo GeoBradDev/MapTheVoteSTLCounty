@@ -61,7 +61,10 @@ function markerElement(className, text) {
  */
 export function createPrecinctMap(container, { geometry, origin, polls, onReady, onFail }) {
   const tokens = getComputedStyle(container);
-  const color = oklchToRgb(tokens.getPropertyValue('--color-primary'));
+  // The outline is ink, not the brand teal (#76): the teal is within a shade
+  // of the line count ramp's first step (wait-1), so on Election Day a teal
+  // area could read as "short lines" next to the legend.
+  const color = oklchToRgb(tokens.getPropertyValue('--color-ink'));
   const labelColor = oklchToRgb(tokens.getPropertyValue('--color-muted'));
   if (!color || !labelColor) throw new Error('The map color tokens are not oklch colors');
   const boundsOf = (places) => mapBounds({ geometry, points: [origin, ...places] });
@@ -119,7 +122,7 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
         id: 'precinct-fill',
         type: 'fill',
         source: 'precinct',
-        paint: { 'fill-color': color, 'fill-opacity': 0.15 },
+        paint: { 'fill-color': color, 'fill-opacity': 0.1 },
       });
       map.addLayer({
         id: 'precinct-line',
