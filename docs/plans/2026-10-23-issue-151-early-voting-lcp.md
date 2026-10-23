@@ -40,12 +40,14 @@ page (2417 ms). The budget is right; the page paints its main content too late.
 - `src/features/waitTimes/WaitTimesPage.jsx`: renders `WaitTimesIntro` with its ref.
 - `src/App.jsx`: the Suspense fallback renders `WaitTimesIntro` (no tabIndex) above the
   `min-h-screen` placeholder.
-- `src/App.test.jsx`: a test that the fallback shows the heading and intro before the
-  page chunk resolves, and that the fallback heading has no tabindex.
+- `src/waitTimesFallback.test.jsx` (new): with the page chunk held back by a mock, the
+  fallback shows the heading and intro, its heading has no tabindex, and the page replaces
+  it once the chunk resolves. A file of its own, since `src/App.test.jsx` loads the real
+  chunk, which is then cached.
 
 ## Order of work
 
-1. Red test in `src/App.test.jsx` for criteria 1 and 2.
+1. Red test in `src/waitTimesFallback.test.jsx` for criteria 1 and 2.
 2. Add `WaitTimesIntro`, use it in the page and the fallback.
 3. Full gate, then `npm run test:perf` to record the before and after.
 
@@ -59,5 +61,5 @@ page (2417 ms). The budget is right; the page paints its main content too late.
 
 ## Proof
 
-- Criteria 1, 2: the new App test. Criterion 3: the existing suite. Criterion 4: the
+- Criteria 1, 2: `src/waitTimesFallback.test.jsx`. Criterion 3: the existing suite. Criterion 4: the
   `npm run test:perf` output, local and CI, quoted in the PR.
