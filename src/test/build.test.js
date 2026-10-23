@@ -315,6 +315,8 @@ describe('production build', () => {
       expect(root).toContain('role="combobox"');
       expect(root).not.toMatch(/any polling place|assigned polling place/i);
       expect(root).not.toContain(election.electionDayPollingPlace.phone);
+      expect(root).not.toContain('which has its own rule');
+      for (const url of election.electionDayPollingPlace.sources) expect(root).not.toContain(url);
       expect(root).not.toContain(cityResults.electionDayRule.quote.slice(0, 40));
     });
 

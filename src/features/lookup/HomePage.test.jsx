@@ -79,7 +79,8 @@ describe('HomePage', () => {
     expect(container).not.toHaveTextContent(election.electionDayPollingPlace.phone);
     expect(container).not.toHaveTextContent(cityResults.electionDayRule.quote);
     expect(container).not.toHaveTextContent(/any polling place|assigned polling place/i);
-    for (const url of election.electionDayPollingPlace.sources) {
+    const { sources, phoneSource } = election.electionDayPollingPlace;
+    for (const url of [...sources, phoneSource]) {
       expect(container.querySelector(`a[href="${url}"]`)).toBeNull();
     }
   });
