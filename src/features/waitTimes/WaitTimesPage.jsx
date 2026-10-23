@@ -474,6 +474,8 @@ export default function WaitTimesPage({
 
   return (
     <>
+      {/* The route's loading fallback in src/App.jsx repeats this heading and
+          the two paragraphs, text and classes (#151): change both together. */}
       <h1 ref={headingRef} tabIndex={-1} className="text-2xl font-semibold">
         {copy.heading}
       </h1>
