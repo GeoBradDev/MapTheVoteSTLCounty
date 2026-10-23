@@ -446,7 +446,8 @@ SVG components that use `currentColor`). Only CSS is checked: a color written an
 there instead of color values. The one exception is the site icons in `public/` (#79): a favicon
 cannot read the page's CSS, so `favicon.svg` writes `--color-primary` and `--color-on-primary`
 as hex, and `favicon.ico` and `apple-touch-icon.png` are drawn from it. A build test fails on
-red or blue there; when those tokens change, redraw the icons.
+red or blue in `favicon.svg` (not in the two raster icons); when those tokens change, redraw all
+three.
 
 ## Election config
 
