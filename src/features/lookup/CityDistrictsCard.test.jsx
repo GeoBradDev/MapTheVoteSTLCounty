@@ -2,7 +2,7 @@
 // precinct outline from its recorded fixture and the districts layer from its
 // recorded answer (or an answer built here). Field names come from the config:
 // the hardcoding test scans this file.
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import districtsAtPoint from '../../../docs/raw/fixtures/city-districts-at-point.json';
 import cityGeometry from '../../../docs/raw/fixtures/city-precinct-geometry.json';
@@ -181,6 +181,38 @@ describe('CityDistrictsCard', () => {
     expect(rowsOf(card)).toHaveLength(6);
     // Focus moves to the districts, not the page's start.
     expect(card.contains(document.activeElement)).toBe(true);
+  });
+
+  it('leaves focus where the voter moved it while a retry ran', async () => {
+    let release;
+    let asked = 0;
+    fetchMock.mockImplementation((input) => {
+      const url = new URL(input);
+      if (!url.pathname.includes(city.layers.districts)) return respond(cityGeometry);
+      asked += 1;
+      if (asked <= 2) return respond({ error: 'down' }, 500);
+      return new Promise((resolve) => {
+        release = () => resolve(new Response(JSON.stringify(districtsAtPoint)));
+      });
+    });
+    const { Card, JurisdictionContext, city: adapter } = modules;
+    render(
+      <JurisdictionContext.Provider value={adapter}>
+        <section aria-label="card">
+          <Card code={CODE} />
+        </section>
+        <button type="button">Elsewhere</button>
+      </JurisdictionContext.Provider>,
+    );
+    const card = screen.getByRole('region', { name: 'card' });
+    await screen.findByRole('alert');
+    await userEvent.click(within(card).getByRole('button'));
+    await waitFor(() => expect(release).toBeTypeOf('function'));
+    const elsewhere = screen.getByRole('button', { name: 'Elsewhere' });
+    elsewhere.focus();
+    release();
+    await loaded();
+    expect(document.activeElement).toBe(elsewhere);
   });
 
   it('never lets officeholder, party or contact text reach the page', async () => {

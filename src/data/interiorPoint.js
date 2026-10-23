@@ -1,5 +1,5 @@
-// A point inside a polygon, for asking which districts a precinct is in when a
-// share link has no looked-up point (#87). Not the centroid: on 2026-10-22 the
+// A point inside a polygon, for asking which districts a precinct is in (#87),
+// never at the voter's own point (the districts card, #90). Not the centroid: on 2026-10-22 the
 // centroid of 2 of the City's 207 precincts fell outside them (docs/data.md).
 
 const SCANLINES = 9;

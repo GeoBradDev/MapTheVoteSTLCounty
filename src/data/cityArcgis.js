@@ -111,7 +111,7 @@ async function fetchPrecinctGeometry(code, id) {
 }
 
 // The latest City precinct's outline request, shared by the map, the
-// distances and the districts for a share link, so one page asks once.
+// distances and the districts card (#90), so one page asks once.
 let outline;
 
 /**

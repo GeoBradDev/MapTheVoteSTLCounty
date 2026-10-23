@@ -121,7 +121,7 @@ describe('PrivacyPage', () => {
     );
     expect(item).toHaveTextContent(
       // The City districts card (#90) asks at a point from the precinct's outline.
-      'Opening a shared link sends only the precinct code to the election maps of its own board, and for a City precinct a point inside that precinct, taken from its outline and never from you, to find its districts.',
+      "Opening a shared link sends only the precinct code to the election maps of its own board. A City precinct's page, however you reach it, also sends the City's election maps a point inside that precinct, taken from its outline and never from you, to find its districts.",
     );
     expect(item).not.toHaveTextContent("part of the request's web address");
     expect(item).not.toHaveTextContent('ordinary cache');

@@ -1,10 +1,11 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { NotFound } from '../../data/arcgis.js';
 import { getCityDistrictsForPrecinct } from '../../data/cityArcgis.js';
 import { cityDistrictRows } from './cityDistricts.js';
 import { OfficialLookupLink } from './PollsCard.jsx';
 import { copy } from './resultsCopy.js';
 import RetryButton from './RetryButton.jsx';
+import { useRetry } from './useRetry.js';
 
 const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
 
@@ -18,36 +19,34 @@ const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
  */
 export default function CityDistrictsCard({ code }) {
   // { code, attempt, rows } once loaded, { code, attempt, error: true } on
-  // failure. A failed load stays shown, busy, while Try again runs.
+  // failure. A failed load stays shown, busy, while Try again runs; when a
+  // retry loads them, focus moves to the districts if it fell to the page
+  // (useRetry, #18).
   const [result, setResult] = useState(null);
-  const [attempt, setAttempt] = useState(0);
+  const { attempt, loading, retry, done, targetRef } = useRetry();
 
   useEffect(() => {
     let live = true;
     getCityDistrictsForPrecinct(code).then(
       (districts) => {
-        if (live) setResult({ code, attempt, rows: cityDistrictRows(districts) });
+        if (!live) return;
+        setResult({ code, attempt, rows: cityDistrictRows(districts) });
+        done();
       },
       (error) => {
         if (!live) return;
         // No such precinct: Try again would not find it either.
         if (error instanceof NotFound) setResult({ code, attempt, rows: [] });
         else setResult({ code, attempt, error: true });
+        done();
       },
     );
     return () => {
       live = false;
     };
-  }, [code, attempt]);
+  }, [code, attempt, done]);
 
   const current = result?.code === code ? result : null;
-  const loading = current?.attempt !== attempt;
-  // Try again's button goes once the districts load: focus moves to them, not
-  // the page's start.
-  const targetRef = useRef(null);
-  useEffect(() => {
-    if (current && !current.error && current.attempt > 0) targetRef.current?.focus();
-  }, [current]);
 
   if (!current) {
     return (
@@ -68,7 +67,7 @@ export default function CityDistrictsCard({ code }) {
             {copy.districts.failed} <OfficialLookupLink />.
           </span>
         </p>
-        <RetryButton onRetry={() => setAttempt((n) => n + 1)} busy={loading} className="mt-2" />
+        <RetryButton onRetry={retry} busy={loading} className="mt-2" />
       </div>
     );
   }
