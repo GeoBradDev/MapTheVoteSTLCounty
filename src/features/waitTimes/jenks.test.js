@@ -57,15 +57,15 @@ describe('waitClasses', () => {
   it('has two classes for two distinct counts, never invented breaks', () => {
     expect(waitClasses([0, 0, 5, 0])).toEqual([
       { min: 0, max: 0 },
-      { min: 1, max: 5 },
+      { min: 5, max: 5 },
     ]);
   });
 
   it('has three classes for three distinct counts', () => {
     expect(waitClasses([0, 2, 7])).toEqual([
       { min: 0, max: 0 },
-      { min: 1, max: 2 },
-      { min: 3, max: 7 },
+      { min: 2, max: 2 },
+      { min: 7, max: 7 },
     ]);
   });
 
@@ -73,8 +73,8 @@ describe('waitClasses', () => {
     // Three clear clusters: 3 classes fit almost perfectly.
     expect(waitClasses([0, 1, 2, 10, 11, 12, 20, 21, 22])).toEqual([
       { min: 0, max: 2 },
-      { min: 3, max: 12 },
-      { min: 13, max: 22 },
+      { min: 10, max: 12 },
+      { min: 20, max: 22 },
     ]);
     // Evenly spread counts: 3 classes fit about 0.89, 4 about 0.94.
     expect(waitClasses(range(0, 19))).toHaveLength(4);
@@ -92,20 +92,27 @@ describe('waitClasses', () => {
 
   it('gives an outlier its own class', () => {
     const classes = waitClasses([0, 0, 1, 1, 2, 2, 3, 3, 4, 60]);
-    expect(classes.at(-1)).toEqual({ min: expect.any(Number), max: 60 });
+    expect(classes.at(-1)).toEqual({ min: 60, max: 60 });
     expect(classOf(60, classes)).toBe(classes.length - 1);
     expect(classOf(4, classes)).toBeLessThan(classes.length - 1);
   });
 
-  it('covers the counts from the lowest to the highest with no gaps', () => {
+  it('runs each class from its own lowest count to its highest, so a range names only counts shown', () => {
     const values = [3, 5, 8, 9, 14, 30, 31, 44];
     const classes = waitClasses(values);
-    expect(classes[0].min).toBe(3);
-    expect(classes.at(-1).max).toBe(44);
+    for (const { min, max } of classes) {
+      expect(values).toContain(min);
+      expect(values).toContain(max);
+    }
     for (let i = 1; i < classes.length; i += 1) {
-      expect(classes[i].min).toBe(classes[i - 1].max + 1);
+      expect(classes[i].min).toBeGreaterThan(classes[i - 1].max);
     }
     for (const value of values) expect(classOf(value, classes)).not.toBeNull();
+    // A lone 10 beside zeros reads "10 people", never "1 to 10 people".
+    expect(waitClasses([0, 0, 10])).toEqual([
+      { min: 0, max: 0 },
+      { min: 10, max: 10 },
+    ]);
   });
 
   it('skips anything that is not a count', () => {
