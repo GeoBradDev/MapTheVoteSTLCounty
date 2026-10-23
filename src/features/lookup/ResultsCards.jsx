@@ -31,7 +31,8 @@ function Card({ title, children }) {
  * @param {{ code: string, origin: { lat: number, lng: number } | null,
  *   showBallot: boolean, ballotHtml: unknown, precinct: object }} props
  *   `origin` is the looked-up point, in memory only. `showBallot` false hides
- *   the sample ballot card, for a precinct with nothing on the ballot.
+ *   the summary with its sample ballot, for a precinct with nothing on the
+ *   ballot.
  *   `ballotHtml` is a County precinct's `html` field, which only the sample
  *   ballot parser reads; the card checks its link against `code`. A City
  *   precinct's card never reads it. `precinct` is the
@@ -48,7 +49,7 @@ export default function ResultsCards({ code, origin, showBallot, ballotHtml, pre
           polls,
           earlyVoting: () => (
             // The chunk is already loaded with the City data, so this
-            // suspends only for a moment.
+            // renders at once (cityComponent).
             <Suspense fallback={null}>
               <CityEarlyVotingCard code={code} origin={origin} />
             </Suspense>
@@ -66,7 +67,13 @@ export default function ResultsCards({ code, origin, showBallot, ballotHtml, pre
         };
   return (
     <>
-      <ResultsSummary code={code} origin={origin} showBallot={showBallot} ballotHtml={ballotHtml} />
+      {/* A precinct with nothing on the ballot gets no summary: its banner
+          says so, and the cards below still list the places (#81). */}
+      {showBallot ? (
+        <ResultsSummary code={code} origin={origin} ballotHtml={ballotHtml} />
+      ) : (
+        !origin && <p className="mt-6 text-muted">{copy.polls.fromCenter(code)}</p>
+      )}
       <div className="mt-6 flex flex-col gap-4">
         {CARDS.map((key) => (
           <Card key={key} title={copy.cards[key]}>
@@ -95,7 +102,7 @@ export function ResultsSkeleton() {
     <div data-testid="results-skeleton" aria-hidden="true" className="min-h-screen">
       <div
         data-testid="summary-skeleton"
-        className="mt-6 rounded-md border-2 border-border bg-surface-raised p-4"
+        className="mt-4 rounded-md border-2 border-border bg-surface-raised p-4"
       >
         <div className={`h-4 w-28 ${bar}`} />
         <div className={`mt-2 h-6 w-full ${bar}`} />

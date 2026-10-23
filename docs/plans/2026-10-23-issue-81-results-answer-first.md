@@ -50,7 +50,7 @@ exists, keep new styling local, note it for #78.
   small help text tied to the button with `aria-describedby`.
 - `src/features/lookup/ResultsSummary.jsx` (new): the answer-first summary. Sections, each
   with its own h2: "Election Day" (date and hours from config, nearest polling place with
-  distance, address and a full-width directions link), "Vote early today" during early voting
+  distance, address and a directions button with a 44 px tap target), "Vote early" during early voting
   only (the nearest site open now, else the nearest site, with its status, its line count or
   "No current line count", directions and the wait times link), and "Sample ballot" (the
   existing County or City ballot card body). The "distances are from the center" note moves
@@ -98,8 +98,8 @@ exists, keep new styling local, note it for #78.
 - Two hooks read the same layer (summary and card): getPolls and getEarlyVotingSites are
   shared cached requests, so no second request; verified in the unit tests by counting fetches.
 - A failed polls load: the card shows the error and retry; the summary shows nothing for the
-  nearest place (no second alert). After a successful retry the summary stays empty until the
-  next refresh; accepted and noted.
+  nearest place (no second alert). After a successful retry in the card the summary stays empty
+  until the page is loaded again; accepted and noted.
 - Districts disclosure default depends on `matchMedia`; without it (jsdom) it is open.
 
 Not done here: Election Day line counts in the summary (the card has them, #107), analytics
@@ -135,3 +135,10 @@ Not done here: Election Day line counts in the summary (the card has them, #107)
   only components).
 - Criterion 3 (40% shorter) is not reached; measured results and the question to the owner are
   in the pull request.
+- A precinct with nothing on the ballot (not in the election, nonresidential) gets no summary:
+  its banner says so, and the cards still list the places, with the "distances are from the
+  center" note above them.
+- The summary's early voting part gives no status line for a site the schedules do not cover,
+  as the card does (finder 1).
+- `Disclosure` opens for printing and folds back after, as topic pages do, so a printed results
+  page still holds the districts, dates and hours, and the rule's sources (finder 1).

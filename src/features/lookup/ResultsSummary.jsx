@@ -166,9 +166,14 @@ export function EarlyVoteSummary({
   if (!during) return null;
 
   const rows = result?.rows;
-  const statusOf = (site) => earlyVotingStatus(scheduleOf(site), now, election.timeZone);
-  const openSite = rows?.find((site) => statusOf(site).kind === 'openNow');
+  // A site the schedules do not cover has no status, as on the card.
+  const statusOf = (site) => {
+    const schedule = scheduleOf(site);
+    return schedule ? earlyVotingStatus(schedule, now, election.timeZone) : null;
+  };
+  const openSite = rows?.find((site) => statusOf(site)?.kind === 'openNow');
   const site = openSite ?? rows?.[0];
+  const siteStatus = site && statusOf(site);
   const key = site && waitKeyOf(site);
   const wait = (key && waits.waits.find((entry) => entry.siteId === key)) || null;
   return (
@@ -180,7 +185,7 @@ export function EarlyVoteSummary({
             label={openSite ? copy.summary.nearestOpen : copy.summary.nearestSite}
             place={site}
           >
-            <p>{copy.earlyVoting.status(statusOf(site), formatLongDate)}</p>
+            {siteStatus && <p>{copy.earlyVoting.status(siteStatus, formatLongDate)}</p>}
             {/* A count shows only for a site open now; while the first
                 counts load, a line holds their place. */}
             {openSite && waits.status === 'loading' && (
@@ -208,12 +213,13 @@ export function EarlyVoteSummary({
  * polling place, while early voting runs the nearest open early voting site
  * and its line count, and the sample ballot. Each from the same shared
  * requests and line count loops as the cards below, so nothing new is asked.
+ * Only for a precinct with something on the ballot (ResultsCards).
  * @param {{ code: string, origin: { lat: number, lng: number } | null,
- *   showBallot: boolean, ballotHtml: unknown,
+ *   ballotHtml: unknown,
  *   waitSource?: Parameters<typeof useWaitTimes>[0] }} props
  *   `waitSource` is for tests.
  */
-export default function ResultsSummary({ code, origin, showBallot, ballotHtml, waitSource }) {
+export default function ResultsSummary({ code, origin, ballotHtml, waitSource }) {
   const { id } = useJurisdiction();
   const isCity = id === 'city';
   return (
@@ -234,17 +240,15 @@ export default function ResultsSummary({ code, origin, showBallot, ballotHtml, w
           waitKeyOf={countyWaitKey}
         />
       )}
-      {showBallot && (
-        <Part title={copy.cards.ballot}>
-          {isCity ? (
-            <Suspense fallback={null}>
-              <CitySampleBallotCard />
-            </Suspense>
-          ) : (
-            <SampleBallotCard html={ballotHtml} code={code} />
-          )}
-        </Part>
-      )}
+      <Part title={copy.cards.ballot}>
+        {isCity ? (
+          <Suspense fallback={null}>
+            <CitySampleBallotCard />
+          </Suspense>
+        ) : (
+          <SampleBallotCard html={ballotHtml} code={code} />
+        )}
+      </Part>
       {!origin && <p className="text-sm text-muted">{copy.polls.fromCenter(code)}</p>}
     </div>
   );

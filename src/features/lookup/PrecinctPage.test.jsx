@@ -219,6 +219,35 @@ describe('PrecinctPage', () => {
     expect(screen.getByRole('link', { name: copy.searchAnother })).toHaveAttribute('href', '/');
   });
 
+  it('asks each shared layer once for the summary and the cards together (#81)', async () => {
+    // Thursday, October 22, 10 a.m. in Chicago: early voting runs, so the
+    // summary names the nearest open site too.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(Date.UTC(2026, 9, 22, 15)));
+    routeFetch(byId);
+    renderAt('CC007');
+    await ready('CC007');
+    const early = await screen.findByRole('region', { name: copy.summary.early });
+    await within(early).findByRole('link', { name: new RegExp(copy.polls.directions) });
+    await screen.findByRole('list', { name: copy.earlyVoting.listLabel });
+    const pollsCalls = fetchMock.mock.calls
+      .map(([input]) => new URL(input))
+      .filter((url) => url.pathname.includes(election.layers.polls));
+    const absentee = pollsCalls.filter(
+      (url) => url.searchParams.get('where') === election.absenteeWhere,
+    );
+    expect(absentee).toHaveLength(1);
+    expect(pollsCalls.length - absentee.length).toBe(1);
+  });
+
+  it('shows no summary for a precinct with nothing on the ballot (#81)', async () => {
+    routeFetch(withAttributes(byId, { in_election: 'Not In Election' }));
+    renderAt('CC007');
+    await ready('CC007');
+    expect(screen.queryByRole('region', { name: copy.summary.electionDay })).toBeNull();
+    expect(screen.getByRole('region', { name: copy.cards.polls })).toBeInTheDocument();
+  });
+
   it('moves focus to the results heading when results load', async () => {
     routeFetch(byId);
     renderAt('CC007');

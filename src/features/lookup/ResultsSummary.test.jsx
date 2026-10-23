@@ -68,7 +68,7 @@ const electionDay = () => region(s().electionDay);
 
 function renderSummary(props = {}) {
   return render(
-    <ResultsSummary code="CC007" origin={ORIGIN} showBallot ballotHtml={BALLOT_HTML} {...props} />,
+    <ResultsSummary code="CC007" origin={ORIGIN} ballotHtml={BALLOT_HTML} {...props} />,
   );
 }
 
@@ -167,6 +167,25 @@ describe('ResultsSummary', () => {
     expect(within(early).queryByText(waitCopy.noCount)).toBeNull();
   });
 
+  it('gives no status for a nearest site the schedules do not cover', async () => {
+    // Thursday, October 22, 6 p.m.: every site has closed for the day.
+    vi.setSystemTime(cdt(10, 22, 18));
+    const [nearest] = nearestPolls(sites, ORIGIN);
+    const unknown = {
+      ...sites,
+      features: sites.features.map((f) =>
+        f.properties.loc === nearest.loc
+          ? { ...f, properties: { ...f.properties, abs_type: 'zzz' } }
+          : f,
+      ),
+    };
+    getAbsenteeSites.mockResolvedValue(unknown);
+    renderSummary({ waitSource: store(countyFresh) });
+    const early = region(s().early);
+    expect(await within(early).findByText(nearest.name)).toBeInTheDocument();
+    expect(early).not.toHaveTextContent(copy.earlyVoting.status({ kind: 'ended' }));
+  });
+
   it('shows no early voting section and asks no line count layer outside early voting', async () => {
     const fetcher = vi.fn(async () => []);
     // Tuesday, November 10: after Election Day.
@@ -178,12 +197,9 @@ describe('ResultsSummary', () => {
     expect(getCountyWaits).not.toHaveBeenCalled();
   });
 
-  it('holds the sample ballot section, or none when the precinct has no ballot', () => {
-    const { unmount } = renderSummary();
+  it('holds the sample ballot section', () => {
+    renderSummary();
     expect(region(copy.cards.ballot)).toHaveTextContent(copy.ballot.missing);
-    unmount();
-    renderSummary({ showBallot: false });
-    expect(screen.queryByRole('region', { name: copy.cards.ballot })).toBeNull();
   });
 
   it('asks each shared layer once', async () => {

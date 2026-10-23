@@ -147,8 +147,8 @@ function PollRow({ poll, room, apple, headingRef, now }) {
 
 /**
  * The body of the "Polling places near you" card: the closest Election Day
- * polling places (Election Day's date and hours are in the summary, #81), and the jurisdiction's Election Day
- * rule: in the County a registered voter may vote at any County polling place
+ * polling places (Election Day's date and hours are in the summary, #81), and
+ * the jurisdiction's Election Day rule: in the County a registered voter may vote at any County polling place
  * (#152); in the City any City voter may vote at any listed location (#89).
  * While the polls are open on Election Day (#107), each place's current line
  * count from its own board only, a sort by shortest line nearby, and a link to
