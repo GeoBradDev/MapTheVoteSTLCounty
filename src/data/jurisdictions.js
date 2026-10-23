@@ -106,3 +106,13 @@ export function jurisdictionFor(code) {
 export function isPrecinctCode(code) {
   return jurisdictionFor(code) !== null;
 }
+
+/**
+ * The City adapter when a path is a City precinct's page, like /p/W01P12, for
+ * the app's error screen (#89); else undefined.
+ * @param {string} path
+ */
+export function cityOnPath(path) {
+  const j = jurisdictionFor(/^\/p\/([^/]+)$/.exec(path)?.[1]);
+  return j?.id === 'city' ? j : undefined;
+}

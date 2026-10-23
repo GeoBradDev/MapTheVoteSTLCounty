@@ -6,6 +6,8 @@ export const copy = translated((t) => ({
   heading: t('errorBoundary.heading'),
   body: t('errorBoundary.body'),
   officialLookup: t('errorBoundary.officialLookup'),
+  // On a City precinct's page (#89): the results page's own link text.
+  officialLookupCity: t('results.officialLookupCity'),
   reload: t('errorBoundary.reload'),
   home: t('errorBoundary.home'),
 }));

@@ -77,6 +77,9 @@ Domain skills:
 - `src/features/lookup/CityElectionDayRule.jsx` (new): the quoted rule with source and
   last-verified date, tested through the page. Kept in the first load: a lazy chunk split a
   shared 38 KB chunk out of the entry and cost about 1.3 KB more.
+- `src/components/ErrorBoundary.jsx` (+ test), `src/App.jsx`, `cityOnPath` in
+  `src/data/jurisdictions.js`: the app's last-resort error screen links the City's lookup on a
+  City precinct's page (review finding: criterion 6 covers page errors).
 - `src/features/privacy/PrivacyPage.test.jsx`, `src/i18n/en.json` privacy text: a shared link
   sends the precinct code to its own board's election maps (a City code now reaches the City
   Board's layers).
