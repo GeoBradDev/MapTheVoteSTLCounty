@@ -188,24 +188,20 @@ export function EarlyVoteSummary({
     <Part title={copy.summary.early}>
       {!result && <PlaceSkeleton testId="summary-early-skeleton" early />}
       {site && (
-        <>
-          <Place
-            label={openSite ? copy.summary.nearestOpen : copy.summary.nearestSite}
-            place={site}
-          >
-            {siteStatus && <p>{copy.earlyVoting.status(siteStatus, formatLongDate)}</p>}
-            {/* A count shows only for a site open now; while the first
-                counts load, a line holds their place. */}
-            {openSite && waits.status === 'loading' && (
-              <div aria-hidden="true" className="flex h-6 items-center">
-                <div className={`h-4 w-2/3 ${bar}`} />
-              </div>
-            )}
-            {openSite && waits.status !== 'off' && waits.status !== 'loading' && (
-              <WaitReport wait={wait} now={now} showNone />
-            )}
-          </Place>
-        </>
+        <Place label={openSite ? copy.summary.nearestOpen : copy.summary.nearestSite} place={site}>
+          {siteStatus && <p>{copy.earlyVoting.status(siteStatus, formatLongDate)}</p>}
+          {/* A count shows only for a site open now; while the first
+                counts load, two lines hold the count and its board (#27). */}
+          {openSite && waits.status === 'loading' && (
+            <div data-testid="summary-count-skeleton" aria-hidden="true">
+              {line('h-6', 'w-2/3')}
+              {line('h-5', 'w-1/2')}
+            </div>
+          )}
+          {openSite && waits.status !== 'off' && waits.status !== 'loading' && (
+            <WaitReport wait={wait} now={now} showNone />
+          )}
+        </Place>
       )}
       <p>
         <Link href="/early-voting" className={tapLinkClass}>

@@ -62,8 +62,9 @@ exists, keep new styling local, note it for #78.
   address, room, entrances, directions links), `fromCenter` and the early voting pointer
   removed, map height smaller on phones.
 - `src/features/lookup/EarlyVotingCard.jsx`: compact rows, `fromCenter` removed, the County
-  dates and hours behind a disclosure ("See dates and hours"), exported helpers the summary
-  reuses (County schedules, scheduleOf, waitKeyOf, the wait join).
+  dates and hours behind a disclosure ("See dates and hours"); the helpers the summary
+  reuses (County schedules, scheduleOf, waitKeyOf) are in `countyEarlyVoting.js`, and the
+  summary matches a site to its count by the same key as the card.
 - `src/features/lookup/CityEarlyVotingCard.jsx` and `src/cityChunk.js`: export a City summary
   piece (`CityEarlyVoteSummary`) built on the City store, so the City summary uses the City
   chunk's loop and schedules.
@@ -143,3 +144,5 @@ Not done here: Election Day line counts in the summary (the card has them, #107)
   as the card does (finder 1).
 - `Disclosure` opens for printing and folds back after, as topic pages do, so a printed results
   page still holds the districts, dates and hours, and the rule's sources (finder 1).
+- The count placeholder in the summary holds both lines of a count (finder 4), and the a11y
+  e2e run opens the County route's folded sections so axe still covers them (finder 4).

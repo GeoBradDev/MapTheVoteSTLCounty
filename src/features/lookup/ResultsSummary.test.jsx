@@ -149,6 +149,25 @@ describe('ResultsSummary', () => {
     ).toHaveAttribute('href', '/early-voting');
   });
 
+  // #27: the count and its board take two lines; the placeholder holds both.
+  it('holds two lines for the count while the first counts load', async () => {
+    renderSummary({ waitSource: store(() => new Promise(() => {})) });
+    const holder = await screen.findByTestId('summary-count-skeleton');
+    expect([...holder.children].map((line) => line.className)).toEqual([
+      expect.stringContaining('h-6'),
+      expect.stringContaining('h-5'),
+    ]);
+  });
+
+  it("links to every site's wait even when the County count source is off", async () => {
+    renderSummary({ waitSource: createWaitTimesStore({ county: null, city: null }) });
+    const early = region(s().early);
+    expect(
+      within(early).getByRole('link', { name: copy.earlyVoting.waits.seeAll }),
+    ).toHaveAttribute('href', '/early-voting');
+    expect(within(early).queryByText(waitCopy.noCount)).toBeNull();
+  });
+
   it('shows the no-data state when no count is reported for the site', async () => {
     renderSummary({ waitSource: store(async () => []) });
     const early = region(s().early);
