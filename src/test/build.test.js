@@ -10,6 +10,7 @@ import { build } from 'vite';
 import cityResults from '../config/cityResults.js';
 import election from '../config/election.js';
 import { parseTopic } from '../features/learn/content/topic.js';
+import { homeMapWindow, windowScript } from '../features/waitTimes/homeMapWindow.js';
 import { topicFiles } from '../features/learn/content/vitePlugin.js';
 import {
   colorLiterals,
@@ -132,6 +133,16 @@ describe('production build', () => {
   it('loads hashed assets by root-absolute path, so a hard load of /p/CC007 finds them', () => {
     expect(html).toMatch(/<script type="module" crossorigin src="\/assets\/index-[\w-]+\.js">/);
     expect(html).toMatch(/<link rel="stylesheet" crossorigin href="\/assets\/index-[\w-]+\.css">/);
+  });
+
+  // The home page's dot map box (#184) is reserved before the first paint by
+  // a plain script from the config's dates, first in the head, never deferred.
+  it('loads the home map window script first in the head, before the stylesheet', () => {
+    const tag = html.match(/<script src="\/assets\/(home-map-[0-9a-f]{8}\.js)"><\/script>/);
+    expect(tag).not.toBeNull();
+    expect(js[tag[1]]).toBe(windowScript(homeMapWindow()));
+    expect(html.indexOf(tag[0])).toBeLessThan(html.indexOf('rel="stylesheet"'));
+    expect(html.indexOf(tag[0])).toBeLessThan(html.indexOf('type="module"'));
   });
 
   // render.yaml's Content-Security-Policy allows only same-origin scripts,
