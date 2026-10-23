@@ -92,7 +92,9 @@ budget, all City-only results UI in one on-demand chunk with the City data clien
   retry, and a board keeps the rows it last loaded through a failed retry; the status line says unavailable when either board's counts fail.
 - `src/i18n/en.json`, copy modules: the card intro made jurisdiction neutral; wait times
   intro covers both; the "City not listed" line becomes "each board's sites are for its own
-  voters". Only the two City card strings of criterion 4 are new: every string is in the
+  voters"; the page's "ended" line drops "On Election Day, vote at your assigned polling
+  place", the County's rule, wrong for City voters (any listed location; its "Find your polling
+  place" link stays). Only the two City card strings of criterion 4 are new: every string is in the
   first load.
 - `scripts/check-config.mjs`: every City early voting site has a schedule.
 - Tests: new City card tests, schedule tests, wait page City tests, city89 test updates.
