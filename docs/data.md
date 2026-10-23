@@ -133,8 +133,8 @@ Layer name `precincts_2026_11_local`. Polygon. 1213 features.
 | `precinct` | `AP001` | Key. 2 or 3 letter township code + 3 digits. Max length 6. |
 | `precinct_type` | `Voting Precinct` | Values: `Voting Precinct`, `Nonresidential Precinct` |
 | `in_election` | `In Election` | Values seen this election: `In Election` (974), `Nonresidential Precinct` (239). `Not In Election` does not appear for Nov 2026 but the UI should still handle it. |
-| `congressional_district_25` | `US Representative District 1 (2025)` | Use this one. Current (2025) map. |
-| `congressional_district_20` | `US Representative District 1 (2022)` | Old map. Do not show. |
+| `congressional_district_20` | `US Representative District 1 (2022)` | Use this one. The 2022 map, in effect on November 3, 2026 (see below). Districts 1 and 2. |
+| `congressional_district_25` | `US Representative District 1 (2025)` | The 2025 map (H.B. 1), not in effect. Do not show. Districts 1, 2 and 3. |
 | `state_senate_20` | `State Senate District 14` | |
 | `legislative_district_20` | `State House District 73` | State House |
 | `county_council_20` | `County Council District 2` | |
@@ -154,6 +154,21 @@ Layer name `precincts_2026_11_local`. Polygon. 1213 features.
 
 Empty fields come back as `""` here (and as `null` on the dashboard view). Treat
 both as empty.
+
+**Which congressional map (#150).** The 2022 map applies on November 3, 2026, so the
+districts card reads `congressional_district_20`. The Revisor's note on
+[RSMo 128.346](https://revisor.mo.gov/main/OneSection.aspx?section=128.346), read on
+2026-10-23: on September 3, 2026, in Glahn v. Hoskins, No. SC101805 (Mo. banc), the Missouri
+Supreme Court held the referendum petition on H.B. 1 (the 2025 map) sufficient, so H.B. 1 does
+not take effect unless voters approve it, and "The congressional districts established by the
+General Assembly in 2022 remain in full force and effect for the November 2026 general
+election." The board's own sample ballots agree: 121 of the 1213 precincts have different
+districts in the two fields, 95 of those have a ballot, and on every one of the 95 the
+"U.S. REPRESENTATIVE - DISTRICT N" race matches `congressional_district_20` (checked
+2026-10-23 by reading each PDF). The health check fails if any precinct's value is not a 2022
+map district (`congressionalMap` in `src/config/election.js`). For a later election,
+recheck which map is in effect before choosing the field. St. Louis City is in the first
+district under both maps (RSMo 128.461 and 128.471).
 
 Point lookup (verified; the app sends these parameters in a POST body, see below):
 ```

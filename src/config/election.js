@@ -25,8 +25,8 @@
  *   absentee sites.
  * @property {RegExp} sampleBallotUrlPattern A sample ballot link from the
  *   precinct `html` field must match this before it is shown.
- * @property {string} congressionalField Precinct field with the current
- *   congressional district.
+ * @property {string} congressionalField Precinct field with the congressional
+ *   district in effect for this election.
  * @property {{ key: string, field: string }[]} districtFields The precinct
  *   fields the districts card lists, in order. `key` names the row's label in
  *   the results copy; `field` is the precinct layer field it reads.
@@ -124,8 +124,25 @@ const countyWaitSource =
 // The City Board's public Election Wait Times Dashboard.
 const cityWaitSource = 'https://www.arcgis.com/apps/dashboards/8548fe3a065a455182181399909102ef';
 
-// The 2025 map. congressional_district_20 is the old map; do not show it.
-const congressionalField = 'congressional_district_25';
+// The 2022 map, which applies on November 3, 2026 (#150). On September 3,
+// 2026 the Missouri Supreme Court held the 2025 map (H.B. 1) does not take
+// effect unless voters approve it (Glahn v. Hoskins, No. SC101805; the
+// Revisor's note on RSMo 128.346): "The congressional districts established by
+// the General Assembly in 2022 remain in full force and effect for the November
+// 2026 general election." The County's own sample ballots follow the 2022 map.
+// Checked 2026-10-23. congressional_district_25 is the 2025 map; do not show it.
+const congressionalField = 'congressional_district_20';
+
+/**
+ * The map `congressionalField` holds, and the County's districts on it
+ * (Districts 1 and 2 on the 2022 map). The data health check fails a precinct
+ * whose value is not `US Representative District <district> (<year>)` for one
+ * of them (#150). A named export, not part of the default object, so the app's
+ * bundle leaves it out: only the health check reads it.
+ */
+// Marked pure so the bundler can drop the call: deepFreeze is a call it would
+// otherwise keep.
+export const congressionalMap = /* @__PURE__ */ deepFreeze({ year: '2022', districts: ['1', '2'] });
 
 /** Freezes a config object and everything in it, except a RegExp. */
 export function deepFreeze(value) {
@@ -161,8 +178,8 @@ const county = {
   sampleBallotUrlPattern:
     /^https:\/\/stlouiscovotes\.maps\.arcgis\.com\/sharing\/rest\/content\/items\/[0-9a-f]{32}\/data$/,
   congressionalField,
-  // Never the pre-joined `districts` field: it includes the old congressional
-  // map. docs/data.md describes each field.
+  // Never the pre-joined `districts` field: it includes the 2025 congressional
+  // map, which is not in effect. docs/data.md describes each field.
   districtFields: [
     { key: 'congressional', field: congressionalField },
     { key: 'stateSenate', field: 'state_senate_20' },

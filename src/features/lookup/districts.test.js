@@ -18,9 +18,11 @@ function precinctWith(values) {
 }
 
 describe('districtRows', () => {
+  // CC007 is in District 1 on the 2022 map, which applies on November 3, 2026
+  // (#150), and District 2 on the 2025 map, which does not.
   it('lists an unincorporated precinct with no ward (CC007)', () => {
     expect(shown(attributesOf(cc007))).toEqual([
-      ['congressional', 'US Representative District 2'],
+      ['congressional', 'US Representative District 1'],
       ['stateSenate', 'State Senate District 24'],
       ['stateHouse', 'State House District 71'],
       ['countyCouncil', 'County Council District 2'],
@@ -79,14 +81,14 @@ describe('districtRows', () => {
     expect(missing).toEqual([]);
   });
 
-  it('never shows the old congressional map or the pre-joined districts field', () => {
+  it('never shows the 2025 congressional map or the pre-joined districts field (#150)', () => {
     const precinct = {
       ...attributesOf(cc007),
-      congressional_district_20: 'OLD MAP',
+      congressional_district_25: 'NOT IN EFFECT',
       districts: 'PRE-JOINED',
     };
     const values = districtRows(precinct).map((row) => row.value);
-    expect(values.join('\n')).not.toMatch(/OLD MAP|PRE-JOINED|2022/);
+    expect(values.join('\n')).not.toMatch(/NOT IN EFFECT|PRE-JOINED|2025/);
   });
 
   it('shows nothing from fields it does not list', () => {
@@ -99,7 +101,7 @@ describe('districtRows', () => {
   it.each([
     ['US Representative District 3 (2025)', 'US Representative District 3'],
     ['US Representative District 3', 'US Representative District 3'],
-    ['  US Representative District 1 (2025)  ', 'US Representative District 1'],
+    ['  US Representative District 1 (2022)  ', 'US Representative District 1'],
   ])('shows the congressional district %j as %j', (value, expected) => {
     expect(shown(precinctWith({ congressional: value }))).toEqual([['congressional', expected]]);
   });

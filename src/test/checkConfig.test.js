@@ -67,13 +67,21 @@ const disposition = (fileName) => `attachment; filename="${fileName}"; size=5528
 function healthyWorld() {
   const precincts = Array.from({ length: 1000 }, (_, i) => {
     const code = `AB${String(i).padStart(3, '0')}`;
+    // Every precinct, nonresidential ones too, has a 2022 map district (#150).
+    const congressional = `US Representative District ${1 + (i % 2)} (2022)`;
     return i < 990
       ? {
           precinct: code,
           in_election: 'In Election',
           html: `Sample Ballot: <a href=${ballotUrl(i + 1)}>AB-${String(i).padStart(3, '0')}.pdf</a>`,
+          [election.congressionalField]: congressional,
         }
-      : { precinct: code, in_election: 'Nonresidential Precinct', html: 'No ballot here.' };
+      : {
+          precinct: code,
+          in_election: 'Nonresidential Precinct',
+          html: 'No ballot here.',
+          [election.congressionalField]: congressional,
+        };
   });
   const layers = {};
   for (const [key, want] of Object.entries(expectedLayers(election))) {
@@ -318,6 +326,7 @@ describe('runHealthCheck', () => {
       'precinct count',
       'sample ballot links',
       'sample ballot PDFs',
+      'congressional districts',
       'absentee sites',
       'known points',
       'wait layer county',
@@ -340,6 +349,9 @@ describe('runHealthCheck', () => {
     expect(results['city early voting sites'].detail).toBe('8 sites, each with its hours');
     expect(results['precinct count'].detail).toBe('1000 precincts, 990 In Election');
     expect(results['sample ballot PDFs'].detail).toMatch(/^5 of 5/);
+    expect(results['congressional districts'].detail).toBe(
+      '1000 precincts on the 2022 map: District 1 (500), District 2 (500)',
+    );
   });
 
   it('fails with a clear message when the config names a wrong layer', async () => {
@@ -399,6 +411,41 @@ describe('runHealthCheck', () => {
     const results = await run(none);
     expect(results['precinct count'].detail).toBe('no precinct is In Election');
     expect(results['sample ballot links'].status).toBe('skip');
+  });
+
+  // The 2022 map applies on November 3, 2026 (#150): a 2025 value, a district
+  // the County does not have on that map, or no value fails, naming the precinct.
+  it('fails when a precinct is not on the 2022 congressional map (#150)', async () => {
+    const world = healthyWorld();
+    world.precincts[0][election.congressionalField] = 'US Representative District 2 (2025)';
+    world.precincts[1][election.congressionalField] = 'US Representative District 3 (2022)';
+    world.precincts[2][election.congressionalField] = '';
+    delete world.precincts[3][election.congressionalField];
+    const result = (await run(world))['congressional districts'];
+    expect(result.status).toBe('fail');
+    expect(result.detail).toBe(
+      '4 precincts fail: AB000: "US Representative District 2 (2025)"; ' +
+        'AB001: "US Representative District 3 (2022)"; AB002: ""; AB003: undefined',
+    );
+  });
+
+  it('asks for the congressional field with the precinct count, in one request', async () => {
+    const world = healthyWorld();
+    await run(world);
+    const listQueries = world.calls.filter(
+      ({ url }) =>
+        url.includes(`${election.layers.precincts}/query`) && url.includes('where=1%3D1'),
+    );
+    expect(listQueries).toHaveLength(1);
+    expect(new URL(listQueries[0].url).searchParams.get('outFields').split(',')).toContain(
+      election.congressionalField,
+    );
+  });
+
+  it('skips the congressional check when the precinct count fails', async () => {
+    const world = healthyWorld();
+    world.precincts = world.precincts.slice(0, 10);
+    expect((await run(world))['congressional districts'].status).toBe('skip');
   });
 
   it('fails when there are too many precincts', async () => {
