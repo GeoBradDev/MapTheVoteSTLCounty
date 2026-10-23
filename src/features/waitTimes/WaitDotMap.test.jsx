@@ -99,7 +99,7 @@ describe('WaitDotMap during early voting, sites open', () => {
     const { container } = renderMap();
     const link = await screen.findByRole('link', { name: homeCopy.waitMap.mapLink });
     expect(link).toHaveAttribute('href', '/early-voting');
-    const svg = link.querySelector('svg');
+    const svg = link.parentElement.querySelector('svg');
     expect(svg).toHaveAttribute('aria-hidden', 'true');
     await waitFor(() =>
       expect(dots(container)).toHaveLength(sites.features.length + citySites.features.length),
@@ -125,7 +125,7 @@ describe('WaitDotMap during early voting, sites open', () => {
     const items = within(list).getAllByRole('listitem');
     expect(items).toHaveLength(3);
     for (const item of items) expect(item).toHaveTextContent(jurisdictions.county.name);
-    expect(items[0]).toHaveTextContent('no one in line');
+    expect(items[0]).toHaveTextContent(': 0 people');
   });
 
   it('states each board’s rule: its sites are for its own voters', async () => {
@@ -134,21 +134,35 @@ describe('WaitDotMap during early voting, sites open', () => {
   });
 });
 
+describe('WaitDotMap with no current counts', () => {
+  beforeEach(() => vi.setSystemTime(OPEN_AT));
+
+  // The box is on screen at its reserved height: it stays, so nothing moves.
+  it('keeps the map when sites are open and neither board has a fresh count', async () => {
+    const { container, onClose } = renderMap({ waits: { county: none, city: none } });
+    expect(await screen.findByText(homeCopy.waitMap.noCounts)).toBeInTheDocument();
+    for (const dot of dots(container)) expect(dot).toHaveAttribute('data-dot', 'hollow');
+    expect(screen.queryByRole('list', { name: homeCopy.waitMap.shortest })).toBeNull();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('says so when both boards’ counts cannot be loaded', async () => {
+    const { onClose } = renderMap({ waits: { county: failing, city: failing } });
+    expect(await screen.findByText(homeCopy.waitMap.unavailable)).toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+});
+
 describe('WaitDotMap closes, leaving the home page as it was', () => {
   beforeEach(() => vi.setSystemTime(OPEN_AT));
 
-  it('when sites are open and neither board has a fresh count', async () => {
-    const { onClose } = renderMap({ waits: { county: none, city: none } });
-    await waitFor(() => expect(onClose).toHaveBeenCalled());
-  });
-
-  it('when both boards’ counts cannot be loaded', async () => {
-    const { onClose } = renderMap({ waits: { county: failing, city: failing } });
-    await waitFor(() => expect(onClose).toHaveBeenCalled());
-  });
-
   it('when a board’s sites cannot be loaded', async () => {
     const { onClose } = renderMap({ city: failing });
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+  });
+
+  it('when both boards’ sites cannot be loaded', async () => {
+    const { onClose } = renderMap({ city: failing, loadSites: failing });
     await waitFor(() => expect(onClose).toHaveBeenCalled());
   });
 

@@ -67,13 +67,14 @@
       "county": "St. Louis County",
       "city": "City",
       "shortest": "Shortest lines now",
-      "site": "{name}, {board}: {count, plural, =0 {no one in line} one {# person} other {# people}}",
+      "site": "{name}, {board}: {count, plural, one {# person} other {# people}}",
       "noCounts": "No site has a current line count right now.",
       "openToday": "Sites open again today at {time}",
       "openOn": "Sites open again {date}, at {time}",
       "pollsOpen": "Polls open today at {time}",
       "ended": "Early voting has ended. Election Day is tomorrow, with polls open {open} to {close}",
-      "hollow": "Closed, or no current count"
+      "hollow": "Closed, or no current count",
+      "unavailable": "Line counts could not be loaded right now."
     }
   },
   "addressSearch": {

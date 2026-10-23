@@ -30,9 +30,11 @@ Domain skills:
 2. Outside the map states (before early voting, after polls close on Election
    Day, the config flag off, JavaScript off) the home page is today's home page:
    no box, no space, no wait requests.
-3. If the map's chunk fails, both boards' site lists fail, or a site is open but
-   no fresh count arrives from either board, the box closes and today's home
-   page shows with its "See early voting wait times" link.
+3. If the map's chunk fails or a board's site list fails, the box closes and
+   today's home page shows with its "See early voting wait times" link. Counts
+   that are stale or cannot be loaded keep the box (revised during
+   implementation, see Revisions): every site is a hollow ring and the block
+   says no site has a current count, or that counts could not be loaded.
 4. County and City sites are kept apart: both outlines drawn, the City shaded
    apart and labeled, each summary row names its board, and the rule line says
    each board's sites are for its own voters.
@@ -151,3 +153,25 @@ centering on the voter (privacy).
   `outline.test.js`.
 - Live drive: build, preview, drive `/` at each pinned clock in light and dark
   at 360 and 1280 px, screenshot each.
+
+## Revisions
+
+- Stale or failed counts keep the box instead of closing it. The issue's table
+  closes it ("Wait data failed or stale"), but the box is already on screen at
+  its reserved height by then, and closing it moved everything below: the
+  Lighthouse run of `/` on Election Day morning (no County Election Day counts
+  reach the County's view, per the config) measured CLS 0.49 and a score of 78,
+  under the 90 budget. The issue's limits may not be loosened, so the limits
+  win. The box still closes when the map cannot be drawn at all (its chunk or
+  a board's site list fails).
+- The map loads with the wait times page's chunk (a re-export from
+  `WaitTimesPage.jsx`) instead of a chunk of its own: as its own chunk the
+  bundler moved React and the shared modules out of the entry into a second
+  first-load chunk, about 2 KB more of the 120 KB budget.
+- The map window's start and end reach the app as a build-time define
+  (`__HOME_MAP_WINDOW__`), so the City's config stays out of the first load.
+- The existing "address box above the fold on a 360 x 640 phone" check (#71,
+  #80) now runs outside the map window; inside it the owner's layout puts the
+  map first, and a new check keeps the statement, the h1 and the map's
+  heading above the fold with the address search right after the box.
+

@@ -227,16 +227,28 @@
     display: none;
   }
 
+  /*
+    The tallest map state (sites open, three named, the board rule) measured
+    592 px at 360 px wide, 686 at 320 and 556 from 640 up (#184), plus room
+    for longer site names.
+  */
   :root[data-home-map] [data-home-map-box]:not([data-closed]),
   [data-home-map-box][data-open] {
     display: block;
-    min-height: 36rem;
+    min-height: 44rem;
+  }
+
+  @media (width >= 22.5rem) {
+    :root[data-home-map] [data-home-map-box]:not([data-closed]),
+    [data-home-map-box][data-open] {
+      min-height: 40rem;
+    }
   }
 
   @media (width >= 40rem) {
     :root[data-home-map] [data-home-map-box]:not([data-closed]),
     [data-home-map-box][data-open] {
-      min-height: 32rem;
+      min-height: 37.5rem;
     }
   }
 }

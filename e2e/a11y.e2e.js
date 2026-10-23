@@ -11,15 +11,18 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import {
   AFTER_EARLY_VOTING_AT,
+  AFTER_POLLS_AT,
   BASEMAP_DARK_STYLE_URL,
   BASEMAP_STYLE_URL,
   BLANK_STYLE,
   CITY_CODE,
   CODE,
+  EARLY_VOTING_CLOSED_AT,
   ELECTION_DAY_AT,
   ELECTION_DAY_WAITS,
   fixtureBody,
   isBasemapStyle,
+  NO_WAITS,
   TINT,
   tintedStyle,
   WAITS_RECORDED_AT,
@@ -76,8 +79,44 @@ async function openDisclosure(page, summary) {
   if ((await line.locator('..').getAttribute('open')) === null) await line.click();
 }
 
+// The home page's line count dot map (#184), ready once its summary or its
+// "open again" line shows.
+const homeMapReady = (line) => async (page) => {
+  await expect(page.getByRole('combobox')).toBeVisible();
+  const box = page.locator('[data-home-map-box]');
+  await expect(box.getByRole('link', { name: /^Map of / })).toBeVisible();
+  await expect(box.getByText(line)).toBeVisible();
+};
+
 const ROUTES = [
   { path: '/', ready: (page) => expect(page.getByRole('combobox')).toBeVisible() },
+  {
+    name: '/ with the dot map, early voting sites open',
+    path: '/',
+    at: WAITS_RECORDED_AT,
+    ready: homeMapReady('Shortest lines now'),
+  },
+  {
+    name: '/ with the dot map, every site closed',
+    path: '/',
+    at: EARLY_VOTING_CLOSED_AT,
+    waits: NO_WAITS,
+    ready: homeMapReady(/^Sites open again /),
+  },
+  {
+    name: '/ with the dot map, the evening before Election Day',
+    path: '/',
+    at: AFTER_EARLY_VOTING_AT,
+    waits: NO_WAITS,
+    ready: homeMapReady(/^Early voting has ended/),
+  },
+  {
+    name: '/ with the dot map on Election Day',
+    path: '/',
+    at: ELECTION_DAY_AT,
+    waits: ELECTION_DAY_WAITS,
+    ready: homeMapReady('Shortest lines now'),
+  },
   {
     // At the time the wait fixtures were recorded, so the early voting card
     // shows its line counts, sort and link (#105).
@@ -807,14 +846,17 @@ test.describe('with reduced motion', () => {
 
 // The site says it is nonpartisan and unofficial (#71).
 test.describe('the nonpartisan, unofficial statement', () => {
+  // Outside the dot map's window (#184); in it, the map comes first (below).
   test('sits above the fold on a 360 x 640 phone, with the address box', async ({ page }) => {
+    await page.clock.setFixedTime(AFTER_POLLS_AT);
     await page.setViewportSize({ width: 360, height: 640 });
     await answerFromFixtures(page);
     await page.goto('/');
     await expect(page.getByText(/independent, nonpartisan guide/)).toBeInViewport({ ratio: 1 });
     await expect(page.getByRole('combobox')).toBeInViewport({ ratio: 1 });
-    // The wait times link too (#104), with no scrolling.
-    await expect(page.getByRole('link', { name: 'See early voting wait times' })).toBeInViewport({
+    // The wait times link too (#104), with no scrolling: on Election Day it
+    // names the line counts (#107).
+    await expect(page.getByRole('link', { name: 'See Election Day line counts' })).toBeInViewport({
       ratio: 1,
     });
     // And the heading and both ways in (#80).
@@ -825,6 +867,30 @@ test.describe('the nonpartisan, unofficial statement', () => {
     await expect(page.getByRole('button', { name: 'Use my location' })).toBeInViewport({
       ratio: 1,
     });
+  });
+
+  // During early voting and on Election Day the line count dot map (#184)
+  // opens the page, by owner decision: the statement, the heading and the
+  // map's heading stay above the fold, and the address search follows the map.
+  test('sits above the fold on a 360 x 640 phone, above the dot map', async ({ page }) => {
+    await page.clock.setFixedTime(WAITS_RECORDED_AT);
+    await page.setViewportSize({ width: 360, height: 640 });
+    await answerFromFixtures(page);
+    await page.goto('/');
+    await expect(page.getByText(/independent, nonpartisan guide/)).toBeInViewport({ ratio: 1 });
+    await expect(page.getByRole('heading', { level: 1 })).toBeInViewport({ ratio: 1 });
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'Lines at early voting now' }),
+    ).toBeInViewport({
+      ratio: 1,
+    });
+    const box = page.locator('[data-home-map-box]');
+    await expect(box.getByText('Shortest lines now')).toBeVisible();
+    const boxBottom = await box.evaluate((el) => el.getBoundingClientRect().bottom);
+    const searchTop = await page
+      .getByRole('combobox')
+      .evaluate((el) => el.getBoundingClientRect().top);
+    expect(searchTop).toBeGreaterThan(boxBottom);
   });
 
   test('prints on a results page, without the Privacy link', async ({ page }) => {
@@ -838,5 +904,110 @@ test.describe('the nonpartisan, unofficial statement', () => {
       footer.getByRole('link', { name: 'St. Louis County Board of Elections website' }),
     ).toBeVisible();
     await expect(footer.getByRole('link', { name: 'Privacy' })).toBeHidden();
+  });
+});
+
+// The home page's line count dot map (#184): its box is reserved before the
+// app runs, so nothing below it moves when the map arrives, its text is never
+// the largest paint, it asks for no address or location, and outside the map
+// window the page is as it was.
+test.describe('home page dot map', () => {
+  const STATES = [
+    ['early voting, sites open', WAITS_RECORDED_AT, undefined, 'Shortest lines now'],
+    ['every site closed', EARLY_VOTING_CLOSED_AT, NO_WAITS, /^Sites open again /],
+    ['the evening before Election Day', AFTER_EARLY_VOTING_AT, NO_WAITS, /^Early voting has ended/],
+    ['Election Day', ELECTION_DAY_AT, ELECTION_DAY_WAITS, 'Shortest lines now'],
+  ];
+
+  for (const [name, at, waits, line] of STATES) {
+    test(`the address search stays put when the map loads (${name})`, async ({ page }) => {
+      await page.clock.setFixedTime(at);
+      await answerFromFixtures(page, { delayMs: 600, waits });
+      // Hold the app's script, so the first look is the pre-rendered page
+      // with only the head script's mark and the CSS.
+      let release;
+      const released = new Promise((resolve) => {
+        release = resolve;
+      });
+      await page.route(/\/assets\/index-[\w-]+\.js$/, async (route) => {
+        await released;
+        await route.continue();
+      });
+      await page.goto('/', { waitUntil: 'commit' });
+      const search = page.getByRole('combobox');
+      await expect(search).toBeVisible();
+      await expect(page.locator('html')).toHaveAttribute('data-home-map', '');
+      const before = await search.boundingBox();
+      release();
+      await expect(page.locator('[data-home-map-box]').getByText(line)).toBeVisible();
+      const after = await search.boundingBox();
+      expect(Math.abs(after.y - before.y)).toBeLessThan(1);
+    });
+
+    test(`paints its largest text before the data answers (${name})`, async ({ page }) => {
+      await page.clock.setFixedTime(at);
+      await page.setViewportSize({ width: 360, height: 640 });
+      await page.addInitScript(() => {
+        window.lcpEntries = [];
+        new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) window.lcpEntries.push(entry.startTime);
+        }).observe({ type: 'largest-contentful-paint', buffered: true });
+      });
+      await answerFromFixtures(page, { delayMs: 1500, waits });
+      await page.goto('/');
+      await expect(page.locator('[data-home-map-box]').getByText(line)).toBeVisible();
+      const entries = await page.evaluate(() => window.lcpEntries);
+      expect(entries.length).toBeGreaterThan(0);
+      for (const time of entries) expect(time).toBeLessThan(1500);
+    });
+  }
+
+  test('asks for no address or location, and only the boards’ own layers', async ({ page }) => {
+    await page.clock.setFixedTime(WAITS_RECORDED_AT);
+    const asked = [];
+    page.on('request', (request) => {
+      if (new URL(request.url()).hostname !== 'localhost') {
+        asked.push(`${request.url()} ${request.postData() ?? ''}`);
+      }
+    });
+    await answerFromFixtures(page);
+    await page.goto('/');
+    await expect(page.getByText('Shortest lines now')).toBeVisible();
+    expect(asked.length).toBeGreaterThan(0);
+    for (const line of asked) {
+      expect(line).toMatch(/^https:\/\/services6\.arcgis\.com\//);
+      expect(line).not.toMatch(/(^|[?&\s])geometry=|esriGeometryPoint/i);
+    }
+  });
+
+  test('after the polls close, shows the page as it was and asks for no line counts', async ({
+    page,
+  }) => {
+    await page.clock.setFixedTime(AFTER_POLLS_AT);
+    const asked = [];
+    page.on('request', (request) => {
+      if (new URL(request.url()).hostname !== 'localhost') asked.push(request.url());
+    });
+    await answerFromFixtures(page);
+    await page.goto('/');
+    await expect(page.getByRole('combobox')).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('html')).not.toHaveAttribute('data-home-map');
+    await expect(page.locator('[data-home-map-box]')).toBeHidden();
+    await expect(page.locator('[data-home-map-box]')).toHaveAttribute('data-closed', '');
+    expect(asked).toEqual([]);
+  });
+
+  // Stale counts keep the box, already on screen at its height, so nothing
+  // moves: every site is a hollow ring and the summary says so.
+  test('keeps the box, with hollow rings, when the counts are stale', async ({ page }) => {
+    await page.clock.setFixedTime(WAITS_RECORDED_AT);
+    await answerFromFixtures(page, { waits: { county: 'stale', city: 'stale' } });
+    await page.goto('/');
+    const box = page.locator('[data-home-map-box]');
+    await expect(box.getByText('No site has a current line count right now.')).toBeVisible();
+    await expect(box).toHaveAttribute('data-open', '');
+    await expect(box.locator('circle[data-dot="count"]')).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'See early voting wait times' })).toBeVisible();
   });
 });

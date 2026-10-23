@@ -117,6 +117,15 @@ export const ELECTION_DAY_AT = new Date(Date.UTC(2026, 10, 3, 15, 5));
  */
 export const AFTER_EARLY_VOTING_AT = new Date(Date.UTC(2026, 10, 3, 2, 0));
 
+/** 7:30 p.m. Central on 2026-10-22: every early voting site has closed for the night (#184). */
+export const EARLY_VOTING_CLOSED_AT = new Date(Date.UTC(2026, 9, 23, 0, 30));
+
+/** 7:30 p.m. Central on Election Day: the polls have closed (#184). */
+export const AFTER_POLLS_AT = new Date(Date.UTC(2026, 10, 4, 1, 30));
+
+/** No line counts from either board, as while every site is closed. */
+export const NO_WAITS = Object.freeze({ county: 'empty', city: 'empty' });
+
 /** The wait fixtures for Election Day: both boards' Election Day states. */
 export const ELECTION_DAY_WAITS = Object.freeze({ county: 'electionDay', city: 'electionDay' });
 

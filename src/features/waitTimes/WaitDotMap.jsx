@@ -6,7 +6,7 @@
 // demand, after the home page's text has painted. The map is one link to the
 // wait times page, which lists everything it shows; the SVG itself is hidden
 // from screen readers, and the summary carries the data.
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Link } from 'wouter';
 import election, { jurisdictions } from '../../config/election.js';
 import { getAbsenteeSites, getPolls } from '../../data/arcgis.js';
@@ -51,8 +51,14 @@ const CITY_LABEL = {
   y: (Math.min(...cityYs) + Math.max(...cityYs)) / 2,
 };
 
-// Graticule ticks on the frame's left and bottom edges.
-const LAT_TICKS = [38.5, 38.6, 38.7, 38.8].map((lat) => ({ lat, y: project(-90.5, lat)[1] }));
+// Graticule ticks on the frame's right and bottom edges, labeled where no
+// outline is drawn: east of the County for latitude (not 38.8, beside the
+// County's north end), under it for longitude.
+const LAT_TICKS = [38.5, 38.6, 38.7, 38.8].map((lat) => ({
+  lat,
+  y: project(-90.5, lat)[1],
+  label: lat < 38.75,
+}));
 const LNG_TICKS = [-90.6, -90.4, -90.2].map((lng) => ({ lng, x: project(lng, 38.6)[0] }));
 
 const KEYS = ['county', 'city'];
@@ -107,13 +113,22 @@ function MapDrawing({ dots }) {
       viewBox={`0 0 ${VIEW.width} ${VIEW.height}`}
       className="mx-auto block h-60 w-full sm:h-72"
     >
-      <g className="fill-muted text-[8px] tabular-nums">
-        {LAT_TICKS.map(({ lat, y }) => (
+      <g className="fill-muted text-[9px] tabular-nums">
+        {LAT_TICKS.map(({ lat, y, label }) => (
           <g key={lat}>
-            <line x1="0" x2="4" y1={y} y2={y} className="stroke-border-strong" strokeWidth="0.75" />
-            <text x="6" y={y + 2.5}>
-              {`${lat.toFixed(1)}°N`}
-            </text>
+            <line
+              x1={VIEW.width}
+              x2={VIEW.width - 4}
+              y1={y}
+              y2={y}
+              className="stroke-border-strong"
+              strokeWidth="0.75"
+            />
+            {label && (
+              <text x={VIEW.width - 6} y={y + 3} textAnchor="end">
+                {`${lat.toFixed(1)}°N`}
+              </text>
+            )}
           </g>
         ))}
         {LNG_TICKS.map(({ lng, x }) => (
@@ -146,7 +161,7 @@ function MapDrawing({ dots }) {
         strokeWidth="1"
         strokeLinejoin="round"
       />
-      <g className="fill-muted text-[10px] font-semibold uppercase tracking-wider">
+      <g className="fill-muted text-[11px] font-semibold uppercase tracking-wider">
         <text x="24" y="40">
           {text.county}
         </text>
@@ -176,6 +191,10 @@ function MapDrawing({ dots }) {
 function statusLine(model, waits, electionDay, now) {
   if (!model) return '';
   if (model.anyOpen) {
+    const asked = KEYS.filter((key) => waits[key].status !== 'off');
+    if (asked.length && asked.every((key) => waits[key].status === 'unavailable')) {
+      return text.unavailable;
+    }
     const times = KEYS.map((key) => waits[key].checkedAt).filter((at) => at !== null);
     return times.length ? copy.status.checked(clockTime(Math.max(...times))) : '';
   }
@@ -214,19 +233,14 @@ export default function WaitDotMap({
   );
   const settled = KEYS.every((key) => waits[key].status !== 'loading');
 
-  // Closes when the window ends, a board's sites fail, or, the first time the
-  // counts settle, a site is open and no board has a fresh count (#184's
-  // fallback). Once shown, the map stays; counts that age out become rings.
-  const shown = useRef(false);
+  // Closes when the window ends or a board's sites cannot be loaded: with no
+  // map to draw, the home page is as it was, with its wait times link. Counts
+  // that are stale or cannot be loaded do not close it: the box is already on
+  // screen at its reserved height, and closing it would move everything below
+  // (#27). The sites then show as hollow rings, and the summary says so.
   useEffect(() => {
-    if (mode === 'off' || result?.error || result?.failed) {
-      onClose();
-      return;
-    }
-    if (!model || !settled || shown.current) return;
-    if (model.stale) onClose();
-    else shown.current = true;
-  }, [mode, result, model, settled, onClose]);
+    if (mode === 'off' || result?.error || result?.failed) onClose();
+  }, [mode, result, onClose]);
 
   const heading = electionDay ? text.headingElectionDay : text.heading;
   const mapLabel = electionDay ? text.mapLinkElectionDay : text.mapLink;
@@ -235,17 +249,16 @@ export default function WaitDotMap({
 
   return (
     <section aria-labelledby="home-map-heading">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-        <h2 id="home-map-heading" className="text-heading font-semibold">
-          {heading}
-        </h2>
-        <p className="min-h-5 text-sm text-muted">{ready ? status : ''}</p>
-      </div>
-      <Link
-        to="/early-voting"
-        aria-label={mapLabel}
-        className="mt-2 block rounded-card border border-border bg-surface px-2 py-1"
-      >
+      <h2 id="home-map-heading" className="text-heading font-semibold">
+        {heading}
+      </h2>
+      {/* Room for two lines on a phone, one on a wider screen, so the map
+          below never moves when the line arrives. */}
+      <p className="min-h-10 text-sm text-muted sm:min-h-5">{ready ? status : ''}</p>
+      {/* The whole map is one link to the wait times page (single dots are
+          too small to tap). The link lies over the drawing and is named by
+          its own text, so the drawing's labels are not part of its name. */}
+      <div className="relative mt-1 rounded-card border border-border bg-surface px-2 py-1">
         {model ? (
           <MapDrawing dots={model.dots} />
         ) : (
@@ -254,7 +267,10 @@ export default function WaitDotMap({
             className="mx-auto h-60 w-full rounded-card bg-surface-sunken motion-safe:animate-pulse sm:h-72"
           />
         )}
-      </Link>
+        <Link to="/early-voting" className="absolute inset-0 rounded-card">
+          <span className="sr-only">{mapLabel}</span>
+        </Link>
+      </div>
       {ready && (
         <>
           <Legend legend={model.legend} />
@@ -279,9 +295,11 @@ export default function WaitDotMap({
             ) : (
               <p className="mt-3 text-sm">{text.noCounts}</p>
             ))}
+          <p className="mt-3 text-sm text-muted">
+            {electionDay ? copy.electionDay.city : copy.city}
+          </p>
         </>
       )}
-      <p className="mt-3 text-sm text-muted">{electionDay ? copy.electionDay.city : copy.city}</p>
     </section>
   );
 }

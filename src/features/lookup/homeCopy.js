@@ -42,6 +42,7 @@ export const copy = translated((t) => ({
     /** @param {{ name: string, board: string, count: number }} site */
     site: ({ name, board, count }) => t('home.waitMap.site', { name, board, count }),
     noCounts: t('home.waitMap.noCounts'),
+    unavailable: t('home.waitMap.unavailable'),
     // No closing period: every time already ends in "a.m." or "p.m.".
     /** @param {string} time HH:MM */
     openToday: (time) => t('home.waitMap.openToday', { time: formatTime(time) }),
