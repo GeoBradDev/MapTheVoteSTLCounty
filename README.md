@@ -369,7 +369,9 @@ horizontal scroll (also with the WCAG text spacing override), one `h1`, the page
 the skip link, the site header in one row at most 56 px tall (#79), and touch targets: every link drawn as a box of its own (not `display: inline`)
 and every other control (button, summary, form control, or a link alone in its block) is at
 least 44 px tall. A link set inline in a line of text is exempt, as WCAG's target size
-criteria exempt it. It also checks focus after an in-app link and reduced motion. The county's
+criteria exempt it. It also checks focus after an in-app link and reduced motion, and dark
+mode (#77): axe again on each route with the system dark, the page color from the first
+styled frame, dark print, and the maps' basemap switch. The county's
 layers, the City Board's layers, and the County and City wait time layers, are answered from
 `docs/raw/fixtures/` (the wait times route and the County and City results routes at the time
 those were recorded, so counts show) and every other outside request is blocked, so
@@ -484,9 +486,10 @@ gets a dark value too (a test fails on one left out).
 every surface and fill, `border-strong` 3:1. A new token or pair goes into it. The browser's
 chrome color, one `<meta name="theme-color">` per scheme in `index.html`, is each theme's
 `surface` written as hex; `src/test/theme.test.js` checks they match and are not red or blue,
-so change them together. `e2e/a11y.e2e.js` runs axe on every route in both schemes and checks
-that a dark page's own background is the dark surface on every frame once its stylesheet
-applies (before that, the `color-scheme` meta keeps the browser's canvas dark).
+so change them together. `e2e/a11y.e2e.js` runs axe on every route in both schemes and checks,
+on five routes, that a dark page paints the same dark page color on every frame once its
+stylesheet applies; before that, the `color-scheme` meta lets the browser draw its own canvas
+dark.
 
 ## UI
 
@@ -919,12 +922,12 @@ colored. On Election Day the precinct map's markers and legend follow the same r
 polls are open (#107), with classes from that board's counts at the polling places listed.
 
 The basemap is [OpenFreeMap](https://openfreemap.org)'s Positron style, or in dark mode its
-Dark style (#77), all grays: free, with no API key
+Dark style (#77), which is all grays: free, with no API key
 or account, and its terms allow embedding it. Both maps pick the style for the system color
 scheme, read their token colors at each style load, and switch style when the scheme changes,
 fetching the new style first so a failed request keeps the drawn map. A page printed with the
 system dark leaves the maps out, so print stays light. Its attribution (OpenFreeMap, OpenMapTiles,
-OpenStreetMap contributors) is shown as links under the map. Its water labels are blue and
+OpenStreetMap contributors) is shown as links under the map. Positron's water labels are blue and
 its interstate shields slate blue, so the map draws every label in the muted token and
 interstates with the gray road shield. The precinct outline is drawn in ink, not the brand
 teal, which is within a shade of the ramp's first step (`mapColors.test.js` keeps it apart
