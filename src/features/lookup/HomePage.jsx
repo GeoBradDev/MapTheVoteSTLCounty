@@ -1,7 +1,7 @@
 import { Link } from 'wouter';
 import election from '../../config/election.js';
 import AddressLookup from './AddressLookup.jsx';
-import AssignedPollingPlace from './AssignedPollingPlace.jsx';
+import CountyElectionDayRule from './CountyElectionDayRule.jsx';
 import { copy } from './homeCopy.js';
 
 const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
@@ -38,7 +38,7 @@ export default function HomePage() {
 
       <div className="mt-8 rounded-md bg-surface-raised p-4">
         {/* Its links sit inside sentences, so they keep the plain link style. */}
-        <AssignedPollingPlace />
+        <CountyElectionDayRule />
       </div>
 
       <nav aria-label={copy.moreInfo} className="mt-6">

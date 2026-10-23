@@ -96,10 +96,10 @@ export default deepFreeze({
   earlyVoting,
 
   // Where a City voter may vote on Election Day, in the City Board's own words
-  // from its polling places page, re-read on 2026-10-22 (#89). Unlike the
-  // County (electionDayPollingPlace), any City voter may vote at any of the
-  // listed locations. Shown as quoted; confirm it with the City Board before
-  // each election. `source` names the page in referrals.js it is quoted from.
+  // from its polling places page, re-read on 2026-10-22 (#89). Any City voter
+  // may vote at any of the listed locations; the County has its own rule
+  // (electionDayPollingPlace, #152). Shown as quoted; confirm it with the City
+  // Board before each election. `source` names the page in referrals.js it is quoted from.
   electionDayRule: {
     quote:
       'Any voter who is registered to vote at an address within the boundaries of St. Louis City can vote at any of the listed locations on November 3, 2026.',

@@ -20,6 +20,9 @@ sources:
   - id: sos-id-flyer
     label: Missouri Secretary of State, Acceptable forms of voter ID (PDF)
     url: https://www.sos.mo.gov/CMSImages/ElectionGoVoteMissouri/AcceptableFormsVoterID.pdf
+  - id: county-polling-places
+    label: St. Louis County Board of Elections, Polling Places
+    url: https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/elections/polling-places/
 ---
 
 A provisional ballot lets you vote when there is a question about your ID or your
@@ -57,6 +60,10 @@ Any provisional ballot counts only if the county board finds that you are regist
 eligible to vote in this election.[^rsmo-115-430]
 
 ## Vote at the right polling place
+
+In St. Louis County, a registered voter may vote at any polling place in St. Louis County on
+Election Day.[^county-polling-places] This does not apply in the City of St. Louis, which has
+its own rule.
 
 A provisional ballot cast at the wrong polling place is not counted.[^rsmo-115-430] If the
 election judges find you are at the wrong place, they tell you where to go.[^rsmo-115-430] You can go to your

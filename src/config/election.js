@@ -43,10 +43,10 @@
  * @property {{ open: string, close: string, inLineAtCloseMayVote: boolean,
  *   sources: string[], lastVerified: string }} electionDayHours
  * @property {{ sources: string[], lastVerified: string, phone: string,
- *   phoneSource: string }} electionDayPollingPlace Where the rule that a county
- *   voter must vote at their assigned polling place on Election Day is stated,
- *   and the county board's number for confirming that polling place, with the
- *   page that lists it.
+ *   phoneSource: string }} electionDayPollingPlace Where the rule that a
+ *   registered county voter may vote at any County polling place on Election
+ *   Day is stated (#152), and the county board's number for help finding one,
+ *   with the page that lists it.
  * @property {{ minutes: number, electionDayMinutes: number }} layerMaxAge How
  *   long a loaded layer, such as the polling places, is reused before the app
  *   fetches it again, and the shorter limit on Election Day (#84).
@@ -219,20 +219,21 @@ const county = {
     },
   },
 
-  // Owner decision on issue #72 (2026-10-21), replacing the issue #1 line that
-  // county voters may vote at any polling place: follow RSMo 115.430. A voter
-  // must vote at their assigned polling place on Election Day, and a
-  // provisional ballot cast at the wrong one is not counted. The Secretary of
-  // State says the same. County data assigns no polling place to a precinct
-  // (docs/data.md), so the app says how to confirm it: the phone number is in
-  // the county's November 3, 2026 Polling Place Lookup app, re-read on
-  // 2026-10-21 (its old Contact Us page now redirects, #73).
+  // Owner decision on issue #152 (2026-10-22), reversing #72: a registered
+  // County voter may vote at any polling place in St. Louis County on Election
+  // Day. This does not apply in the City of St. Louis, which has its own rule
+  // (cityResults.js). The County Board's Polling Places page says so: "Voters
+  // in Saint Louis County may vote at any polling place in the County on
+  // Election Day." It answers 403 to scripts, so it was read in a browser on
+  // 2026-10-22 (docs/data.md). County data assigns no polling place to a
+  // precinct, so the app lists the nearest; the phone number is in the
+  // county's November 3, 2026 Polling Place Lookup app, re-read on 2026-10-21
+  // (its old Contact Us page now redirects, #73).
   electionDayPollingPlace: {
     sources: [
-      'https://revisor.mo.gov/main/OneSection.aspx?section=115.430',
-      'https://www.sos.mo.gov/elections/goVoteMissouri/electionday',
+      'https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/elections/polling-places/',
     ],
-    lastVerified: '2026-10-21',
+    lastVerified: '2026-10-22',
     phone: '314-615-1800',
     phoneSource:
       'https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=13fb36e785c84dbdbcc5219f999652ba',

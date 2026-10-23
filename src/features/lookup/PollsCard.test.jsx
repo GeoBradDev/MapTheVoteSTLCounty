@@ -5,7 +5,7 @@ import geometry from '../../../docs/raw/fixtures/precinct-geometry.json';
 import election from '../../config/election.js';
 import { getPolls, getPrecinctGeometry } from '../../data/arcgis.js';
 import { fixtureTopics } from '../../test/learnFixtures.js';
-import { copy as ruleCopy } from './assignedPollingPlaceCopy.js';
+import { copy as ruleCopy } from './countyElectionDayRuleCopy.js';
 import { nearestPolls, polygonCenter } from './nearbyPolls.js';
 import PollsCard from './PollsCard.jsx';
 import { createPrecinctMap } from './precinctMapView.js';
@@ -154,7 +154,7 @@ describe('PollsCard', () => {
     }
   });
 
-  it('says Election Day voters must use their assigned polling place, with sources (#72)', () => {
+  it('says a County voter may vote at any County polling place, with sources (#152)', () => {
     getPolls.mockReturnValue(new Promise(() => {}));
     const { container } = render(<PollsCard code="CC007" origin={ORIGIN} />);
     expect(screen.getByText(ruleCopy.rule)).toBeInTheDocument();
@@ -166,12 +166,14 @@ describe('PollsCard', () => {
         screen.getByRole('link', { name: ruleCopy.sourceNames[new URL(url).host] }),
       ).toHaveAttribute('href', url);
     }
-    expect(container).not.toHaveTextContent(/any polling place/i);
+    expect(container).not.toHaveTextContent(/assigned/i);
   });
 
-  it('says the nearest places may not include the assigned one, before the list (#72)', async () => {
+  it('says the voter may vote at any of the nearest places, before the list (#152)', async () => {
     render(<PollsCard code="CC007" origin={ORIGIN} />);
     const note = screen.getByText(copy.polls.nearestNote);
+    expect(note).toHaveTextContent(/may vote at any polling place in St\. Louis County/);
+    expect(note).not.toHaveTextContent(/assigned/i);
     const list = await screen.findByRole('list', { name: copy.polls.listLabel });
     // The note comes first in reading order.
     expect(note.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();

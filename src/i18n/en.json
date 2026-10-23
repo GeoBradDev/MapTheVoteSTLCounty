@@ -123,16 +123,13 @@
       "after": "."
     }
   },
-  "assignedPollingPlace": {
-    "rule": "In St. Louis County, on Election Day you must vote at your assigned polling place. A provisional ballot cast at the wrong polling place is not counted.",
-    "central": "If there is a problem at your assigned polling place, you may be able to vote at a central polling place instead.",
-    "confirm": "To confirm your assigned polling place, call the St. Louis County Board of Elections at",
-    "stateLookup": "Missouri Secretary of State Voter Outreach Center",
-    "mayAlso": "You may also be able to find it with the",
+  "countyElectionDayRule": {
+    "rule": "In St. Louis County, a registered voter may vote at any polling place in St. Louis County on Election Day.",
+    "cityNote": "This does not apply in the City of St. Louis, which has its own rule.",
+    "help": "For help finding a polling place, call the St. Louis County Board of Elections at",
     "sources": "Sources:",
     "sourceNames": {
-      "missouriLaw": "Missouri law (section 115.430)",
-      "secretaryOfState": "Missouri Secretary of State",
+      "countyBoard": "St. Louis County Board of Elections Polling Places",
       "countyLookup": "St. Louis County Board of Elections Polling Place Lookup"
     }
   },
@@ -187,7 +184,7 @@
       "hoursLabel": "Election Day hours:",
       "hours": "{open} to {close}",
       "inLine": "If you are in line at {close}, you can still vote.",
-      "nearestNote": "These are the nearest Election Day polling places. The nearest one may not be your assigned polling place.",
+      "nearestNote": "These are the nearest Election Day polling places. You may vote at any polling place in St. Louis County.",
       "nearestNoteCity": "These are the nearest of the City's Election Day polling places.",
       "cityRule": "The {board} says:",
       "earlyVotingPointer": "To vote in person before Election Day, see Early voting below.",
@@ -293,7 +290,7 @@
     "intro": "How many people are in line right now at each St. Louis County and St. Louis City early voting site, as each board's staff report it. No address needed.",
     "season": {
       "before": "Early voting runs from {from} to {to}. Line counts show here while sites are open.",
-      "ended": "Early voting has ended.",
+      "ended": "Early voting has ended. On Election Day, County voters may vote at any St. Louis County polling place, and City voters at any listed City polling place.",
       "findPollingPlace": "Find your polling place"
     },
     "status": {
