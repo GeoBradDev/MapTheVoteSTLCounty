@@ -13,6 +13,7 @@ import {
   AFTER_EARLY_VOTING_AT,
   AFTER_POLLS_AT,
   BASEMAP_DARK_STYLE_URL,
+  BEFORE_POLLS_AT,
   BASEMAP_STYLE_URL,
   BLANK_STYLE,
   CITY_CODE,
@@ -109,6 +110,13 @@ const ROUTES = [
     at: AFTER_EARLY_VOTING_AT,
     waits: NO_WAITS,
     ready: homeMapReady(/^Early voting has ended/),
+  },
+  {
+    name: '/ with the dot map on Election Day before the polls open',
+    path: '/',
+    at: BEFORE_POLLS_AT,
+    waits: NO_WAITS,
+    ready: homeMapReady(/^Polls open today at /),
   },
   {
     name: '/ with the dot map on Election Day',
@@ -916,6 +924,7 @@ test.describe('home page dot map', () => {
     ['early voting, sites open', WAITS_RECORDED_AT, undefined, 'Shortest lines now'],
     ['every site closed', EARLY_VOTING_CLOSED_AT, NO_WAITS, /^Sites open again /],
     ['the evening before Election Day', AFTER_EARLY_VOTING_AT, NO_WAITS, /^Early voting has ended/],
+    ['Election Day before the polls open', BEFORE_POLLS_AT, NO_WAITS, /^Polls open today at /],
     ['Election Day', ELECTION_DAY_AT, ELECTION_DAY_WAITS, 'Shortest lines now'],
   ];
 
@@ -996,6 +1005,18 @@ test.describe('home page dot map', () => {
     await expect(page.locator('[data-home-map-box]')).toBeHidden();
     await expect(page.locator('[data-home-map-box]')).toHaveAttribute('data-closed', '');
     expect(asked).toEqual([]);
+  });
+
+  // The head script runs even when the app's own script cannot: once the page
+  // has loaded with no app, the mark goes, so no empty box stays.
+  test('drops the reserved box when the app’s script fails to load', async ({ page }) => {
+    await page.clock.setFixedTime(WAITS_RECORDED_AT);
+    await answerFromFixtures(page);
+    await page.route(/\/assets\/index-[\w-]+\.js$/, (route) => route.abort());
+    await page.goto('/');
+    await expect(page.locator('html')).not.toHaveAttribute('data-home-map');
+    await expect(page.locator('[data-home-map-box]')).toBeHidden();
+    await expect(page.getByRole('combobox')).toBeVisible();
   });
 
   // Stale counts keep the box, already on screen at its height, so nothing

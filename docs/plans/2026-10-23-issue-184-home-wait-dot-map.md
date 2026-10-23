@@ -174,4 +174,17 @@ centering on the voter (privacy).
   #80) now runs outside the map window; inside it the owner's layout puts the
   map first, and a new check keeps the statement, the h1 and the map's
   heading above the fold with the address search right after the box.
+- Also changed, not in Files that change: `src/features/waitTimes/homeMapMode.js`
+  (the browser side of the window, reading the define), `e2e/fixtures.js`
+  (the closed, before-polls and after-polls clocks), `src/test/setup.js`
+  (component tests get a failed `fetch` instead of the network, since the home
+  page now loads data on its own), `src/test/checkConfig.test.js` (the health
+  check's outline step) and the comments that state #165, which still holds
+  for the home page's own text: the dot map repeats only the wait times page's
+  line that each board's sites are for its own voters, as the issue asks.
+- Review round 1: the head script drops its mark at load when the app never
+  started (no empty box when the app's script fails); one board's failed
+  counts are named in the status line; rows loaded for early voting are not
+  shown once the day turns to Election Day; e2e and axe cover Election Day
+  before the polls open.
 

@@ -70,6 +70,8 @@ function MapBox() {
 }
 
 // The first screen. One job: get an address (or the device's location).
+// During early voting and on Election Day the line count dot map (#184) comes
+// first, with the address search right after it.
 export default function HomePage() {
   const electionDay = useSyncExternalStore(noSubscribe, electionDayNow, notElectionDay);
   return (
@@ -106,8 +108,10 @@ export default function HomePage() {
         <AddressLookup />
       </div>
 
-      {/* No Election Day rule here (#165): each precinct page states its own
-          jurisdiction's rule, County or City. */}
+      {/* No Election Day rule of its own here (#165): each precinct page
+          states its own jurisdiction's rule, County or City. The dot map
+          (#184) repeats only the wait times page's line that each board's
+          sites are for its own voters. */}
       <nav aria-label={copy.moreInfo} className="mt-8">
         {/* Tappable rows (#80). */}
         <ul className="flex flex-col gap-2">

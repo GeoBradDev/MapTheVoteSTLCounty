@@ -74,7 +74,8 @@
       "pollsOpen": "Polls open today at {time}",
       "ended": "Early voting has ended. Election Day is tomorrow, with polls open {open} to {close}",
       "hollow": "Closed, or no current count",
-      "unavailable": "Line counts could not be loaded right now."
+      "unavailable": "Line counts could not be loaded right now.",
+      "boardUnavailable": "{board} line counts could not be loaded right now."
     }
   },
   "addressSearch": {

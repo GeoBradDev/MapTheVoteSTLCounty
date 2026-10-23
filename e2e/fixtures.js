@@ -120,6 +120,9 @@ export const AFTER_EARLY_VOTING_AT = new Date(Date.UTC(2026, 10, 3, 2, 0));
 /** 7:30 p.m. Central on 2026-10-22: every early voting site has closed for the night (#184). */
 export const EARLY_VOTING_CLOSED_AT = new Date(Date.UTC(2026, 9, 23, 0, 30));
 
+/** 5 a.m. Central on Election Day: the polls have not opened yet (#184). */
+export const BEFORE_POLLS_AT = new Date(Date.UTC(2026, 10, 3, 11, 0));
+
 /** 7:30 p.m. Central on Election Day: the polls have closed (#184). */
 export const AFTER_POLLS_AT = new Date(Date.UTC(2026, 10, 4, 1, 30));
 

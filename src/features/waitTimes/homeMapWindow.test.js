@@ -69,20 +69,36 @@ describe('inHomeMapWindow', () => {
 });
 
 describe('windowScript', () => {
-  function run(at) {
-    const root = { dataset: {} };
-    const script = windowScript({ start: 100, end: 200 });
-    runInNewContext(script, { Date: { now: () => at }, document: { documentElement: root } });
-    return root.dataset;
+  // Runs the script at `at`, then the page's load event with #root as given.
+  function run(at, root = {}) {
+    const html = { dataset: {} };
+    const listeners = [];
+    runInNewContext(windowScript({ start: 100, end: 200 }), {
+      Date: { now: () => at },
+      document: { documentElement: html, getElementById: () => root },
+      addEventListener: (type, listener) => listeners.push([type, listener]),
+    });
+    const marked = { ...html.dataset };
+    for (const [type, listener] of listeners) if (type === 'load') listener();
+    return { marked, loaded: html.dataset };
   }
 
   it('marks the page while the window is open, and only then', () => {
-    expect(run(150)).toEqual({ homeMap: '' });
-    expect(run(50)).toEqual({});
-    expect(run(200)).toEqual({});
+    expect(run(150).marked).toEqual({ homeMap: '' });
+    expect(run(50).marked).toEqual({});
+    expect(run(200).marked).toEqual({});
+  });
+
+  it('keeps the mark once the app has taken over the page', () => {
+    expect(run(150, { __reactContainer$abc: {} }).loaded).toEqual({ homeMap: '' });
+  });
+
+  it('drops the mark at load when the app never started, so no empty box stays', () => {
+    expect(run(150, {}).loaded).toEqual({});
+    expect(run(150, null).loaded).toEqual({});
   });
 
   it('is a few hundred bytes', () => {
-    expect(windowScript({ start: 100, end: 200 }).length).toBeLessThan(300);
+    expect(windowScript({ start: 100, end: 200 }).length).toBeLessThan(400);
   });
 });

@@ -81,8 +81,11 @@ describe('HomePage', () => {
   });
 
   // #165: the precinct pages state each jurisdiction's own Election Day rule;
-  // the home page, which serves City and County voters alike, states none.
-  it('states no Election Day rule for either jurisdiction (#165)', () => {
+  // the home page, which serves City and County voters alike, states none of
+  // its own. The dot map (stood in for here) repeats the wait times page's
+  // line that each board's sites are for its own voters (#184,
+  // WaitDotMap.test.jsx).
+  it('states no Election Day rule of its own for either jurisdiction (#165)', () => {
     const { container } = renderHome();
     expect(container).not.toHaveTextContent(ruleCopy.rule);
     expect(container).not.toHaveTextContent(ruleCopy.cityNote);

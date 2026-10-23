@@ -397,7 +397,8 @@ describe('production build', () => {
       expect(canonicalOf(html)).toBe('https://mapthevotestl.com/');
     });
 
-    // #165: the pre-rendered home page states no Election Day rule either.
+    // #165: the pre-rendered home page states no Election Day rule either (its
+    // dot map box, #184, is empty until the app runs).
     it('states no Election Day rule on the pre-rendered home page', async () => {
       const root = rootOf(html);
       expect(root).toContain('role="combobox"');

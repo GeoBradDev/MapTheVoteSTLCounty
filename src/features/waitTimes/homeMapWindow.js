@@ -72,5 +72,13 @@ export function homeMapWindow(config = election, city = cityResults) {
  * @param {{ start: number, end: number }} window
  */
 export function windowScript({ start, end }) {
-  return `(function(){var n=Date.now();if(n>=${start}&&n<${end})document.documentElement.dataset.homeMap=''})();\n`;
+  // If the app never started by the page's load event (its script failed or
+  // the browser cannot run it), the mark goes, so no empty box stays. The app
+  // has started once React has taken over #root.
+  return (
+    `(function(){var d=document.documentElement,n=Date.now();if(n<${start}||n>=${end})return;` +
+    `d.dataset.homeMap='';addEventListener('load',function(){var r=document.getElementById('root');` +
+    `if(!r||!Object.keys(r).some(function(k){return k.indexOf('__reactContainer')===0}))` +
+    `delete d.dataset.homeMap})})();\n`
+  );
 }

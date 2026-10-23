@@ -146,6 +146,14 @@ describe('WaitDotMap with no current counts', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
+  it('names the board whose counts cannot be loaded, so its rings are not read as closed', async () => {
+    renderMap({ waits: { county: countyFresh, city: failing } });
+    expect(
+      await screen.findByText(homeCopy.waitMap.boardUnavailable(jurisdictions.city.name)),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: homeCopy.waitMap.shortest })).toBeInTheDocument();
+  });
+
   it('says so when both boards’ counts cannot be loaded', async () => {
     const { onClose } = renderMap({ waits: { county: failing, city: failing } });
     expect(await screen.findByText(homeCopy.waitMap.unavailable)).toBeInTheDocument();

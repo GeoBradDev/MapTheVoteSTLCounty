@@ -192,9 +192,11 @@ function statusLine(model, waits, electionDay, now) {
   if (!model) return '';
   if (model.anyOpen) {
     const asked = KEYS.filter((key) => waits[key].status !== 'off');
-    if (asked.length && asked.every((key) => waits[key].status === 'unavailable')) {
-      return text.unavailable;
-    }
+    const failed = asked.filter((key) => waits[key].status === 'unavailable');
+    if (failed.length && failed.length === asked.length) return text.unavailable;
+    // One board's counts failing is said, so its sites' rings are not read
+    // as closed.
+    if (failed.length) return text.boardUnavailable(jurisdictions[failed[0]].name);
     const times = KEYS.map((key) => waits[key].checkedAt).filter((at) => at !== null);
     return times.length ? copy.status.checked(clockTime(Math.max(...times))) : '';
   }
@@ -226,7 +228,9 @@ export default function WaitDotMap({
   const electionDay = mode === 'electionDay';
   const { result } = useSites(loadSites, loadCity, loadPolls, loadCityDay, electionDay);
   const waits = useWaitTimes(waitSource);
-  const rows = result?.rows;
+  // Rows loaded for the other mode (the day just turned to Election Day) are
+  // not shown: the polling places replace them.
+  const rows = result?.mode === (electionDay ? 'electionDay' : 'earlyVoting') ? result.rows : null;
   const model = useMemo(
     () => (rows ? dotMap({ rows, waits: waits.waits, now }) : null),
     [rows, waits.waits, now],
