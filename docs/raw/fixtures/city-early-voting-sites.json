@@ -20,7 +20,9 @@
         "facilityid": "Buder_Library",
         "name": "Buder Library",
         "fulladdr": "4401 Hampton Ave",
-        "pollingPlaceZipCode": "63109"
+        "pollingPlaceZipCode": "63109",
+        "entrydetails": "off back parking lot accessed from Lansdowne Ave.",
+        "disabledentry": "off back parking lot accessed from Lansdowne Ave."
       }
     },
     {
@@ -36,7 +38,9 @@
         "facilityid": "Carpenter_Library",
         "name": "Carpenter Branch Library",
         "fulladdr": "3309 S Grand Blvd",
-        "pollingPlaceZipCode": "63118"
+        "pollingPlaceZipCode": "63118",
+        "entrydetails": "off parking lot accessed from McDonald Ave., or through the library's main entrance on Grand Blvd.",
+        "disabledentry": "off parking lot accessed from McDonald Ave."
       }
     },
     {
@@ -52,7 +56,9 @@
         "facilityid": "Kingshighway_Branch_Library",
         "name": "Kingshighway Branch Library",
         "fulladdr": "2260 S Vandeventer Ave",
-        "pollingPlaceZipCode": "63110"
+        "pollingPlaceZipCode": "63110",
+        "entrydetails": "off parking lot accessed from S Vandeventer Ave. or Shenandoah Ave.",
+        "disabledentry": "off parking lot accessed from S Vandeventer Ave. or Shenandoah Ave."
       }
     },
     {
@@ -68,7 +74,9 @@
         "facilityid": "Schlafly_Library",
         "name": "Schlafly Library",
         "fulladdr": "225 N Euclid Ave",
-        "pollingPlaceZipCode": "63108"
+        "pollingPlaceZipCode": "63108",
+        "entrydetails": "through the Lindell Blvd. entrance, the Euclid Ave. entrance, or the parking garage entrance on Euclid Ave. Parking validated in the Argyle Garage.",
+        "disabledentry": "through the doors on Euclid Ave."
       }
     },
     {
@@ -84,7 +92,9 @@
         "facilityid": "Walnut_Park_Library",
         "name": "Walnut Park Library",
         "fulladdr": "5760 W Florissant Ave",
-        "pollingPlaceZipCode": "63120"
+        "pollingPlaceZipCode": "63120",
+        "entrydetails": "off parking lot accessed from W Florissant Ave.",
+        "disabledentry": "off parking lot accessed from W Florissant Ave."
       }
     },
     {
@@ -100,7 +110,9 @@
         "facilityid": "St._Louis_City_Election_Board",
         "name": "St. Louis City Board of Elections",
         "fulladdr": "300 N Tucker Blvd",
-        "pollingPlaceZipCode": null
+        "pollingPlaceZipCode": null,
+        "entrydetails": "through the doors on Tucker Blvd. or Olive St. Street parking only.",
+        "disabledentry": "through the doors on Tucker Blvd. or Olive St. Street parking only."
       }
     },
     {
@@ -116,7 +128,9 @@
         "facilityid": "Julia_Davis",
         "name": "Julia Davis Library",
         "fulladdr": "4415 Natural Bridge Ave",
-        "pollingPlaceZipCode": null
+        "pollingPlaceZipCode": null,
+        "entrydetails": "off parking lot accessed from Natural Bridge Ave.",
+        "disabledentry": "off parking lot accessed from Natural Bridge Ave."
       }
     },
     {
@@ -132,7 +146,9 @@
         "facilityid": "St._Joan_of_Arc",
         "name": "St. Joan of Arc",
         "fulladdr": "5821 Pernod Ave",
-        "pollingPlaceZipCode": null
+        "pollingPlaceZipCode": null,
+        "entrydetails": "at gymnasium doors off parking lot accessed from Pernod Ave.",
+        "disabledentry": "at gymnasium doors off parking lot accessed from Pernod Ave."
       }
     }
   ]

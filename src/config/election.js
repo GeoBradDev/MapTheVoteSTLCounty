@@ -75,8 +75,12 @@
  *   City's; the County's is `precinct`, read by src/data/arcgis.js).
  * @property {{ office: string, name: string, id: string }} [districtLayerFields]
  *   The City districts layer's fields the app reads (#87).
- * @property {{ id: string, name: string, address: string, zip: string }} [siteFields]
- *   The City voting locations layer's fields the app reads (#87).
+ * @property {{ id: string, name: string, address: string, zip: string,
+ *   entry: string, accessibleEntry: string }} [siteFields] The City voting
+ *   locations layer's fields the app reads (#87, #89).
+ * @property {{ quote: string, source: string, lastVerified: string }} [electionDayRule]
+ *   The City Board's Election Day rule, quoted (#89); `source` names the
+ *   referrals.js page it is quoted from.
  * @property {string} [pollsWhere] The City's Election Day voting locations filter.
  * @property {number} [pollsListed] How many Election Day sites the City Board lists.
  * @property {string} [earlyVotingWhere] The City's early voting sites filter.
@@ -240,7 +244,7 @@ const county = {
 // St. Louis City (#85). The City Board's layers, checked live on 2026-10-22
 // (docs/data.md, "St. Louis City"). The precincts layer's `precinctid` reads
 // `W <ward> P <precinct>`, like `W 1 P 12`: 207 precincts in wards 1 to 14.
-// #91 adds the early voting hours, #89 the Election Day rule.
+// #91 adds the early voting hours.
 const cityServiceRoot = 'https://services6.arcgis.com/HZXbCkpCSqbGd0vK/ArcGIS/rest/services';
 const cityGeography = 'ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer';
 const cityLayers = {
@@ -265,8 +269,18 @@ const city = {
   // The districts layer fields the app reads: names and numbers only (#90).
   districtLayerFields: { office: 'electedoffice', name: 'district', id: 'districtid' },
   // The voting location fields the app reads. 7 of the 56 Election Day sites
-  // have no ZIP on 2026-10-22.
-  siteFields: { id: 'facilityid', name: 'name', address: 'fulladdr', zip: 'pollingPlaceZipCode' },
+  // have no ZIP on 2026-10-22. `entry` and `accessibleEntry` are the City
+  // Board's entrance notes, like "off parking lot accessed from Vista Ave.",
+  // filled on every public row (#89); `accessible` is empty on every row, so it
+  // is not read.
+  siteFields: {
+    id: 'facilityid',
+    name: 'name',
+    address: 'fulladdr',
+    zip: 'pollingPlaceZipCode',
+    entry: 'entrydetails',
+    accessibleEntry: 'disabledentry',
+  },
   // The Election Day list: the 56 sites of the City Board's polling places page
   // ("Total 56 polling places"), which are the public rows less the Board
   // office, an early voting site that page does not list for Election Day.
@@ -278,6 +292,20 @@ const city = {
   // dashboard filter (waitTimes.city.where).
   earlyVotingWhere: "publicview = 'Yes' AND earlyvoting = 'Yes'",
   boundaryWhere: "districtid = 'City of St. Louis'",
+  // Where a City voter may vote on Election Day, in the City Board's own words
+  // from its polling places page, re-read on 2026-10-22 (#89). Unlike the
+  // County (electionDayPollingPlace), any City voter may vote at any of the
+  // listed locations. Shown as quoted; confirm it with the City Board before
+  // each election.
+  electionDayRule: {
+    quote:
+      'Any voter who is registered to vote at an address within the boundaries of St. Louis City can vote at any of the listed locations on November 3, 2026.',
+    // The page it is quoted from, by its name in referrals.js, where the City
+    // Board's stable pages are kept (this file must load on its own, before
+    // `npm ci`, for the health check's election window).
+    source: 'stlCityLookup',
+    lastVerified: '2026-10-22',
+  },
   // The layers above; docs/data.md has the inspection.
   sources: [...new Set(layerSources(cityServiceRoot, cityLayers))],
   // The City board's site and lookup page do not change between elections, so

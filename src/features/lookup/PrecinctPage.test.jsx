@@ -416,13 +416,26 @@ describe('PrecinctPage', () => {
     expect(cardHeadings()).toEqual([copy.searchInstead]);
   });
 
-  // City codes (#86): one route, the code's shape picks the City adapter, a
-  // stub until the City results page (#89).
+  // City codes (#86): one route, the code's shape picks the City adapter. The
+  // City page itself is tested in PrecinctPage.city89.test.jsx.
   describe('a City precinct code', () => {
+    const cityRoot = election.jurisdictions.city.serviceRoot;
+    // Every City layer answers with no rows: no such precinct.
+    const answerNoCityRows = () =>
+      fetchMock.mockImplementation((input) =>
+        String(input).startsWith(cityRoot)
+          ? respond({ features: [] })
+          : Promise.reject(new Error(`Not a City layer: ${input}`)),
+      );
+    const onlyCityLayers = () =>
+      fetchMock.mock.calls.every(([input]) => String(input).startsWith(cityRoot));
+
     it('reaches the City adapter, which asks no County layer', async () => {
+      answerNoCityRows();
       renderAt('W01P12');
       const alert = await alertSaying(copy.errors.notFound);
-      expect(fetchMock).not.toHaveBeenCalled();
+      expect(fetchMock).toHaveBeenCalled();
+      expect(onlyCityLayers()).toBe(true);
       // Code-shaped, so the heading names it, as for an unknown County code.
       expect(heading()).toHaveTextContent(copy.heading('W01P12'));
       expect(document.title).toBe(copy.notFoundTitle);
@@ -436,10 +449,11 @@ describe('PrecinctPage', () => {
     it.each(['w01p12', '%20W01p12%20'])(
       'replaces %s in the URL with the upper case City code',
       async (typed) => {
+        answerNoCityRows();
         const location = renderAt(typed);
         await alertSaying(copy.errors.notFound);
         expect(location.history).toEqual(['/p/W01P12']);
-        expect(fetchMock).not.toHaveBeenCalled();
+        expect(onlyCityLayers()).toBe(true);
       },
     );
 

@@ -80,17 +80,35 @@ describe('adapters', () => {
     }
   });
 
-  it('the City stub answers not found without a request (until #89)', async () => {
+  it('the City adapter calls the City data client (#89)', async () => {
+    expect(city.code).toBe(CITY_PRECINCT_CODE);
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(() =>
+        Promise.resolve(new Response(JSON.stringify({ features: [] }), { status: 200 })),
+      );
+    try {
+      await expect(city.getPrecinct('W01P12')).rejects.toBeInstanceOf(arcgis.NotFound);
+      await expect(city.getOutline('W01P13')).rejects.toBeInstanceOf(arcgis.NotFound);
+      await city.getPolls();
+      const urls = fetchSpy.mock.calls.map(([input]) =>
+        decodeURIComponent(String(input).replace(/\+/g, ' ')),
+      );
+      const { city: block } = config;
+      expect(urls.every((u) => u.startsWith(block.serviceRoot))).toBe(true);
+      expect(urls[0]).toContain(`${block.layers.precincts}/query`);
+      expect(urls[0]).toContain(`${block.precinctField}='W 1 P 12'`);
+      expect(urls.some((u) => u.includes("'W 1 P 13'") && u.includes('f=geojson'))).toBe(true);
+      expect(urls.some((u) => u.includes(block.layers.sites))).toBe(true);
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it('the City early voting sites answer not found without a request (until #91)', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
     try {
-      for (const call of [
-        city.getPrecinct('W01P12'),
-        city.getPolls(),
-        city.getEarlyVotingSites(),
-        city.getOutline('W01P12'),
-      ]) {
-        await expect(call).rejects.toBeInstanceOf(arcgis.NotFound);
-      }
+      await expect(city.getEarlyVotingSites()).rejects.toBeInstanceOf(arcgis.NotFound);
       expect(fetchSpy).not.toHaveBeenCalled();
     } finally {
       fetchSpy.mockRestore();

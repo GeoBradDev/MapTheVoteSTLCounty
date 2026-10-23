@@ -1,8 +1,8 @@
-// The county's ArcGIS layers (and the County and City wait time layers)
-// answered from recorded fixtures, for the browser
-// runs: the accessibility checks (a11y.e2e.js), the failure states
-// (failures.e2e.js) and the Lighthouse run (lighthouse.js). Neither calls a live service, so an outage cannot fail a
-// pull request.
+// The county's ArcGIS layers, the City Board's election layers (#89), and the
+// County and City wait time layers, answered from recorded fixtures, for the
+// browser runs: the accessibility checks (a11y.e2e.js), the failure states
+// (failures.e2e.js) and the Lighthouse run (lighthouse.js). None calls a live
+// service, so an outage cannot fail a pull request.
 import { readFileSync } from 'node:fs';
 import election from '../src/config/election.js';
 import { BASEMAP_STYLE_URL } from '../src/features/lookup/basemap.js';
@@ -16,6 +16,13 @@ const FIXTURES = {
   geometry: fixture('precinct-geometry'),
   byId: fixture('precinct-by-id'),
   none: fixture('precinct-at-city'),
+};
+
+// The City precinct the fixtures hold (#89), and its layers.
+const CITY_FIXTURES = {
+  polls: fixture('city-polls'),
+  byId: fixture('city-precinct-by-id'),
+  geometry: fixture('city-precinct-geometry'),
 };
 
 const countyFresh = fixture('county-waits-fresh');
@@ -68,6 +75,36 @@ const waitLayer = (source) => `${source.serviceRoot}/${source.layer}/`;
 /** The one precinct the fixtures hold. */
 export const CODE = 'CC007';
 
+/** The one City precinct the fixtures hold (#89). */
+export const CITY_CODE = 'W01P12';
+
+const cityBlock = election.jurisdictions.city;
+
+/**
+ * Whether a request is for one of the City Board's election layers (its
+ * precincts, districts or voting locations), not its wait time query, which
+ * asks the voting locations layer too.
+ * @param {string} href
+ * @param {URLSearchParams} params The URL's and a POST body's parameters.
+ */
+export function isCityElectionLayer(href, params) {
+  if (!href.startsWith(`${cityBlock.serviceRoot}/`)) return false;
+  const wait = href.startsWith(waitLayer(election.waitTimes.city));
+  return !(wait && params.get('where') === election.waitTimes.city.where);
+}
+
+// The City layers' answer: the voting locations, or CITY_CODE's precinct and
+// outline; nothing for any other precinct or layer.
+function cityBody(url, params) {
+  if (url.pathname.includes(cityBlock.layers.sites)) {
+    return params.get('where') === cityBlock.pollsWhere ? CITY_FIXTURES.polls : { features: [] };
+  }
+  const id = CITY_FIXTURES.byId.features[0].attributes[cityBlock.precinctField];
+  const ours = params.get('where') === `${cityBlock.precinctField}='${id}'`;
+  if (!url.pathname.includes(cityBlock.layers.precincts) || !ours) return { features: [] };
+  return params.get('f') === 'geojson' ? CITY_FIXTURES.geometry : CITY_FIXTURES.byId;
+}
+
 export { BASEMAP_STYLE_URL };
 
 /**
@@ -109,7 +146,8 @@ function shape(body, params) {
 }
 
 /**
- * The JSON body for a request to the county's ArcGIS layers, or null for a
+ * The JSON body for a request to the county's or the City Board's ArcGIS
+ * layers, or null for a
  * request that is not one (the caller blocks it). The fixture is shaped to the
  * request's `outFields` and `geometryPrecision`, so a browser run sees only
  * the fields the app asked for.
@@ -126,6 +164,8 @@ export function fixtureBody(href, form = null, { waits = {} } = {}) {
   // A board left out, or given as undefined, keeps its default.
   const states = { ...DEFAULT_WAITS };
   for (const [key, state] of Object.entries(waits)) if (state !== undefined) states[key] = state;
+  if (isCityElectionLayer(href, params))
+    return JSON.stringify(shape(cityBody(url, params), params));
   for (const key of ['county', 'city']) {
     if (!href.startsWith(waitLayer(election.waitTimes[key]))) continue;
     const body = WAIT_FIXTURES[key][states[key]];

@@ -20,12 +20,17 @@ const layer = (key) => ({ serviceRoot: city.serviceRoot, layer: city.layers[key]
 /** The precincts layer fields the app reads: the code only. */
 export const CITY_PRECINCT_FIELDS = Object.freeze([city.precinctField]);
 
-/** The voting locations layer fields the app reads: id, name, address, ZIP. */
+/**
+ * The voting locations layer fields the app reads: id, name, address, ZIP and
+ * the City Board's entrance notes (#89).
+ */
 export const CITY_POLL_FIELDS = Object.freeze([
   siteFields.id,
   siteFields.name,
   siteFields.address,
   siteFields.zip,
+  siteFields.entry,
+  siteFields.accessibleEntry,
 ]);
 
 /**
@@ -174,7 +179,8 @@ export async function getCityDistrictsForPrecinct(code) {
 }
 
 // A voting location in the shape the County cards read (src/features/lookup/
-// nearbyPolls.js): `loc` is its id, then name, address and ZIP.
+// nearbyPolls.js): `loc` is its id, then name, address and ZIP, plus the
+// entrance notes the City publishes.
 function toSite(properties) {
   const row = normalize(properties);
   return {
@@ -182,6 +188,8 @@ function toSite(properties) {
     name: row[siteFields.name] ?? null,
     address: row[siteFields.address] ?? null,
     zipcode: row[siteFields.zip] ?? null,
+    entry: row[siteFields.entry] ?? null,
+    accessibleEntry: row[siteFields.accessibleEntry] ?? null,
   };
 }
 
@@ -191,7 +199,8 @@ function toSite(properties) {
  * The City Board's page says any City voter may vote at any of them on
  * Election Day (docs/data.md).
  * @returns {Promise<object>} A GeoJSON FeatureCollection in lat/lng, with
- *   `loc`, `name`, `address` and `zipcode` properties, and `loadedAt`.
+ *   `loc`, `name`, `address`, `zipcode`, `entry` and `accessibleEntry`
+ *   properties, and `loadedAt`.
  */
 export const getCityPolls = sharedLayer(layer('sites'), city.pollsWhere, CITY_POLL_FIELDS, toSite);
 

@@ -1,7 +1,12 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useLocation, useParams } from 'wouter';
 import { NotFound } from '../../data/arcgis.js';
-import { county, isPrecinctCode, jurisdictionFor } from '../../data/jurisdictions.js';
+import {
+  cityWardPrecinct,
+  county,
+  isPrecinctCode,
+  jurisdictionFor,
+} from '../../data/jurisdictions.js';
 import AddressLookup from './AddressLookup.jsx';
 import { copy as errorCopy, isOffline } from './errorCopy.js';
 import { JurisdictionContext } from './jurisdictionContext.js';
@@ -17,6 +22,19 @@ import { useSlowNotice } from './slowNotice.js';
 const linkClass = 'text-primary underline';
 
 const ignore = () => {};
+
+// Every City precinct votes in this election and the City layer has no status
+// field, so a City page shows no banner (#89).
+const CITY_STATUS = Object.freeze({ kind: 'in-election', message: null, showBallot: true });
+
+// The line under the heading: the County precinct's municipality, or the City
+// precinct's ward and precinct (#89).
+function placeLine(jurisdiction, code, precinct) {
+  if (!precinct) return null;
+  if (jurisdiction.id !== 'city') return municipalityName(precinct.municipality);
+  const parts = cityWardPrecinct(code);
+  return parts && copy.cityPrecinct(jurisdiction.config.name, parts.ward, parts.precinct);
+}
 
 function municipalityName(value) {
   if (typeof value !== 'string' || !value.trim()) return null;
@@ -120,8 +138,10 @@ function PrecinctResults({ code }) {
     setAttempt((n) => n + 1);
   }
 
-  const status = precinct ? precinctStatus(precinct) : null;
-  const municipality = municipalityName(precinct?.municipality);
+  const isCity = jurisdiction.id === 'city';
+  let status = null;
+  if (precinct) status = isCity ? CITY_STATUS : precinctStatus(precinct);
+  const municipality = placeLine(jurisdiction, code, precinct);
 
   return (
     <JurisdictionContext value={jurisdiction}>

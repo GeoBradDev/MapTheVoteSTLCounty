@@ -94,8 +94,9 @@ function zipOf(value) {
 /**
  * @typedef {object} NearbyPoll
  * @property {string | null} loc The layer's location number.
- * @property {string | null} name Title-cased name.
- * @property {string | null} address Title-cased street address.
+ * @property {string | null} name Title-cased name (the County's), or as
+ *   published when already in mixed case (the City's).
+ * @property {string | null} address Likewise.
  * @property {string | null} zip Five-digit ZIP.
  * @property {number} lat
  * @property {number} lng
@@ -106,9 +107,18 @@ function zipOf(value) {
  * @property {string | null} absNote The layer's voter-facing `notes_abs`.
  * @property {string | null} waitKey The early voting site's key in the
  *   County's line count reports (the polls layer's `absentee`, #103).
+ * @property {string | null} entry The City Board's entrance note (#89).
+ * @property {string | null} accessibleEntry The City Board's accessible
+ *   entrance note (#89).
  */
 
 const textOrNull = (value) => (typeof value === 'string' && value !== '' ? value : null);
+
+// The County's layer is all caps, so its names and addresses are title-cased;
+// the City's is published in mixed case (#89), initialisms like VPA and MB
+// included, so text with any lower-case letter is kept as published.
+const displayText = (value) =>
+  typeof value === 'string' && /[a-z]/.test(value) ? textOrNull(value.trim()) : titleCase(value);
 
 /**
  * Every site with coordinates, in layer order, with no distance.
@@ -124,12 +134,14 @@ export function pollRows(collection) {
     const props = feature.properties ?? {};
     rows.push({
       loc: typeof props.loc === 'string' ? props.loc : null,
-      name: titleCase(props.name),
-      address: titleCase(props.address),
+      name: displayText(props.name),
+      address: displayText(props.address),
       zip: zipOf(props.zipcode),
       absType: typeof props.abs_type === 'string' ? props.abs_type : null,
       absNote: typeof props.notes_abs === 'string' ? props.notes_abs : null,
       waitKey: textOrNull(props[election.waitTimes.county.pollsField]),
+      entry: textOrNull(props.entry),
+      accessibleEntry: textOrNull(props.accessibleEntry),
       lat: point.lat,
       lng: point.lng,
       miles: null,

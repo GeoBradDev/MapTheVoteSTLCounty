@@ -2,6 +2,8 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { render, screen } from '@testing-library/react';
 import election from '../config/election.js';
+import referrals from '../config/referrals.js';
+import { cityOnPath } from '../data/jurisdictions.js';
 import ErrorBoundary from './ErrorBoundary.jsx';
 import { copy } from './errorBoundaryCopy.js';
 
@@ -42,6 +44,28 @@ describe('ErrorBoundary (#18)', () => {
     expect(screen.getByRole('button', { name: copy.reload })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: copy.home })).toHaveAttribute('href', '/');
     expect(document.title).toBe(`${copy.heading} | St. Louis County Voter Guide`);
+  });
+
+  // #89: on a City precinct's page, the way forward is the City's own lookup.
+  it("links the City's lookup when a City precinct page throws", () => {
+    render(
+      <ErrorBoundary city={cityOnPath('/p/W01P12')}>
+        <Broken />
+      </ErrorBoundary>,
+    );
+    const link = screen.getByRole('link', { name: copy.officialLookupCity });
+    expect(link).toHaveAttribute('href', referrals.stlCityLookup.url);
+    expect(screen.getByRole('alert')).not.toHaveTextContent(/county/i);
+  });
+
+  it('finds the City only on a City precinct path', () => {
+    // The forms the /p/:precinct route also matches: a trailing slash, any case.
+    for (const path of ['/p/W01P12', '/p/W01P12/', '/P/W01P12']) {
+      expect(cityOnPath(path)?.id, path).toBe('city');
+    }
+    for (const path of ['/p/CC007', '/p/W1P12', '/', '/p/W01P12/x', '/learn']) {
+      expect(cityOnPath(path)).toBeUndefined();
+    }
   });
 
   it('never shows the error text', () => {

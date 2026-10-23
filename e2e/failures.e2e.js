@@ -1,8 +1,8 @@
 // Failure states in a real browser (#18), on the production build. Each test
 // answers or breaks every service the app calls, from recorded fixtures: the
 // county's address layers (live and hosted), Photon, the City of St. Louis
-// geocoder, the county's precinct and polls layers, and the County and City
-// early voting line count layers (#106). Nothing reaches the
+// geocoder, the county's precinct and polls layers, the City Board's election
+// layers (#89), and the County and City early voting line count layers (#106). Nothing reaches the
 // network. A failure is a network error (what a CORS refusal or a dropped
 // connection looks like to the page), a timeout or an HTTP 5xx.
 import AxeBuilder from '@axe-core/playwright';
@@ -15,7 +15,14 @@ import { copy as errorCopy } from '../src/features/lookup/errorCopy.js';
 import { copy as lookupCopy } from '../src/features/lookup/lookupCopy.js';
 import { copy as resultsCopy } from '../src/features/lookup/resultsCopy.js';
 import { copy as waitCopy } from '../src/features/waitTimes/waitTimesCopy.js';
-import { CODE, WAITS_RECORDED_AT, fixtureBody } from './fixtures.js';
+import referrals from '../src/config/referrals.js';
+import {
+  CITY_CODE,
+  CODE,
+  WAITS_RECORDED_AT,
+  fixtureBody,
+  isCityElectionLayer,
+} from './fixtures.js';
 
 const ADDRESS = '1318 Ross Ave';
 
@@ -67,6 +74,7 @@ async function services(
     polls = 'ok',
     countyWaits = 'ok',
     cityWaits = 'ok',
+    cityLayers = 'ok',
   },
   { delayMs = 0, waits = {} } = {},
 ) {
@@ -83,6 +91,16 @@ async function services(
     if (url.href.startsWith(HOSTED_URL)) return behave(route, hosted, COUNTY_ROSS);
     if (url.href.startsWith(CITY_GEOCODER_URL)) return behave(route, city, CITY_NONE);
     if (url.href.startsWith(PHOTON_URL)) return behave(route, photon, '{"features":[]}');
+    // The City Board's precincts and voting locations (#89), before its wait
+    // time query, which asks the same voting locations layer.
+    const params = new URLSearchParams([
+      ...url.searchParams,
+      ...new URLSearchParams(route.request().postData() ?? ''),
+    ]);
+    if (isCityElectionLayer(url.href, params)) {
+      const body = fixtureBody(url.href, route.request().postData());
+      return behave(route, cityLayers, body);
+    }
     if (url.href.startsWith(waitLayer(election.waitTimes.county))) {
       return behave(route, countyWaits, fixtureBody(url.href, null, { waits }));
     }
@@ -296,6 +314,64 @@ test.describe('precinct page', () => {
     await expect(page.getByText(resultsCopy.earlyVoting.failed, { exact: false })).toBeVisible();
     await expect(page.getByRole('button', { name: errorCopy.retry })).toHaveCount(2);
     await expect(page.getByRole('heading', { name: resultsCopy.cards.districts })).toBeVisible();
+    await expectNoAxeViolations(page);
+  });
+});
+
+// A City precinct page (#89) with the City Board's layers failing: the same
+// failure states as the County's (#18), with the City's links.
+test.describe('City precinct page', () => {
+  test('City layers down: message focused, City lookup, Try again loads the results', async ({
+    page,
+  }) => {
+    let up = false;
+    await services(page, {
+      cityLayers: (route, body) =>
+        up ? route.fulfill(json(body)) : route.fulfill({ status: 503, body: '' }),
+    });
+    await page.goto(`/p/${CITY_CODE}`);
+    const message = page.getByText(resultsCopy.errors.failed, { exact: false });
+    await expect(message).toBeVisible();
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          Boolean(document.activeElement?.querySelector('[role="alert"]')?.textContent),
+        ),
+      )
+      .toBe(true);
+    await expect(
+      page.getByRole('link', { name: resultsCopy.officialLookupFor('city') }),
+    ).toHaveAttribute('href', referrals.stlCityLookup.url);
+    // The site footer names both boards; the page itself names only the City's.
+    await expect(page.locator('main').getByText(/county/i)).toHaveCount(0);
+    await expectNoAxeViolations(page);
+    up = true;
+    await page.getByRole('button', { name: errorCopy.retry }).click();
+    await expect(page.getByText(resultsCopy.ready(CITY_CODE))).toBeAttached();
+    await expect(page.getByRole('list', { name: resultsCopy.polls.listLabel })).toBeVisible();
+    await expect(message).toHaveCount(0);
+  });
+
+  test('City voting locations down: the polling places card fails with the City lookup', async ({
+    page,
+  }) => {
+    const sites = election.jurisdictions.city.layers.sites;
+    await services(page, {
+      cityLayers: (route, body) =>
+        new URL(route.request().url()).pathname.includes(sites)
+          ? route.fulfill({ status: 503, body: '' })
+          : route.fulfill(json(body)),
+    });
+    await page.goto(`/p/${CITY_CODE}`);
+    await expect(page.getByText(resultsCopy.ready(CITY_CODE))).toBeAttached();
+    const card = page.getByRole('region', { name: resultsCopy.cards.polls });
+    await expect(card.getByText(resultsCopy.polls.failed, { exact: false })).toBeVisible();
+    await expect(
+      card.getByRole('link', { name: resultsCopy.officialLookupFor('city') }),
+    ).toHaveAttribute('href', referrals.stlCityLookup.url);
+    await expect(card.getByRole('button', { name: errorCopy.retry })).toBeVisible();
+    // The site footer names both boards; the page itself names only the City's.
+    await expect(page.locator('main').getByText(/county/i)).toHaveCount(0);
     await expectNoAxeViolations(page);
   });
 });

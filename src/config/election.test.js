@@ -6,6 +6,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import byId from '../../docs/raw/fixtures/precinct-by-id.json';
 import election, { jurisdictions } from './election.js';
+import referrals from './referrals.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 
@@ -141,7 +142,14 @@ describe('jurisdictions (#86)', () => {
       for (const field of Object.values(fields)) expect(field).toMatch(/^\w+$/);
     }
     expect(Object.keys(city.districtLayerFields).sort()).toEqual(['id', 'name', 'office']);
-    expect(Object.keys(city.siteFields).sort()).toEqual(['address', 'id', 'name', 'zip']);
+    expect(Object.keys(city.siteFields).sort()).toEqual([
+      'accessibleEntry',
+      'address',
+      'entry',
+      'id',
+      'name',
+      'zip',
+    ]);
     for (const key of ['pollsWhere', 'earlyVotingWhere', 'boundaryWhere']) {
       expect(city[key], key).toMatch(/\S/);
     }
@@ -317,6 +325,29 @@ describe('the Election Day polling place rule', () => {
   it("has the county board's phone number", () => {
     expect(rule.phone).toMatch(/^\d{3}-\d{3}-\d{4}$/);
     expectSources([rule.phoneSource]);
+  });
+});
+
+describe("the City's Election Day rule (#89)", () => {
+  const rule = jurisdictions.city.electionDayRule;
+
+  // The City Board's own words, from its polling places page: any City voter
+  // may vote at any listed location on Election Day.
+  it("quotes the City Board's polling places page, with a verified date", () => {
+    expect(rule.quote).toMatch(/\S/);
+    // It names this election's date, so a quote carried over from an earlier
+    // election fails here.
+    const day = new Date(`${election.electionDate}T12:00:00Z`).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+      timeZone: 'UTC',
+    });
+    expect(rule.quote).toContain(day);
+    // Named in referrals.js, which holds the City Board's stable pages.
+    expect(referrals[rule.source].url).toBe(referrals.stlCityLookup.url);
+    expect(new URL(referrals[rule.source].url).host).toBe('www.stlouis-mo.gov');
+    expect(rule.lastVerified).toMatch(ISO_DATE);
   });
 });
 

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import election from '../../config/election.js';
 import { BASEMAP_ATTRIBUTION } from './basemap.js';
 import { useJurisdiction } from './jurisdictionContext.js';
 import { copy } from './resultsCopy.js';
@@ -21,7 +20,9 @@ const canWaitForView = () => typeof globalThis.IntersectionObserver === 'functio
 // and resumes with the time it had left.
 const LOAD_TIMEOUT_MS = 15_000;
 
+// The data credit names the precinct's own board (#89).
 function Attribution() {
+  const { id, boardSiteUrl } = useJurisdiction();
   return (
     <p className="mt-1 text-xs text-muted">
       {copy.map.basemap}{' '}
@@ -34,8 +35,8 @@ function Attribution() {
         </span>
       ))}
       . {copy.map.data}{' '}
-      <a href={election.countySiteUrl} rel="noreferrer" className={linkClass}>
-        {copy.map.county}
+      <a href={boardSiteUrl} rel="noreferrer" className={linkClass}>
+        {id === 'city' ? copy.map.city : copy.map.county}
       </a>
       .
     </p>

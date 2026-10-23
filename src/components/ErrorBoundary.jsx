@@ -8,7 +8,7 @@ const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
 
 // What shows instead of a page that threw while rendering. It names no error
 // and shows none of its text, which could hold anything the page had.
-function ErrorScreen() {
+function ErrorScreen({ city }) {
   const headingRef = useRef(null);
   usePageTitle(copy.heading);
   useEffect(() => {
@@ -25,8 +25,12 @@ function ErrorScreen() {
       </h1>
       <p role="alert" className="mt-4">
         {copy.body}{' '}
-        <a href={election.officialLookupUrl} rel="noreferrer" className="text-primary underline">
-          {copy.officialLookup}
+        <a
+          href={city?.officialLookupUrl ?? election.officialLookupUrl}
+          rel="noreferrer"
+          className="text-primary underline"
+        >
+          {city ? copy.officialLookupCity : copy.officialLookup}
         </a>
         .
       </p>
@@ -52,7 +56,8 @@ function ErrorScreen() {
  * way forward instead of a blank screen. It logs nothing: main.jsx turns off
  * React's own logging of caught errors, since an error could carry what the
  * page held. Give it a `key` that changes with the page, so moving to another
- * page starts fresh.
+ * page starts fresh. `city` is the City adapter on a City precinct's page,
+ * so the way forward is the City's own lookup (#89).
  */
 export default class ErrorBoundary extends Component {
   state = { failed: false };
@@ -62,6 +67,6 @@ export default class ErrorBoundary extends Component {
   }
 
   render() {
-    return this.state.failed ? <ErrorScreen /> : this.props.children;
+    return this.state.failed ? <ErrorScreen city={this.props.city} /> : this.props.children;
   }
 }

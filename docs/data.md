@@ -89,7 +89,8 @@ polling place in St. Louis County?". It conflicts with the statute, so the app n
 says it. The City of St. Louis Board says City voters may vote at any of its listed
 locations
 (https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/polling-places/index.cfm,
-read 2026-10-21); that is the City's own rule, for a City results page (#89).
+read 2026-10-21, re-read 2026-10-22); that is the City's own rule. A City results page quotes
+it (`electionDayRule` in the City block, #89).
 
 The data assigns no polling place to a precinct (checked again 2026-10-21):
 - No precinct field exists on `polls_2026_11_view`, and no polling place field
@@ -808,7 +809,8 @@ OpenMapTiles, OpenStreetMap contributors. Tile requests reveal the area on scree
 Cloudflare: the precinct plus its nearest polling places, which depend a little on the
 searched point within the precinct (and widen on "Show more"). No address or coordinates are
 sent as such. The map
-is extra help only: precincts and polling places still come from the county layers above.
+is extra help only: precincts and polling places still come from the board's own layers (the
+County's above, or on a City precinct's page the City Board's, under St. Louis City below, #89).
 
 ## Official website domain
 
@@ -874,9 +876,9 @@ City block holds only what is confirmed. The City board's site and lookup page (
 places page, with the Assigned Polling Place Lookup) do not change between elections, so they
 are in `src/config/referrals.js`. `src/data/jurisdictions.js` pairs each block with its data:
 the County's is `src/data/arcgis.js`. The City's data client is `src/data/cityArcgis.js`
-(#87), loaded on demand through `loadCityClient()`; the City adapter still answers "not
-found" until the City results page (#89), because the results cards still carry County text
-and the County's Election Day rule.
+(#87), loaded on demand through `loadCityClient()`. The City adapter (#89) reads the
+precinct, its outline and the Election Day voting locations through it; it answers "not
+found" for the early voting sites, without a request, until the City early voting card (#91).
 
 ## St. Louis City
 
@@ -956,7 +958,8 @@ inside the full polygon for all 207.
 St. Louis` on 73 and empty on 3 (Julia Davis Library, St. Joan of Arc, and Henry Elementary,
 which is not public), so the filters do not use it. The same layer is the City wait time source (Wait times
 above). The app reads `facilityid` (unique, the site's id, `loc` in the cards), `name`,
-`fulladdr` (no ZIP in it) and `pollingPlaceZipCode`. Never `*`: it also holds staff contact
+`fulladdr` (no ZIP in it), `pollingPlaceZipCode`, and the entrance notes `entrydetails` and
+`disabledentry` (below). Never `*`: it also holds staff contact
 fields (`pocname`, `pocemail`, `pocphone`).
 
 - **Election Day list (`pollsWhere`):** `publicview = 'Yes' AND facilityid <>
@@ -972,8 +975,14 @@ fields (`pocname`, `pocemail`, `pocphone`).
   7 of the 56 have no `pollingPlaceZipCode` (Srebrenica Genocide association, Busch Student
   Center, Julia Davis Library, Machacek Library, McDonnell Medical Sciences Building, St. Joan of
   Arc, West Side MB Church): the page lists ZIPs for them, the layer does not, so the cards show
-  no ZIP there. `accessible` is empty on every row; `disabledentry` and `entrydetails` are
-  filled on all 57 (#89 decides whether to show them).
+  no ZIP there. `accessible` is empty on every row, so the app does not read it;
+  `disabledentry` and `entrydetails` are filled on all 57, and the polling places card shows
+  them as published (#89, the config's `siteFields.accessibleEntry` and `entry`): short notes
+  like "off parking lot accessed from Vista Ave.", from the layer's current rows (all with
+  `nextelectdate` 2026-11-03). The names and addresses are published in mixed case, so the card keeps
+  them as published (the County's all-caps text is title-cased); the notes are always shown as
+  published. `imageurl` and
+  `boxlocdesc` are not read yet (#146).
 - **Early voting sites (`earlyVotingWhere`):** `publicview = 'Yes' AND earlyvoting = 'Yes'`,
   the owner-confirmed wait time filter: 8 sites, the page's 8 No Excuse Absentee sites (Buder,
   Carpenter, Julia Davis, Kingshighway, Schlafly and Walnut Park libraries, St. Joan of Arc, and

@@ -4,6 +4,7 @@ import DistrictsCard from './DistrictsCard.jsx';
 import EarlyVotingCard from './EarlyVotingCard.jsx';
 import PollsCard from './PollsCard.jsx';
 import SampleBallotCard from './SampleBallotCard.jsx';
+import { useJurisdiction } from './jurisdictionContext.js';
 import { copy } from './resultsCopy.js';
 
 const linkClass = 'text-primary underline';
@@ -28,7 +29,21 @@ function Card({ title, children }) {
   );
 }
 
+// A card not built yet: the County's lookup, or for a City precinct the City
+// Board's site (#89), until the City card's own issue (#90 to #92).
 function PendingCard() {
+  const { id, boardSiteUrl } = useJurisdiction();
+  if (id === 'city') {
+    return (
+      <p className="mt-2">
+        {copy.cards.pendingCity}{' '}
+        <a href={boardSiteUrl} rel="noreferrer" className={linkClass}>
+          {copy.map.city}
+        </a>
+        .
+      </p>
+    );
+  }
   return (
     <p className="mt-2">
       {copy.cards.pending}{' '}
@@ -51,12 +66,19 @@ function PendingCard() {
  *   precinct's attributes, for its districts.
  */
 export default function ResultsCards({ code, origin, showBallot, ballotHtml, precinct }) {
-  const body = {
-    polls: () => <PollsCard code={code} origin={origin} />,
-    ballot: () => <SampleBallotCard html={ballotHtml} code={code} />,
-    earlyVoting: () => <EarlyVotingCard code={code} origin={origin} />,
-    districts: () => <DistrictsCard precinct={precinct} />,
-  };
+  const { id } = useJurisdiction();
+  const polls = () => <PollsCard code={code} origin={origin} />;
+  // The City has only its polling places card so far (#89); its other cards
+  // are #90 to #92.
+  const body =
+    id === 'city'
+      ? { polls }
+      : {
+          polls,
+          ballot: () => <SampleBallotCard html={ballotHtml} code={code} />,
+          earlyVoting: () => <EarlyVotingCard code={code} origin={origin} />,
+          districts: () => <DistrictsCard precinct={precinct} />,
+        };
   return (
     <div className="mt-6 flex flex-col gap-4">
       {CARDS.filter((card) => showBallot || !card.ballot).map(({ key }) => (

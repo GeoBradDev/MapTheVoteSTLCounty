@@ -2,7 +2,10 @@ import { act, render, screen, waitFor, within } from '@testing-library/react';
 import geometry from '../../../docs/raw/fixtures/precinct-geometry.json';
 import election from '../../config/election.js';
 import { getPrecinctGeometry } from '../../data/arcgis.js';
+import referrals from '../../config/referrals.js';
+import { city } from '../../data/jurisdictions.js';
 import { BASEMAP_ATTRIBUTION } from './basemap.js';
+import { JurisdictionContext } from './jurisdictionContext.js';
 import PrecinctMap from './PrecinctMap.jsx';
 import { createPrecinctMap } from './precinctMapView.js';
 import { copy } from './resultsCopy.js';
@@ -74,6 +77,26 @@ describe('PrecinctMap', () => {
       'href',
       election.countySiteUrl,
     );
+  });
+
+  // #89: a City precinct's map draws the City outline and credits the City Board.
+  it('draws a City outline and credits the City Board on a City page', async () => {
+    const outline = { type: 'Feature', geometry: feature.geometry };
+    const cityAdapter = { ...city, getOutline: vi.fn().mockResolvedValue(outline) };
+    render(
+      <JurisdictionContext value={cityAdapter}>
+        <PrecinctMap code="W01P12" origin={null} polls={POLLS} />
+      </JurisdictionContext>,
+    );
+    await waitFor(() => expect(createPrecinctMap).toHaveBeenCalledTimes(1));
+    expect(cityAdapter.getOutline).toHaveBeenCalledWith('W01P12');
+    expect(getPrecinctGeometry).not.toHaveBeenCalled();
+    const map = screen.getByRole('region', { name: copy.map.label('W01P12') });
+    expect(within(map).getByRole('link', { name: copy.map.city })).toHaveAttribute(
+      'href',
+      referrals.stlCityBoard.url,
+    );
+    expect(within(map).queryByRole('link', { name: copy.map.county })).toBeNull();
   });
 
   it('shows a placeholder until the map has rendered', async () => {

@@ -5,6 +5,7 @@ import { CARD_TOPICS } from '../learn/cardTopics.js';
 import { getLocale } from '../../i18n/index.js';
 import { getTopic } from '../learn/topics.js';
 import AssignedPollingPlace from './AssignedPollingPlace.jsx';
+import CityElectionDayRule from './CityElectionDayRule.jsx';
 import { directionsLinks, isAppleMobile } from './nearbyPolls.js';
 import PrecinctMap from './PrecinctMap.jsx';
 import RetryButton from './RetryButton.jsx';
@@ -17,11 +18,25 @@ const linkClass = 'text-primary underline';
 const tapLinkClass = `inline-flex min-h-11 items-center ${linkClass}`;
 const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
 
+// The board's own lookup for this precinct's jurisdiction (#89).
 function OfficialLookupLink() {
+  const { id, officialLookupUrl } = useJurisdiction();
   return (
-    <a href={election.officialLookupUrl} rel="noreferrer" className={linkClass}>
-      {copy.officialLookup}
+    <a href={officialLookupUrl} rel="noreferrer" className={linkClass}>
+      {copy.officialLookupFor(id)}
     </a>
+  );
+}
+
+// The City Board's entrance notes (#89), as published; one line when the
+// entrance and the accessible entrance are the same. The County has none.
+function Entrances({ entry, accessibleEntry }) {
+  if (entry && entry === accessibleEntry) return <p>{copy.polls.entryBoth(entry)}</p>;
+  return (
+    <>
+      {entry && <p>{copy.polls.entry(entry)}</p>}
+      {accessibleEntry && <p>{copy.polls.accessibleEntry(accessibleEntry)}</p>}
+    </>
   );
 }
 
@@ -98,6 +113,7 @@ function PollRow({ poll, apple, headingRef }) {
         {name}
       </h3>
       <p>{copy.polls.address(poll.address, poll.zip)}</p>
+      <Entrances entry={poll.entry} accessibleEntry={poll.accessibleEntry} />
       <p className="text-muted">{copy.polls.distance(poll.miles)}</p>
       <p className="flex flex-wrap gap-x-4">
         <a href={links.google} rel="noreferrer" className={tapLinkClass}>
@@ -115,8 +131,9 @@ function PollRow({ poll, apple, headingRef }) {
 
 /**
  * The body of the "Polling places near you" card: the closest Election Day
- * polling places, Election Day hours, and the rule that a voter must use their
- * assigned polling place (#72).
+ * polling places, Election Day hours, and the jurisdiction's Election Day
+ * rule: in the County a voter must use their assigned polling place (#72); in
+ * the City any City voter may vote at any listed location (#89).
  * @param {{ code: string, origin: { lat: number, lng: number } | null }} props
  *   `origin` is the looked-up point, held in memory only; without one,
  *   distances are from the precinct's center.
@@ -125,7 +142,8 @@ export default function PollsCard({ code, origin }) {
   // { rows, loadedAt } once loaded, { error: true, attempt } on failure. A
   // failed load can be tried again; it stays shown while it is (#18). A list
   // left open past the max age refreshes when the tab is shown again (#84).
-  const { getPolls } = useJurisdiction();
+  const { id, getPolls } = useJurisdiction();
+  const isCity = id === 'city';
   const { result, loading, retry, targetRef } = useNearestSites(getPolls, code, origin);
   const [shown, setShown] = useState(election.nearbyPollCount);
   // The index of the first place a "Show more" revealed, which takes focus.
@@ -154,7 +172,7 @@ export default function PollsCard({ code, origin }) {
           (#72). */}
       {!result?.error && !(rows && rows.length === 0) && (
         <>
-          <p>{copy.polls.nearestNote}</p>
+          <p>{isCity ? copy.polls.nearestNoteCity : copy.polls.nearestNote}</p>
           {!origin && <p className="mt-2 text-muted">{copy.polls.fromCenter(code)}</p>}
         </>
       )}
@@ -212,7 +230,11 @@ export default function PollsCard({ code, origin }) {
       <VoterIdLink />
 
       <div className="mt-3">
-        <AssignedPollingPlace linkClass={linkClass} />
+        {isCity ? (
+          <CityElectionDayRule linkClass={linkClass} />
+        ) : (
+          <AssignedPollingPlace linkClass={linkClass} />
+        )}
       </div>
 
       <p className="mt-3">{copy.polls.earlyVotingPointer}</p>
