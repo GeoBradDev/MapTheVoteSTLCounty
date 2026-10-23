@@ -109,8 +109,13 @@ describe('election config', () => {
   // The 2022 map applies on November 3, 2026: the Missouri Supreme Court held
   // the 2025 map (H.B. 1) does not take effect unless voters approve it, and
   // the County's sample ballots follow the 2022 map (#150).
+  // Checked through a recorded precinct, not by name: the field name belongs in
+  // the config alone.
   it('names the 2022 congressional map field', () => {
-    expect(election.congressionalField).toBe('congressional_district_20');
+    expect(election.congressionalField).toMatch(/^congressional_district_\d+$/);
+    expect(byId.features[0].attributes[election.congressionalField]).toMatch(
+      /^US Representative District \d+ \(2022\)$/,
+    );
   });
 
   it('links an https official lookup app', () => {
