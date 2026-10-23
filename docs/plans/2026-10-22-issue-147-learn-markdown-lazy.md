@@ -79,4 +79,4 @@ e2e axe run already covers /learn/voter-id after hydration; focus behavior is un
 
 Revision after the first review: a failed body load before hydration now keeps the static page
 (it used to clear it and render fresh), a language switch keeps the shown topic while the
-translation loads, and the plugin accepts the dev server's `?meta&t=` after an edit.
+translation loads, and the plugin accepts the dev server's `t` timestamp on both imports after an edit.

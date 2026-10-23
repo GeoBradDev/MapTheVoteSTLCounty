@@ -63,10 +63,12 @@ describe('learnContent plugin', () => {
     });
   });
 
-  it("reads ?meta with the dev server's timestamp, and no other query", () => {
+  it("reads the dev server's timestamp after an edit, and no other query", () => {
     const id = '/repo/content/en/learn/voter-id.md';
     expect(plugin.transform.call(context, topic(), `${id}?meta&t=123`).code).toContain('"intro"');
     expect(plugin.transform.call(context, topic(), `${id}?meta&raw`)).toBeNull();
+    // The whole topic, after an edit: the body a topic page loads.
+    expect(plugin.transform.call(context, topic(), `${id}?t=123`).code).toContain('"blocks"');
   });
 
   it('fails on a topic with a missing source', () => {

@@ -71,13 +71,13 @@ export default function learnContent({ electionDate = election.electionDate } = 
     },
     transform(code, id) {
       // `?meta` asks for the topic's summary (#147): what the first load
-      // carries, with the dev server's `t` timestamp after an edit. Any other
-      // query (?raw, ?url) means Vite or another plugin owns this import.
+      // carries. The dev server adds a `t` timestamp to either import after an
+      // edit. Any other query (?raw, ?url) means Vite or another plugin owns
+      // this import.
       const [path, query] = id.split('?');
       const params = new URLSearchParams(query ?? '');
-      const summary =
-        params.has('meta') && [...params.keys()].every((k) => ['meta', 't'].includes(k));
-      if (query !== undefined && !summary) return null;
+      if (![...params.keys()].every((key) => key === 'meta' || key === 't')) return null;
+      const summary = params.has('meta');
       const file = path.replaceAll('\\', '/');
       if (!TOPIC_FILE.test(file)) return null;
       let topic;
