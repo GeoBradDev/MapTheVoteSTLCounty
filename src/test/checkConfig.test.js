@@ -430,6 +430,12 @@ describe('runHealthCheck', () => {
     });
   });
 
+  it('matches a location number the polls layer writes unpadded, as the app does', async () => {
+    const world = healthyWorld();
+    world.dayPolls = world.dayPolls.map((p) => ({ ...p, loc: String(Number(p.loc)) }));
+    expect((await run(world))['polling place rooms'].status).toBe('pass');
+  });
+
   it('warns when the room layer has no rows', async () => {
     const world = healthyWorld();
     world.rooms = [];

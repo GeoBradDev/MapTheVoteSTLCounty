@@ -613,7 +613,9 @@ link parses and its file name names that precinct (and that 5 random links serve
 `Content-Disposition` file name names the same precinct), that every precinct's congressional
 district is a district on the map in effect (`congressionalMap` in `src/config/election.js`,
 the 2022 map for November 2026, #150), that the absentee filter finds sites with hours in the
-config, and that one known point per County Council district lands in a precinct
+config, how many Election Day places (by `loc`) and early voting sites (by `loc_abs`) have no
+room in the polling place rooms layer (#100: a WARN naming them, never a failure, since a place
+then shows without its room), and that one known point per County Council district lands in a precinct
 in that district and inside the county boundary layer, while a point in St. Louis City lands in
 neither. For the City block (#87), it checks each City layer has the fields the app reads, that the
 precincts are a sane count and every ID reads as a City code, that the Election Day and early

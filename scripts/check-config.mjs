@@ -19,7 +19,7 @@ import { realpathSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import cityResults from '../src/config/cityResults.js';
 import election, { congressionalMap } from '../src/config/election.js';
-import { PRECINCT_CODE } from '../src/data/arcgis.js';
+import { PRECINCT_CODE, normalize } from '../src/data/arcgis.js';
 import { cityPrecinctCode } from '../src/data/cityPrecinctCode.js';
 import { fileNameMatchesPrecinct, parseSampleBallot } from '../src/data/sampleBallot.js';
 import { parseCityHours, selectCityWaits, selectCountyWaits } from '../src/data/waitTimes.js';
@@ -534,7 +534,8 @@ export async function runHealthCheck(
       const rooms = roomIndex({
         features: roomRows.features.map((f) => ({ properties: f?.attributes ?? {} })),
       });
-      const places = pollRows.features.map((f) => f?.attributes ?? {});
+      // Normalized as the app's rows are, so `loc` is zero-padded the same way.
+      const places = pollRows.features.map((f) => normalize(f?.attributes ?? {}));
       const keys = (field) =>
         [...new Set(places.map((p) => String(p[field] ?? '').trim()).filter(Boolean))].sort();
       const groups = [
