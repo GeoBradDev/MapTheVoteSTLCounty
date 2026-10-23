@@ -862,7 +862,9 @@ check.
 ## Basemap
 
 Choice (issue #13): OpenFreeMap's Positron style,
-`https://tiles.openfreemap.org/styles/positron`, drawn with MapLibre GL JS. Free, with no
+`https://tiles.openfreemap.org/styles/positron`, drawn with MapLibre GL JS; in dark mode (#77)
+its Dark style, `https://tiles.openfreemap.org/styles/dark`, which uses the same sprite, glyphs
+and tiles and whose fills, lines and labels are all grays (checked 2026-10-23). Free, with no
 API key or account; its terms (openfreemap.org/tos, updated 2026-10-14) allow embedding it in
 a website. Style, TileJSON, vector tiles, sprites and glyphs all come from
 `https://tiles.openfreemap.org`, served through Cloudflare. Attribution: OpenFreeMap,

@@ -1,9 +1,9 @@
-// The map's basemap: OpenFreeMap's Positron style (issue #13). Free, with no
-// API key or account, and its terms (https://openfreemap.org/tos/) allow
-// embedding it in a website. Style, tiles, sprites and glyphs all come from
-// one origin, which render.yaml's Content-Security-Policy allows in
-// connect-src. To change the basemap, change this file and the
-// policy together.
+// The map's basemap: OpenFreeMap's Positron style (issue #13), or its Dark
+// style in dark mode (#77). Free, with no API key or account, and its terms
+// (https://openfreemap.org/tos/) allow embedding it in a website. Style,
+// tiles, sprites and glyphs all come from one origin, which render.yaml's
+// Content-Security-Policy allows in connect-src. To change the basemap,
+// change this file and the policy together.
 
 /**
  * The MapLibre style URL. Positron is light gray; its water labels are blue
@@ -13,6 +13,16 @@
  * icons for red or blue.
  */
 export const BASEMAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
+
+/**
+ * The style in dark mode (#77): OpenFreeMap's Dark, on the same origin with the
+ * same sprite, glyphs and tiles as Positron, so the policy needs nothing new.
+ * Every fill, line and text color in it is a gray (its water is a near-black
+ * with no visible hue), its labels are redrawn in the muted token like
+ * Positron's, and the only sprite icons it uses are its one-way arrows and the
+ * town dot. Checked 2026-10-23; recheck when changing it.
+ */
+export const BASEMAP_DARK_STYLE_URL = 'https://tiles.openfreemap.org/styles/dark';
 
 /**
  * Credits the tiles require (the style's TileJSON attribution) and

@@ -5,10 +5,12 @@
 // the first tab stop that moves focus to main, and every standalone control at
 // least 44 px tall. Then focus after in-app
 // navigation and reduced motion while the results load.
+import { readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import {
   AFTER_EARLY_VOTING_AT,
+  BASEMAP_DARK_STYLE_URL,
   BASEMAP_STYLE_URL,
   BLANK_STYLE,
   CITY_CODE,
@@ -16,10 +18,24 @@ import {
   ELECTION_DAY_AT,
   ELECTION_DAY_WAITS,
   fixtureBody,
+  isBasemapStyle,
   WAITS_RECORDED_AT,
 } from './fixtures.js';
+import { oklchToRgb } from '../src/features/lookup/mapBounds.js';
+import { themeTokens } from '../src/test/colors.js';
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'];
+
+// Each theme's --color-surface (#76, #77) as sRGB, from src/index.css (the
+// built CSS writes the same color in another form).
+const THEMES = themeTokens(readFileSync(new URL('../src/index.css', import.meta.url), 'utf8'));
+const SURFACE = { light: oklchToRgb(THEMES.light.surface), dark: oklchToRgb(THEMES.dark.surface) };
+const surfaceNow = async (page) =>
+  oklchToRgb(
+    await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue('--color-surface').trim(),
+    ),
+  );
 
 const TEXT_SPACING = `
   * { line-height: 1.5 !important; letter-spacing: 0.12em !important;
@@ -29,12 +45,14 @@ const TEXT_SPACING = `
 
 // ArcGIS from the fixtures, the app's own origin as is, everything else
 // (geocoders, map tiles) blocked.
-async function answerFromFixtures(page, { delayMs = 0, waits, basemap = false } = {}) {
+async function answerFromFixtures(page, { delayMs = 0, waits, basemap = false, styles = [] } = {}) {
   await page.route('**/*', async (route) => {
     const href = route.request().url();
     if (new URL(href).hostname === 'localhost') return route.continue();
-    // A blank style, so the map draws with no tiles (the Election Day routes, #107).
-    if (basemap && href === BASEMAP_STYLE_URL) {
+    // A blank style, light or dark (#77), so the map draws with no tiles (the
+    // Election Day routes, #107). Each style asked for is noted in `styles`.
+    if (basemap && isBasemapStyle(href)) {
+      styles.push(href);
       return route.fulfill({ contentType: 'application/json', body: BLANK_STYLE });
     }
     const body = fixtureBody(href, null, { waits });
@@ -303,6 +321,18 @@ for (const { name, path, ready, at, waits, basemap } of ROUTES) {
     });
 
     test('has no axe violations', async ({ page }) => {
+      const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+      const found = results.violations.map(
+        (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`,
+      );
+      expect(found).toEqual([]);
+    });
+
+    // Dark mode (#77): the same page with the system set to dark, switched
+    // after it loaded, as a phone does at night.
+    test('has no axe violations in dark mode', async ({ page }) => {
+      await page.emulateMedia({ colorScheme: 'dark' });
+      expect(await surfaceNow(page)).toBe(SURFACE.dark);
       const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
       const found = results.violations.map(
         (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`,
@@ -579,6 +609,106 @@ for (const code of [CODE, CITY_CODE]) {
     });
   }
 }
+
+// Dark mode (#77) follows the system setting from the first paint, on the
+// pre-rendered pages and on those the app draws, and print stays light.
+test.describe('in dark mode', () => {
+  for (const [path, at] of [
+    ['/', null],
+    [`/p/${CODE}`, WAITS_RECORDED_AT],
+    [`/p/${CITY_CODE}`, null],
+    ['/early-voting', WAITS_RECORDED_AT],
+    ['/learn/voter-id', null],
+  ]) {
+    test(`${path} paints dark from its first frame`, async ({ page }) => {
+      if (at) await page.clock.setFixedTime(at);
+      await page.emulateMedia({ colorScheme: 'dark' });
+      // Each frame's page color and surface token from the very first, before
+      // any script of the app's own runs.
+      await page.addInitScript(() => {
+        window.frames77 = [];
+        const record = () => {
+          const root = document.documentElement;
+          if (root) {
+            const style = getComputedStyle(root);
+            window.frames77.push([
+              style.backgroundColor,
+              style.getPropertyValue('--color-surface').trim(),
+            ]);
+          }
+          if (window.frames77.length < 60) requestAnimationFrame(record);
+        };
+        requestAnimationFrame(record);
+      });
+      await answerFromFixtures(page, { delayMs: 300 });
+      await page.goto(path);
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+      await page.waitForFunction(() => window.frames77.length >= 60);
+      const frames = await page.evaluate(() => window.frames77);
+      const final = frames.at(-1);
+      expect(oklchToRgb(final[1])).toBe(SURFACE.dark);
+      // Every frame painted the same dark page color, or came before the
+      // stylesheet applied, when the browser draws its own canvas in the
+      // scheme the color-scheme meta allows: dark here.
+      const beforeStyles = ([bg, token]) => bg === 'rgba(0, 0, 0, 0)' && token === '';
+      const odd = frames.filter(
+        (frame) => !beforeStyles(frame) && (frame[0] !== final[0] || frame[1] !== final[1]),
+      );
+      expect(odd).toEqual([]);
+      // Once styled, never unstyled again.
+      const firstStyled = frames.findIndex((frame) => !beforeStyles(frame));
+      expect(frames.slice(firstStyled).filter(beforeStyles)).toEqual([]);
+    });
+  }
+
+  test('prints light', async ({ page }) => {
+    await answerFromFixtures(page);
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.goto(`/p/${CODE}`);
+    await expect(page.getByRole('list', { name: 'Nearest polling places' })).toBeVisible();
+    expect(await surfaceNow(page)).toBe(SURFACE.dark);
+    await page.emulateMedia({ colorScheme: 'dark', media: 'print' });
+    expect(await surfaceNow(page)).toBe(SURFACE.light);
+    const scheme = await page.evaluate(
+      () => getComputedStyle(document.documentElement).colorScheme,
+    );
+    expect(scheme).toBe('light');
+  });
+
+  test('the wait times map switches to the dark basemap and back with the setting', async ({
+    page,
+  }) => {
+    const styles = [];
+    await page.clock.setFixedTime(WAITS_RECORDED_AT);
+    await answerFromFixtures(page, { basemap: true, styles });
+    await page.goto('/early-voting');
+    const map = page.getByRole('region', { name: 'Map of early voting sites' });
+    await map.scrollIntoViewIfNeeded();
+    await expect(map.getByRole('list', { name: 'People in line' })).toBeVisible();
+    await expect.poll(() => styles).toEqual([BASEMAP_STYLE_URL]);
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await expect.poll(() => styles).toEqual([BASEMAP_STYLE_URL, BASEMAP_DARK_STYLE_URL]);
+    await page.emulateMedia({ colorScheme: 'light' });
+    await expect
+      .poll(() => styles)
+      .toEqual([BASEMAP_STYLE_URL, BASEMAP_DARK_STYLE_URL, BASEMAP_STYLE_URL]);
+    // The map is still there, with its markers.
+    await expect(map.locator('canvas')).toHaveCount(1);
+    await expect(map.locator('.maplibregl-marker').first()).toBeAttached();
+  });
+
+  test('a map opened in dark mode asks for the dark basemap only', async ({ page }) => {
+    const styles = [];
+    await page.clock.setFixedTime(WAITS_RECORDED_AT);
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await answerFromFixtures(page, { basemap: true, styles });
+    await page.goto('/early-voting');
+    const map = page.getByRole('region', { name: 'Map of early voting sites' });
+    await map.scrollIntoViewIfNeeded();
+    await expect(map.getByRole('list', { name: 'People in line' })).toBeVisible();
+    await expect.poll(() => styles).toEqual([BASEMAP_DARK_STYLE_URL]);
+  });
+});
 
 test.describe('with reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });

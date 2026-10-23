@@ -6,9 +6,8 @@ import { Map as MapLibreMap, Marker, setWorkerUrl } from 'maplibre-gl';
 // Bundled by Vite as a same-origin file, so the Content-Security-Policy needs
 // no blob: worker source.
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
-import { BASEMAP_STYLE_URL } from '../lookup/basemap.js';
 import { mapBounds, oklchToRgb } from '../lookup/mapBounds.js';
-import { neutralizeBasemap } from '../lookup/mapStyle.js';
+import { basemapStyleUrl, neutralizeBasemap, watchColorScheme } from '../lookup/mapStyle.js';
 import { NO_COUNT_CLASS, WAIT_COLOR_CLASSES } from './waitColors.js';
 import '../lookup/precinctMap.css';
 
@@ -41,14 +40,21 @@ function markerElement(bin, number) {
  * @throws When WebGL is unavailable or there is nothing to show.
  */
 export function createWaitTimesMap(container, { sites, onReady, onFail }) {
-  const labelColor = oklchToRgb(getComputedStyle(container).getPropertyValue('--color-muted'));
-  if (!labelColor) throw new Error('The map color tokens are not oklch colors');
+  // Read again at each style load, as the dark theme (#77) gives the token
+  // another value. Markers are DOM elements with token classes, so they follow
+  // the theme on their own.
+  function readLabelColor() {
+    const labelColor = oklchToRgb(getComputedStyle(container).getPropertyValue('--color-muted'));
+    if (!labelColor) throw new Error('The map color tokens are not oklch colors');
+    return labelColor;
+  }
+  readLabelColor();
   const bounds = mapBounds({ points: sites });
   if (!bounds) throw new Error('Nothing to show on the map');
 
   const map = new MapLibreMap({
     container,
-    style: BASEMAP_STYLE_URL,
+    style: basemapStyleUrl(),
     bounds,
     fitBoundsOptions: FIT,
     attributionControl: false,
@@ -66,9 +72,15 @@ export function createWaitTimesMap(container, { sites, onReady, onFail }) {
   let state = 'loading';
   let markers = [];
 
+  // The system color scheme changed (#77): the other basemap.
+  const stopWatching = watchColorScheme(() => {
+    map.setStyle(basemapStyleUrl(), { diff: false });
+  });
+
   function fail(error) {
     if (state !== 'loading') return;
     state = 'failed';
+    stopWatching();
     map.remove();
     onFail(error);
   }
@@ -79,9 +91,10 @@ export function createWaitTimesMap(container, { sites, onReady, onFail }) {
     state = 'ready';
     onReady();
   });
-  map.on('load', () => {
+  // Each style load: the first, and any after a scheme change.
+  map.on('style.load', () => {
     try {
-      neutralizeBasemap(map, labelColor);
+      neutralizeBasemap(map, readLabelColor());
     } catch (error) {
       fail(error);
     }
@@ -102,6 +115,7 @@ export function createWaitTimesMap(container, { sites, onReady, onFail }) {
     draw(sites);
   } catch (error) {
     state = 'failed';
+    stopWatching();
     map.remove();
     throw error;
   }
@@ -114,6 +128,7 @@ export function createWaitTimesMap(container, { sites, onReady, onFail }) {
     remove() {
       if (state === 'failed' || state === 'removed') return;
       state = 'removed';
+      stopWatching();
       map.remove();
     },
   };

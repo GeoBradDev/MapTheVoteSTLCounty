@@ -6,7 +6,7 @@
 import { readFileSync } from 'node:fs';
 import election from '../src/config/election.js';
 import { asElectionDay, ELECTION_DAY_SHIFT_MS } from '../src/data/waitTimes.fixtures.js';
-import { BASEMAP_STYLE_URL } from '../src/features/lookup/basemap.js';
+import { BASEMAP_DARK_STYLE_URL, BASEMAP_STYLE_URL } from '../src/features/lookup/basemap.js';
 
 const fixture = (name) =>
   JSON.parse(readFileSync(new URL(`../docs/raw/fixtures/${name}.json`, import.meta.url), 'utf8'));
@@ -169,7 +169,12 @@ function cityBody(url, params) {
   return params.get('f') === 'geojson' ? CITY_FIXTURES.geometry : CITY_FIXTURES.byId;
 }
 
-export { BASEMAP_STYLE_URL };
+export { BASEMAP_DARK_STYLE_URL, BASEMAP_STYLE_URL };
+
+/** Whether `href` is one of the basemap's styles, light or dark (#77). */
+export function isBasemapStyle(href) {
+  return href === BASEMAP_STYLE_URL || href === BASEMAP_DARK_STYLE_URL;
+}
 
 /**
  * A style with no sources or layers. MapLibre loads it and renders an empty

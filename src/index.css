@@ -75,6 +75,13 @@
   --color-wait-3: oklch(0.86 0.1 87.5);
   --color-wait-4: oklch(0.67 0.12 65);
   --color-wait-5: oklch(0.47 0.11 55);
+  /*
+    The marker numbers on those fills (#77): light on the deep ends (wait-1,
+    wait-5), dark on the pale steps. The ramp does not flip with the theme, so
+    these stay the same in dark mode, unlike on-primary and ink.
+  */
+  --color-wait-number-light: oklch(0.99 0.002 185);
+  --color-wait-number-dark: oklch(0.22 0.008 185);
   /* Ink at low opacity, the one color the shadows below are drawn in. */
   --color-shadow: color-mix(in oklch, var(--color-ink) 12%, transparent);
 
@@ -104,11 +111,71 @@
 }
 
 /*
+  Dark mode (#77) follows the system setting; there is no toggle, as one would
+  need storage (src/test/no-storage.test.js). Every color token above has its
+  dark value here, still oklch and still no red or blue, each meeting the same
+  minimum as its light value (src/test/contrast.test.js checks both themes).
+  On screens only, so print stays light. The maps read these at each style
+  load and switch to OpenFreeMap's dark basemap (src/features/lookup/mapStyle.js).
+*/
+@media screen and (prefers-color-scheme: dark) {
+  :root {
+    --color-surface: oklch(0.19 0.006 185);
+    --color-surface-raised: oklch(0.23 0.008 185);
+    --color-surface-sunken: oklch(0.16 0.006 185);
+    --color-ink: oklch(0.94 0.004 185);
+    --color-muted: oklch(0.75 0.01 185);
+    --color-border: oklch(0.33 0.01 185);
+    --color-border-strong: oklch(0.57 0.012 185);
+    /* The brand teal lightened, with dark text on it. */
+    --color-primary: oklch(0.78 0.085 185);
+    --color-primary-hover: oklch(0.84 0.075 185);
+    --color-primary-pressed: oklch(0.89 0.06 185);
+    --color-on-primary: oklch(0.19 0.006 185);
+    /* Dim fills with light inks: the inks also edge the notice. */
+    --color-info-fill: oklch(0.26 0.03 185);
+    --color-info-ink: oklch(0.79 0.08 185);
+    --color-warning-fill: oklch(0.27 0.045 80);
+    --color-warning-ink: oklch(0.83 0.12 85);
+    --color-danger-fill: oklch(0.27 0.045 50);
+    --color-danger-ink: oklch(0.77 0.12 55);
+    --color-success-fill: oklch(0.26 0.045 150);
+    --color-success-ink: oklch(0.79 0.12 150);
+    /*
+      The same ramp, so a step means the same in both themes, except the pale
+      tan a shade deeper: the precinct outline is ink, light here, and must
+      stay apart from every step (src/features/waitTimes/mapColors.test.js).
+      Each marker keeps its ink outline, light on the dark basemap.
+    */
+    --color-wait-1: oklch(0.45 0.1 180);
+    --color-wait-2: oklch(0.72 0.1 180);
+    --color-wait-3: oklch(0.82 0.1 87.5);
+    --color-wait-4: oklch(0.67 0.12 65);
+    --color-wait-5: oklch(0.47 0.11 55);
+    /* Light ink cannot cast a shadow, so shadows take the darkest surface. */
+    --color-shadow: color-mix(in oklch, var(--color-surface-sunken) 90%, transparent);
+  }
+}
+
+/*
   A visible focus ring on every focusable element, in ink so it has strong
   contrast on the surface and next to primary buttons. The offset keeps it off
   the element's own fill.
 */
 @layer base {
+  /*
+    Form controls, scrollbars and the browser's own surfaces follow the
+    scheme (#77), and the page itself paints the surface, so nothing light
+    shows before the app's own box draws.
+  */
+  :root {
+    color-scheme: light dark;
+  }
+
+  html {
+    background-color: var(--color-surface);
+  }
+
   :focus-visible {
     outline: 3px solid var(--color-ink);
     outline-offset: 2px;
@@ -133,6 +200,10 @@
   unofficial statement and the boards' links still print (#71).
 */
 @media print {
+  :root {
+    color-scheme: light;
+  }
+
   .print-href::after {
     content: ' (' attr(href) ')';
     overflow-wrap: anywhere;

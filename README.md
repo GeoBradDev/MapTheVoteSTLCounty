@@ -466,15 +466,25 @@ The tokens (#76), each with its role and minimum contrast beside it in `src/inde
   also has its kind's icon and edge (`Notice` in `src/components/`), which stay in forced
   colors (the icon then in the system text color), and its text stays `ink`.
   The home page's election date pill also uses the `info` pair, its ink as text on its fill.
-- The wait time ramp, `wait-1` to `wait-5`, for map markers and their legend only (see Map).
-- `shadow`: `ink` at 12%, the one color the `shadow-card` and `shadow-popover` shadows use.
+- The wait time ramp, `wait-1` to `wait-5`, for map markers and their legend only (see Map),
+  and `wait-number-light` and `wait-number-dark` for the marker numbers on it, the same in
+  both themes.
+- `shadow`: `ink` at 12%, the one color the `shadow-card` and `shadow-popover` shadows use
+  (in dark mode, the darkest surface).
+
+Dark mode (#77) follows the system setting, with no toggle (one would need storage, see
+Privacy). Every token has a dark value in `src/index.css`, under
+`@media screen and (prefers-color-scheme: dark)`, so print stays light; `color-scheme: light dark`
+lets form controls and scrollbars follow, and the page itself paints `surface`. A new token
+gets a dark value too (a test fails on one left out).
 
 `src/test/contrast.test.js` checks every text and control pair the tokens make against WCAG
-2.1 AA (the wait markers are checked in `mapColors.test.js`): text 4.5:1 on
+2.1 AA, in both themes (the wait markers are checked in `mapColors.test.js`): text 4.5:1 on
 every surface and fill, `border-strong` 3:1. A new token or pair goes into it. The browser's
-chrome color, `<meta name="theme-color">` in `index.html`, is `surface` written as hex;
-`src/test/theme.test.js` checks it matches `surface` and is not red or blue, so change both
-together.
+chrome color, one `<meta name="theme-color">` per scheme in `index.html`, is each theme's
+`surface` written as hex; `src/test/theme.test.js` checks they match and are not red or blue,
+so change them together. `e2e/a11y.e2e.js` runs axe on every route in both schemes and checks
+that a dark page paints dark from its first frame.
 
 ## UI
 
@@ -906,8 +916,10 @@ marker outlined in ink so it is at least 3:1 against the basemap
 colored. On Election Day the precinct map's markers and legend follow the same rule while the
 polls are open (#107), with classes from that board's counts at the polling places listed.
 
-The basemap is [OpenFreeMap](https://openfreemap.org)'s Positron style: free, with no API key
-or account, and its terms allow embedding it. Its attribution (OpenFreeMap, OpenMapTiles,
+The basemap is [OpenFreeMap](https://openfreemap.org)'s Positron style, or in dark mode its
+Dark style (#77), all grays: free, with no API key
+or account, and its terms allow embedding it. Both maps pick the style for the system color
+scheme, read their token colors at each style load, and switch style when the scheme changes. Its attribution (OpenFreeMap, OpenMapTiles,
 OpenStreetMap contributors) is shown as links under the map. Its water labels are blue and
 its interstate shields slate blue, so the map draws every label in the muted token and
 interstates with the gray road shield. The precinct outline is drawn in ink, not the brand
@@ -916,9 +928,12 @@ from every step). Tile requests tell OpenFreeMap (and
 Cloudflare, its CDN) which area is on screen: the precinct and its nearest polling places,
 which depend a little on the searched point within the precinct, or, on the wait times page,
 the early voting sites (on Election Day, the polling places). The `no-referrer` policy
-keeps the page URL out of them. `src/features/lookup/basemap.js` holds the style URL and the
+keeps the page URL out of them. `src/features/lookup/basemap.js` holds the two style URLs and the
 credits; to change the basemap, change that file and the origin in `render.yaml`'s
-`connect-src` together, and check the new style's colors and sprite icons for red or blue.
+`connect-src` together, and check the new style's colors and sprite icons for red or blue. In
+dark mode each marker keeps its ink outline, light there, and the ramp is the same but for a
+deeper pale tan, so the light ink outline of the precinct stays apart from every step
+(`mapColors.test.js` checks both themes, each on its basemap's land).
 
 ## Contributing
 

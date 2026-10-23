@@ -33,6 +33,7 @@ import {
   CODE,
   ELECTION_DAY_AT,
   fixtureBody,
+  isBasemapStyle,
   WAITS_RECORDED_AT,
 } from './fixtures.js';
 
@@ -254,7 +255,7 @@ async function answer(request, response) {
   const href = `https://${request.headers.host}${request.url}`;
   const form = await formBody(request);
   await new Promise((resolve) => setTimeout(resolve, ANSWER_DELAY_MS));
-  const body = href === BASEMAP_STYLE_URL ? BLANK_STYLE : fixtureBody(href, form);
+  const body = isBasemapStyle(href) ? BLANK_STYLE : fixtureBody(href, form);
   if (body === null) {
     response.writeHead(404).end();
     return;
