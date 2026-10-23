@@ -96,6 +96,12 @@ Domain skills:
   basemap before the request could fail), maps left out of dark print, the dark shadow a
   plain oklch color (the build's color-mix fallback resolved the var() to its light value),
   `render.test.js` checks the dark style's origin, stale comments fixed.
+- After review finder 2: tests that fail without the code they prove. A unit test of
+  `precinctMapView.js` with MapLibre stubbed (the precinct is drawn again in the new colors
+  on each `style.load`); e2e switch and offline tests read the map canvas's pixels against a
+  tinted test style (`tintedStyle` in `e2e/fixtures.js`); the first-paint test requires the
+  page itself to paint the surface; a dark-print test for the precinct map. The style fetch
+  sends no cookies and no referrer, as the app's other requests.
 
 ## Proof
 

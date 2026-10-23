@@ -182,6 +182,23 @@ export function isBasemapStyle(href) {
  */
 export const BLANK_STYLE = JSON.stringify({ version: 8, sources: {}, layers: [] });
 
+/**
+ * Gray background only, a light one for the light style and a dark one for
+ * the dark style (#77): still no tiles, but the canvas shows which style it
+ * drew. The channel value of each, the same in red, green and blue.
+ */
+export const TINT = { light: 200, dark: 40 };
+export function tintedStyle(href) {
+  const v = href === BASEMAP_DARK_STYLE_URL ? TINT.dark : TINT.light;
+  return JSON.stringify({
+    version: 8,
+    sources: {},
+    layers: [
+      { id: 'land', type: 'background', paint: { 'background-color': `rgb(${v},${v},${v})` } },
+    ],
+  });
+}
+
 // Keeps only the requested fields, as the service does for an outFields list.
 function pick(fields, wanted) {
   return Object.fromEntries(Object.entries(fields).filter(([key]) => wanted.has(key)));

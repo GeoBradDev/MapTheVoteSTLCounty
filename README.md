@@ -135,7 +135,8 @@ against, and why. In short:
   county precinct is checked against that
   [geocoder](https://maps6.stlouis-mo.gov/arcgis/rest/services/GEOCODERS/COMPOSITE_GEOCODE/GeocodeServer).
   See [Address search](#address-search).
-- **Map:** [OpenFreeMap](https://openfreemap.org)'s Positron basemap. See [Map](#map).
+- **Map:** [OpenFreeMap](https://openfreemap.org)'s Positron basemap, or its Dark one in dark
+  mode. See [Map](#map).
 - **How to vote guides:** Markdown under `content/`, each citing official sources only. See
   [Learn content](#learn-content).
 - **Referrals:** the City board, its polling places lookup and the Secretary of State's Voter
@@ -484,7 +485,8 @@ every surface and fill, `border-strong` 3:1. A new token or pair goes into it. T
 chrome color, one `<meta name="theme-color">` per scheme in `index.html`, is each theme's
 `surface` written as hex; `src/test/theme.test.js` checks they match and are not red or blue,
 so change them together. `e2e/a11y.e2e.js` runs axe on every route in both schemes and checks
-that a dark page paints dark from its first frame.
+that a dark page's own background is the dark surface on every frame once its stylesheet
+applies (before that, the `color-scheme` meta keeps the browser's canvas dark).
 
 ## UI
 

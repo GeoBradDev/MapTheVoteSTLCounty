@@ -79,7 +79,10 @@ describe('followColorScheme', () => {
     followColorScheme(map);
     media.flip();
     await flush();
-    expect(fetchStub).toHaveBeenCalledWith(BASEMAP_DARK_STYLE_URL);
+    expect(fetchStub).toHaveBeenCalledWith(BASEMAP_DARK_STYLE_URL, {
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+    });
     expect(map.setStyle).toHaveBeenCalledWith(STYLE, { diff: false });
   });
 

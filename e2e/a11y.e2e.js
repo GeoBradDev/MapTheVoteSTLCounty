@@ -3,8 +3,9 @@
 // practice, contrast included), no horizontal scroll with or without the WCAG
 // 1.4.12 text spacing override, one h1, the page language, a skip link as
 // the first tab stop that moves focus to main, and every standalone control at
-// least 44 px tall. Then focus after in-app
-// navigation and reduced motion while the results load.
+// least 44 px tall, and axe again in dark mode (#77). Then focus after in-app
+// navigation, reduced motion while the results load, and dark mode's first
+// paint, print and map basemap switch.
 import { readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
@@ -19,6 +20,8 @@ import {
   ELECTION_DAY_WAITS,
   fixtureBody,
   isBasemapStyle,
+  TINT,
+  tintedStyle,
   WAITS_RECORDED_AT,
 } from './fixtures.js';
 import { oklchToRgb } from '../src/features/lookup/mapBounds.js';
@@ -45,7 +48,10 @@ const TEXT_SPACING = `
 
 // ArcGIS from the fixtures, the app's own origin as is, everything else
 // (geocoders, map tiles) blocked.
-async function answerFromFixtures(page, { delayMs = 0, waits, basemap = false, styles = [] } = {}) {
+async function answerFromFixtures(
+  page,
+  { delayMs = 0, waits, basemap = false, styles = [], tinted = false } = {},
+) {
   await page.route('**/*', async (route) => {
     const href = route.request().url();
     if (new URL(href).hostname === 'localhost') return route.continue();
@@ -53,7 +59,8 @@ async function answerFromFixtures(page, { delayMs = 0, waits, basemap = false, s
     // Election Day routes, #107). Each style asked for is noted in `styles`.
     if (basemap && isBasemapStyle(href)) {
       styles.push(href);
-      return route.fulfill({ contentType: 'application/json', body: BLANK_STYLE });
+      const body = tinted ? tintedStyle(href) : BLANK_STYLE;
+      return route.fulfill({ contentType: 'application/json', body });
     }
     const body = fixtureBody(href, null, { waits });
     if (body === null) return route.abort();
@@ -612,6 +619,23 @@ for (const code of [CODE, CITY_CODE]) {
 
 // Dark mode (#77) follows the system setting from the first paint, on the
 // pre-rendered pages and on those the app draws, and print stays light.
+// The gray of a map canvas's top left corner, inside the fit padding where
+// no marker sits: which tinted style (TINT) it drew, or the page through a
+// blank canvas.
+async function mapCorner(page, map) {
+  const png = await map.locator('canvas').screenshot();
+  return page.evaluate(
+    async (bytes) => {
+      const bitmap = await createImageBitmap(new Blob([new Uint8Array(bytes)]));
+      const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+      const context = canvas.getContext('2d');
+      context.drawImage(bitmap, 0, 0);
+      return context.getImageData(6, 6, 1, 1).data[1];
+    },
+    [...png],
+  );
+}
+
 test.describe('in dark mode', () => {
   for (const [path, at] of [
     ['/', null],
@@ -647,6 +671,8 @@ test.describe('in dark mode', () => {
       const frames = await page.evaluate(() => window.frames77);
       const final = frames.at(-1);
       expect(oklchToRgb(final[1])).toBe(SURFACE.dark);
+      // The page itself paints the surface, not the browser's own canvas.
+      expect(final[0]).not.toBe('rgba(0, 0, 0, 0)');
       // Every frame painted the same dark page color, or came before the
       // stylesheet applied, when the browser draws its own canvas in the
       // scheme the color-scheme meta allows: dark here.
@@ -680,18 +706,21 @@ test.describe('in dark mode', () => {
   }) => {
     const styles = [];
     await page.clock.setFixedTime(WAITS_RECORDED_AT);
-    await answerFromFixtures(page, { basemap: true, styles });
+    await answerFromFixtures(page, { basemap: true, styles, tinted: true });
     await page.goto('/early-voting');
     const map = page.getByRole('region', { name: 'Map of early voting sites' });
     await map.scrollIntoViewIfNeeded();
     await expect(map.getByRole('list', { name: 'People in line' })).toBeVisible();
     await expect.poll(() => styles).toEqual([BASEMAP_STYLE_URL]);
+    await expect.poll(() => mapCorner(page, map)).toBe(TINT.light);
     await page.emulateMedia({ colorScheme: 'dark' });
     await expect.poll(() => styles).toEqual([BASEMAP_STYLE_URL, BASEMAP_DARK_STYLE_URL]);
+    await expect.poll(() => mapCorner(page, map)).toBe(TINT.dark);
     await page.emulateMedia({ colorScheme: 'light' });
     await expect
       .poll(() => styles)
       .toEqual([BASEMAP_STYLE_URL, BASEMAP_DARK_STYLE_URL, BASEMAP_STYLE_URL]);
+    await expect.poll(() => mapCorner(page, map)).toBe(TINT.light);
     // The map is still there, with its markers.
     await expect(map.locator('canvas')).toHaveCount(1);
     await expect(map.locator('.maplibregl-marker').first()).toBeAttached();
@@ -700,7 +729,7 @@ test.describe('in dark mode', () => {
   test('a map whose dark basemap cannot load keeps the one it drew', async ({ page }) => {
     await page.clock.setFixedTime(WAITS_RECORDED_AT);
     const styles = [];
-    await answerFromFixtures(page, { basemap: true, styles });
+    await answerFromFixtures(page, { basemap: true, styles, tinted: true });
     // The phone went offline before the scheme changed: the dark style fails.
     // Routes added later are asked first.
     await page.route(BASEMAP_DARK_STYLE_URL, (route) => route.abort());
@@ -708,9 +737,16 @@ test.describe('in dark mode', () => {
     const map = page.getByRole('region', { name: 'Map of early voting sites' });
     await map.scrollIntoViewIfNeeded();
     await expect(map.getByRole('list', { name: 'People in line' })).toBeVisible();
+    await expect.poll(() => mapCorner(page, map)).toBe(TINT.light);
     const failed = page.waitForEvent('requestfailed', (r) => r.url() === BASEMAP_DARK_STYLE_URL);
     await page.emulateMedia({ colorScheme: 'dark' });
     await failed;
+    // Make the map draw again (a resize redraws it), so a dropped style would
+    // show: the drawn light basemap stays.
+    const { width, height } = page.viewportSize();
+    await page.setViewportSize({ width: width - 20, height });
+    await page.waitForTimeout(500);
+    expect(await mapCorner(page, map)).toBe(TINT.light);
     await expect(map.locator('canvas')).toHaveCount(1);
     await expect(map.getByRole('list', { name: 'People in line' })).toBeVisible();
     expect(styles).toEqual([BASEMAP_STYLE_URL]);
@@ -730,6 +766,19 @@ test.describe('in dark mode', () => {
     // A light page prints as before.
     await page.emulateMedia({ colorScheme: 'light', media: 'print' });
     await expect(map).toBeVisible();
+  });
+
+  test('prints a results page without its precinct map', async ({ page }) => {
+    await page.clock.setFixedTime(ELECTION_DAY_AT);
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await answerFromFixtures(page, { basemap: true, waits: ELECTION_DAY_WAITS });
+    await page.goto(`/p/${CODE}`);
+    const map = page.getByRole('region', { name: /^Map of precinct / });
+    await map.scrollIntoViewIfNeeded();
+    await expect(map.getByRole('list', { name: 'People in line' })).toBeVisible();
+    await page.emulateMedia({ colorScheme: 'dark', media: 'print' });
+    await expect(map).toBeHidden();
+    await expect(page.getByRole('list', { name: 'Nearest polling places' })).toBeVisible();
   });
 
   test('a map opened in dark mode asks for the dark basemap only', async ({ page }) => {

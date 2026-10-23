@@ -53,7 +53,8 @@ export function followColorScheme(map) {
     const url = basemapStyleUrl();
     let style;
     try {
-      const response = await fetch(url);
+      // As every other request the app makes: no cookies, no page URL.
+      const response = await fetch(url, { credentials: 'omit', referrerPolicy: 'no-referrer' });
       if (!response.ok) return;
       style = await response.json();
     } catch {
