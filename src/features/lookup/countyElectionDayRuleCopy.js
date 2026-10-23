@@ -13,6 +13,9 @@ export const copy = translated((t) => ({
   // Then the phone number as a link.
   help: t('countyElectionDayRule.help'),
   sources: t('countyElectionDayRule.sources'),
+  // The disclosure that holds the City note, the phone number and the
+  // sources, under the rule (#81).
+  more: t('countyElectionDayRule.more'),
   // Link text for each source, by its host.
   sourceNames: {
     'stlouiscountymo.gov': t('countyElectionDayRule.sourceNames.countyBoard'),

@@ -293,7 +293,8 @@ test.describe('precinct pages', () => {
     const problems = collectProblems(page);
     await answerFromFixtures(page);
     await page.goto(`/p/${CODE}`);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(`Precinct ${CODE}`);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Where you can vote');
+    await expect(page.getByText(`Precinct ${CODE} · `, { exact: false })).toBeVisible();
     await expect(page.getByRole('list', { name: 'Nearest polling places' })).toBeVisible();
     await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
     expect(problems).toEqual([]);

@@ -6,6 +6,7 @@ import { createWaitTimesStore } from '../waitTimes/useWaitTimes.js';
 import { cityHours, cityScheduleFor, citySchedules } from './cityEarlyVoting.js';
 import { earlyVotingStatus, formatLongDate } from './earlyVoting.js';
 import { EarlyVotingSites } from './EarlyVotingCard.jsx';
+import { EarlyVoteSummary } from './ResultsSummary.jsx';
 import { copy, sourceName } from './resultsCopy.js';
 
 const linkClass = 'text-primary underline';
@@ -96,5 +97,27 @@ export default function CityEarlyVotingCard({ code, origin, waitSource = cityWai
         .
       </p>
     </EarlyVotingSites>
+  );
+}
+
+/**
+ * The City's part of the summary at the top of a City precinct's results
+ * (#81): while early voting runs, the nearest City site open now and its line
+ * count, from the same City loop as the card above, so the page asks only
+ * the City's layer. In the City chunk (src/cityChunk.js).
+ * @param {{ code: string, origin: { lat: number, lng: number } | null,
+ *   waitSource?: object }} props `waitSource` is for tests.
+ */
+export function CityEarlyVoteSummary({ code, origin, waitSource = cityWaits }) {
+  return (
+    <EarlyVoteSummary
+      code={code}
+      origin={origin}
+      waitSource={waitSource}
+      schedules={citySchedules}
+      scheduleOf={scheduleOf}
+      waits="city"
+      waitKeyOf={waitKeyOf}
+    />
   );
 }

@@ -262,3 +262,29 @@ describe('CityDistrictsCard', () => {
     expect(card).not.toHaveTextContent('Alderman');
   });
 });
+
+// Owner decision on #81: folded away on phones, open on wider screens.
+describe('CityDistrictsCard on phones and wide screens', () => {
+  const screenWidth = (width) =>
+    vi.stubGlobal('matchMedia', (query) => ({
+      matches: query === '(min-width: 640px)' && width >= 640,
+    }));
+  const details = () => document.querySelector('dl').closest('details');
+
+  it('starts folded on a phone', async () => {
+    screenWidth(360);
+    routeFetch();
+    renderCard();
+    await loaded();
+    expect(details()).not.toHaveAttribute('open');
+    expect(screen.getByText(copy.districts.show).tagName).toBe('SUMMARY');
+  });
+
+  it('starts open on a wide screen', async () => {
+    screenWidth(1280);
+    routeFetch();
+    renderCard();
+    await loaded();
+    expect(details()).toHaveAttribute('open');
+  });
+});

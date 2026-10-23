@@ -3,22 +3,16 @@ import DistrictsCard from './DistrictsCard.jsx';
 import { cityComponent } from './cityComponent.js';
 import EarlyVotingCard from './EarlyVotingCard.jsx';
 import PollsCard from './PollsCard.jsx';
-import SampleBallotCard from './SampleBallotCard.jsx';
+import ResultsSummary from './ResultsSummary.jsx';
 import { useJurisdiction } from './jurisdictionContext.js';
 import { copy } from './resultsCopy.js';
 
 // The City's own cards, from the City chunk (#147).
 const CityEarlyVotingCard = cityComponent('CityEarlyVotingCard');
 const CityDistrictsCard = cityComponent('CityDistrictsCard');
-const CitySampleBallotCard = cityComponent('CitySampleBallotCard');
 
-// The card order the issue sets.
-const CARDS = [
-  { key: 'polls', ballot: false },
-  { key: 'ballot', ballot: true },
-  { key: 'earlyVoting', ballot: false },
-  { key: 'districts', ballot: false },
-];
+// The card order #11 set. The sample ballot moved up into the summary (#81).
+const CARDS = ['polls', 'earlyVoting', 'districts'];
 
 function Card({ title, children }) {
   const headingId = useId();
@@ -33,11 +27,11 @@ function Card({ title, children }) {
 }
 
 /**
- * The result cards, in order.
+ * The summary (#81), then the result cards, in order.
  * @param {{ code: string, origin: { lat: number, lng: number } | null,
  *   showBallot: boolean, ballotHtml: unknown, precinct: object }} props
  *   `origin` is the looked-up point, in memory only. `showBallot` false hides
- *   the sample ballot card, for a precinct with nothing on the ballot.
+ *   the summary's sample ballot, for a precinct with nothing on the ballot.
  *   `ballotHtml` is a County precinct's `html` field, which only the sample
  *   ballot parser reads; the card checks its link against `code`. A City
  *   precinct's card never reads it. `precinct` is the
@@ -46,21 +40,15 @@ function Card({ title, children }) {
 export default function ResultsCards({ code, origin, showBallot, ballotHtml, precinct }) {
   const { id } = useJurisdiction();
   const polls = () => <PollsCard code={code} origin={origin} />;
-  // The City's cards: polling places (#89), its one sample ballot for all
-  // precincts (#92, never the precinct's `html` field), early voting (#91) and
-  // districts (#90).
+  // The City's cards: polling places (#89), early voting (#91) and districts
+  // (#90). Its one sample ballot for all precincts (#92) is in the summary.
   const body =
     id === 'city'
       ? {
           polls,
-          ballot: () => (
-            <Suspense fallback={null}>
-              <CitySampleBallotCard />
-            </Suspense>
-          ),
           earlyVoting: () => (
             // The chunk is already loaded with the City data, so this
-            // suspends only for a moment.
+            // renders at once (cityComponent).
             <Suspense fallback={null}>
               <CityEarlyVotingCard code={code} origin={origin} />
             </Suspense>
@@ -73,18 +61,20 @@ export default function ResultsCards({ code, origin, showBallot, ballotHtml, pre
         }
       : {
           polls,
-          ballot: () => <SampleBallotCard html={ballotHtml} code={code} />,
           earlyVoting: () => <EarlyVotingCard code={code} origin={origin} />,
           districts: () => <DistrictsCard precinct={precinct} />,
         };
   return (
-    <div className="mt-6 flex flex-col gap-4">
-      {CARDS.filter((card) => showBallot || !card.ballot).map(({ key }) => (
-        <Card key={key} title={copy.cards[key]}>
-          {body[key]()}
-        </Card>
-      ))}
-    </div>
+    <>
+      <ResultsSummary code={code} origin={origin} showBallot={showBallot} ballotHtml={ballotHtml} />
+      <div className="mt-6 flex flex-col gap-4">
+        {CARDS.map((key) => (
+          <Card key={key} title={copy.cards[key]}>
+            {body[key]()}
+          </Card>
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -103,8 +93,19 @@ export function SkeletonLine({ className }) {
 export function ResultsSkeleton() {
   return (
     <div data-testid="results-skeleton" aria-hidden="true" className="min-h-screen">
+      <div
+        data-testid="summary-skeleton"
+        className="mt-4 rounded-md border-2 border-border bg-surface-raised p-4"
+      >
+        <div className={`h-4 w-28 ${bar}`} />
+        <div className={`mt-2 h-6 w-full ${bar}`} />
+        <div className={`mt-4 h-4 w-3/4 ${bar}`} />
+        <div className={`mt-2 h-4 w-1/2 ${bar}`} />
+        <div className={`mt-3 h-11 w-40 ${bar}`} />
+        <div className={`mt-4 h-11 w-full ${bar}`} />
+      </div>
       <div className="mt-6 flex flex-col gap-4">
-        {CARDS.map(({ key }) => (
+        {CARDS.map((key) => (
           <div key={key} className="rounded-md border border-border p-4">
             <div className={`h-6 w-40 ${bar}`} />
             <div className={`mt-3 h-4 w-full ${bar}`} />

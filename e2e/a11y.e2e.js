@@ -42,6 +42,13 @@ async function answerFromFixtures(page, { delayMs = 0, waits, basemap = false } 
   });
 }
 
+// Opens a folded section (#81) by its summary line, unless it is open
+// already (wide screens open the districts), so the axe run covers it.
+async function openDisclosure(page, summary) {
+  const line = page.locator('summary', { hasText: summary });
+  if ((await line.locator('..').getAttribute('open')) === null) await line.click();
+}
+
 const ROUTES = [
   { path: '/', ready: (page) => expect(page.getByRole('combobox')).toBeVisible() },
   {
@@ -62,6 +69,14 @@ const ROUTES = [
       await expect(
         page.getByRole('link', { name: 'See wait times at every early voting site' }),
       ).toBeVisible();
+      // The folded sections (#81): the County dates and hours, the Election
+      // Day rule's help and sources, and the districts.
+      await openDisclosure(page, 'See dates and hours');
+      await expect(page.getByRole('heading', { level: 3, name: 'Dates and hours' })).toBeVisible();
+      await openDisclosure(page, 'Help and sources');
+      await expect(page.locator('a[href^="tel:"]')).toBeVisible();
+      await openDisclosure(page, 'Districts for this precinct');
+      await expect(page.locator('dl dd').first()).toBeVisible();
     },
   },
   {
@@ -81,7 +96,8 @@ const ROUTES = [
       await expect(early.getByRole('heading', { level: 3 }).first()).toBeVisible();
       await early.getByText('Dates and hours').first().click();
       await expect(early.getByText(/^Monday: /).first()).toBeVisible();
-      // Its districts card (#90).
+      // Its districts card (#90), folded away on phones (#81).
+      await openDisclosure(page, 'Districts for this precinct');
       await expect(page.getByText('Missouri House District 78')).toBeVisible();
       // Its sample ballot card (#92).
       await expect(

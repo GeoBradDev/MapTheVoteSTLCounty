@@ -120,14 +120,14 @@ describe('EarlyVotingCard', () => {
     expect(screen.queryByRole('button', { name: /show all/i })).toBeNull();
   });
 
-  it('measures from the precinct center without a looked-up point, and says so', async () => {
+  it('measures from the precinct center without a looked-up point, leaving the note to the summary (#81)', async () => {
     render(<EarlyVotingCard code="CC007" origin={null} />);
     const ol = await list();
     const center = polygonCenter(geometry.features[0].geometry);
     const expected = nearestPolls(sites, center).slice(0, COUNT);
     expect(rowNames(ol)).toEqual(expected.map((r) => r.name));
     expect(getPrecinctGeometry).toHaveBeenCalledWith('CC007');
-    expect(screen.getByText(copy.polls.fromCenter('CC007'))).toBeInTheDocument();
+    expect(screen.queryByText(copy.polls.fromCenter('CC007'))).toBeNull();
   });
 
   it('points to the official lookup when the sites fail to load, and still shows the hours', async () => {
@@ -314,6 +314,17 @@ describe('EarlyVotingCard', () => {
 // The current line counts on the card (#105), with the County fixtures #102
 // recorded at 9:00 a.m. Central on Thursday, October 22, and the real #103
 // selection and loop.
+describe('dates and hours', () => {
+  it('folds the County dates and hours away under one summary line (#81)', async () => {
+    render(<EarlyVotingCard code="CC007" origin={ORIGIN} />);
+    await list();
+    const details = screen.getByText(t.seeDates).closest('details');
+    expect(details).not.toHaveAttribute('open');
+    expect(details).toContainElement(group('boe'));
+    expect(details).toContainElement(group('abs'));
+  });
+});
+
 describe('line counts', () => {
   const rowsOf = (body) => body.features.map((f) => f.attributes);
   const { county } = election.waitTimes;
@@ -378,7 +389,6 @@ describe('line counts', () => {
     expect(getWaits).toHaveBeenCalled();
     expect(screen.queryByText(COUNT_TEXT)).toBeNull();
     expect(screen.queryByText(waitCopy.noCount)).toBeNull();
-    expect(seeAll()).toHaveAttribute('href', '/early-voting');
   });
 
   it('shows no counts on a day every site is closed, and says so once', async () => {
@@ -391,10 +401,10 @@ describe('line counts', () => {
     expect(group('abs')).toHaveTextContent('Opens Monday, October 26 at 8 a.m.');
   });
 
-  it('links to the wait times page for every site', async () => {
+  it("leaves the link to every site's wait to the summary while early voting runs (#81)", async () => {
     render(<EarlyVotingCard code="CC007" origin={ORIGIN} waitSource={store(countyEmpty)} />);
     await list();
-    expect(seeAll()).toHaveAttribute('href', '/early-voting');
+    expect(seeAll()).toBeNull();
   });
 
   it('before early voting starts: the link, but no counts, sort or no-count line', async () => {
@@ -537,7 +547,6 @@ describe('line counts', () => {
     await list();
     expect(sortGroup()).toBeNull();
     expect(screen.queryByText(t.waits.none)).toBeNull();
-    expect(seeAll()).toHaveAttribute('href', '/early-voting');
   });
 
   it('lets go of a held order when the focused row leaves the list without a blur', async () => {

@@ -37,6 +37,13 @@ describe('ShareLink', () => {
     expect(status()).toHaveTextContent(/^$/);
   });
 
+  it('gives the button the privacy note as its description (#81)', () => {
+    render(<ShareLink code="CC007" />);
+    expect(screen.getByRole('button', { name: copy.share.button })).toHaveAccessibleDescription(
+      copy.share.note('CC007'),
+    );
+  });
+
   it('opens the share sheet with only a title and the link', async () => {
     const share = vi.fn().mockResolvedValue(undefined);
     const writeText = vi.fn();

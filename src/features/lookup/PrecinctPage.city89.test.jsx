@@ -103,7 +103,9 @@ describe('a City precinct page (#89)', () => {
     routeFetch();
     renderAt(CODE);
     await ready(CODE);
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(copy.heading(CODE));
+    const h1 = screen.getByRole('heading', { level: 1 });
+    expect(h1).toHaveTextContent(copy.heading);
+    expect(h1.nextElementSibling).toHaveTextContent(copy.precinct(CODE));
     expect(screen.getByTestId('municipality')).toHaveTextContent(
       copy.cityPrecinct(city.name, 1, 12),
     );
@@ -134,7 +136,8 @@ describe('a City precinct page (#89)', () => {
         ? copy.polls.entryBoth(first.entry)
         : copy.polls.accessibleEntry(first.accessibleEntry);
     expect(row).toHaveTextContent(entrance);
-    expect(pollsCard()).toHaveTextContent(copy.polls.fromCenter(CODE));
+    // Said once, in the summary at the top (#81).
+    expect(screen.getAllByText(copy.polls.fromCenter(CODE))).toHaveLength(1);
     expect(pollsCard()).toHaveTextContent(copy.polls.nearestNoteCity);
     expect(pollsCard()).not.toHaveTextContent(copy.polls.nearestNote);
 

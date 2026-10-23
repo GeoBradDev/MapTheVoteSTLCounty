@@ -189,10 +189,8 @@ describe('CityEarlyVotingCard', () => {
     await waitFor(() => expect(row).toHaveTextContent(waitCopy.count(4, '09:10')));
     expect(row).toHaveTextContent(waitCopy.reportedBy(election.waitTimes.city.source));
     expect(screen.getByRole('radiogroup', { name: waitCopy.sort.legend })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: t.waits.seeAll })).toHaveAttribute(
-      'href',
-      '/early-voting',
-    );
+    // The link to every site's wait is in the summary at the top (#81).
+    expect(screen.queryByRole('link', { name: t.waits.seeAll })).toBeNull();
   });
 
   it('cites the City Board with the date checked, and links its No Excuse Absentee page', async () => {
@@ -236,5 +234,53 @@ describe('CityEarlyVotingCard', () => {
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent(t.failed);
     expect(within(alert).getByRole('link')).toHaveAttribute('href', referrals.stlCityLookup.url);
+  });
+});
+
+// The City's part of the summary at the top of the results (#81).
+describe('CityEarlyVoteSummary', () => {
+  async function renderSummary({ origin = NEAR_BOARD, waitSource = noWaits() } = {}) {
+    const { CityEarlyVoteSummary } = await import('./CityEarlyVotingCard.jsx');
+    const { JurisdictionContext, city: adapter } = modules;
+    render(
+      <JurisdictionContext.Provider value={adapter}>
+        <CityEarlyVoteSummary code={CODE} origin={origin} waitSource={waitSource} />
+      </JurisdictionContext.Provider>,
+    );
+  }
+  const region = () => screen.getByRole('region', { name: copy.summary.early });
+
+  it('names the nearest City site open now with its City line count', async () => {
+    vi.setSystemTime(cdt(10, 22, 9, 30));
+    routeFetch();
+    const entry = {
+      siteId: 'St. Louis City Board of Elections',
+      jurisdiction: 'city',
+      unit: 'people',
+      value: 4,
+      reportedAt: cdt(10, 22, 9, 10),
+      source: election.waitTimes.city.source,
+      openUntil: cdt(10, 22, 17),
+    };
+    const getCity = vi.fn(async () => [entry]);
+    await renderSummary({ waitSource: createWaitTimesStore({ county: null, city: getCity }) });
+    expect(await within(region()).findByText('St. Louis City Board of Elections')).toBeVisible();
+    expect(region()).toHaveTextContent(copy.summary.nearestOpen);
+    await waitFor(() => expect(region()).toHaveTextContent(waitCopy.count(4, '09:10')));
+    expect(region()).toHaveTextContent(waitCopy.reportedBy(election.waitTimes.city.source));
+    expect(within(region()).getByRole('link', { name: t.waits.seeAll })).toHaveAttribute(
+      'href',
+      '/early-voting',
+    );
+  });
+
+  it('shows nothing and asks no line count after early voting ends', async () => {
+    vi.setSystemTime(cst(11, 3, 7));
+    routeFetch();
+    const getCity = vi.fn(async () => []);
+    await renderSummary({ waitSource: createWaitTimesStore({ county: null, city: getCity }) });
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    expect(screen.queryByRole('region', { name: copy.summary.early })).toBeNull();
+    expect(getCity).not.toHaveBeenCalled();
   });
 });

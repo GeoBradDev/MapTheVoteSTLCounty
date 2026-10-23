@@ -17,6 +17,16 @@ describe('CountyElectionDayRule', () => {
     expect(ruleText).toHaveTextContent(/on Election Day/);
   });
 
+  it('shows the rule, with the City note, the number and the sources folded under it (#81)', () => {
+    render(<CountyElectionDayRule />);
+    const details = screen.getByText(copy.more).closest('details');
+    expect(details).not.toHaveAttribute('open');
+    expect(screen.getByText(copy.rule).closest('details')).toBeNull();
+    expect(details).toHaveTextContent(copy.cityNote);
+    expect(details).toHaveTextContent(copy.help);
+    expect(details).toHaveTextContent(copy.sources);
+  });
+
   it('says the rule does not apply in the City of St. Louis', () => {
     render(<CountyElectionDayRule />);
     expect(screen.getByText(copy.cityNote)).toHaveTextContent(

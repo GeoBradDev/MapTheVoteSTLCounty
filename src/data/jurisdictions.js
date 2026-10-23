@@ -62,11 +62,29 @@ let cityClient;
  * @returns {Promise<typeof import('../cityChunk.js')>}
  */
 export function loadCityClient() {
-  cityClient ??= import('../cityChunk.js').catch((error) => {
-    cityClient = undefined;
-    throw error;
-  });
+  cityClient ??= import('../cityChunk.js').then(
+    (chunk) => {
+      loadedCity = chunk;
+      return chunk;
+    },
+    (error) => {
+      cityClient = undefined;
+      throw error;
+    },
+  );
   return cityClient;
+}
+
+let loadedCity = null;
+
+/**
+ * The City chunk once it has loaded, else null, so a City component can render
+ * at once instead of suspending for a chunk already here (#81: a summary at
+ * the top of the page that suspended would push the page down).
+ * @returns {typeof import('../cityChunk.js') | null}
+ */
+export function loadedCityClient() {
+  return loadedCity;
 }
 
 /**
