@@ -106,7 +106,7 @@ task to do before its worker ships.
   `/early-voting` and the precinct pages (a touch icon link alone measured the same as
   `main`). Linking it at the load event still fired before a precinct page's data arrived.
   So `src/linkManifest.js` links it from the app's script 10 seconds after load, at idle
-  time: Chrome's install prompt needs engagement first anyway, and iOS reads links only
+  time (the idle wait bounded to 2 s since Phase 7): Chrome's install prompt needs engagement first anyway, and iOS reads links only
   when Add to Home Screen is tapped (before then it uses the touch icon and title). The
   cost is a few hundred bytes of first-load JS.
 

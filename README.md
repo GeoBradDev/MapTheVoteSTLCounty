@@ -279,7 +279,8 @@ headers and the cache rules. `src/test/render.test.js` checks it.
   and `/sw.js` send `no-cache`. A new route needs its own `no-cache` rule.
 - **Installable app, no service worker (#25):** every page links `/apple-touch-icon.png`, and
   the app's script links `/manifest.webmanifest` (`public/`, with its icons in `public/icons/`)
-  10 seconds after the page has loaded (`src/linkManifest.js`), so Chrome, Edge and Android can
+  10 to 12 seconds after the page has loaded (`src/linkManifest.js`: 10 s, then the next idle
+  moment, at most 2 s more), so Chrome, Edge and Android can
   install the site and iOS Add to Home Screen gets the site's icon. Not in the HTML: a manifest
   link there is fetched at once, with an icon after it, beside the page's script and data, and
   cost the Lighthouse runs about 150 ms of LCP. `e2e/install.e2e.js` runs Chromium's own
@@ -291,7 +292,7 @@ headers and the cache rules. `src/test/render.test.js` checks it.
   there is nothing to unregister; #183 adds the kill switch (a self-destroying `/sw.js`, which
   `no-cache` lets a revert ship in one deploy) before its worker. Before each election, check
   Add to Home Screen on a real iPhone (the icon, the name and that it opens the home page; wait
-  10 seconds after the page loads, before then iOS has no manifest and saves the page itself)
+  15 seconds after the page loads, before then iOS may have no manifest and saves the page itself)
   and install on an Android phone in Chrome.
 - **Rollback:** in the Render Dashboard, open the service's **Deploys** page, find an earlier
   successful deploy and click **Rollback**. This redeploys that build's files only: headers,
