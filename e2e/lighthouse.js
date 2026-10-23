@@ -137,8 +137,8 @@ const PAGES = [
 /**
  * The results pages' layout depends on the date: during early voting the
  * summary has an early voting part, and once early voting has closed its
- * sample ballot paragraph moves up into the 360 x 640 view, where it can be
- * the largest text, painted with the precinct data (#27, #156). So each
+ * sample ballot part moves up into the 360 x 640 view, where its intro is the
+ * largest text, shown while the precinct loads (#27, #156). So each
  * results page is measured at a pinned clock in each state, today, not only
  * once the date comes: during early voting, the evening after it closes and
  * Election Day morning. The other pages use the real clock.

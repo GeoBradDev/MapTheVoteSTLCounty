@@ -157,9 +157,9 @@ export function BallotPart({ children }) {
  * hours, then `children`. Data independent, so the results skeleton shows it
  * too while the precinct loads (#27, #156): the date line is the page's
  * largest text, and the loaded summary repaints it at the same size and
- * place, so LCP does not wait for the precinct request. The hours note, with
- * its link, is the loaded summary's own child: the skeleton holds nothing that
- * takes focus.
+ * place, so LCP does not wait for the precinct request. `children` hold the
+ * hours note: the loaded summary's with its links, the skeleton's with its
+ * sources as plain text, so the skeleton holds nothing that takes focus.
  */
 export function ElectionDayPart({ children }) {
   const { open, close } = election.electionDayHours;

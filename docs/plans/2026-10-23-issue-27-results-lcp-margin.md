@@ -266,7 +266,17 @@ Result: `npm run test:perf` with the 600 ms fixture wait: /p/CC007 1502, 1503 an
 (early voting, after early voting, Election Day), /p/W01P12 1655, 1654 and 1654 ms, CLS 0
 everywhere; the e2e guards pass at all three clocks, County and City, at 360 and 1280 px.
 
-Residual, accepted: a County precinct not in the election (banner, no ballot part) loses the
-intro when it loads, and the banner, painted with the data, can be the LCP there, as on
-main. The same for any boundary moment where the season changes between the skeleton and
-the loaded summary.
+Residual, accepted (first finder of this round): the intro holds its place for the test
+precincts' data; other data can still move it, as it moved content below the summary's place
+before this change:
+
+- A County precinct with a status banner: Not In Election and Nonresidential (banner, no
+  ballot part) lose the intro when they load; an unrecognized status (banner, ballot part
+  kept) pushes it down by the banner's height. The banner, painted with the data, can be
+  the LCP there, as on main.
+- The nearest polling place's name or address wrapping to a second line at 360 px (names
+  over about 32 characters, such as some in the fixtures) moves the intro down 24 px per
+  extra line; a failed polling places request, where the summary shows no place, moves it
+  up by the placeholder's 124 px. A moved node is not a new LCP entry; the shift is small
+  (a 24 px move of the lower half of a 640 px screen scores about 0.02).
+- A boundary minute where the season changes between the skeleton and the loaded summary.
