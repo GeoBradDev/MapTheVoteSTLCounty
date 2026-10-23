@@ -84,14 +84,13 @@ describe('LearnPage with topics', () => {
     expect(screen.queryByText(copy.empty.notReady, { exact: false })).toBeNull();
   });
 
-  // #93: the topics are the County's for now (City topics are #94), so the
-  // intro says so and points City voters to their own board.
-  it("says the guides are the County's and points City voters to the City Board", () => {
+  // #94: the topics cover City and County voters, so the intro names both and
+  // no longer sends City voters elsewhere; "More help" still links both boards.
+  it('says the guides are for City and County voters, and links both boards', () => {
     renderPage();
     const intro = screen.getByText(copy.intro);
-    expect(intro).toHaveTextContent(/St\. Louis County/);
-    expect(intro).toHaveTextContent(/For now/);
-    expect(intro).toHaveTextContent(/St\. Louis City Board of Election Commissioners/);
+    expect(intro).toHaveTextContent(/St\. Louis City and St\. Louis County voters/);
+    expect(intro).not.toHaveTextContent(/For now/);
     const nav = screen.getByRole('navigation', { name: copy.moreHelp });
     expect(within(nav).getByRole('link', { name: copy.countySite })).toHaveAttribute(
       'href',

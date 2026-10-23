@@ -29,6 +29,15 @@ sources:
   - id: county-absentee-app
     label: St. Louis County Board of Elections, Absentee Voting Lookup (November 3, 2026)
     url: https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=9301b4594bef4d9c9271778e4648179d
+  - id: city-absentee-requirements
+    label: St. Louis City Board of Election Commissioners, Absentee Voting Requirements
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/absentee/absentee-requirements.cfm
+  - id: city-board
+    label: St. Louis City Board of Election Commissioners
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/
+  - id: city-no-excuse
+    label: St. Louis City Board of Election Commissioners, Vote No Excuse Absentee
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/absentee/no-excuse-absentee.cfm
 ---
 
 ## Missouri has no mail-in ballot for everyone
@@ -39,19 +48,20 @@ you use an **absentee ballot**.[^rsmo-115-302]
 ## Who can get a ballot by mail
 
 You can get an absentee ballot by mail if you have a reason the law allows.[^rsmo-115-277]
-For example, you will be away from the county on Election Day, or you are sick or have a
-physical disability.[^rsmo-115-277] The full list is on the [absentee voting page](/learn/absentee).
+For example, you will be away on Election Day from St. Louis County, or from the City of
+St. Louis if you vote there, or you are sick or have a physical
+disability.[^rsmo-115-277][^city-absentee-requirements] The full list is on the [absentee voting page](/learn/absentee).
 
 ## Key dates for November 3, 2026
 
 - The deadline to ask for a ballot by mail was 5 p.m. on Wednesday, October
   21.[^rsmo-115-279][^sos-how-to-vote]
-- If you asked in time, the county board must receive your voted ballot by 7 p.m. on Election
-  Day.[^rsmo-115-293][^sos-voting-rights] Ballots that arrive later are not counted, except
+- If you asked in time, your election board must receive your voted ballot by 7 p.m. on Election
+  Day.[^rsmo-115-293][^sos-voting-rights][^city-board] Ballots that arrive later are not counted, except
   some military and overseas ballots.[^rsmo-115-293]
 - Drop boxes are not allowed.[^rsmo-115-291]
 
 ## Do not want to give a reason?
 
 From October 20 through November 2, any registered voter can vote absentee in person with no reason
-needed.[^rsmo-115-277][^county-absentee-app] See [Absentee and early in-person voting](/learn/absentee).
+needed.[^rsmo-115-277][^county-absentee-app][^city-no-excuse] See [Absentee and early in-person voting](/learn/absentee).

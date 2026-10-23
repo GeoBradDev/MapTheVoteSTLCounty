@@ -31,7 +31,12 @@ separate pause.
 5. No sentence about the City rests on a County source or on no source (#154's City-citation
    part): a test fails when a paragraph or list item that names the City cites nothing but
    County Board sources, and when a topic that names the City lists no City Board source.
-6. Every topic's `lastVerified` is 2026-10-23 where its sources were re-read in this run.
+6. `lastVerified` stays 2026-10-21: it means every source in the topic was re-read that day,
+   and this run re-read only the City pages and the statutes behind changed sentences
+   (115.165, 115.277, 115.287, 115.427, 115.637) on 2026-10-23, not every County and Secretary
+   of State page. The City pages' read date goes in the PR and on the issue; the owner's
+   review can move `lastVerified` once every source is re-read. (Revised during the run: the
+   first draft set 2026-10-23.)
 7. The `/learn` intro no longer says the guides are County-only.
 8. The City Board's host is accepted as official (it is `.gov`; a test pins it), and the
    daily link check (#74) requests every new City link, as it reads every topic's sources
@@ -46,8 +51,14 @@ separate pause.
 - `src/i18n/en.json`: `learn.intro`.
 - `src/pageHead.test.js`: the learn intro it pins.
 - `src/features/learn/content/topic.test.js`: the City Board's URL among accepted hosts.
-- `src/test/cityContent.test.js` (new): criterion 5.
-- `README.md`: Learn content's official hosts sentence names the City Board's site.
+- `src/test/cityContent.test.js` (new): criterion 5. After it went red, its City Board and
+  County URLs were switched from literals to `referrals.stlCityBoard.url` and
+  `election.countySiteUrl`, as the repo's no-hard-coded-URL tests require; no assertion
+  changed.
+- `src/features/learn/LearnPage.test.jsx`: the #93 test that pinned the County-only intro.
+- `README.md`: Learn content's official hosts sentence names the City Board's site; a rule
+  for City and County sections and the new test; the empty `/learn` state links both boards
+  (true since #93).
 
 ## Order of work
 

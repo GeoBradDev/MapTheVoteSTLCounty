@@ -5,13 +5,14 @@
 // @vitest-environment node
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import election from '../config/election.js';
+import referrals from '../config/referrals.js';
 import { readTopicFile } from '../features/learn/content/topic.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 
 /** The City Board's pages, on the City's own site. */
-const CITY_BOARD =
-  'https://www.stlouis-mo.gov/government/departments/board-election-commissioners/';
+const CITY_BOARD = referrals.stlCityBoard.url;
 
 /** The County Board's hosts: its pages on the county site and its ArcGIS portal. */
 const COUNTY_HOSTS = ['stlouiscountymo.gov', 'stlouiscovotes.maps.arcgis.com'];
@@ -96,7 +97,7 @@ const topic = (sources, body) =>
   ].join('\n');
 
 const CITY_URL = `${CITY_BOARD}voter/polling-places/index.cfm`;
-const COUNTY_URL = 'https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/';
+const COUNTY_URL = election.countySiteUrl;
 const STATE_URL = 'https://revisor.mo.gov/main/OneSection.aspx?section=115.430';
 
 describe('City sentences in learn topics (#94)', () => {

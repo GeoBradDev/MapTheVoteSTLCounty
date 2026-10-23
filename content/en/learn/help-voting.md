@@ -29,6 +29,12 @@ sources:
   - id: county-polls-app
     label: St. Louis County Board of Elections, Polling Place Lookup (November 3, 2026)
     url: https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=13fb36e785c84dbdbcc5219f999652ba
+  - id: city-permanent-disabled
+    label: St. Louis City Board of Election Commissioners, Request a Permanently Disabled Voter Application
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/absentee/permanent-dl.cfm
+  - id: city-absentee-ballot
+    label: St. Louis City Board of Election Commissioners, Vote By Absentee Ballot
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/absentee/absentee-ballot-and-voting.cfm
 ---
 
 ## Bring someone to help you
@@ -61,16 +67,21 @@ so you can vote in private.[^rsmo-115-445]
 
 ## Permanent disability list
 
-If you have a permanent disability, you can ask the county board to put you on its permanent
+If you have a permanent disability, you can ask your election board to put you on its permanent
 absentee list.[^rsmo-115-284][^sos-election-day]
 
-- The county board then sends you an absentee ballot application before each election you can
+- Your election board then sends you an absentee ballot application before each election you can
   vote in.[^rsmo-115-284]
 - Return the application by 5 p.m. on the second Wednesday before the election to get your
   ballot.[^rsmo-115-284] For November 3, 2026, that deadline was Wednesday, October
   21.[^rsmo-115-284]
 - You do not need a notary for your ballot envelope.[^rsmo-115-283]
 - The list is kept private.[^rsmo-115-284]
+
+City voters download the City Board's Permanently Disabled Voter Application and mail it to
+the Board of Election Commissioners, 300 N. Tucker Blvd., St. Louis, MO
+63101.[^city-permanent-disabled] Questions? Call 314-622-3230 or
+314-622-3319.[^city-permanent-disabled]
 
 ## Help with an absentee ballot
 
@@ -82,9 +93,12 @@ ballot.[^rsmo-115-291]
 
 This applies if, after the request deadline, you:[^rsmo-115-287]
 
-- went into a hospital in St. Louis County,[^rsmo-115-287]
+- went into a hospital where you vote (St. Louis County, or the City of St. Louis for City
+  voters),[^rsmo-115-287]
 - became confined because of illness or injury, or[^rsmo-115-287]
-- will be in a nursing or care facility in St. Louis County on Election Day.[^rsmo-115-287]
+- will be in a nursing or care facility there on Election Day.[^rsmo-115-287]
 
-The county board sends a team to help you apply and vote.[^rsmo-115-287] The team is two registered voters,
-one from each major party.[^rsmo-115-287] Call 314-615-1800.[^county-polls-app]
+Your election board sends a team to help you apply and vote.[^rsmo-115-287] The team is two registered voters,
+one from each major party.[^rsmo-115-287] In St. Louis County, call
+314-615-1800.[^county-polls-app] In the City, call the City Board's absentee office at
+314-622-3230 or 314-622-3319.[^city-absentee-ballot]

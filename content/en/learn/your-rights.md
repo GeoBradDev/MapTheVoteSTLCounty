@@ -35,6 +35,12 @@ sources:
   - id: county-polls-app
     label: St. Louis County Board of Elections, Polling Place Lookup (November 3, 2026)
     url: https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=13fb36e785c84dbdbcc5219f999652ba
+  - id: city-board
+    label: St. Louis City Board of Election Commissioners
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/
+  - id: city-electioneering
+    label: St. Louis City Board of Election Commissioners, Notice of Electioneering Policy (November 3, 2026)
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/news/notice-of-electioneering-policy.cfm
 ---
 
 ## When you vote
@@ -70,13 +76,16 @@ You can take up to three hours off work to vote on Election Day.[^rsmo-115-639]
 
 On Election Day and during absentee voting, people may not campaign or hand out campaign
 papers inside the building, or within 25 feet of the door closest to the polling
-place.[^rsmo-115-637] The county board can make that distance 50 feet if it posts notice six weeks ahead.[^rsmo-115-637]
+place.[^rsmo-115-637] Your election board can make that distance 50 feet if it posts notice six weeks ahead.[^rsmo-115-637]
+For November 3, 2026, the City Board's notice sets 50 feet at City polling places, with some
+exceptions from 25 to 50 feet.[^city-electioneering]
 
 It is a crime to interfere with a voter inside a polling place.[^rsmo-115-637]
 
 ## If something goes wrong
 
 - Call the St. Louis County Board of Elections at 314-615-1800.[^county-polls-app]
+- In the City of St. Louis, call the City Board at 314-622-4336.[^city-board]
 - You can file a complaint with the Missouri Secretary of State.[^sos-integrity] Call the Elections Complaint
   line at 800-669-8683.[^sos-integrity]
 - The complaint form is on the Secretary of State's

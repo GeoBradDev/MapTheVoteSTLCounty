@@ -32,6 +32,9 @@ sources:
   - id: rsmo-115-926
     label: Missouri Revised Statutes, Section 115.926 (email and standing requests)
     url: https://revisor.mo.gov/main/OneSection.aspx?section=115.926
+  - id: city-overseas
+    label: St. Louis City Board of Election Commissioners, Vote from Overseas
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/absentee/military-overseas.cfm
 ---
 
 Missouri has special rules for voters in the military and voters who live overseas.[^sos-overseas]
@@ -53,13 +56,18 @@ You can do both at the same time:[^sos-overseas]
 
 - Use Missouri's
   [Military and Overseas Voting Access Portal](https://movotesportal.sos.mo.gov/movotes/voter/login.aspx).[^sos-overseas]
-- Or fill out a Federal Post Card Application and mail it to the St. Louis County Board of
-  Elections.[^sos-overseas]
+- Or fill out a Federal Post Card Application and mail it to your election board: the
+  St. Louis County Board of Elections, or the City's Board of Election Commissioners if you
+  vote in the City of St. Louis.[^sos-overseas][^city-overseas]
 
-By law, the county board sends ballots at least 45 days before the election to voters who have
-asked by then.[^rsmo-115-914] If your request comes in later, the county board sends your ballot
+By law, your election board sends ballots at least 45 days before the election to voters who have
+asked by then.[^rsmo-115-914] If your request comes in later, your election board sends your ballot
 within two business days.[^rsmo-115-914] You can ask to get your ballot by email or
 fax.[^rsmo-115-914]
+
+The City Board says a Federal Post Card Application is good for one year: send a new one each
+January and each time you move.[^city-overseas] City voters can call the City Board's
+absentee office at 314-622-3230.[^city-overseas]
 
 ## If you missed the registration deadline
 
@@ -68,11 +76,11 @@ Use the portal or the Federal Write-In Absentee Ballot.[^sos-overseas]
 
 State law goes further. A military or overseas voter who is eligible but not registered can
 vote for federal, statewide and state legislative offices and statewide ballot initiatives.[^rsmo-115-277] Send
-a Federal Post Card Application to ask for an absentee ballot, or turn one in at the county
+a Federal Post Card Application to ask for an absentee ballot, or turn one in at your election
 board on Election Day.[^rsmo-115-277]
 
 If you were discharged, came home from deployment, or left a job overseas after the deadline,
-you can register in person at the county board.[^rsmo-115-135] Do it by 5 p.m. on Friday, October 30,
+you can register in person at your election board.[^rsmo-115-135] Do it by 5 p.m. on Friday, October 30,
 2026.[^rsmo-115-135] Bring papers that show you qualify.[^rsmo-115-135]
 
 ## Send your ballot back
@@ -81,14 +89,15 @@ you can register in person at the county board.[^rsmo-115-135] Do it by 5 p.m. o
   from an APO or FPO, a U.S. embassy or consulate, or a U.S. post office, using the prepaid
   return envelope.[^sos-overseas]
 - If you are in a combat zone or another hostile fire or imminent danger area, you can also
-  return it by fax, email or the portal.[^sos-overseas]
+  return it by fax, email or the portal.[^sos-overseas] For the City Board, email
+  stlcityabsentee@stlouis-mo.gov or fax 314-622-3378, attention Absentee.[^city-overseas]
 - You do not need a notary.[^rsmo-115-283]
 
 ## Deadline
 
 Send your ballot by 12:01 a.m. on Election Day, November 3, where you are.[^rsmo-115-916] That is just after midnight, at the very start of Election Day.[^rsmo-115-916]
-The county board must receive it by noon on Friday, November 6, 2026.[^rsmo-115-920][^sos-overseas]
-A ballot that arrives at the county board by 7 p.m. on Election Day also counts.[^rsmo-115-916]
+Your election board must receive it by noon on Friday, November 6, 2026.[^rsmo-115-920][^sos-overseas]
+A ballot that arrives at your election board by 7 p.m. on Election Day also counts.[^rsmo-115-916]
 
 ## Track your ballot
 

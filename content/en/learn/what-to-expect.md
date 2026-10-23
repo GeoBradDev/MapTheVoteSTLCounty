@@ -29,24 +29,38 @@ sources:
   - id: county-polling-places
     label: St. Louis County Board of Elections, Polling Places
     url: https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/elections/polling-places/
+  - id: city-board
+    label: St. Louis City Board of Election Commissioners
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/
+  - id: city-polling-places
+    label: St. Louis City Board of Election Commissioners, Voting Locations (Polling Places)
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/polling-places/index.cfm
 ---
 
 ## When
 
-Polls are open from **6 a.m. to 7 p.m.** on Tuesday, November 3, 2026.[^rsmo-115-407] If you
+Polls are open from **6 a.m. to 7 p.m.** on Tuesday, November 3, 2026.[^rsmo-115-407][^city-board] If you
 are in line at 7 p.m., you can still vote.[^rsmo-115-407][^sos-election-day] If you get there after
 the polls close, you cannot vote.[^sos-election-day]
 
 ## Where
 
-Check where to vote before Election Day.[^sos-election-day] In St. Louis County, a registered
-voter may vote at any polling place in St. Louis County on Election Day.[^county-polling-places]
-This does not apply in the City of St. Louis, which has its own rule. Call 314-615-1800 for
-help.[^county-polls-app]
+Check where to vote before Election Day.[^sos-election-day] To find polling places near you,
+look up your address on the [home page](/).
 
-To find polling places near you, look up your address on the [home page](/) or use the
-county's
-[Polling Place Lookup](https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=13fb36e785c84dbdbcc5219f999652ba).[^county-polls-app]
+### St. Louis County
+
+A registered voter may vote at any polling place in St. Louis County on Election
+Day.[^county-polling-places] Use the county's
+[Polling Place Lookup](https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=13fb36e785c84dbdbcc5219f999652ba),
+or call 314-615-1800 for help.[^county-polls-app]
+
+### City of St. Louis
+
+Any voter registered at an address in the City can vote at any of the City's 56 listed
+polling places on November 3, 2026.[^city-polling-places] See the list on the City Board's
+[Voting Locations page](https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/polling-places/index.cfm),
+or call 314-622-4336 for help.[^city-polling-places][^city-board]
 
 ## Step by step
 
