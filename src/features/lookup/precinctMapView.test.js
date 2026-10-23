@@ -31,13 +31,21 @@ vi.mock('maplibre-gl', () => {
     getStyle() {
       return { layers: [{ id: 'label', type: 'symbol' }] };
     }
-    setPaintProperty() {}
+    setPaintProperty(id, property, value) {
+      const layer = this.layers.find((l) => l.id === id);
+      if (layer) layer.paint[property] = value;
+    }
     setLayoutProperty() {}
+    getSource(id) {
+      return this.sources.includes(id) ? {} : undefined;
+    }
     addSource(id) {
+      // As MapLibre does for a source the style already holds.
+      if (this.sources.includes(id)) throw new Error(`Source "${id}" already exists.`);
       this.sources.push(id);
     }
     addLayer(layer) {
-      this.layers.push(layer);
+      this.layers.push({ paint: {}, ...layer });
     }
     setStyle(style) {
       // MapLibre starts the new style with only its own layers.
@@ -120,13 +128,16 @@ afterEach(() => {
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 const lineColor = (map) => map.layers.find((l) => l.id === 'precinct-line').paint['line-color'];
 
+let onFail;
+
 function create() {
+  onFail = vi.fn();
   return createPrecinctMap(container, {
     geometry: GEOMETRY,
     origin: null,
     polls: [{ lat: 38.655, lng: -90.445 }],
     onReady: vi.fn(),
-    onFail: vi.fn(),
+    onFail,
   });
 }
 
@@ -155,6 +166,20 @@ describe('the precinct map and the color scheme', () => {
     expect(map.sources).toEqual(['precinct']);
     expect(map.layers.map((l) => l.id)).toEqual(['precinct-fill', 'precinct-line']);
     expect(lineColor(map)).not.toBe(light);
+  });
+
+  it('keeps a still-loading map when a style load already holds the precinct', () => {
+    // MapLibre restoring a lost WebGL context puts back the style it saved,
+    // precinct included, and fires style.load again.
+    create();
+    const map = maps[0];
+    map.fire('style.load');
+    setTokens(DARK);
+    map.fire('style.load');
+    expect(onFail).not.toHaveBeenCalled();
+    expect(map.removed).toBe(false);
+    expect(map.sources).toEqual(['precinct']);
+    expect(lineColor(map)).toMatch(/^rgb\(2[0-9]{2}, /);
   });
 
   it('stops following the scheme once removed', async () => {

@@ -10,7 +10,7 @@ export const WAIT_TOKENS = Object.freeze(['wait-1', 'wait-2', 'wait-3', 'wait-4'
 
 /**
  * Marker and legend swatch classes per token: the fill, a number color that
- * reads on it (the same in both themes, as the fills are, #77), and an ink
+ * reads on it (the same in both themes, as the fills barely change, #77), and an ink
  * outline, so every marker stands out 3:1 on the basemap: dark on the light
  * map, light on the dark one.
  */

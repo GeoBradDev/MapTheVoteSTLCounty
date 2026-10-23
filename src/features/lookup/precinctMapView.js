@@ -125,25 +125,22 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
   });
 
   // Each style load, the first and any after a scheme change, starts with only
-  // the basemap's own layers.
+  // the basemap's own layers. One MapLibre puts back after a lost WebGL
+  // context already holds the precinct, so its layers only get their colors.
   map.on('style.load', () => {
     try {
       const { color, labelColor } = readColors();
       // Every label in the muted token, interstates with the gray shield.
       neutralizeBasemap(map, labelColor);
-      map.addSource('precinct', { type: 'geojson', data: { type: 'Feature', geometry } });
-      map.addLayer({
-        id: 'precinct-fill',
-        type: 'fill',
-        source: 'precinct',
-        paint: { 'fill-color': color, 'fill-opacity': 0.1 },
-      });
-      map.addLayer({
-        id: 'precinct-line',
-        type: 'line',
-        source: 'precinct',
-        paint: { 'line-color': color, 'line-width': 2.5 },
-      });
+      if (!map.getSource('precinct')) {
+        map.addSource('precinct', { type: 'geojson', data: { type: 'Feature', geometry } });
+        map.addLayer({ id: 'precinct-fill', type: 'fill', source: 'precinct' });
+        map.addLayer({ id: 'precinct-line', type: 'line', source: 'precinct' });
+      }
+      map.setPaintProperty('precinct-fill', 'fill-color', color);
+      map.setPaintProperty('precinct-fill', 'fill-opacity', 0.1);
+      map.setPaintProperty('precinct-line', 'line-color', color);
+      map.setPaintProperty('precinct-line', 'line-width', 2.5);
     } catch (error) {
       fail(error);
     }

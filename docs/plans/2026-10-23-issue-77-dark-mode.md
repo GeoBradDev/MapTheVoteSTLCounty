@@ -52,7 +52,8 @@ Domain skills:
 - `src/index.css`: dark token block, `color-scheme`, `html` background, new
   `--color-wait-number-light` / `--color-wait-number-dark` tokens, dark shadow.
 - `index.html`: color-scheme meta, two theme-color metas.
-- `src/features/lookup/basemap.js`: `BASEMAP_DARK_STYLE_URL`, `BASEMAP_STYLES`.
+- `src/features/lookup/basemap.js`: `BASEMAP_DARK_STYLE_URL` (the e2e fixtures tell the
+  two styles apart with `isBasemapStyle`).
 - `src/features/lookup/mapStyle.js`: `DARK_SCHEME` query, `basemapStyleUrl()`,
   `watchColorScheme()`, `followColorScheme(map)`, which fetches the new style first and sets
   it only once it arrived, so a failed request (offline) keeps the drawn basemap.
@@ -102,6 +103,9 @@ Domain skills:
   tinted test style (`tintedStyle` in `e2e/fixtures.js`); the first-paint test requires the
   page itself to paint the surface; a dark-print test for the precinct map. The style fetch
   sends no cookies and no referrer, as the app's other requests.
+- After review finder 4: a style load that already holds the precinct (MapLibre restoring a
+  lost WebGL context) only recolors its layers instead of adding them again, which threw and
+  dropped a still-loading map.
 
 ## Proof
 
