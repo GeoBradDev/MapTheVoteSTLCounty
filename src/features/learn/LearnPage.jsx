@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { Link } from 'wouter';
 import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
@@ -24,7 +24,9 @@ export default function LearnPage() {
     focusHeadingOnArrival(headingRef.current);
   }, []);
 
-  useEffect(() => {
+  // A layout effect, so it puts the old title back before the next page sets
+  // its own (#128; see usePageTitle).
+  useLayoutEffect(() => {
     const previous = document.title;
     document.title = copy.pageTitle(copy.pageHeading);
     return () => {

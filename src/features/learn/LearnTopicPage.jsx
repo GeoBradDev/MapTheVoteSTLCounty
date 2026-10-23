@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'wouter';
 import NotFoundPage from '../../components/NotFoundPage.jsx';
 import { getLocale, useLocale } from '../../i18n/index.js';
@@ -59,7 +59,9 @@ export default function LearnTopicPage() {
     if (found) focusHeadingOnArrival(headingRef.current);
   }, [found]);
 
-  useEffect(() => {
+  // A layout effect, so it puts the old title back before the next page sets
+  // its own (#128; see usePageTitle).
+  useLayoutEffect(() => {
     if (!found) return undefined;
     const previous = document.title;
     document.title = copy.pageTitle(title);
