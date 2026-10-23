@@ -27,7 +27,15 @@ export const hosts = Object.freeze({
   electionMaps: host(election.serviceRoot),
   cityElectionMaps: host(jurisdictions.city.serviceRoot),
   basemap: host(BASEMAP_STYLE_URL),
-  countyWaits: host(election.waitTimes.county.serviceRoot),
+  // The County's Election Day line counts (#107) may come from another org.
+  countyWaits: [
+    ...new Set(
+      [
+        election.waitTimes.county.serviceRoot,
+        election.waitTimes.county.electionDay.serviceRoot,
+      ].map(host),
+    ),
+  ].join(', '),
   cityWaits: host(election.waitTimes.city.serviceRoot),
 });
 

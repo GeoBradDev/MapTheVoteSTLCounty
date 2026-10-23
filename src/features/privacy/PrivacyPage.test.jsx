@@ -67,7 +67,7 @@ describe('PrivacyPage', () => {
   it('says what the wait times page asks, from the config', () => {
     render(<PrivacyPage />);
     const { county, city, refreshSeconds } = election.waitTimes;
-    const item = screen.getByRole('heading', { name: 'Early voting wait times' }).parentElement;
+    const item = screen.getByRole('heading', { name: 'Line counts' }).parentElement;
     for (const text of [
       county.source,
       city.source,
@@ -77,6 +77,10 @@ describe('PrivacyPage', () => {
       'carry nothing about you',
       // The results page's early voting card asks them too (#105).
       "the early voting part of a precinct's results while early voting is running",
+      // And on Election Day, the polling places card, its own board's only (#107).
+      "on Election Day, that page and the polling places part of a precinct's results",
+      "only its own board's layer",
+      new URL(county.electionDay.serviceRoot).host,
     ]) {
       expect(item).toHaveTextContent(text);
     }

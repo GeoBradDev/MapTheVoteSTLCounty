@@ -96,6 +96,9 @@ Domain skills:
   cards that now import the wait fetchers, the open-hours window on Election Day, the
   workflow's cron list, and the `/early-voting` "ended" tests, moved from Election Day noon
   to the evening before (on Election Day the page now lists the polling places).
+- `src/i18n/en.json` and `src/features/privacy/privacyCopy.js`: the privacy notice says the
+  polling places card and the wait times page ask the line count layers on Election Day,
+  each precinct's results only its own board's, with the Election Day layer's host.
 - Docs: `README.md`, `docs/data.md` where their text becomes wrong.
 
 ## Order of work
