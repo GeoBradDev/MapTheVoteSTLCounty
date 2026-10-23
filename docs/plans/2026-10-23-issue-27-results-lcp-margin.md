@@ -280,3 +280,6 @@ before this change:
   up by the placeholder's 124 px. A moved node is not a new LCP entry; the shift is small
   (a 24 px move of the lower half of a 640 px screen scores about 0.02).
 - A boundary minute where the season changes between the skeleton and the loaded summary.
+- Below the intro, the button placeholder (60 px) does not match every loaded body: a County
+  "could not find" line or the City card's two further paragraphs move the cards below it,
+  not the intro.

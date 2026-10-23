@@ -11,9 +11,9 @@ const buttonClass =
  * intro (BallotPart in ResultsSummary.jsx). The City Board
  * publishes one sample ballot for all precincts, with every contest in the City
  * (`sampleBallot` in src/config/cityResults.js), and no ballot per precinct or
- * ward, so the card links that one PDF as published and says plainly that the
- * voter's own ballot has only the contests for where they live (the Board's
- * pages say no more, so neither does the card). It never
+ * ward, so the card links that one PDF as published; the intro above it says
+ * plainly that the voter's own ballot has only the contests for where they
+ * live (the Board's pages say no more, so neither does the part). It never
  * reads the precinct's data, so it cannot show another precinct's ballot. In
  * the City chunk (src/cityChunk.js).
  */
