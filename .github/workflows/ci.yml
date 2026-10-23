@@ -43,7 +43,7 @@ jobs:
           grep -q 'href="/assets/index-' dist/index.html
           test -f dist/manifest.webmanifest
           ls dist/icons/icon-192.png dist/icons/icon-512.png dist/icons/maskable-192.png dist/icons/maskable-512.png
-          grep -q 'rel="manifest" href="/manifest.webmanifest"' dist/index.html
+          grep -q 'rel="apple-touch-icon" href="/apple-touch-icon.png"' dist/index.html
           test ! -e dist/sw.js
 
       # Accessibility in a real browser (#26): axe, reflow, skip link and focus

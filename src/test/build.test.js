@@ -290,13 +290,16 @@ describe('production build', () => {
     for (const color of colors) expect(partyColor(toOklch(color)), color).toBeNull();
   });
 
-  // Installable (#25): every page links the manifest, which ships with its
-  // icons. src/test/manifest.test.js checks its content.
-  it('links the web app manifest from every page and ships its icons', async () => {
+  // Installable (#25): the first-load script links the manifest well after
+  // the page has loaded (src/linkManifest.js), never the HTML: a manifest link
+  // in the head is fetched at once, beside the script and the page's data, and
+  // cost the Lighthouse runs about 150 ms of LCP. The manifest ships with its
+  // icons; src/test/manifest.test.js checks its content.
+  it('links the web app manifest from the first-load script and ships its icons', async () => {
     const shell = await readFile(path.join(outDir, 'shell.html'), 'utf8');
-    for (const doc of [html, shell]) {
-      expect(doc).toMatch(/<link\s+rel="manifest"\s+href="\/manifest\.webmanifest"\s*\/?>/);
-    }
+    for (const doc of [html, shell]) expect(doc).not.toMatch(/<link[^>]+rel="manifest"/);
+    const entry = html.match(/<script[^>]+src="\/assets\/(index-[^"]+\.js)"/)?.[1];
+    expect(js[entry]).toContain('/manifest.webmanifest');
     const manifest = JSON.parse(await readFile(path.join(outDir, 'manifest.webmanifest'), 'utf8'));
     for (const icon of manifest.icons) {
       expect((await stat(path.join(outDir, icon.src))).size, icon.src).toBeGreaterThan(0);

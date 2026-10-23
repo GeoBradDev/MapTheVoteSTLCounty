@@ -277,9 +277,12 @@ headers and the cache rules. `src/test/render.test.js` checks it.
   how they combine. The app shell and the pre-rendered pages send `no-cache` and hashed `/assets/` files are
   `immutable`; `/robots.txt` and `/sitemap.xml` are cached for an hour; `/manifest.webmanifest`
   and `/sw.js` send `no-cache`. A new route needs its own `no-cache` rule.
-- **Installable app, no service worker (#25):** every page links `/manifest.webmanifest`
-  (`public/`, with its icons in `public/icons/`) and `/apple-touch-icon.png`, so Chrome, Edge
-  and Android can install the site and iOS Add to Home Screen gets the site's icon.
+- **Installable app, no service worker (#25):** every page links `/apple-touch-icon.png`, and
+  the app's script links `/manifest.webmanifest` (`public/`, with its icons in `public/icons/`)
+  10 seconds after the page has loaded (`src/linkManifest.js`), so Chrome, Edge and Android can
+  install the site and iOS Add to Home Screen gets the site's icon. Not in the HTML: a manifest
+  link there is fetched at once, with an icon after it, beside the page's script and data, and
+  cost the Lighthouse runs about 150 ms of LCP.
   `e2e/install.e2e.js` runs Chromium's own installability check on the build. The site
   registers no service worker and works offline no better than before; offline support is
   #183, deferred past the November 2026 election because a worker that served old hours,

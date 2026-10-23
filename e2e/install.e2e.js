@@ -21,8 +21,11 @@ test('the home page is installable', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   const cdp = await page.context().newCDPSession(page);
 
-  const { url, errors, data } = await cdp.send('Page.getAppManifest');
-  expect(url).toMatch(/\/manifest\.webmanifest$/);
+  // src/linkManifest.js links the manifest 10 s after the page has loaded.
+  await expect
+    .poll(async () => (await cdp.send('Page.getAppManifest')).url, { timeout: 20_000 })
+    .toMatch(/\/manifest\.webmanifest$/);
+  const { errors, data } = await cdp.send('Page.getAppManifest');
   expect(errors).toEqual([]);
   expect(JSON.parse(data)).toMatchObject({ start_url: '/', display: 'standalone' });
 
