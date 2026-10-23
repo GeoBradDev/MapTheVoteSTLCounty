@@ -26,7 +26,9 @@ stays on script-focused error areas and retried cards (#78). The manifest stays 
 4. Every `Notice` (every `role="alert"` error, the out-of-county notice, the precinct status
    banner) and the slow-network notice (#18) is set apart without color alone: a tinted fill, a
    4 px edge in its kind's ink (at least 3:1 on the fill and on `surface`), and an icon (SVG,
-   `currentColor`, `aria-hidden`) per kind. In forced colors the edge and icon remain.
+   `currentColor`, `aria-hidden`) per kind. In forced colors the edge and icon remain, the icon
+   in the system text color (Chromium otherwise keeps its ink, under 3:1 on a dark theme; found
+   by the verifier).
 5. Secondary-looking buttons (`quiet`: Share this page, Show more) and full-width link rows
    have a `border-strong` boundary (3:1).
 6. The primary button has hover and pressed states from `primary-hover` and `primary-pressed`;

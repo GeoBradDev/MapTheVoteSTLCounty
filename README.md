@@ -463,10 +463,10 @@ The tokens (#76), each with its role and minimum contrast beside it in `src/inde
   `danger` (burnt orange, never red), `warning` (amber), `info` (the brand teal) and
   `success` (green, free because the brand is teal). Color is never the only cue: a notice
   also has its kind's icon and edge (`Notice` in `src/components/`), which stay in forced
-  colors, and its text stays `ink`.
+  colors (the icon then in the system text color), and its text stays `ink`.
 - The wait time ramp, `wait-1` to `wait-5`, for map markers and their legend only (see Map).
 
-`src/test/contrast.test.js` checks every pair the UI draws against WCAG 2.1 AA: text 4.5:1 on
+`src/test/contrast.test.js` checks every text and control pair the tokens make against WCAG 2.1 AA (the wait markers are checked in `mapColors.test.js`): text 4.5:1 on
 every surface and fill, `border-strong` 3:1. A new token or pair goes into it. The browser's
 chrome color, `<meta name="theme-color">` in `index.html`, is `surface` written as hex;
 `src/test/theme.test.js` checks it matches `surface` and is not red or blue, so change both

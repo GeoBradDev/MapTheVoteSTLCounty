@@ -26,6 +26,8 @@ const VARIANTS = {
   },
 };
 
+// In forced colors Chromium keeps an SVG's own color, so the kind's ink would
+// stay dark on a dark theme; there the icon takes the text's system color.
 function NoticeIcon({ kind }) {
   const { icon, path, shape } = VARIANTS[kind];
   return (
@@ -37,7 +39,7 @@ function NoticeIcon({ kind }) {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={`mt-0.5 size-5 shrink-0 ${icon}`}
+      className={`mt-0.5 size-5 shrink-0 ${icon} forced-colors:text-current`}
       data-notice-icon={kind}
     >
       {shape ? <path d={shape} /> : <circle cx="12" cy="12" r="9.5" />}
