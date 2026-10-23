@@ -62,7 +62,10 @@ separate pause.
 - `src/features/learn/LearnPage.test.jsx`: the #93 test that pinned the County-only intro.
 - `README.md`: Learn content's official hosts sentence names the City Board's site; a rule
   for City and County sections and the new test; the empty `/learn` state links both boards
-  (true since #93).
+  (true since #93); the official-source rules under the Nonpartisan statement and Contributing name the City
+  board.
+- `docs/data.md`: the City early voting card's note no longer says the absentee topic is
+  County-only; it points to #168 (found by the verifier).
 
 ## Order of work
 
@@ -97,9 +100,19 @@ separate pause.
   elsewhere in Missouri must re-register; RSMo 115.165.3 lets a mover still on the rolls
   change address at the election office on Election Day. The topic gives the statute and the
   City Board's statement, attributed, and asks City movers to call (found by finder 3).
+- The City's Register to Vote and Update pages say a voter on the inactive list has to
+  re-register; its Inactive Voter List page says an inactive voter who still lives in the City
+  can vote with extra steps. The topic follows the Inactive Voter List page (found by the
+  verifier).
 - The City pages list 314-622-3319 both as an absentee phone and as a fax number; the topics
   repeat it as the pages do.
 - Topic bodies are separate chunks (#147), so longer topics do not touch the first-load budget.
+
+## Not in this change
+
+- Whether the City early voting card should now link `/learn/absentee` (it links the City
+  Board's pages instead, by #91's design): follow-up #168, found by the verifier.
+- The "come back to your polling place" wording for a provisional ballot without ID: #154.
 
 ## Proof
 
