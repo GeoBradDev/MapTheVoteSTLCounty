@@ -25,7 +25,7 @@ export default function LanguageSwitcher() {
           // its current language, which the select goes back to showing.
           setLocale(event.target.value).catch(() => {});
         }}
-        className="min-h-11 rounded-md border border-ink bg-surface px-2 text-ink"
+        className="min-h-11 rounded-control border border-ink bg-surface px-2 text-ink"
       >
         {codes.map((code) => (
           <option key={code} value={code} lang={code}>

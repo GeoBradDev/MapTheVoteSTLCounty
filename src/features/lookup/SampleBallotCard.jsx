@@ -1,10 +1,8 @@
+import Button from '../../components/Button.jsx';
+import TextLink from '../../components/TextLink.jsx';
 import election from '../../config/election.js';
 import { fileNameMatchesPrecinct, parseSampleBallot } from '../../data/sampleBallot.js';
 import { copy } from './resultsCopy.js';
-
-const linkClass = 'text-primary underline';
-const buttonClass =
-  'mt-3 inline-flex min-h-11 flex-col justify-center rounded-md bg-primary px-4 py-2 text-on-primary';
 
 /**
  * The sample ballot part's body, after its fixed intro (BallotPart in
@@ -23,20 +21,19 @@ export default function SampleBallotCard({ html, code }) {
     return (
       <p className="mt-2">
         {copy.ballot.missing}{' '}
-        <a href={election.officialLookupUrl} rel="noreferrer" className={linkClass}>
+        <TextLink href={election.officialLookupUrl} rel="noreferrer">
           {copy.officialLookup}
-        </a>
+        </TextLink>
         .
       </p>
     );
   }
 
   return (
-    <a href={ballot.url} target="_blank" rel="noopener noreferrer" className={buttonClass}>
+    <Button stack href={ballot.url} target="_blank" rel="noopener noreferrer" className="mt-3">
       {/* The spaces keep the parts apart in the accessible name. */}
-      <span className="font-semibold">{copy.ballot.open}</span>{' '}
-      <span className="text-sm">{ballot.fileName}</span>{' '}
+      <span>{copy.ballot.open}</span> <span className="text-sm font-normal">{ballot.fileName}</span>{' '}
       <span className="sr-only">{copy.ballot.newTab}</span>
-    </a>
+    </Button>
   );
 }

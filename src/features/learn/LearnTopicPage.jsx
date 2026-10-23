@@ -1,13 +1,12 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'wouter';
+import { useParams } from 'wouter';
 import NotFoundPage from '../../components/NotFoundPage.jsx';
+import TextLink from '../../components/TextLink.jsx';
 import { getLocale, useLocale } from '../../i18n/index.js';
 import { copy } from './learnCopy.js';
 import TopicArticle from './TopicArticle.jsx';
 import { getTopic, loadedTopic, loadTopic } from './topics.js';
 import { focusHeadingOnArrival } from '../../hydrate.js';
-
-const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
 
 /**
  * The whole topic once its body has loaded (#147), else null; throws, for the
@@ -107,14 +106,14 @@ export default function LearnTopicPage() {
       <nav aria-label={copy.moreHelp} className="mt-8 print:hidden">
         <ul className="flex flex-col gap-1">
           <li>
-            <Link href="/learn" className={linkClass}>
+            <TextLink to="/learn" variant="tap">
               {copy.allTopics}
-            </Link>
+            </TextLink>
           </li>
           <li>
-            <Link href="/" className={linkClass}>
+            <TextLink to="/" variant="tap">
               {copy.lookup}
-            </Link>
+            </TextLink>
           </li>
         </ul>
       </nav>

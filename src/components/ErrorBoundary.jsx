@@ -1,10 +1,11 @@
 import { Component, useEffect, useRef } from 'react';
 import { applyHead } from '../pageHead.js';
 import { copy } from './errorBoundaryCopy.js';
+import Button from './Button.jsx';
+import Notice from './Notice.jsx';
 import OfficialLookups from './OfficialLookups.jsx';
+import TextLink from './TextLink.jsx';
 import { usePageTitle } from './usePageTitle.js';
-
-const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
 
 // What shows instead of a page that threw while rendering. It names no error
 // and shows none of its text, which could hold anything the page had.
@@ -20,37 +21,27 @@ function ErrorScreen({ jurisdiction }) {
   }, []);
   return (
     <>
-      <h1 ref={headingRef} tabIndex={-1} className="text-2xl font-semibold">
+      <h1 ref={headingRef} tabIndex={-1} className="text-title font-bold">
         {copy.heading}
       </h1>
-      <p role="alert" className="mt-4">
+      <Notice role="alert" variant="danger" className="mt-4">
         {copy.body}{' '}
         {jurisdiction ? (
-          <a
-            href={jurisdiction.officialLookupUrl}
-            rel="noreferrer"
-            className="text-primary underline"
-          >
+          <TextLink href={jurisdiction.officialLookupUrl} rel="noreferrer">
             {jurisdiction.id === 'city' ? copy.officialLookupCity : copy.officialLookup}
-          </a>
+          </TextLink>
         ) : (
           // Not a precinct page, so no jurisdiction is known (#93).
-          <OfficialLookups className="text-primary underline" />
+          <OfficialLookups />
         )}
         .
-      </p>
+      </Notice>
       <p className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
-        <button
-          type="button"
-          onClick={() => window.location.reload()}
-          className="min-h-11 rounded-md bg-primary px-4 py-2 font-semibold text-on-primary"
-        >
-          {copy.reload}
-        </button>
+        <Button onClick={() => window.location.reload()}>{copy.reload}</Button>
         {/* A full load, not an in-app link: the app's state may be broken. */}
-        <a href="/" className={linkClass}>
+        <TextLink href="/" variant="tap">
           {copy.home}
-        </a>
+        </TextLink>
       </p>
     </>
   );

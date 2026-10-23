@@ -1,3 +1,4 @@
+import TextLink from '../../components/TextLink.jsx';
 import cityResults from '../../config/cityResults.js';
 import referrals from '../../config/referrals.js';
 import { formatLongDate } from './earlyVoting.js';
@@ -10,9 +11,8 @@ import { copy, sourceName } from './resultsCopy.js';
  * Any City voter may vote at any of the City's listed locations. The County
  * has its own rule (CountyElectionDayRule). The quote is shown as published, from the
  * config.
- * @param {{ linkClass: string }} props
  */
-export default function CityElectionDayRule({ linkClass }) {
+export default function CityElectionDayRule() {
   const { quote, source, lastVerified } = cityResults.electionDayRule;
   const { url } = referrals[source];
   return (
@@ -23,9 +23,9 @@ export default function CityElectionDayRule({ linkClass }) {
       </blockquote>
       <p className="mt-2 text-sm">
         {copy.polls.source}:{' '}
-        <a href={url} rel="noreferrer" className={linkClass}>
+        <TextLink href={url} rel="noreferrer">
           {sourceName(url)}
-        </a>
+        </TextLink>
         . {copy.earlyVoting.lastVerified(formatLongDate(lastVerified, { year: true }))}
       </p>
     </>

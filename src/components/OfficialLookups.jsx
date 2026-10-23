@@ -1,4 +1,5 @@
 import election from '../config/election.js';
+import TextLink from './TextLink.jsx';
 import referrals from '../config/referrals.js';
 import { copy } from './officialLookupsCopy.js';
 
@@ -6,18 +7,17 @@ import { copy } from './officialLookupsCopy.js';
  * "St. Louis County official lookup or the St. Louis City official lookup",
  * each a link to that board's own lookup. For a message shown before the
  * jurisdiction is known (#93); the caller puts "the" before it.
- * @param {{ className: string }} props The links' class.
  */
-export default function OfficialLookups({ className }) {
+export default function OfficialLookups() {
   return (
     <>
-      <a href={election.officialLookupUrl} rel="noreferrer" className={className}>
+      <TextLink href={election.officialLookupUrl} rel="noreferrer">
         {copy.county}
-      </a>{' '}
+      </TextLink>{' '}
       {copy.or}{' '}
-      <a href={referrals.stlCityLookup.url} rel="noreferrer" className={className}>
+      <TextLink href={referrals.stlCityLookup.url} rel="noreferrer">
         {copy.city}
-      </a>
+      </TextLink>
     </>
   );
 }

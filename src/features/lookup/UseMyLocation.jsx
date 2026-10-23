@@ -1,4 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import Button from '../../components/Button.jsx';
+import Notice from '../../components/Notice.jsx';
 import { getDeviceLocation } from './deviceLocation.js';
 import { copy } from './useMyLocationCopy.js';
 
@@ -87,15 +89,15 @@ export default function UseMyLocation({ onLocate, onStart, addressInputRef }) {
 
   return (
     <div>
-      <button
-        type="button"
+      <Button
+        variant="secondary"
         onClick={handleClick}
-        aria-disabled={busy || undefined}
         aria-describedby={notesId}
-        className="min-h-11 w-full rounded-md border-2 border-primary bg-surface px-4 py-2 font-semibold text-primary aria-disabled:cursor-wait aria-disabled:opacity-70 sm:w-auto"
+        busy={busy}
+        className="w-full sm:w-auto"
       >
         {busy ? copy.busy : copy.button}
-      </button>
+      </Button>
       <div id={notesId} className="mt-2 text-sm text-muted">
         <p>{copy.privacy}</p>
         <p className="mt-1">{copy.notHome}</p>
@@ -103,9 +105,14 @@ export default function UseMyLocation({ onLocate, onStart, addressInputRef }) {
       <p role="status" className="sr-only">
         {busy ? copy.busy : ''}
       </p>
-      <p role="alert" className="mt-2">
-        {error && <span key={error.press}>{copy.errors[error.reason]}</span>}
-      </p>
+      {/* The live region stays mounted; the notice shows only with an error. */}
+      <div role="alert" className="mt-2">
+        {error && (
+          <Notice variant="danger" key={error.press}>
+            {copy.errors[error.reason]}
+          </Notice>
+        )}
+      </div>
     </div>
   );
 }

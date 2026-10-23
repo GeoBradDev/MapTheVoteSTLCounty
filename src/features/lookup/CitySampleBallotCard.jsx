@@ -1,10 +1,8 @@
+import Button from '../../components/Button.jsx';
+import TextLink from '../../components/TextLink.jsx';
 import cityResults from '../../config/cityResults.js';
 import { formatLongDate } from './earlyVoting.js';
 import { copy, sourceName } from './resultsCopy.js';
-
-const linkClass = 'text-primary underline';
-const buttonClass =
-  'mt-3 inline-flex min-h-11 flex-col justify-center rounded-md bg-primary px-4 py-2 text-on-primary';
 
 /**
  * The body of a City precinct's "Sample ballot" part (#92), after its fixed
@@ -25,18 +23,18 @@ export default function CitySampleBallotCard() {
   } = cityResults.sampleBallot;
   return (
     <>
-      <a href={url} target="_blank" rel="noopener noreferrer" className={buttonClass}>
+      <Button stack href={url} target="_blank" rel="noopener noreferrer" className="mt-3">
         {/* The spaces keep the parts apart in the accessible name. */}
-        <span className="font-semibold">{copy.ballot.openCity}</span>{' '}
-        <span className="text-sm">{copy.ballot.allPrecincts}</span>{' '}
+        <span>{copy.ballot.openCity}</span>{' '}
+        <span className="text-sm font-normal">{copy.ballot.allPrecincts}</span>{' '}
         <span className="sr-only">{copy.ballot.newTab}</span>
-      </a>
+      </Button>
       <p className="mt-3">{copy.ballot.districtsPointer}</p>
       <p className="mt-3 text-sm">
         {copy.polls.source}:{' '}
-        <a href={source} rel="noreferrer" className={linkClass}>
+        <TextLink href={source} rel="noreferrer">
           {sourceName(source)}
-        </a>
+        </TextLink>
         . {copy.earlyVoting.lastVerified(formatLongDate(lastVerified, { year: true }))}
       </p>
     </>

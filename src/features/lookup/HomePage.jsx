@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { Link } from 'wouter';
+import TextLink from '../../components/TextLink.jsx';
 import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
 import AddressLookup from './AddressLookup.jsx';
@@ -13,10 +13,6 @@ const noSubscribe = () => () => {};
 const electionDayNow = () => isElectionDay(Date.now());
 const notElectionDay = () => false;
 
-const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
-const rowClass =
-  'flex min-h-11 w-full items-center rounded-md border border-border bg-surface-raised px-4 py-2 font-medium text-primary underline';
-
 // The first screen. One job: get an address (or the device's location).
 export default function HomePage() {
   const electionDay = useSyncExternalStore(noSubscribe, electionDayNow, notElectionDay);
@@ -24,7 +20,7 @@ export default function HomePage() {
     <>
       <header>
         {/* Focusable from script: the app moves focus here after an in-app link. */}
-        <h1 tabIndex={-1} className="text-3xl font-semibold">
+        <h1 tabIndex={-1} className="text-title font-bold">
           {copy.heading}
         </h1>
         {/* The election date as one compact line (#80), after the heading so
@@ -43,9 +39,9 @@ export default function HomePage() {
 
       {/* The first action, next to the address search (#104): no address needed. */}
       <p className="mt-2">
-        <Link href="/early-voting" className={`${linkClass} font-semibold`}>
+        <TextLink to="/early-voting" variant="tap" className="font-semibold">
           {electionDay ? copy.waitTimesElectionDay : copy.waitTimes}
-        </Link>
+        </TextLink>
       </p>
 
       <div className="mt-2">
@@ -55,22 +51,22 @@ export default function HomePage() {
       {/* No Election Day rule here (#165): each precinct page states its own
           jurisdiction's rule, County or City. */}
       <nav aria-label={copy.moreInfo} className="mt-8">
-        {/* Tappable rows (#80). Local styling until the shared components of #78. */}
+        {/* Tappable rows (#80). */}
         <ul className="flex flex-col gap-2">
           <li>
-            <Link href="/learn" className={rowClass}>
+            <TextLink to="/learn" variant="row">
               {copy.howToVote}
-            </Link>
+            </TextLink>
           </li>
           <li>
-            <a href={election.countySiteUrl} rel="noreferrer" className={rowClass}>
+            <TextLink href={election.countySiteUrl} rel="noreferrer" variant="row">
               {copy.countySite}
-            </a>
+            </TextLink>
           </li>
           <li>
-            <a href={referrals.stlCityBoard.url} rel="noreferrer" className={rowClass}>
+            <TextLink href={referrals.stlCityBoard.url} rel="noreferrer" variant="row">
               {copy.citySite}
-            </a>
+            </TextLink>
           </li>
         </ul>
       </nav>

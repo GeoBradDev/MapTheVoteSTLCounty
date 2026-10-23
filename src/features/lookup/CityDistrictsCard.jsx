@@ -1,8 +1,9 @@
 import { Fragment, useEffect, useState } from 'react';
+import Disclosure from '../../components/Disclosure.jsx';
+import Notice from '../../components/Notice.jsx';
 import { NotFound } from '../../data/arcgis.js';
 import { getCityDistrictsForPrecinct } from '../../data/cityArcgis.js';
 import { cityDistrictRows } from './cityDistricts.js';
-import Disclosure from './Disclosure.jsx';
 import { useWideOnMount } from './useWideOnMount.js';
 import { OfficialLookupLink } from './PollsCard.jsx';
 import { copy } from './resultsCopy.js';
@@ -65,12 +66,12 @@ export default function CityDistrictsCard({ code }) {
   if (current.error) {
     return (
       <div ref={targetRef} tabIndex={-1}>
-        <p role="alert" className="mt-2">
+        <Notice role="alert" variant="danger" className="mt-2">
           {/* A new node per attempt, so a repeated failure is announced again. */}
           <span key={current.attempt}>
             {copy.districts.failed} <OfficialLookupLink />.
           </span>
-        </p>
+        </Notice>
         <RetryButton onRetry={retry} busy={loading} className="mt-2" />
       </div>
     );

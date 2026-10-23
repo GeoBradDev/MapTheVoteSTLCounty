@@ -1,5 +1,7 @@
 import { Suspense, useId } from 'react';
-import { Link } from 'wouter';
+import Button from '../../components/Button.jsx';
+import { CARD_EMPHASIS } from '../../components/Card.jsx';
+import TextLink, { LINK } from '../../components/TextLink.jsx';
 import election from '../../config/election.js';
 import { earlyVotingSeason } from '../waitTimes/earlyVotingSeason.js';
 import { OFF_WAITS, useWaitTimes } from '../waitTimes/useWaitTimes.js';
@@ -20,13 +22,7 @@ const CityEarlyVoteSummary = cityComponent('CityEarlyVoteSummary');
 
 const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
 /** The summary's box, also the results skeleton's (ResultsCards.jsx). */
-export const SUMMARY_BOX =
-  'mt-4 flex flex-col gap-3 rounded-md border-2 border-primary bg-surface-raised p-4';
-// Local until the shared Button and Link components land (#78).
-const directionsClass =
-  'inline-flex min-h-11 items-center gap-2 rounded-md border border-primary px-4 font-semibold text-primary';
-const linkClass = 'text-primary underline';
-const tapLinkClass = `inline-flex min-h-11 items-center ${linkClass}`;
+export const SUMMARY_BOX = `mt-4 flex flex-col gap-3 ${CARD_EMPHASIS}`;
 
 // A right-pointing arrow, drawn in the text color. Decoration only.
 function Arrow() {
@@ -94,10 +90,10 @@ function Place({ label, place, children }) {
       <p>{copy.polls.address(place.address, place.zip)}</p>
       {children}
       <p className="mt-1">
-        <a href={directionsLinks(place).google} rel="noreferrer" className={directionsClass}>
+        <Button variant="secondary" href={directionsLinks(place).google} rel="noreferrer">
           {copy.polls.directions} <span className="sr-only">{copy.polls.linkTarget(name)}</span>
           <Arrow />
-        </a>
+        </Button>
       </p>
     </>
   );
@@ -121,11 +117,11 @@ export function HoursNote({ linked = true }) {
         <span key={url}>
           {i > 0 && ', '}
           {linked ? (
-            <a href={url} rel="noreferrer" className={linkClass}>
+            <TextLink href={url} rel="noreferrer">
               {sourceName(url)}
-            </a>
+            </TextLink>
           ) : (
-            <span className={linkClass}>{sourceName(url)}</span>
+            <span className={LINK}>{sourceName(url)}</span>
           )}
         </span>
       ))}
@@ -165,7 +161,7 @@ export function ElectionDayPart({ children }) {
   const { open, close } = election.electionDayHours;
   return (
     <Part title={copy.summary.electionDay}>
-      <p className="mt-1 font-semibold sm:text-lg">
+      <p className="mt-1 font-semibold sm:text-subheading">
         {copy.summary.when(
           formatLongDate(election.electionDate),
           formatTime(open),
@@ -266,9 +262,9 @@ export function EarlyVoteSummary({
         </Place>
       )}
       <p>
-        <Link href="/early-voting" className={tapLinkClass}>
+        <TextLink to="/early-voting" variant="tap">
           {copy.earlyVoting.waits.seeAll}
-        </Link>
+        </TextLink>
       </p>
     </Part>
   );

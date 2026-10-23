@@ -1,4 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import Button from '../../components/Button.jsx';
+import Notice from '../../components/Notice.jsx';
 import { typedZip } from '../../data/addressMatch.js';
 import { copy } from './addressSearchCopy.js';
 import { useGeocoder } from './geocoderContext.js';
@@ -225,7 +227,7 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} noValidate>
-      <label htmlFor={`${id}-input`} className="block text-lg font-semibold">
+      <label htmlFor={`${id}-input`} className="block text-subheading font-semibold">
         {copy.label}
       </label>
       <p id={hintId} className="mt-1 text-muted">
@@ -252,14 +254,14 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
           onKeyDown={handleKeyDown}
           onPaste={rememberSelection}
           onBlur={() => setClosed(true)}
-          className="min-h-11 w-full rounded-md border border-ink bg-surface px-3 py-2 text-base text-ink"
+          className="min-h-11 w-full rounded-control border border-ink bg-surface px-3 py-2 text-base text-ink"
         />
         <ul
           id={listboxId}
           role="listbox"
           aria-label={copy.suggestions}
           hidden={!open}
-          className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-md border border-border bg-surface-raised shadow-md"
+          className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-control border border-border bg-surface-raised shadow-popover"
         >
           {suggestions.map((suggestion, i) => (
             // The input keeps focus and handles the keys (aria-activedescendant),
@@ -285,16 +287,13 @@ export default function AddressSearch({ onSubmit, onEdit, busy = false, inputRef
       <p role="status" className="sr-only">
         {open ? copy.suggestionCount(suggestions.length) : ''}
       </p>
-      <p id={errorId} role="alert" className="mt-2">
-        {empty ? copy.empty : ''}
-      </p>
-      <button
-        type="submit"
-        aria-disabled={busy || undefined}
-        className="mt-2 min-h-11 w-full rounded-md bg-primary px-4 py-2 font-semibold text-on-primary aria-disabled:cursor-wait aria-disabled:opacity-70 sm:w-auto"
-      >
+      {/* The live region stays mounted; the notice shows only while the box is empty. */}
+      <div id={errorId} role="alert" className="mt-2">
+        {empty && <Notice variant="danger">{copy.empty}</Notice>}
+      </div>
+      <Button type="submit" busy={busy} className="mt-2 w-full sm:w-auto">
         {busy ? copy.busy : copy.submit}
-      </button>
+      </Button>
     </form>
   );
 }

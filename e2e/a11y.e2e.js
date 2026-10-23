@@ -384,6 +384,31 @@ test('going home from a page focuses the home heading at the top', async ({ page
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
 });
 
+// The heading takes focus only so a screen reader announces the page; it is not
+// a control, so it draws no focus ring (#78). Links and buttons keep theirs.
+test('a heading focused after an in-app link draws no ring, a link still does', async ({
+  page,
+}) => {
+  await answerFromFixtures(page);
+  await page.goto('/privacy');
+  await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
+  await page.getByRole('link', { name: 'Back to home' }).focus();
+  await page.keyboard.press('Enter');
+  const heading = page.getByRole('heading', { level: 1 });
+  await expect(heading).toHaveText('St. Louis Voter Guide');
+  await expect(heading).toBeFocused();
+  // Focus came from the keyboard, so :focus-visible matches: the rule, not the
+  // browser's heuristics, keeps the ring off.
+  expect(await heading.evaluate((el) => el.matches(':focus-visible'))).toBe(true);
+  expect(await heading.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe('none');
+  await page.keyboard.press('Tab');
+  const ring = await page.evaluate(() => {
+    const style = getComputedStyle(document.activeElement);
+    return { tag: document.activeElement.tagName, style: style.outlineStyle };
+  });
+  expect(ring).toEqual({ tag: 'A', style: 'solid' });
+});
+
 test('Back and Forward leave the scroll position to the browser', async ({ page }) => {
   // Count the app's own scrolls to the top.
   await page.addInitScript(() => {

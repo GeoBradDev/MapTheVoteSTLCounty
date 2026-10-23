@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
-import { Link } from 'wouter';
+import TextLink from '../../components/TextLink.jsx';
 import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
 import { TOPIC_GROUPS } from './groups.js';
@@ -7,8 +7,6 @@ import { getLocale, useLocale } from '../../i18n/index.js';
 import { copy } from './learnCopy.js';
 import { getTopics } from './topics.js';
 import { focusHeadingOnArrival } from '../../hydrate.js';
-
-const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
 
 // The "How to vote" index (#23): every topic, by group. Until the first topic
 // is published (#22) it says so and sends the voter to the official board site
@@ -41,20 +39,20 @@ export default function LearnPage() {
 
   return (
     <>
-      <h1 ref={headingRef} tabIndex={-1} className="text-2xl font-semibold">
+      <h1 ref={headingRef} tabIndex={-1} className="text-title font-bold">
         {copy.pageHeading}
       </h1>
 
       {groups.length === 0 ? (
         <p className="mt-4">
           {copy.empty.notReady}{' '}
-          <a href={election.countySiteUrl} rel="noreferrer" className="text-primary underline">
+          <TextLink href={election.countySiteUrl} rel="noreferrer">
             {copy.empty.countySite}
-          </a>{' '}
+          </TextLink>{' '}
           {copy.empty.or}{' '}
-          <a href={referrals.stlCityBoard.url} rel="noreferrer" className="text-primary underline">
+          <TextLink href={referrals.stlCityBoard.url} rel="noreferrer">
             {copy.empty.citySite}
-          </a>
+          </TextLink>
           .
         </p>
       ) : (
@@ -62,15 +60,15 @@ export default function LearnPage() {
           <p className="mt-4">{copy.intro}</p>
           {groups.map(({ group, topics: inGroup }) => (
             <section key={group} aria-labelledby={`learn-${group}`} className="mt-8">
-              <h2 id={`learn-${group}`} className="text-xl font-semibold">
+              <h2 id={`learn-${group}`} className="text-heading font-semibold">
                 {copy.groups[group]}
               </h2>
               <ul className="mt-2">
                 {inGroup.map((topic) => (
                   <li key={topic.id}>
-                    <Link href={`/learn/${topic.id}`} className={linkClass}>
+                    <TextLink to={`/learn/${topic.id}`} variant="tap">
                       {topic.title}
-                    </Link>
+                    </TextLink>
                   </li>
                 ))}
               </ul>
@@ -82,21 +80,21 @@ export default function LearnPage() {
       <nav aria-label={copy.moreHelp} className="mt-8 print:hidden">
         <ul className="flex flex-col gap-1">
           <li>
-            <Link href="/" className={linkClass}>
+            <TextLink to="/" variant="tap">
               {copy.lookup}
-            </Link>
+            </TextLink>
           </li>
           {groups.length > 0 && (
             <>
               <li>
-                <a href={election.countySiteUrl} rel="noreferrer" className={linkClass}>
+                <TextLink href={election.countySiteUrl} rel="noreferrer" variant="tap">
                   {copy.countySite}
-                </a>
+                </TextLink>
               </li>
               <li>
-                <a href={referrals.stlCityBoard.url} rel="noreferrer" className={linkClass}>
+                <TextLink href={referrals.stlCityBoard.url} rel="noreferrer" variant="tap">
                   {copy.citySite}
-                </a>
+                </TextLink>
               </li>
             </>
           )}

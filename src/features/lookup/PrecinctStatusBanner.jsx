@@ -1,13 +1,13 @@
+import Notice from '../../components/Notice.jsx';
+import TextLink from '../../components/TextLink.jsx';
 import election from '../../config/election.js';
 import { copy } from './resultsCopy.js';
 
-const linkClass = 'text-primary underline';
-
 function Link({ href, children }) {
   return (
-    <a href={href} rel="noreferrer" className={linkClass}>
+    <TextLink href={href} rel="noreferrer">
       {children}
-    </a>
+    </TextLink>
   );
 }
 
@@ -45,11 +45,8 @@ export default function PrecinctStatusBanner({ status }) {
   const text = bannerText(status);
   if (!text) return null;
   return (
-    <section
-      aria-label={copy.status.label}
-      className="mt-6 rounded-md border-l-4 border-accent bg-surface-raised p-4"
-    >
+    <Notice as="section" variant="warning" aria-label={copy.status.label} className="mt-6">
       <p>{text}</p>
-    </section>
+    </Notice>
   );
 }

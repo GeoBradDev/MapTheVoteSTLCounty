@@ -1,9 +1,7 @@
-import { Link } from 'wouter';
 import election from '../config/election.js';
 import referrals from '../config/referrals.js';
 import { copy } from './siteFooterCopy.js';
-
-const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
+import TextLink from './TextLink.jsx';
 
 // On every page, below main: that the site is nonpartisan and unofficial, with
 // the official boards' sites (#71), and the link to the privacy notice (#20).
@@ -17,28 +15,30 @@ export default function SiteFooter() {
         <p>{copy.statement}</p>
         <ul aria-label={copy.officialSites} className="mt-1 flex flex-col">
           <li>
-            <a
+            <TextLink
               href={election.countySiteUrl}
               rel="noreferrer"
-              className={`${linkClass} print-href print:inline`}
+              variant="tap"
+              className="print-href print:inline"
             >
               {copy.countySite}
-            </a>
+            </TextLink>
           </li>
           <li>
-            <a
+            <TextLink
               href={referrals.stlCityBoard.url}
               rel="noreferrer"
-              className={`${linkClass} print-href print:inline`}
+              variant="tap"
+              className="print-href print:inline"
             >
               {copy.citySite}
-            </a>
+            </TextLink>
           </li>
         </ul>
         <p className="mt-2 print:hidden">
-          <Link href="/privacy" className={linkClass}>
+          <TextLink to="/privacy" variant="tap">
             {copy.privacy}
-          </Link>
+          </TextLink>
         </p>
       </div>
     </footer>

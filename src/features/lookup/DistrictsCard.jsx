@@ -1,11 +1,10 @@
 import { Fragment } from 'react';
+import Disclosure from '../../components/Disclosure.jsx';
+import TextLink from '../../components/TextLink.jsx';
 import election from '../../config/election.js';
-import Disclosure from './Disclosure.jsx';
 import { useWideOnMount } from './useWideOnMount.js';
 import { districtRows } from './districts.js';
 import { copy } from './resultsCopy.js';
-
-const linkClass = 'text-primary underline';
 
 /**
  * The districts card body: each district the precinct is in, as the county's
@@ -22,9 +21,9 @@ export default function DistrictsCard({ precinct }) {
     return (
       <p className="mt-2">
         {copy.districts.missing}{' '}
-        <a href={election.officialLookupUrl} rel="noreferrer" className={linkClass}>
+        <TextLink href={election.officialLookupUrl} rel="noreferrer">
           {copy.officialLookup}
-        </a>
+        </TextLink>
         .
       </p>
     );

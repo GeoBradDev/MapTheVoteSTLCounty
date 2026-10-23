@@ -378,7 +378,8 @@ the two not-found pages, and `src/features/learn/learnA11y.test.jsx` on `/learn`
 topics.
 
 Page rules the checks rely on: every page has one `h1`, set with `tabIndex={-1}` so the app
-can focus it after an in-app link (`App.jsx`), and its own tab title (`usePageTitle` in
+can focus it after an in-app link (`App.jsx`); a heading focused that way draws no focus ring
+(it is not a control; `src/index.css`), while everything a voter can operate keeps it, and its own tab title (`usePageTitle` in
 `src/components/`, or the page's own layout effect: a title put back in a passive effect's
 cleanup lands after the next page's layout effect set its own, leaving the old one in the tab).
 A heading inside a section keeps the level below that section's heading.
@@ -448,6 +449,33 @@ cannot read the page's CSS, so `favicon.svg` writes `--color-primary` and `--col
 as hex, and `favicon.ico` and `apple-touch-icon.png` are drawn from it. A build test fails on
 red or blue in `favicon.svg` (not in the two raster icons); when those tokens change, redraw all
 three.
+
+## UI
+
+The pages share a few components in `src/components/` (#78). Use them instead of writing a
+link's or a button's classes in a feature file (`src/test/sharedStyles.test.js` fails on a local
+`linkClass`, `buttonClass` or the like):
+
+- `TextLink`: any link that reads as a link. `to` for a page of the app (wouter), `href` for
+  another site, a file, a `tel:` number or a full page load. `variant="inline"` (the default) in
+  a sentence, `tap` on a line of its own (44 px), `row` for a full-width row in a list of places
+  to go, `nav` for the site header. `LINK` is its look, for text drawn in a link's place.
+- `Button`: anything pressed. `primary` for a screen's one main action, `secondary` beside it or
+  for Try again, `quiet` for small actions in a list (Show more, Share), `size="sm"` in a row.
+  `busy` keeps it focusable and ignores presses while work runs. With `href` or `to` it is a
+  link drawn as a button (the sample ballot, directions). `buttonClass()` is its look, for a
+  placeholder that holds its place.
+- `Card`: a titled section of secondary detail (the results cards). `CARD` is its box, for a
+  placeholder; `CARD_EMPHASIS` is the box of the one answer a page leads with.
+- `Notice`: a message set apart, `info` (where to go instead), `warning` (this precinct has
+  nothing to vote on) or `danger` (something failed, with `role="alert"`). Where the alert's
+  live region must stay mounted while empty, keep the region and render the Notice inside it.
+- `Disclosure`: folded secondary detail (hour lists, sources), opened for printing.
+
+Sizes come from the type scale and tokens in `src/index.css`: `text-title` for a page's `h1`,
+`text-heading` for a section's `h2`, `text-subheading`, then `text-base` and `text-sm`;
+`rounded-control` and `rounded-card`; `shadow-card` and `shadow-popover`. Spacing is Tailwind's
+4 px step.
 
 ## Election config
 

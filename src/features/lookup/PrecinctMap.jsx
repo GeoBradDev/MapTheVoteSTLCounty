@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import TextLink from '../../components/TextLink.jsx';
 import WaitLegend from '../waitTimes/WaitLegend.jsx';
 import { BASEMAP_ATTRIBUTION } from './basemap.js';
 import { useJurisdiction } from './jurisdictionContext.js';
 import { copy } from './resultsCopy.js';
-
-const linkClass = 'text-primary underline';
 
 // MapLibre GL JS needs WebGL 2. Without it, the map chunk is never downloaded.
 const canDrawMap = () => typeof globalThis.WebGL2RenderingContext === 'function';
@@ -30,15 +29,15 @@ function Attribution() {
       {BASEMAP_ATTRIBUTION.map(({ label, href }, i) => (
         <span key={href}>
           {i > 0 && ', '}
-          <a href={href} rel="noreferrer" className={linkClass}>
+          <TextLink href={href} rel="noreferrer">
             {label}
-          </a>
+          </TextLink>
         </span>
       ))}
       . {copy.map.data}{' '}
-      <a href={boardSiteUrl} rel="noreferrer" className={linkClass}>
+      <TextLink href={boardSiteUrl} rel="noreferrer">
         {id === 'city' ? copy.map.city : copy.map.county}
-      </a>
+      </TextLink>
       .
     </p>
   );
@@ -166,7 +165,7 @@ export default function PrecinctMap({ code, origin, polls, classes = [] }) {
 
   return (
     <div ref={regionRef} role="region" aria-label={copy.map.label(code)} className="mt-3">
-      <div className="relative h-56 overflow-hidden sm:h-64 rounded-md border border-border">
+      <div className="relative h-56 overflow-hidden sm:h-64 rounded-card border border-border">
         {/* MapLibre adds its own classes to this element, so React must never
             change its className. Not positioned: .maplibregl-map sets
             position: relative, which would override a position utility.
