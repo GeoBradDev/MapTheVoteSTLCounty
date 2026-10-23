@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
+import cityResults from '../../config/cityResults.js';
 import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
 import { copy as searchCopy } from './addressSearchCopy.js';
@@ -68,19 +69,20 @@ describe('HomePage', () => {
     expect(screen.getByRole('button', { name: /use my location/i })).toBeInTheDocument();
   });
 
-  it('says a County voter may vote at any County polling place, with sources (#152)', () => {
+  // #165: the precinct pages state each jurisdiction's own Election Day rule;
+  // the home page, which serves City and County voters alike, states none.
+  it('states no Election Day rule for either jurisdiction (#165)', () => {
     const { container } = renderHome();
-    const box = screen.getByText(ruleCopy.rule).closest('div');
-    expect(
-      within(box).getByRole('link', { name: election.electionDayPollingPlace.phone }),
-    ).toBeInTheDocument();
-    for (const url of election.electionDayPollingPlace.sources) {
-      expect(
-        within(box).getByRole('link', { name: ruleCopy.sourceNames[new URL(url).host] }),
-      ).toHaveAttribute('href', url);
+    expect(container).not.toHaveTextContent(ruleCopy.rule);
+    expect(container).not.toHaveTextContent(ruleCopy.cityNote);
+    expect(container).not.toHaveTextContent(ruleCopy.help);
+    expect(container).not.toHaveTextContent(election.electionDayPollingPlace.phone);
+    expect(container).not.toHaveTextContent(cityResults.electionDayRule.quote);
+    expect(container).not.toHaveTextContent(/any polling place|assigned polling place/i);
+    const { sources, phoneSource } = election.electionDayPollingPlace;
+    for (const url of [...sources, phoneSource]) {
+      expect(container.querySelector(`a[href="${url}"]`)).toBeNull();
     }
-    expect(within(box).getByText(ruleCopy.cityNote)).toBeInTheDocument();
-    expect(container).not.toHaveTextContent(/assigned polling place/i);
   });
 
   it('links to "How to vote" and both official election sites (#93)', () => {
