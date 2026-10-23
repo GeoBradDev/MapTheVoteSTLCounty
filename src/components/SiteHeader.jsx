@@ -9,12 +9,12 @@ const navLink =
 
 /**
  * On every page, above main (#79): the site name, which links home, and the
- * two places a voter comes back to. One row at 360 px, 53 px tall with its
- * rule (at most 56), so it is never the largest thing on screen (#27); not
- * sticky, so it costs no room on a small phone once scrolled past; not
- * printed. "Look up" shows from the sm breakpoint up: at 360 px it does not
- * fit on the row with wider text spacing, and the site name already links
- * home.
+ * two places a voter comes back to. One row at 360 px: 53 px tall with its
+ * rule while the name fits on one line, at most 56 with wider text spacing,
+ * so it is never the largest thing on screen (#27). Not sticky, so it costs
+ * no room on a small phone once scrolled past, and not printed. "Look up"
+ * shows from the sm breakpoint up: at 360 px it does not fit on the row with
+ * wider text spacing, and the site name already links home.
  */
 export default function SiteHeader() {
   const [location] = useLocation();

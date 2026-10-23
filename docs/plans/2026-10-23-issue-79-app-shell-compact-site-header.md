@@ -38,7 +38,7 @@ compact and static so it never becomes a late-painting LCP element (#27, PR #178
    simulated LCP on the results pages), so the simpler root-path form was kept, with
    `public/favicon.svg` as the source mark.
 9. Lighthouse budgets (`npm run test:perf`) still pass; the header causes no layout shift (it is
-   in the pre-rendered markup and in the shell's first render, with fixed height).
+   in the pre-rendered markup and in the shell's first render, with a minimum height).
 
 ## Files that change
 
@@ -69,7 +69,8 @@ compact and static so it never becomes a late-painting LCP element (#27, PR #178
 3. Red App tests: header on every route and the error screen, focus after a header link; then
    App changes; green.
 4. Footer layout tweak (existing footer tests stay green).
-5. Icons and `index.html` links; check `dist/` has them after the build.
+5. Icons at the root paths (`/favicon.ico`, `/apple-touch-icon.png`, source mark
+   `public/favicon.svg`), no `index.html` links; a build test checks they ship.
 6. e2e changes; full gate including `test:e2e` and `test:perf`.
 
 ## Risks
@@ -91,8 +92,8 @@ compact and static so it never becomes a late-painting LCP element (#27, PR #178
   results pages, past the 2.5 s budget on main as it stands. PR #178 (#27) brings those pages
   to about 1.5 s; this branch is rebased on it and merged only with `npm run test:perf` green.
 
-Not chosen: a sticky header (issue says not by default; noted in the PR for review), a
-`favicon.ico` (modern browsers use the SVG), and the PWA manifest icons (#25 owns them; the mark
+Not chosen: a sticky header (issue says not by default; noted in the PR for review), an
+icon `<link>` in `index.html` (see criterion 8), and the PWA manifest icons (#25 owns them; the mark
 in `public/favicon.svg` is the source for those sizes).
 
 ## Proof
