@@ -53,8 +53,9 @@
   /*
     Type scale (#78), tuned for a 360 px phone: 14 (text-sm, fine print), 16
     (text-base, body), 18 (text-subheading), 22 (text-heading, a section's h2)
-    and 28 px (text-title, the page's h1). text-xs (12 px) is kept only for the
-    maps' credits. Spacing keeps Tailwind's 4 px step (mt-1 is 4 px): stay on
+    and 28 px (text-title, the page's h1). text-xs (12 px) is kept for the
+    smallest notes only: map credits, the Election Day hours' source line and
+    the share note. Spacing keeps Tailwind's 4 px step (mt-1 is 4 px): stay on
     it, and prefer 2, 3, 4, 6 and 8 steps between blocks.
   */
   --text-subheading: 1.125rem;

@@ -52,8 +52,23 @@ describe('Button', () => {
     expect(screen.getByRole('button')).toHaveAttribute('type', 'submit');
   });
 
-  it('is a plain link with href and an in-app link with to', () => {
-    const { hook } = memoryLocation({ path: '/' });
+  it('stacks its label lines, left-aligned, with stack', () => {
+    render(
+      <Button stack href="https://example.org/a.pdf">
+        <span>Open</span> <span>a.pdf</span>
+      </Button>,
+    );
+    const link = screen.getByRole('link');
+    expect(link).toHaveClass('flex-col', 'justify-center');
+    expect(link).not.toHaveClass('items-center');
+  });
+
+  it('fills the secondary look with the surface', () => {
+    expect(buttonClass({ variant: 'secondary' })).toContain('bg-surface');
+  });
+
+  it('is a plain link with href and an in-app link with to', async () => {
+    const { hook, history } = memoryLocation({ path: '/', record: true });
     render(
       <Router hook={hook}>
         <Button href="https://example.org/a.pdf" variant="secondary">
@@ -68,6 +83,8 @@ describe('Button', () => {
     const inApp = screen.getByRole('link', { name: 'Waits' });
     expect(inApp).toHaveAttribute('href', '/early-voting');
     expect(inApp).toHaveClass('bg-primary');
+    await userEvent.click(inApp);
+    expect(history).toEqual(['/', '/early-voting']);
   });
 
   it('passes onClick to a link drawn as a button', async () => {

@@ -70,7 +70,7 @@ Domain skills:
 - `src/i18n/LanguageSwitcher.jsx`: `rounded-control` (same radius).
 - New: `src/components/Button.jsx`, `buttonClass.js`, `TextLink.jsx`, `Card.jsx`, `Notice.jsx`,
   `Disclosure.jsx` and its test (moved), tests `src/components/{Button,TextLink,Card,Notice}.test.jsx`,
-  `src/test/sharedStyles.test.js` (no local class strings).
+  `src/test/sharedStyles.test.js` (no local class strings), `src/test/tokens.test.js`.
 - Removed: `src/features/lookup/Disclosure.jsx` (moved).
 - `src/features/lookup/RetryButton.jsx` (wraps Button).
 - Feature files swapping strings for components: `App.jsx` (wait times fallback heading
@@ -131,10 +131,13 @@ radius token).
 
 ## Proof
 
-- Criterion 1: `theme.test.js`, `palette.test.js`, build CSS checks; Card test asserts the
-  token classes.
+- Criterion 1: `src/test/tokens.test.js` compiles `src/index.css` with Tailwind and checks each
+  token utility reads its token (added after finder 3: class-name tests alone pass when a token
+  is renamed); `theme.test.js`, `palette.test.js` and the build CSS checks.
 - 2, 3: component unit tests (variants, busy guard, element per prop, `min-h-11`).
-- 4: new e2e test in `e2e/a11y.e2e.js`; it fails on main's CSS.
+- 4: two e2e tests in `e2e/a11y.e2e.js`: the `h1` after an in-app link, and the `h3` that
+  Show more focuses while the button keeps its ring. The first fails on main's CSS, the second
+  on a rule narrowed to `h1`.
 - 5: `src/test/sharedStyles.test.js`, failing before the swap.
 - 6, 7: unit tests of those pages still pass; the e2e target checks pass on `/learn/*`.
 - 9: `npm test`, `npm run build`, `npm run test:e2e`, `npm run test:perf`.

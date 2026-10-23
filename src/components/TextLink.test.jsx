@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import TextLink, { LINK } from './TextLink.jsx';
@@ -23,9 +24,17 @@ describe('TextLink', () => {
     expect(LINK).toBe('text-primary underline');
   });
 
-  it('is an in-app link with to', () => {
-    inRouter(<TextLink to="/learn">How to vote</TextLink>);
-    expect(screen.getByRole('link', { name: 'How to vote' })).toHaveAttribute('href', '/learn');
+  it('is an in-app link with to, which moves without a page load', async () => {
+    const { hook, history } = memoryLocation({ path: '/', record: true });
+    render(
+      <Router hook={hook}>
+        <TextLink to="/learn">How to vote</TextLink>
+      </Router>,
+    );
+    const link = screen.getByRole('link', { name: 'How to vote' });
+    expect(link).toHaveAttribute('href', '/learn');
+    await userEvent.click(link);
+    expect(history).toEqual(['/', '/learn']);
   });
 
   it.each([

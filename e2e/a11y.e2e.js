@@ -409,6 +409,25 @@ test('a heading focused after an in-app link draws no ring, a link still does', 
   expect(ring).toEqual({ tag: 'A', style: 'solid' });
 });
 
+// The same for a row heading "Show more" focuses (an h3), while the button
+// itself, and the card's script-focused container elsewhere, keep the ring.
+test('the row heading Show more focuses draws no ring, the button does', async ({ page }) => {
+  await page.clock.setFixedTime(WAITS_RECORDED_AT);
+  await answerFromFixtures(page);
+  await page.goto(`/p/${CODE}`);
+  const more = page.getByRole('button', { name: 'Show more polling places' });
+  await expect(more).toBeVisible();
+  // A key press first, so the browser treats the next focus as keyboard focus.
+  await page.keyboard.press('Shift');
+  await more.focus();
+  expect(await more.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe('solid');
+  await page.keyboard.press('Enter');
+  const focused = page.locator('h3:focus');
+  await expect(focused).toHaveCount(1);
+  expect(await focused.evaluate((el) => el.matches(':focus-visible'))).toBe(true);
+  expect(await focused.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe('none');
+});
+
 test('Back and Forward leave the scroll position to the browser', async ({ page }) => {
   // Count the app's own scrolls to the top.
   await page.addInitScript(() => {
