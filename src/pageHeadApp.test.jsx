@@ -2,12 +2,13 @@
 // arrives with its own title, description, canonical and Open Graph tags; once
 // the voter moves on, the head must describe the new page, and a page with no
 // entry (a precinct, the not-found page) gets the shell's head back.
-import { act, render } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import App from './App.jsx';
 import { siteUrl } from './config/site.js';
 import { copy as errorCopy } from './components/errorBoundaryCopy.js';
+import { copy as waitCopy } from './features/waitTimes/waitTimesCopy.js';
 import { pageHead, shellHead } from './pageHead.js';
 
 // The privacy page throws when `privacyThrows` is set, to show the error screen.
@@ -109,6 +110,28 @@ describe('head on navigation', () => {
   it.each(['/early-voting', '/nope'])('gives a precinct its own title straight from %s', (from) => {
     const location = arriveAt('/');
     act(() => location.navigate(from));
+    act(() => location.navigate('/p/CC007'));
+    expect(document.title).toBe('Precinct CC007 | St. Louis Voter Guide');
+  });
+
+  // The topic body and the wait times page load on demand, so these wait for
+  // the page to be shown (and its title set) before moving on (#128).
+  it('gives a precinct its own title straight from a loaded topic', async () => {
+    const location = arriveAt('/privacy');
+    act(() => location.navigate('/learn/voter-id'));
+    await screen.findByRole('heading', { level: 1, name: 'What ID to bring' });
+    act(() => location.navigate('/p/W01P12'));
+    expect(document.title).toBe('Precinct W01P12 | St. Louis Voter Guide');
+  });
+
+  it('gives a precinct its own title straight from the loaded wait times page', async () => {
+    const location = arriveAt('/privacy');
+    act(() => location.navigate('/early-voting'));
+    await waitFor(() => {
+      expect(document.title).toMatch(
+        new RegExp(`^(${waitCopy.heading}|${waitCopy.electionDay.heading}) \\|`),
+      );
+    });
     act(() => location.navigate('/p/CC007'));
     expect(document.title).toBe('Precinct CC007 | St. Louis Voter Guide');
   });

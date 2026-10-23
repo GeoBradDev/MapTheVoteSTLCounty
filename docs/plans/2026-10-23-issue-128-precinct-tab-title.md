@@ -37,5 +37,6 @@ Not chosen: one central title manager in App.jsx. Larger, and it touches the pag
 ## Proof
 
 - New tests in src/pageHeadApp.test.jsx cover criteria 1 to 4; they fail on main with the generic or old title.
+- Revision after review: the first cases for /learn/voter-id and /early-voting passed on main, since they moved on before the topic body or the lazy wait times page loaded. Two async tests wait for each page to load first. Run against the merge-base code they fail ("What ID to bring | St. Louis Voter Guide" and "Privacy | St. Louis Voter Guide" instead of the precinct title); on the branch they pass. The earlier cases stay, unedited.
 - Full gate: lint, format check, tests, build, e2e, perf.
 - Live drive: built site, open /privacy then go to /p/CC007 and /p/W01P12, read document.title.
