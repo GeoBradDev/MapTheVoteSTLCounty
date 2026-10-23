@@ -111,7 +111,6 @@ export const copy = translated((t) => ({
     // precinct the City Board's site (#89).
     pending: t('results.cards.pending'),
     pendingCity: t('results.cards.pendingCity'),
-    cityBoardSite: t('results.cards.cityBoardSite'),
   },
   polls: {
     listLabel: t('results.polls.listLabel'),
@@ -150,11 +149,10 @@ export const copy = translated((t) => ({
     inLine: (close) => t('results.polls.inLine', { close: formatTime(close) }),
     // County data assigns no polling place to a precinct (#72).
     nearestNote: t('results.polls.nearestNote'),
-    // The City's: any City voter may vote at any of them, in the City Board's
-    // words, below the list (#89).
+    // The City's (#89): its rule, in the City Board's words, is below the list.
     nearestNoteCity: t('results.polls.nearestNoteCity'),
     // Before the City Board's quoted rule (#89).
-    cityRule: t('results.polls.cityRule'),
+    cityRule: t('results.polls.cityRule', { board: t('results.polls.sourceNames.cityBoard') }),
     earlyVotingPointer: t('results.polls.earlyVotingPointer'),
     // Before the voter ID topic's title, which is the link (#23).
     beforeYouGo: t('results.polls.beforeYouGo'),
@@ -280,8 +278,6 @@ export const copy = translated((t) => ({
   errors: {
     notFound: t('results.errors.notFound'),
     failed: t('results.errors.failed'),
-    // The same, for a City precinct (#89).
-    failedCity: t('results.errors.failedCity'),
     offline: t('results.errors.offline'),
   },
 }));

@@ -176,9 +176,7 @@ function PrecinctResults({ code }) {
           {result?.error && (
             // A new node per attempt, so a repeated failure is announced again.
             <span key={result.attempt ?? 0}>
-              {isCity && result.error === 'failed'
-                ? copy.errors.failedCity
-                : copy.errors[result.error]}{' '}
+              {copy.errors[result.error]}{' '}
               <a href={jurisdiction.officialLookupUrl} rel="noreferrer" className={linkClass}>
                 {copy.officialLookupFor(jurisdiction.id)}
               </a>

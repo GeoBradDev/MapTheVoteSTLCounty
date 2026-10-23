@@ -330,7 +330,7 @@ test.describe('City precinct page', () => {
         up ? route.fulfill(json(body)) : route.fulfill({ status: 503, body: '' }),
     });
     await page.goto(`/p/${CITY_CODE}`);
-    const message = page.getByText(resultsCopy.errors.failedCity, { exact: false });
+    const message = page.getByText(resultsCopy.errors.failed, { exact: false });
     await expect(message).toBeVisible();
     await expect
       .poll(() =>

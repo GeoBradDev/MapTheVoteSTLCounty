@@ -148,7 +148,9 @@ may need new values too. Work on a branch and merge through the usual pull reque
 3. **Update `src/config/election.js`.** Every value that changes between elections is there,
    including every link to that election's own Instant Apps, each with its `sources` and
    `lastVerified` where it has them. Re-read every source; do not copy a value forward
-   unchecked. If a field the app reads was renamed, search `src/` and `scripts/` for the old
+   unchecked. That includes the City Board's Election Day rule (`electionDayRule` in the City
+   block), quoted from its polling places page: re-quote it from the page, with its new date
+   (a test fails while the quote names another election's date). If a field the app reads was renamed, search `src/` and `scripts/` for the old
    name and change every use, including `PRECINCT_FIELDS` and `POLL_FIELDS` in
    `src/data/arcgis.js` and the field lists in `scripts/check-config.mjs`. See
    [Election config](#election-config).
@@ -395,8 +397,8 @@ The config holds the shared election values and one block per jurisdiction, `cou
 `city` (#86). The default export still reads as the County block for code that serves only
 County voters. The results page gets its jurisdiction's data adapter and official lookup link
 from `src/data/jurisdictions.js`, picked from the precinct code's shape (`/p/CC007` is the County,
-`/p/W01P12` the City; [docs/data.md](docs/data.md#jurisdictions-and-precinct-codes)); its
-other links still read the County values until the City results land (#89, #93). The City's
+`/p/W01P12` the City; [docs/data.md](docs/data.md#jurisdictions-and-precinct-codes)), and
+each card's links follow that jurisdiction: a City page links the City Board (#89). The City's
 data client, `src/data/cityArcgis.js` (#87), is loaded on demand, by the City results and by
 `locate()` (#88) when it asks the City's precinct layer. The
 test also fails on a City block's layer, service, filter or field name (except the common words

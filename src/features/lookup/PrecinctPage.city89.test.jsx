@@ -167,7 +167,7 @@ describe('a City precinct page (#89)', () => {
     await ready(CODE);
     for (const title of [copy.cards.ballot, copy.cards.earlyVoting, copy.cards.districts]) {
       const card = screen.getByRole('region', { name: title });
-      const link = within(card).getByRole('link', { name: copy.cards.cityBoardSite });
+      const link = within(card).getByRole('link', { name: copy.map.city });
       expect(link).toHaveAttribute('href', referrals.stlCityBoard.url);
     }
   });
@@ -187,7 +187,7 @@ describe('a City precinct page (#89)', () => {
   it('shows the failure state with the City lookup when the City precincts fail', async () => {
     routeFetch({ fail: ['precincts'] });
     renderAt(CODE);
-    const alert = await alertSaying(copy.errors.failedCity);
+    const alert = await alertSaying(copy.errors.failed);
     expect(alert).not.toHaveTextContent(/county/i);
     const link = within(alert).getByRole('link', { name: copy.officialLookupFor('city') });
     expect(link).toHaveAttribute('href', referrals.stlCityLookup.url);

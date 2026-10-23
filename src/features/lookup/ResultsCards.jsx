@@ -38,7 +38,7 @@ function PendingCard() {
       <p className="mt-2">
         {copy.cards.pendingCity}{' '}
         <a href={boardSiteUrl} rel="noreferrer" className={linkClass}>
-          {copy.cards.cityBoardSite}
+          {copy.map.city}
         </a>
         .
       </p>

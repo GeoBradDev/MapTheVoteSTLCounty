@@ -335,7 +335,15 @@ describe("the City's Election Day rule (#89)", () => {
   // may vote at any listed location on Election Day.
   it("quotes the City Board's polling places page, with a verified date", () => {
     expect(rule.quote).toMatch(/\S/);
-    expect(rule.quote).toContain(election.electionDate.slice(0, 4));
+    // It names this election's date, so a quote carried over from an earlier
+    // election fails here.
+    const day = new Date(`${election.electionDate}T12:00:00Z`).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+      timeZone: 'UTC',
+    });
+    expect(rule.quote).toContain(day);
     // Named in referrals.js, which holds the City Board's stable pages.
     expect(referrals[rule.source].url).toBe(referrals.stlCityLookup.url);
     expect(new URL(referrals[rule.source].url).host).toBe('www.stlouis-mo.gov');

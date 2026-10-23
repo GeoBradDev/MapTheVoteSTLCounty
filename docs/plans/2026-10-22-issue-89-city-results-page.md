@@ -49,8 +49,11 @@ Domain skills:
 
 ## Files that change
 
-- `src/config/election.js`: City block gains `electionDayRule` (`quote`, `sources`,
-  `lastVerified`) and `siteFields.entry` / `siteFields.accessibleEntry`.
+- `src/config/election.js`: City block gains `electionDayRule` (`quote`, `source`,
+  `lastVerified`) and `siteFields.entry` / `siteFields.accessibleEntry`. `source` names the
+  referrals.js page (`stlCityLookup`) rather than repeating its URL: referral URLs live only in
+  referrals.js (a test enforces it), and election.js must load on its own before `npm ci`
+  (the health check's election window), so it cannot import referrals.js.
 - `src/config/election.test.js`: the City site field keys, and the rule's shape.
 - `src/data/cityArcgis.js` (+ test): read the two entrance fields into `entry` and
   `accessibleEntry` on each site.
@@ -61,13 +64,22 @@ Domain skills:
 - `src/features/lookup/nearbyPolls.js` (+ test): title-case only all-caps text (the County's),
   keep mixed-case City names as published ("Carr Lane VPA Middle School"); carry `entry` and
   `accessibleEntry`.
-- `src/features/lookup/PrecinctPage.jsx` (+ test): City header line, no banner for City,
-  City error text.
+- `src/features/lookup/PrecinctPage.jsx` (+ `PrecinctPage.test.jsx` for the City not-found
+  cases, and a new `PrecinctPage.city89.test.jsx` for the whole City page): City header line,
+  no banner for City. The page error text became jurisdiction-neutral ("The election board's
+  precinct data may be slow or down") instead of a second City string, to save first-load
+  bytes; County pages see that one wording change.
 - `src/features/lookup/ResultsCards.jsx`: City cards not built yet link the City Board.
-- `src/features/lookup/PollsCard.jsx` (+ test): jurisdiction's official lookup link, City
-  nearest note, City rule block instead of the County rule, entrance lines.
-- `src/features/lookup/CityElectionDayRule.jsx` (new, + test): the quoted rule with source and
-  last-verified date.
+- `src/features/lookup/PollsCard.jsx`: jurisdiction's official lookup link, City nearest
+  note, City rule block instead of the County rule, entrance lines. Its City behavior is
+  tested through the page in `PrecinctPage.city89.test.jsx`; the existing `PollsCard.test.jsx`
+  keeps covering the County card (nearest note and County rule).
+- `src/features/lookup/CityElectionDayRule.jsx` (new): the quoted rule with source and
+  last-verified date, tested through the page. Kept in the first load: a lazy chunk split a
+  shared 38 KB chunk out of the entry and cost about 1.3 KB more.
+- `src/features/privacy/PrivacyPage.test.jsx`, `src/i18n/en.json` privacy text: a shared link
+  sends the precinct code to its own board's election maps (a City code now reaches the City
+  Board's layers).
 - `src/features/lookup/PrecinctMap.jsx` (+ test): data credit per jurisdiction.
 - `src/features/lookup/resultsCopy.js`, `src/i18n/en.json`: the City strings.
 - `e2e/fixtures.js`, `e2e/a11y.e2e.js`, `e2e/failures.e2e.js`: answer City layers from the
@@ -106,13 +118,14 @@ precinct map draws no County boundary today, so there is no boundary to swap for
 
 ## Proof
 
-- Criterion 1, 3, 11: `nearbyPolls.test.js`, `PollsCard.test.jsx` (City rows, entrance lines,
-  County rows unchanged).
-- Criterion 2, 7: `CityElectionDayRule.test.jsx`, `PrecinctPage.test.jsx` (City page has the
-  quote, source, last verified, and no "county" text).
+- Criterion 1, 3: `nearbyPolls.test.js`, `PrecinctPage.city89.test.jsx` (City rows, entrance
+  lines, Show more). Criterion 11: the existing County tests, unchanged and passing.
+- Criterion 2, 7: `election.test.js` (the quote names this election's date),
+  `PrecinctPage.city89.test.jsx` (City page has the quote, source, last verified, and no
+  "county" text).
 - Criterion 4: `PrecinctMap.test.jsx` (City credit).
 - Criterion 5: `cityPrecinctCode.test.js`, `PrecinctPage.test.jsx`.
-- Criterion 6, 8: `PrecinctPage.test.jsx`, `e2e/failures.e2e.js` City case.
+- Criterion 6, 8: `PrecinctPage.city89.test.jsx`, `e2e/failures.e2e.js` City cases.
 - Criterion 9: `e2e/a11y.e2e.js` City route.
 - Criterion 10: `src/test/build.test.js`.
 - Live drive: `npm run build && npm run preview`, open `/p/W01P12` against the live City

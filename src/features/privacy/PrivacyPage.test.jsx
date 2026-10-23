@@ -119,7 +119,9 @@ describe('PrivacyPage', () => {
     expect(item).toHaveTextContent(
       "the points of all of them go to the county's election maps first, the same way, to check that they are in one precinct",
     );
-    expect(item).toHaveTextContent('Opening a shared link sends only the precinct code.');
+    expect(item).toHaveTextContent(
+      'Opening a shared link sends only the precinct code, to the election maps of its own board.',
+    );
     expect(item).not.toHaveTextContent("part of the request's web address");
     expect(item).not.toHaveTextContent('ordinary cache');
   });

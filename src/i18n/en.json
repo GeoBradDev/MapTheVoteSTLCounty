@@ -168,8 +168,7 @@
       "earlyVoting": "Early voting",
       "districts": "Your districts",
       "pending": "For now, find this in the",
-      "pendingCity": "For now, find this on the",
-      "cityBoardSite": "St. Louis City Board of Election Commissioners website"
+      "pendingCity": "For now, find this on the website of the"
     },
     "polls": {
       "listLabel": "Nearest polling places",
@@ -189,8 +188,8 @@
       "hours": "{open} to {close}",
       "inLine": "If you are in line at {close}, you can still vote.",
       "nearestNote": "These are the nearest Election Day polling places. The nearest one may not be your assigned polling place.",
-      "nearestNoteCity": "These are the nearest of the City's Election Day polling places. The City Board's rule on where you can vote is below.",
-      "cityRule": "The St. Louis City Board of Election Commissioners says:",
+      "nearestNoteCity": "These are the nearest of the City's Election Day polling places.",
+      "cityRule": "The {board} says:",
       "earlyVotingPointer": "To vote in person before Election Day, see Early voting below.",
       "beforeYouGo": "Before you go:",
       "source": "Source",
@@ -283,8 +282,7 @@
     },
     "errors": {
       "notFound": "We could not find that precinct. Search for your address, or use the",
-      "failed": "We could not load this precinct right now. The county's precinct data may be slow or down. Try again in a minute, or use the",
-      "failedCity": "We could not load this precinct right now. The City's precinct data may be slow or down. Try again in a minute, or use the",
+      "failed": "We could not load this precinct right now. The election board's precinct data may be slow or down. Try again in a minute, or use the",
       "offline": "You appear to be offline, so we could not load this precinct. Check your internet connection and try again, or use the"
     }
   },
@@ -385,7 +383,7 @@
       },
       "findingPrecinct": {
         "heading": "Finding your precinct",
-        "text": "The point where your address was found, or your device's location if you choose Use my location, goes to St. Louis County's election maps on Esri's ArcGIS Online ({electionMaps}), in the body of the request, not in its web address. When it is in or near the City of St. Louis, it goes the same way to the St. Louis City Board of Election Commissioners' election maps ({cityElectionMaps}), also on Esri's ArcGIS Online. An address the address search places in the City goes there first, and to the county's maps too only if the City has no precinct for it or cannot be reached. When the address you type has several entries in the county's address points, like the units of an apartment building, the points of all of them go to the county's election maps first, the same way, to check that they are in one precinct. Your browser does not keep these requests or their answers in its cache. Opening a shared link sends only the precinct code."
+        "text": "The point where your address was found, or your device's location if you choose Use my location, goes to St. Louis County's election maps on Esri's ArcGIS Online ({electionMaps}), in the body of the request, not in its web address. When it is in or near the City of St. Louis, it goes the same way to the St. Louis City Board of Election Commissioners' election maps ({cityElectionMaps}), also on Esri's ArcGIS Online. An address the address search places in the City goes there first, and to the county's maps too only if the City has no precinct for it or cannot be reached. When the address you type has several entries in the county's address points, like the units of an apartment building, the points of all of them go to the county's election maps first, the same way, to check that they are in one precinct. Your browser does not keep these requests or their answers in its cache. Opening a shared link sends only the precinct code, to the election maps of its own board."
       },
       "useMyLocation": {
         "heading": "Use my location",
