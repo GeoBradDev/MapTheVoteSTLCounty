@@ -44,10 +44,10 @@ const STALE_SHIFT_MS = (election.waitTimes.maxAgeMinutes + 60) * 60_000;
  * The early voting line counts (#102, #104, #106) for each board, by state.
  * Recorded on 2026-10-22: the County at 9:00 a.m. Central (fresh) and while
  * closed (empty); the City at 9:26 a.m. (fresh) and 7:44 a.m. (stale: every
- * report from the day before). The fresh City recording has no hours field,
- * the stale one's reports are a day old, and the page lists no City sites yet
- * (#91), so no City count shows in any state; the City states prove the page
- * does not depend on them.
+ * report from the day before). The fresh City recording has no hours field and
+ * the stale one's reports are a day old, so no City count shows in any state,
+ * although the page lists the City's sites (#91); the City states prove the
+ * page does not depend on them.
  */
 const WAIT_FIXTURES = {
   county: {

@@ -524,6 +524,49 @@ describe('WaitTimesPage: St. Louis City sites (#91)', () => {
     await waitFor(() => expect(screen.getAllByText(COUNT_TEXT)).toHaveLength(entries.length));
   });
 
+  it("keeps the County's sites when a retry after the City's failure fails for both", async () => {
+    const user = userEvent.setup();
+    let countyDown = false;
+    const loadSites = vi.fn(async () => {
+      if (countyDown) throw new Error('down');
+      return sites;
+    });
+    withCity({
+      loadSites,
+      loadCity: async () => {
+        throw new Error('down');
+      },
+      waitSource: createWaitTimesStore({ county: countyEmpty, city: null }),
+    });
+    await screen.findByText(new RegExp(copy.failed));
+    expect(items()).toHaveLength(sites.features.length);
+    countyDown = true;
+    await user.click(screen.getByRole('button', { name: /try again/i }));
+    await waitFor(() => expect(loadSites.mock.calls.length).toBeGreaterThan(2));
+    expect(items()).toHaveLength(sites.features.length);
+    expect(
+      screen.getByRole('link', { name: resultsCopy.officialLookupFor('city') }),
+    ).toHaveAttribute('href', referrals.stlCityLookup.url);
+  });
+
+  it("names both boards' lookups when both boards' sites fail", async () => {
+    const down = async () => {
+      throw new Error('down');
+    };
+    withCity({
+      loadSites: down,
+      loadCity: down,
+      waitSource: createWaitTimesStore({ county: countyEmpty, city: null }),
+    });
+    const alert = (await screen.findByText(new RegExp(copy.failed))).closest('[role="alert"]');
+    expect(
+      within(alert).getByRole('link', { name: resultsCopy.officialLookupFor('county') }),
+    ).toHaveAttribute('href', election.officialLookupUrl);
+    expect(
+      within(alert).getByRole('link', { name: resultsCopy.officialLookupFor('city') }),
+    ).toHaveAttribute('href', referrals.stlCityLookup.url);
+  });
+
   it('says each board serves its own voters, not that City sites are missing', async () => {
     withCity({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
     await screen.findByRole('list', { name: copy.listLabel });

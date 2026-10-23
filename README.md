@@ -6,8 +6,8 @@ location and gets their precinct, the nearest polling places, their sample ballo
 districts and the in-person absentee voting sites and hours, plus short "How to vote" guides
 built from official sources. A voter with a St. Louis City address is sent to their City precinct's
 page (#88), with its nearest City polling places, the City Board's Election Day rule and the
-map (#89; its sample ballot, early voting and districts cards link the City Board's site until
-#90 to #92); when the precinct cannot be found, they are referred to the City's own Board of
+map (#89) and the City's early voting sites and hours (#91; its sample ballot and districts cards
+link the City Board's site until #90 and #92); when the precinct cannot be found, they are referred to the City's own Board of
 Election Commissioners.
 
 It is for St. Louis County voters, on a phone first, and for whoever runs it for the next

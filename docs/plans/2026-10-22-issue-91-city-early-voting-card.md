@@ -41,7 +41,11 @@ budget, all City-only results UI in one on-demand chunk with the City data clien
 7. All City-only results UI (the City early voting card and #89's City Election Day rule)
    loads in one on-demand chunk with the City data client (`loadCityClient`), and the
    City schedule is in that chunk, not the first load. First-load JS stays under 120 KB
-   gzipped with more room than before this change.
+   gzipped. (Revised after review: first written as "with more room than before this
+   change". The measured first load is 46 bytes larger than main (50 bytes of room, from
+   96): the shared County and City list costs about 150 bytes and every string is in the
+   first load's en.json, while the City-only code and config moved out saved about 150.
+   More room needs a split beyond City-only code, which is #147's open question.)
 
 ## Files that change
 
@@ -100,8 +104,10 @@ budget, all City-only results UI in one on-demand chunk with the City data clien
   already holds.
 - Refactoring the County card can regress its focus-hold and nearby sort; its existing
   tests must stay green unchanged.
-- React.lazy suspends once even when the chunk is loaded: fallbacks keep layout (the
-  card skeleton).
+- React.lazy suspends once even when the chunk is loaded. The fallback is null, not a
+  skeleton (a skeleton cost about 40 first-load bytes): the chunk is always loaded by the
+  time a City card renders (the precinct came through it), so it suspends for a microtask,
+  and the card's own skeleton then holds the layout.
 - The City Board office's layer hours omit the last Saturday; the config follows the
   City Board's page, not the layer text.
 

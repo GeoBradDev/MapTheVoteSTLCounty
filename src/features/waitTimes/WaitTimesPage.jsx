@@ -76,42 +76,48 @@ async function loadCitySites() {
   };
 }
 
+// Each board's part of a load: its rows, each with its `jurisdiction`, the
+// schedule it keeps and its key in that board's line counts, and when they
+// loaded. Null when that board's sites failed.
+function countyPart({ status, value }) {
+  if (status !== 'fulfilled') return null;
+  const rows = pollRows(value).map((row) => ({
+    ...row,
+    jurisdiction: 'county',
+    schedule: schedules[row.absType],
+  }));
+  return { rows, loadedAt: value.loadedAt ?? Date.now() };
+}
+
+function cityPart({ status, value }) {
+  if (status !== 'fulfilled') return null;
+  const { layer, scheduleFor } = value;
+  // The City's counts are keyed by the site's name (waitTimes.city.siteField).
+  const rows = pollRows(layer).map((row) => ({
+    ...row,
+    jurisdiction: 'city',
+    waitKey: row.name,
+    schedule: scheduleFor(row.loc),
+  }));
+  return { rows, loadedAt: layer.loadedAt ?? Date.now(), schedules: value.schedules };
+}
+
 /**
- * Both boards' early voting sites as one list of rows, each with its
- * `jurisdiction`, the schedule it keeps and its key in that board's line
- * counts. When one board's sites fail, the other's are still listed and
- * `failed` names the one that failed; when both fail, the result is an error.
+ * Both boards' sites as one list. When one board's sites are missing, the
+ * other's are still listed and `failed` names the missing one; when both are,
+ * the result is an error.
  */
-function siteRows([county, city], attempt) {
-  if (county.status === 'rejected' && city.status === 'rejected') return { error: true, attempt };
-  const rows = [];
-  let loadedAt = Date.now();
-  if (county.status === 'fulfilled') {
-    loadedAt = Math.min(loadedAt, county.value.loadedAt ?? loadedAt);
-    for (const row of pollRows(county.value)) {
-      rows.push({ ...row, jurisdiction: 'county', schedule: schedules[row.absType] });
-    }
-  }
-  if (city.status === 'fulfilled') {
-    const { layer, scheduleFor } = city.value;
-    loadedAt = Math.min(loadedAt, layer.loadedAt ?? loadedAt);
-    // The City's counts are keyed by the site's name (waitTimes.city.siteField).
-    for (const row of pollRows(layer)) {
-      rows.push({
-        ...row,
-        jurisdiction: 'city',
-        waitKey: row.name,
-        schedule: scheduleFor(row.loc),
-      });
-    }
-  }
-  const failed =
-    county.status === 'rejected' ? 'county' : city.status === 'rejected' ? 'city' : null;
+function combine(county, city, attempt) {
+  if (!county && !city) return { error: true, attempt };
+  const parts = [county, city].filter(Boolean);
   return {
-    rows,
-    loadedAt,
-    failed,
-    citySchedules: city.status === 'fulfilled' ? city.value.schedules : null,
+    county,
+    city,
+    rows: parts.flatMap((part) => part.rows),
+    loadedAt: Math.min(...parts.map((part) => part.loadedAt)),
+    failed: !county ? 'county' : !city ? 'city' : null,
+    attempt,
+    citySchedules: city?.schedules ?? null,
   };
 }
 
@@ -143,11 +149,12 @@ function useSites(loadSites, loadCity) {
   useEffect(() => {
     let current = true;
     Promise.allSettled([loadSites(), loadCity()])
-      .then((settled) => siteRows(settled, attempt))
+      .then(([county, city]) => ({ county: countyPart(county), city: cityPart(city) }))
       .then((next) => {
         if (!current) return;
+        // A board whose sites failed this time keeps the rows it last loaded.
         setResult((prev) =>
-          (next.error || next.failed) && prev?.rows && !prev.failed ? prev : next,
+          combine(next.county ?? prev?.county ?? null, next.city ?? prev?.city ?? null, attempt),
         );
         done();
       });
@@ -495,7 +502,8 @@ export default function WaitTimesPage({
               <>
                 <p role="alert">
                   <span key={result.attempt}>
-                    {copy.failed} <OfficialLookupLink />.
+                    {copy.failed} <OfficialLookupLink /> {resultsCopy.earlyVoting.or}{' '}
+                    <OfficialLookupLink id="city" />.
                   </span>
                 </p>
                 <RetryButton onRetry={retry} busy={loading} className="mt-2" />
@@ -504,7 +512,7 @@ export default function WaitTimesPage({
             {result?.failed && (
               <>
                 <p role="alert">
-                  <span key={result.attempt ?? 0}>
+                  <span key={result.attempt}>
                     {copy.failed} <OfficialLookupLink id={result.failed} />.
                   </span>
                 </p>
@@ -513,7 +521,8 @@ export default function WaitTimesPage({
             )}
             {shown && shown.length === 0 && !result.failed && (
               <p>
-                {copy.none} <OfficialLookupLink />.
+                {copy.none} <OfficialLookupLink /> {resultsCopy.earlyVoting.or}{' '}
+                <OfficialLookupLink id="city" />.
               </p>
             )}
             {shown && shown.length > 0 && (
