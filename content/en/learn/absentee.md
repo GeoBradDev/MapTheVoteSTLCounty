@@ -110,7 +110,7 @@ to apply for a ballot.[^city-no-excuse]
   November 2.[^city-polling-places]
 
 The City Board's office also opened six weeks before the election for voters with one of the
-reasons below.[^city-absentee-ballot] See every site and its hours on the City Board's
+reasons below.[^city-absentee-ballot][^city-absentee-requirements] See every site and its hours on the City Board's
 [Voting Locations page](https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/polling-places/index.cfm),
 or look up your address on the [home page](/).[^city-polling-places]
 

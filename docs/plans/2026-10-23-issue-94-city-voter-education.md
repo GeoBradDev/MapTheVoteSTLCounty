@@ -55,8 +55,10 @@ separate pause.
   County URLs were switched from literals to `referrals.stlCityBoard.url` and
   `election.countySiteUrl`, as the repo's no-hard-coded-URL tests require; no assertion
   changed.
-- `src/test/citySections.test.js` (new, after finder 1): the same rule for blocks under a City
-  heading and blocks that say "the City", which `cityContent.test.js` (frozen) misses.
+- `src/test/citySections.test.js` (new, after finder 1, widened after finders 2 and 3): the
+  same rules for every City block, including blocks under a City heading, "the City" and
+  "The City's", County URLs on `www.`, and the topic-level City Board source check, which
+  `cityContent.test.js` (frozen) misses.
 - `src/features/learn/LearnPage.test.jsx`: the #93 test that pinned the County-only intro.
 - `README.md`: Learn content's official hosts sentence names the City Board's site; a rule
   for City and County sections and the new test; the empty `/learn` state links both boards
@@ -91,6 +93,10 @@ separate pause.
 - The City Board's Absentee Voting Requirements page lists incarceration under reasons that
   need a notary, while RSMo 115.277.2 exempts it; the topic keeps the statute and tells City
   voters in jail to ask the City Board first (found by finder 2).
+- The City Board's Register to Vote and Update pages say a voter who moves to the City from
+  elsewhere in Missouri must re-register; RSMo 115.165.3 lets a mover still on the rolls
+  change address at the election office on Election Day. The topic gives the statute and the
+  City Board's statement, attributed, and asks City movers to call (found by finder 3).
 - The City pages list 314-622-3319 both as an absentee phone and as a fax number; the topics
   repeat it as the pages do.
 - Topic bodies are separate chunks (#147), so longer topics do not touch the first-load budget.

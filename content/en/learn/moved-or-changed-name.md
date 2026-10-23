@@ -26,6 +26,9 @@ sources:
   - id: county-polling-places
     label: St. Louis County Board of Elections, Polling Places
     url: https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/elections/polling-places/
+  - id: city-register
+    label: St. Louis City Board of Election Commissioners, Register to Vote
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/voter-registration.cfm
   - id: city-update-registration
     label: St. Louis City Board of Election Commissioners, Update Voter Registration Name or Address
     url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/name-change.cfm
@@ -56,14 +59,17 @@ City voter may also vote at any of the City's polling places.[^city-polling-plac
 your new address on file before the next election, send the City Board a new voter
 registration form by the fourth Wednesday before that election.[^city-update-registration]
 
-## You moved here from another Missouri county
+## You moved here from another part of Missouri
 
-This includes a move between St. Louis County and the City of St. Louis.[^rsmo-115-165] If you
-are still registered at your old address, you can update your address on Election
+If you are still registered at your old address, you can update your address on Election
 Day.[^rsmo-115-165][^sos-other-questions] Do it in person at your new election board's office:
 the St. Louis County Board of Elections office, or the City's Board of Election Commissioners
 at 300 N. Tucker Blvd.[^rsmo-115-165][^sos-other-questions][^city-board] You must show a
 photo ID.[^rsmo-115-165][^rsmo-115-427] See [What ID to bring](/learn/voter-id).
+
+The City Board's pages say a voter who moves to the City from another part of Missouri has to
+register again with the new address.[^city-register][^city-update-registration] If you moved to
+the City, call the City Board at 314-622-4336 before Election Day.[^city-update-registration]
 
 ## You moved to Missouri from another state
 
