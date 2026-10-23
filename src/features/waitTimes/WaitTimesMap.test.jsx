@@ -127,4 +127,63 @@ describe('WaitTimesMap', () => {
       expect(observers[0].disconnect).toHaveBeenCalled();
     });
   });
+
+  // Opened on arrival (#172), the map may start loading in a tab the voter
+  // then leaves: a hidden tab draws nothing, so its time does not count.
+  describe('load time limit', () => {
+    const LIMIT = 15_000;
+    let visibility;
+
+    beforeEach(() => {
+      visibility = 'visible';
+      vi.spyOn(document, 'visibilityState', 'get').mockImplementation(() => visibility);
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+      vi.restoreAllMocks();
+    });
+
+    const setVisibility = (value) => {
+      visibility = value;
+      act(() => document.dispatchEvent(new Event('visibilitychange')));
+    };
+
+    it('drops a map that has not rendered in time', async () => {
+      vi.useFakeTimers();
+      render(<WaitTimesMap sites={SITES} classes={CLASSES} />);
+      await act(() => vi.advanceTimersByTimeAsync(0));
+      act(() => vi.advanceTimersByTime(LIMIT - 1));
+      expect(region()).toBeInTheDocument();
+      act(() => vi.advanceTimersByTime(1));
+      expect(screen.queryByRole('region')).toBeNull();
+    });
+
+    it('does not count time while the page is hidden', async () => {
+      vi.useFakeTimers();
+      render(<WaitTimesMap sites={SITES} classes={CLASSES} />);
+      await act(() => vi.advanceTimersByTimeAsync(0));
+      act(() => vi.advanceTimersByTime(LIMIT - 1000));
+      setVisibility('hidden');
+      act(() => vi.advanceTimersByTime(LIMIT * 4));
+      expect(region()).toBeInTheDocument();
+      setVisibility('visible');
+      act(() => vi.advanceTimersByTime(999));
+      expect(region()).toBeInTheDocument();
+      act(() => vi.advanceTimersByTime(1));
+      expect(screen.queryByRole('region')).toBeNull();
+    });
+
+    it('starts the clock only when a page that opened hidden is shown', async () => {
+      visibility = 'hidden';
+      vi.useFakeTimers();
+      render(<WaitTimesMap sites={SITES} classes={CLASSES} />);
+      await act(() => vi.advanceTimersByTimeAsync(0));
+      act(() => vi.advanceTimersByTime(LIMIT * 2));
+      expect(region()).toBeInTheDocument();
+      setVisibility('visible');
+      act(() => vi.advanceTimersByTime(LIMIT));
+      expect(screen.queryByRole('region')).toBeNull();
+    });
+  });
 });
