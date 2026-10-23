@@ -213,7 +213,8 @@ describe('PrecinctPage', () => {
     ).toBeVisible();
     // The share note needs only the code, so it shows too (#156); the share
     // button comes with the results.
-    expect(screen.getByText(copy.share.note('CC007'))).not.toHaveAttribute('aria-hidden');
+    // Painted, but hidden from screen readers until the button it describes comes.
+    expect(screen.getByText(copy.share.note('CC007'))).toHaveAttribute('aria-hidden', 'true');
     expect(screen.queryByRole('button', { name: copy.share.button })).toBeNull();
     // Nothing in it takes focus: a link focused there would be lost, focus
     // and all, when the skeleton goes.

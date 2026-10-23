@@ -20,7 +20,8 @@ const NOTE = 'mt-1 text-xs text-muted';
  * The header's row before the precinct loads: `children` (the header's other
  * links) as ShareLink places them. With `hold`, while a code-shaped precinct
  * loads (#27), the button's place is held, invisible and hidden from screen
- * readers, and its note shows as ShareLink shows it, so nothing below moves
+ * readers, and its note shows as ShareLink shows it (hidden from screen
+ * readers, as there is no button yet for it to describe), so nothing below moves
  * when the loaded row replaces it. The note needs only the code, and with
  * some fonts it is the page's largest text, so it paints before the data
  * (#156). Nothing to press: a code that turns out not to exist has no link
@@ -41,7 +42,9 @@ export function ShareLinkPlaceholder({ code, hold, children }) {
       </div>
       {hold && (
         <>
-          <p className={NOTE}>{copy.share.note(code)}</p>
+          <p aria-hidden="true" className={NOTE}>
+            {copy.share.note(code)}
+          </p>
           <p className="mt-1" />
         </>
       )}

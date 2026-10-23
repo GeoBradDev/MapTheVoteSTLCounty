@@ -120,7 +120,16 @@ fonts (Noto Sans, DejaVu Sans) the date line wraps to two lines and wins. Fixes:
   link; on desktop, the City's sample ballot paragraph), whose data driven text can be
   larger: accepted, outside the Lighthouse run's viewport.
 - The fixture server's wait is four simulated round trips (600 ms) rather than 100 ms, for
-  margin on slower runners (CI painted at 111 ms against 100 ms answers).
+  margin on slower runners (CI's first paint was at 111 ms, its answers at about 210 ms).
+
+## Open: outside early voting (needs the owner's decision)
+
+The review rerun found that the fix holds only while early voting runs. Outside it (from
+Election Day, and after), the early voting part of the summary is gone, so the summary's
+sample ballot paragraph sits inside 360 x 640 and, painted with the precinct data, becomes
+the LCP on every font (pinned clock, Election Day: entries at about 1600 ms against 1500 ms
+answers in the e2e test). With the 600 ms fixture wait, Lighthouse would then measure about
+3 s on both results pages from November 3. Not merged; options are on #27.
 
 ## Order of work
 
