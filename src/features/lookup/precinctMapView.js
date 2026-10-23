@@ -132,15 +132,19 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
       const { color, labelColor } = readColors();
       // Every label in the muted token, interstates with the gray shield.
       neutralizeBasemap(map, labelColor);
-      if (!map.getSource('precinct')) {
+      const fill = { 'fill-color': color, 'fill-opacity': 0.1 };
+      const line = { 'line-color': color, 'line-width': 2.5 };
+      if (map.getSource('precinct')) {
+        // Already there: only this theme's colors.
+        map.setPaintProperty('precinct-fill', 'fill-color', fill['fill-color']);
+        map.setPaintProperty('precinct-line', 'line-color', line['line-color']);
+      } else {
+        // The paint goes in with the layer, so it draws at its final colors
+        // from the first frame instead of fading in from the defaults.
         map.addSource('precinct', { type: 'geojson', data: { type: 'Feature', geometry } });
-        map.addLayer({ id: 'precinct-fill', type: 'fill', source: 'precinct' });
-        map.addLayer({ id: 'precinct-line', type: 'line', source: 'precinct' });
+        map.addLayer({ id: 'precinct-fill', type: 'fill', source: 'precinct', paint: fill });
+        map.addLayer({ id: 'precinct-line', type: 'line', source: 'precinct', paint: line });
       }
-      map.setPaintProperty('precinct-fill', 'fill-color', color);
-      map.setPaintProperty('precinct-fill', 'fill-opacity', 0.1);
-      map.setPaintProperty('precinct-line', 'line-color', color);
-      map.setPaintProperty('precinct-line', 'line-width', 2.5);
     } catch (error) {
       fail(error);
     }

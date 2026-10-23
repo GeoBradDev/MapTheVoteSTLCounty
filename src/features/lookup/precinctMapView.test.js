@@ -45,7 +45,8 @@ vi.mock('maplibre-gl', () => {
       this.sources.push(id);
     }
     addLayer(layer) {
-      this.layers.push({ paint: {}, ...layer });
+      this.layers.push({ ...layer, paint: { ...layer.paint } });
+      this.addedPaint = [...(this.addedPaint ?? []), layer.paint];
     }
     setStyle(style) {
       // MapLibre starts the new style with only its own layers.
@@ -165,6 +166,9 @@ describe('the precinct map and the color scheme', () => {
     map.fire('style.load');
     expect(map.sources).toEqual(['precinct']);
     expect(map.layers.map((l) => l.id)).toEqual(['precinct-fill', 'precinct-line']);
+    // Each layer is added with its paint, so it never fades in from black.
+    expect(map.addedPaint.at(-1)).toEqual({ 'line-color': lineColor(map), 'line-width': 2.5 });
+    expect(map.addedPaint.at(-2)).toMatchObject({ 'fill-opacity': 0.1 });
     expect(lineColor(map)).not.toBe(light);
   });
 
