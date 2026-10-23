@@ -28,7 +28,7 @@ Domain skills:
    basemap with its ink outline, its number 4.5:1 on its fill, and every pair (and the
    no-count marker) at least 0.15 apart in OKLab. k classes use a fixed subset of the five.
 5. The same rule on the precinct map on Election Day (#107): classes from that board's
-   fresh counts at its listed polling places.
+   fresh counts at its listed polling places (the ones on the map, not every one loaded).
 6. Unit tests for the breaks: typical spread, all equal, 1 or 2 distinct values, outliers, empty.
 7. The map stays out of the first load and loads only when its box scrolls into view, with
    its space reserved, so `/early-voting` stays inside the Lighthouse budgets; a11y passes.
@@ -82,6 +82,7 @@ Domain skills:
 - Criterion 4: `mapColors.test.js`.
 - Criterion 1, 3, 7: `WaitTimesPage.test.jsx`, `WaitTimesMap.test.jsx`, e2e a11y route for
   `/early-voting` with the legend, `npm run test:perf`.
-- Criterion 5: PollsCard / PrecinctMap tests.
+- Criterion 5: `PollsCard.electionDay107.test.jsx` (legend ranges and marker colors equal
+  the Jenks classes of the listed counts), `PrecinctMap.test.jsx`.
 - Live drive: `npm run build && npm run preview`, open `/early-voting` at a desktop size,
   see the map and legend without a tap; at 360 px the map loads on scroll.

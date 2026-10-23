@@ -224,16 +224,12 @@ export default function PollsCard({ code, origin, waitSource, electionDayOn }) {
   const { rows, listRef, listProps } = useHeldOrder(ordered);
   const shownRows = rows?.slice(0, shown);
   // The map's line count classes on Election Day (#172): Jenks natural breaks
-  // over this board's fresh counts at every polling place loaded, by the same
-  // rule as the wait times map. The module loads only then.
+  // over this board's fresh counts at the polling places listed (and so on the
+  // map), by the same rule as the wait times map. The module loads only then.
   const scale = useWaitScale(waitsOn);
-  const mapClasses = useMemo(
-    () =>
-      scale
-        ? scale.waitClasses((ordered ?? []).filter((p) => p.wait).map((p) => p.wait.value))
-        : [],
-    [ordered, scale],
-  );
+  const mapClasses = scale
+    ? scale.waitClasses((shownRows ?? []).filter((p) => p.wait).map((p) => p.wait.value))
+    : [];
   // The map's places, with their line count color steps on Election Day. The
   // map compares them with what it drew, so a render with the same places and
   // colors redraws nothing.
