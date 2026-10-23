@@ -59,17 +59,18 @@ const line = (height, width) => (
 );
 
 // Placeholder lines at least the height of a place's label, name and address,
-// with `early` the lines of an early voting site's status and line count, and
-// its directions button, so nothing below moves when it loads (#27).
-function PlaceSkeleton({ testId, early = false }) {
+// with `early` the line of an early voting site's status, with `count` the
+// two of its line count, and its directions button, so nothing below moves
+// when it loads (#27).
+function PlaceSkeleton({ testId, early = false, count = false }) {
   return (
     <div data-testid={testId} aria-hidden="true" className="mt-2">
       {line('h-5', 'w-1/2')}
       {line('h-6', 'w-3/4')}
       {line('h-6', 'w-2/3')}
       {early && line('h-6', 'w-1/2')}
-      {early && line('h-6', 'w-2/3')}
-      {early && line('h-5', 'w-1/2')}
+      {count && line('h-6', 'w-2/3')}
+      {count && line('h-5', 'w-1/2')}
       <div className={`mt-1 h-11 w-40 ${bar}`} />
     </div>
   );
@@ -172,6 +173,11 @@ export function EarlyVoteSummary({
   const during = earlyVotingSeason(schedules, now, election.timeZone).kind === 'during';
   const waits = useWaitTimes(during ? waitSource : OFF_WAITS)[waitsKey];
   if (!during) return null;
+  // A count can show only while some site is open now, so the placeholder
+  // holds its lines only then.
+  const anyOpen = Object.values(schedules).some(
+    (list) => earlyVotingStatus(list, now, election.timeZone).kind === 'openNow',
+  );
 
   const rows = result?.rows;
   // A site the schedules do not cover has no status, as on the card.
@@ -186,7 +192,7 @@ export function EarlyVoteSummary({
   const wait = (key && waits.waits.find((entry) => entry.siteId === key)) || null;
   return (
     <Part title={copy.summary.early}>
-      {!result && <PlaceSkeleton testId="summary-early-skeleton" early />}
+      {!result && <PlaceSkeleton testId="summary-early-skeleton" early count={anyOpen} />}
       {site && (
         <Place label={openSite ? copy.summary.nearestOpen : copy.summary.nearestSite} place={site}>
           {siteStatus && <p>{copy.earlyVoting.status(siteStatus, formatLongDate)}</p>}

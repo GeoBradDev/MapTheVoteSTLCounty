@@ -149,6 +149,22 @@ describe('ResultsSummary', () => {
     ).toHaveAttribute('href', '/early-voting');
   });
 
+  it('holds no count lines while the sites load at an hour no site is open', () => {
+    // Thursday, October 22, 6 a.m.: before any site opens.
+    vi.setSystemTime(cdt(10, 22, 6));
+    getAbsenteeSites.mockReturnValue(new Promise(() => {}));
+    renderSummary({ waitSource: store(countyFresh) });
+    const lines = screen.getByTestId('summary-early-skeleton').children;
+    // A label, the name and address, the status, then the directions button.
+    expect([...lines].map((line) => line.className)).toEqual([
+      expect.stringContaining('h-5'),
+      expect.stringContaining('h-6'),
+      expect.stringContaining('h-6'),
+      expect.stringContaining('h-6'),
+      expect.stringContaining('h-11'),
+    ]);
+  });
+
   // #27: the count and its board take two lines; the placeholder holds both.
   it('holds two lines for the count while the first counts load', async () => {
     renderSummary({ waitSource: store(() => new Promise(() => {})) });

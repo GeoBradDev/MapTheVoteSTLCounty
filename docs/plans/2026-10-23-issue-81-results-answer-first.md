@@ -146,3 +146,4 @@ Not done here: Election Day line counts in the summary (the card has them, #107)
   page still holds the districts, dates and hours, and the rule's sources (finder 1).
 - The count placeholder in the summary holds both lines of a count (finder 4), and the a11y
   e2e run opens the County route's folded sections so axe still covers them (finder 4).
+- The early voting placeholder holds the count lines only while some site is open now (finder 5).
