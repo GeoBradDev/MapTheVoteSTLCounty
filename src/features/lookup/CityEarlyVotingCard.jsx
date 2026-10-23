@@ -55,14 +55,15 @@ function CityDetail({ site, now }) {
  * early voting (No Excuse Absentee) sites, each with its status today, its
  * own dates and hours from the City config, and while early voting runs its
  * current line count, with the County card's code (EarlyVotingSites). No
- * eligibility rules: the City Board's No Excuse Absentee page has them, and
- * how to vote by mail. Not the absentee topic, which is the County's (#94). In the City chunk (src/cityChunk.js).
+ * eligibility rules: it cites the City Board's No Excuse Absentee page and
+ * links its Vote by Absentee Ballot page for voting by mail. Not the absentee
+ * topic, which is the County's (#94). In the City chunk (src/cityChunk.js).
  * @param {{ code: string, origin: { lat: number, lng: number } | null,
  *   waitSource?: object }} props `waitSource` is for tests.
  */
 export default function CityEarlyVotingCard({ code, origin, waitSource = cityWaits }) {
   const {
-    sources: [hoursSource, noExcuseUrl],
+    sources: [hoursSource, noExcuseUrl, absenteeUrl],
     lastVerified,
   } = cityResults.earlyVoting;
   return (
@@ -81,12 +82,16 @@ export default function CityEarlyVotingCard({ code, origin, waitSource = cityWai
         <a href={hoursSource} rel="noreferrer" className={linkClass}>
           {sourceName(hoursSource)}
         </a>
+        ,{' '}
+        <a href={noExcuseUrl} rel="noreferrer" className={linkClass}>
+          {message('results.earlyVoting.noExcuseCity')}
+        </a>
         . {t.lastVerified(formatLongDate(lastVerified, { year: true }))}
       </p>
       <p className="mt-3">
         {message('results.earlyVoting.mailCity')}{' '}
-        <a href={noExcuseUrl} rel="noreferrer" className={linkClass}>
-          {sourceName(noExcuseUrl)}
+        <a href={absenteeUrl} rel="noreferrer" className={linkClass}>
+          {sourceName(absenteeUrl)}
         </a>
         .
       </p>

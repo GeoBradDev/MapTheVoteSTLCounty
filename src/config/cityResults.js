@@ -33,10 +33,14 @@ const hoursSource = referrals.stlCityLookup.url;
 // The No Excuse Absentee page, under the board's site, has the dates and who
 // may vote this way; the card links it instead of saying the rules (#91).
 const noExcuseUrl = `${referrals.stlCityBoard.url}voter/absentee/no-excuse-absentee.cfm`;
+// Its Vote by Absentee Ballot page covers both ways to vote absentee, by mail
+// too, which the No Excuse page says it does not; the card's mail line links it.
+const absenteeUrl = `${referrals.stlCityBoard.url}voter/absentee/vote-by-absentee-ballot.cfm`;
 
 const earlyVoting = {
-  // In this order: the card cites the first and links the second.
-  sources: [hoursSource, noExcuseUrl],
+  // In this order: the card cites the first two and links the third for mail
+  // and application-based absentee voting.
+  sources: [hoursSource, noExcuseUrl, absenteeUrl],
   lastVerified: '2026-10-22',
   sites: {
     Buder_Library: 'lateWeekdays',

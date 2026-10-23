@@ -1008,8 +1008,11 @@ fields (`pocname`, `pocemail`, `pocphone`).
   the wait time selection reads `earlyvotingoperhours`, to show a count only while a site is
   open, as the City Board's dashboard does. `node scripts/check-config.mjs` fails while a site the
   filter returns has no hours in the config. The City early voting card and the wait times page
-  show these sites; the card links the No Excuse Absentee page rather than stating who may vote
-  this way.
+  show these sites; the card cites the No Excuse Absentee page rather than stating who may vote
+  this way, and for voting by mail links the City Board's Vote by Absentee Ballot page
+  (`.../voter/absentee/vote-by-absentee-ballot.cfm`, which covers both ways to vote absentee;
+  the No Excuse page says it has no mail option), not the absentee topic, which is written for
+  County voters (a City topic is #94).
 - **Not the Election Day list:** `ElectionGeography_public_*` layer 0 has the same 57 public
   rows (it is a view, `publicview = 'Yes'`, of the same data) without the ZIP fields.
   `Polling_Centers_WFL1/FeatureServer/1` is the page's own embedded map ("Active Polling

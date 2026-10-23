@@ -34,12 +34,14 @@ budget, all City-only results UI in one on-demand chunk with the City data clien
    on the site `name`; revised during implementation from "the shared loop", which also
    asks County layers), the nearby sort and the link
    to `/early-voting`, as the County card does since #105.
-4. No eligibility rules in the card: it links the City Board's No Excuse Absentee page
-   ("To vote by mail or with an absentee ballot, see the St. Louis City Board of Election
-   Commissioners"). No County text on a City page. (Revised after review: the issue also
+4. No eligibility rules in the card: it cites the City Board's No Excuse Absentee page
+   with its hours source, and its mail line ("To vote by mail or with an absentee ballot,
+   see the St. Louis City Board of Election Commissioners") links the Board's Vote by
+   Absentee Ballot page, which covers voting by mail (the No Excuse page says there is no
+   mail option). No County text on a City page. (Revised after review: the issue also
    asks for the learn topic, but today's absentee topic is written for County voters (its
    hours, office and mailing address), so a City page does not link it until the City
-   topic of #94 exists. One new string, `results.earlyVoting.mailCity`.)
+   topic of #94 exists. Two new strings, `results.earlyVoting.mailCity` and `noExcuseCity`.)
 5. Tests for a weekday, a Saturday, a Sunday (closed), the last day (November 2), and
    after early voting ends (the card says it has ended, as the County card does).
 6. `/early-voting` lists the City sites with the County's, with their hours, status and
@@ -48,7 +50,7 @@ budget, all City-only results UI in one on-demand chunk with the City data clien
    loads in one on-demand chunk with the City data client (`loadCityClient`), and the
    City schedule is in that chunk, not the first load. First-load JS stays under 120 KB
    gzipped. (Revised after review: first written as "with more room than before this
-   change". The measured first load is 46 bytes larger than main (50 bytes of room, from
+   change". The measured first load is 80 bytes larger than main (16 bytes of room, from
    96): the shared County and City list costs about 150 bytes and every string is in the
    first load's en.json, while the City-only code and config moved out saved about 150.
    More room needs a split beyond City-only code, which is #147's open question.)
@@ -90,7 +92,8 @@ budget, all City-only results UI in one on-demand chunk with the City data clien
   retry, and a board keeps the rows it last loaded through a failed retry; the status line says unavailable when either board's counts fail.
 - `src/i18n/en.json`, copy modules: the card intro made jurisdiction neutral; wait times
   intro covers both; the "City not listed" line becomes "each board's sites are for its own
-  voters". No new strings: every string is in the first load.
+  voters". Only the two City card strings of criterion 4 are new: every string is in the
+  first load.
 - `scripts/check-config.mjs`: every City early voting site has a schedule.
 - Tests: new City card tests, schedule tests, wait page City tests, city89 test updates.
 - Docs: README (Election config, wait times steps), docs/data.md (City early voting).
