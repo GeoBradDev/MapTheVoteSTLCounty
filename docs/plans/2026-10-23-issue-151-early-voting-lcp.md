@@ -27,7 +27,7 @@ page (2417 ms). The budget is right; the page paints its main content too late.
    so the largest text paints before the page chunk and before any data request.
 2. The fallback heading is not focusable (no `tabindex`), so the in-app arrival focus logic
    in `App.jsx` still finds no heading and the page focuses its own when it mounts.
-3. The page itself is unchanged: same heading, intro, focus and data behavior; all
+3. The page itself is unchanged (a comment aside): same heading, intro, focus and data behavior; all
    existing tests pass unchanged.
 4. `npm run test:perf` passes with `/early-voting` median LCP well under 2500 ms locally
    and in CI (target under 2200 ms). The LCP limit is not changed.
@@ -40,6 +40,12 @@ page (2417 ms). The budget is right; the page paints its main content too late.
   fallback shows the heading and intro, its heading has no tabindex, and the page replaces
   it once the chunk resolves. A file of its own, since `src/App.test.jsx` loads the real
   chunk, which is then cached.
+
+- `src/App.test.jsx`: the two wait times route tests wait for the page's own heading
+  (`tabindex="-1"`), since the fallback's heading has the same text and would satisfy them
+  before the page loads (review finding).
+- `src/features/waitTimes/WaitTimesPage.jsx`: a comment only, that the fallback repeats its
+  heading and intro.
 
 Revision during implementation: the first version moved the heading and intro into a
 shared `WaitTimesIntro` component used by both the page and the fallback. That put the
