@@ -3,8 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- --color-surface in src/index.css as hex (#76); src/test/theme.test.js checks it. -->
-    <meta name="theme-color" content="#fafcfc" />
+    <!-- Both schemes (#77), so the canvas is dark before the stylesheet loads in dark mode. -->
+    <meta name="color-scheme" content="light dark" />
+    <!-- Each theme's --color-surface in src/index.css as hex (#76, #77); src/test/theme.test.js checks them. -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fafcfc" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#111514" />
     <meta
       name="description"
       content="A nonpartisan, unofficial guide for St. Louis City and County voters: find your precinct, polling places and sample ballot. Not affiliated with any board of elections."

@@ -10,8 +10,9 @@ import {
   declarations,
   parseOklch,
   partyColor,
-  oklchTokens,
+  DARK_MEDIA,
   stripComments,
+  themeTokens,
   toOklch,
 } from './colors.js';
 import { oklchToRgb } from '../features/lookup/mapBounds.js';
@@ -185,21 +186,58 @@ describe('design tokens', () => {
   });
 });
 
-// The browser's own chrome color (#76). It is outside CSS, so the guards above
-// never see it: it must match the page's surface and be neither red nor blue.
+// The browser's own chrome color (#76), one per scheme (#77). It is outside
+// CSS, so the guards above never see it: each must match its theme's surface
+// and be neither red nor blue.
 describe('theme-color meta', () => {
   const html = readFileSync(path.join(SRC, '../index.html'), 'utf8');
   const css = readFileSync(path.join(SRC, 'index.css'), 'utf8');
-
-  it('is the surface token, neither red nor blue', () => {
-    const value = html.match(/<meta\s+name="theme-color"\s+content="([^"]+)"/)?.[1];
-    expect(value).toMatch(/^#[0-9a-f]{6}$/i);
-    expect(partyColor(toOklch(value))).toBeNull();
-    // The surface token as sRGB hex, as the browser draws it.
-    const hex = `#${oklchToRgb(oklchTokens(css).surface)
+  const themes = themeTokens(css);
+  // A token as sRGB hex, as the browser draws it.
+  const hexOf = (value) =>
+    `#${oklchToRgb(value)
       .match(/\d+/g)
       .map((c) => Number(c).toString(16).padStart(2, '0'))
       .join('')}`;
-    expect(value.toLowerCase()).toBe(hex);
+  const metas = [...html.matchAll(/<meta\s+name="theme-color"([^>]*)>/g)].map((m) => ({
+    media: m[1].match(/media="([^"]+)"/)?.[1],
+    content: m[1].match(/content="([^"]+)"/)?.[1],
+  }));
+
+  it('has one per scheme', () => {
+    expect(metas.map((m) => m.media)).toEqual([
+      '(prefers-color-scheme: light)',
+      '(prefers-color-scheme: dark)',
+    ]);
+  });
+
+  it.each(['light', 'dark'])('is the %s surface token, neither red nor blue', (theme) => {
+    const value = metas.find((m) => m.media === `(prefers-color-scheme: ${theme})`)?.content;
+    expect(value).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(partyColor(toOklch(value))).toBeNull();
+    expect(value.toLowerCase()).toBe(hexOf(themes[theme].surface));
+  });
+
+  it('tells the browser both schemes before the stylesheet loads', () => {
+    expect(html).toMatch(/<meta\s+name="color-scheme"\s+content="light dark"\s*\/?>/);
+  });
+});
+
+// Dark mode (#77): the system setting picks the theme, print stays light.
+describe('color scheme', () => {
+  const css = stripComments(readFileSync(path.join(SRC, 'index.css'), 'utf8'));
+
+  it('lets form controls and scrollbars follow the scheme', () => {
+    expect(css).toMatch(/:root\s*\{[^}]*color-scheme:\s*light dark/);
+  });
+
+  it('applies the dark values on screens only, so print stays light', () => {
+    expect(css).toContain(DARK_MEDIA);
+    expect(css).not.toMatch(/@media\s*\(prefers-color-scheme:\s*dark\)/);
+    expect(css).toMatch(/@media print\s*\{[^@]*color-scheme:\s*light;/);
+  });
+
+  it('paints the page itself in the surface color', () => {
+    expect(css).toMatch(/html\s*\{[^}]*background-color:\s*var\(--color-surface\)/);
   });
 });

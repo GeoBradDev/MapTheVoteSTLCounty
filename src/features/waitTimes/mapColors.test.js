@@ -5,10 +5,12 @@
 // and from the plain no-count marker to tell apart; each marker's fill or its
 // outline at least 3:1 against the basemap's land, so a marker is visible to
 // low-vision readers (WCAG 1.4.11); each marker number readable on its fill.
+// Every check runs for the light theme on Positron and the dark theme on
+// OpenFreeMap's dark style (#77).
 // @vitest-environment node
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { partyColor } from '../../test/colors.js';
+import { partyColor, themeTokens } from '../../test/colors.js';
 import { oklchToRgb } from '../lookup/mapBounds.js';
 import { MAX_CLASSES } from './jenks.js';
 import {
@@ -20,9 +22,11 @@ import {
 } from './waitColors.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../../..');
-// Positron's land background (its `background` layer), the lightest thing a
-// marker sits on.
-const BASEMAP_LAND = [242, 243, 240];
+// The land a marker sits on, at its worst for an outline of the theme's ink:
+// Positron's background (its `background` layer), the lightest thing on the
+// light map, and the dark style's parks (`landuse_park`), the lightest area
+// fill on the dark one (its woods name a pattern its sprite lacks, so are not drawn).
+const BASEMAP_LAND = { light: [242, 243, 240], dark: [32, 32, 32] };
 
 const channel = (c) => {
   const v = c / 255;
@@ -39,17 +43,14 @@ const rgbOf = (css) =>
     .slice(0, 3)
     .map(Number);
 
-let tokens;
+let themes;
 beforeAll(async () => {
   const css = await readFile(path.join(ROOT, 'src/index.css'), 'utf8');
-  tokens = Object.fromEntries(
-    [...css.matchAll(/(--color-[\w-]+):\s*(oklch\([^)]*\))/g)].map((m) => [m[1], m[2]]),
-  );
+  const prefixed = (map) =>
+    Object.fromEntries(Object.entries(map).map(([name, value]) => [`--color-${name}`, value]));
+  const { light, dark } = themeTokens(css);
+  themes = { light: prefixed(light), dark: prefixed(dark) };
 });
-
-// The token value behind a class such as `bg-wait-1` or `border-ink`.
-const colorOf = (classes, prefix) =>
-  tokens[`--color-${classes.match(new RegExp(`\\b${prefix}-([\\w-]+)`))[1]}`];
 
 // An oklch() value as OKLab coordinates, for the distance between two colors.
 const oklab = (value) => {
@@ -61,7 +62,16 @@ const oklab = (value) => {
   return [l, c * Math.cos(rad), c * Math.sin(rad)];
 };
 
-describe('line count colors', () => {
+describe.each(['light', 'dark'])('line count colors, %s theme', (theme) => {
+  let tokens;
+  const land = BASEMAP_LAND[theme];
+  beforeAll(() => {
+    tokens = themes[theme];
+  });
+  // The token value behind a class such as `bg-wait-1` or `border-ink`.
+  const colorOf = (classes, prefix) =>
+    tokens[`--color-${classes.match(new RegExp(`\\b${prefix}-([\\w-]+)`))[1]}`];
+
   it('has one token per step, enough for the most classes', () => {
     expect(WAIT_TOKENS).toHaveLength(MAX_CLASSES);
     expect(WAIT_COLOR_CLASSES).toHaveLength(MAX_CLASSES);
@@ -84,11 +94,8 @@ describe('line count colors', () => {
   it.each([0, 1, 2, 3, 4])('step %i is not red or blue and stands out 3:1 on the basemap', (i) => {
     const value = tokens[`--color-${WAIT_TOKENS[i]}`];
     expect(partyColor(value)).toBeNull();
-    const fill = contrast(rgbOf(oklchToRgb(value)), BASEMAP_LAND);
-    const outline = contrast(
-      rgbOf(oklchToRgb(colorOf(WAIT_COLOR_CLASSES[i], 'border'))),
-      BASEMAP_LAND,
-    );
+    const fill = contrast(rgbOf(oklchToRgb(value)), land);
+    const outline = contrast(rgbOf(oklchToRgb(colorOf(WAIT_COLOR_CLASSES[i], 'border'))), land);
     expect(Math.max(fill, outline)).toBeGreaterThanOrEqual(3);
   });
 
@@ -121,7 +128,7 @@ describe('line count colors', () => {
     )?.[1];
     expect(name).toBeDefined();
     const outline = tokens[`--color-${name}`];
-    expect(contrast(rgbOf(oklchToRgb(outline)), BASEMAP_LAND)).toBeGreaterThanOrEqual(3);
+    expect(contrast(rgbOf(oklchToRgb(outline)), land)).toBeGreaterThanOrEqual(3);
     for (const token of WAIT_TOKENS) {
       const step = oklab(tokens[`--color-${token}`]);
       const distance = Math.hypot(...oklab(outline).map((v, k) => v - step[k]));

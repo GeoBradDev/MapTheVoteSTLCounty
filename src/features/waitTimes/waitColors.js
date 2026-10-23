@@ -9,16 +9,17 @@
 export const WAIT_TOKENS = Object.freeze(['wait-1', 'wait-2', 'wait-3', 'wait-4', 'wait-5']);
 
 /**
- * Marker and legend swatch classes per token: the fill, a text color that
- * reads on it, and an ink outline, so even the light tan marker stands out
- * 3:1 on the basemap.
+ * Marker and legend swatch classes per token: the fill, a number color that
+ * reads on it (the same in both themes, as the fills barely change, #77), and an ink
+ * outline, so every marker stands out 3:1 on the basemap: dark on the light
+ * map, light on the dark one.
  */
 export const WAIT_COLOR_CLASSES = Object.freeze([
-  'bg-wait-1 text-on-primary border-ink',
-  'bg-wait-2 text-ink border-ink',
-  'bg-wait-3 text-ink border-ink',
-  'bg-wait-4 text-ink border-ink',
-  'bg-wait-5 text-on-primary border-ink',
+  'bg-wait-1 text-wait-number-light border-ink',
+  'bg-wait-2 text-wait-number-dark border-ink',
+  'bg-wait-3 text-wait-number-dark border-ink',
+  'bg-wait-4 text-wait-number-dark border-ink',
+  'bg-wait-5 text-wait-number-light border-ink',
 ]);
 
 /** For k classes, the token index of each class, lowest first. */

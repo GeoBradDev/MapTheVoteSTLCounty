@@ -6,7 +6,7 @@
 import { readFileSync } from 'node:fs';
 import election from '../src/config/election.js';
 import { asElectionDay, ELECTION_DAY_SHIFT_MS } from '../src/data/waitTimes.fixtures.js';
-import { BASEMAP_STYLE_URL } from '../src/features/lookup/basemap.js';
+import { BASEMAP_DARK_STYLE_URL, BASEMAP_STYLE_URL } from '../src/features/lookup/basemap.js';
 
 const fixture = (name) =>
   JSON.parse(readFileSync(new URL(`../docs/raw/fixtures/${name}.json`, import.meta.url), 'utf8'));
@@ -169,13 +169,35 @@ function cityBody(url, params) {
   return params.get('f') === 'geojson' ? CITY_FIXTURES.geometry : CITY_FIXTURES.byId;
 }
 
-export { BASEMAP_STYLE_URL };
+export { BASEMAP_DARK_STYLE_URL, BASEMAP_STYLE_URL };
+
+/** Whether `href` is one of the basemap's styles, light or dark (#77). */
+export function isBasemapStyle(href) {
+  return href === BASEMAP_STYLE_URL || href === BASEMAP_DARK_STYLE_URL;
+}
 
 /**
  * A style with no sources or layers. MapLibre loads it and renders an empty
  * map with no further requests, so the map runs its real code with no tiles.
  */
 export const BLANK_STYLE = JSON.stringify({ version: 8, sources: {}, layers: [] });
+
+/**
+ * Gray background only, a light one for the light style and a dark one for
+ * the dark style (#77): still no tiles, but the canvas shows which style it
+ * drew. The channel value of each, the same in red, green and blue.
+ */
+export const TINT = { light: 200, dark: 40 };
+export function tintedStyle(href) {
+  const v = href === BASEMAP_DARK_STYLE_URL ? TINT.dark : TINT.light;
+  return JSON.stringify({
+    version: 8,
+    sources: {},
+    layers: [
+      { id: 'land', type: 'background', paint: { 'background-color': `rgb(${v},${v},${v})` } },
+    ],
+  });
+}
 
 // Keeps only the requested fields, as the service does for an outFields list.
 function pick(fields, wanted) {

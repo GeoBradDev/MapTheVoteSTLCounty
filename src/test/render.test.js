@@ -11,7 +11,7 @@ import election from '../config/election.js';
 import { CITY_GEOCODER_URL } from '../data/cityAddress.js';
 import { HOSTED_URL, LIVE_URL } from '../data/countyAddress.js';
 import { DEFAULT_BASE_URL as PHOTON } from '../data/photon.js';
-import { BASEMAP_STYLE_URL } from '../features/lookup/basemap.js';
+import { BASEMAP_DARK_STYLE_URL, BASEMAP_STYLE_URL } from '../features/lookup/basemap.js';
 import { ASSET_HEADERS, SHELL_HEADERS } from '../../scripts/smoke.mjs';
 import { PRECINCT_PRECONNECT, SHELL_FILE } from '../prerender/plugin.js';
 import { hosts as privacyHosts } from '../features/privacy/privacyCopy.js';
@@ -330,5 +330,12 @@ describe('Node version', () => {
     const setupNode = ci.jobs.check.steps.find((s) => s.uses?.startsWith('actions/setup-node'));
     expect(setupNode.with['node-version-file']).toBe('.node-version');
     expect(setupNode.with).not.toHaveProperty('node-version');
+  });
+});
+
+// Dark mode's basemap (#77) must load under the same connect-src as Positron.
+describe('the dark basemap', () => {
+  it('is on the basemap origin the policy allows', () => {
+    expect(new URL(BASEMAP_DARK_STYLE_URL).origin).toBe(BASEMAP);
   });
 });

@@ -1,14 +1,16 @@
 // The maps' gesture hint ("Use Ctrl + scroll to zoom the map", #26): its text
 // sits on a see-through ink backdrop over the map, so its contrast depends on
-// what is under it. Over white, the lightest thing on the basemap (its roads),
-// the 18 px text must still reach 4.5:1 (WCAG 1.4.3).
+// what is under it. Over white and over black, the extremes of either
+// basemap, the 18 px text must still reach 4.5:1 (WCAG 1.4.3), in the light
+// theme and the dark one (#77).
 // @vitest-environment node
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { themeTokens } from '../../test/colors.js';
 import { oklchToRgb } from './mapBounds.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../../..');
-const WHITE = [255, 255, 255];
+const UNDER = { white: [255, 255, 255], black: [0, 0, 0] };
 
 const channel = (c) => {
   const v = c / 255;
@@ -25,19 +27,26 @@ const rgbOf = (css) =>
     .slice(0, 3)
     .map(Number);
 
-let tokens;
+let themes;
 let hint;
 beforeAll(async () => {
   const theme = await readFile(path.join(ROOT, 'src/index.css'), 'utf8');
-  tokens = Object.fromEntries(
-    [...theme.matchAll(/(--color-[\w-]+):\s*(oklch\([^)]*\))/g)].map((m) => [m[1], m[2]]),
-  );
+  const prefixed = (map) =>
+    Object.fromEntries(Object.entries(map).map(([name, value]) => [`--color-${name}`, value]));
+  const { light, dark } = themeTokens(theme);
+  themes = { light: prefixed(light), dark: prefixed(dark) };
   const css = await readFile(path.join(ROOT, 'src/features/lookup/precinctMap.css'), 'utf8');
   hint = css.match(/\.maplibregl-cooperative-gesture-screen \{([^}]*)\}/)[1];
 });
 
 describe('the map gesture hint', () => {
-  it('keeps its text 4.5:1 over the white parts of the map', () => {
+  it.each([
+    ['light', 'white'],
+    ['light', 'black'],
+    ['dark', 'white'],
+    ['dark', 'black'],
+  ])('keeps its text 4.5:1 in the %s theme over %s', (theme, under) => {
+    const tokens = themes[theme];
     const backdrop = hint.match(
       /background:\s*color-mix\(in oklab, var\((--color-[\w-]+)\) (\d+)%, transparent\)/,
     );
@@ -47,7 +56,7 @@ describe('the map gesture hint', () => {
     const alpha = Number(backdrop[2]) / 100;
     const ink = rgbOf(oklchToRgb(tokens[backdrop[1]]));
     // The browser blends a see-through color over what is under it per channel.
-    const shown = ink.map((c, i) => alpha * c + (1 - alpha) * WHITE[i]);
+    const shown = ink.map((c, i) => alpha * c + (1 - alpha) * UNDER[under][i]);
     expect(contrast(rgbOf(oklchToRgb(tokens[text[1]])), shown)).toBeGreaterThanOrEqual(4.5);
   });
 });

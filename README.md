@@ -135,7 +135,8 @@ against, and why. In short:
   county precinct is checked against that
   [geocoder](https://maps6.stlouis-mo.gov/arcgis/rest/services/GEOCODERS/COMPOSITE_GEOCODE/GeocodeServer).
   See [Address search](#address-search).
-- **Map:** [OpenFreeMap](https://openfreemap.org)'s Positron basemap. See [Map](#map).
+- **Map:** [OpenFreeMap](https://openfreemap.org)'s Positron basemap, or its Dark one in dark
+  mode. See [Map](#map).
 - **How to vote guides:** Markdown under `content/`, each citing official sources only. See
   [Learn content](#learn-content).
 - **Referrals:** the City board, its polling places lookup and the Secretary of State's Voter
@@ -368,7 +369,9 @@ horizontal scroll (also with the WCAG text spacing override), one `h1`, the page
 the skip link, the site header in one row at most 56 px tall (#79), and touch targets: every link drawn as a box of its own (not `display: inline`)
 and every other control (button, summary, form control, or a link alone in its block) is at
 least 44 px tall. A link set inline in a line of text is exempt, as WCAG's target size
-criteria exempt it. It also checks focus after an in-app link and reduced motion. The county's
+criteria exempt it. It also checks focus after an in-app link and reduced motion, and dark
+mode (#77): axe again on each route with the system dark, the page color from the first
+styled frame, dark print, and the wait times map's basemap switch (the precinct map's is a unit test, `precinctMapView.test.js`). The county's
 layers, the City Board's layers, and the County and City wait time layers, are answered from
 `docs/raw/fixtures/` (the wait times route and the County and City results routes at the time
 those were recorded, so counts show) and every other outside request is blocked, so
@@ -445,10 +448,10 @@ The palette is nonpartisan: no red or blue. Define colors only as oklch `--color
 CSS under `src` or in the built CSS, and on any `data:` URI in the CSS under `src` (put icons in
 SVG components that use `currentColor`). Only CSS is checked: a color written anywhere else
 (`index.html`, JSX props or SVG attributes, JavaScript strings) is not, so use token classes
-there instead of color values. Two exceptions are checked on their own: the `theme-color` meta in
-`index.html` (#76, below) and the site icons in `public/` (#79): a favicon
-cannot read the page's CSS, so `favicon.svg` writes `--color-primary` and `--color-on-primary`
-as hex, and `favicon.ico` and `apple-touch-icon.png` are drawn from it. A build test fails on
+there instead of color values. Two exceptions are checked on their own: the `theme-color` metas in
+`index.html` (#76, #77, below) and the site icons in `public/` (#79): a favicon
+cannot read the page's CSS, so `favicon.svg` writes the light `--color-primary` and
+`--color-on-primary` as hex (one icon for both schemes), and `favicon.ico` and `apple-touch-icon.png` are drawn from it. A build test fails on
 red or blue in `favicon.svg` (not in the two raster icons); when those tokens change, redraw all
 three.
 
@@ -466,15 +469,27 @@ The tokens (#76), each with its role and minimum contrast beside it in `src/inde
   also has its kind's icon and edge (`Notice` in `src/components/`), which stay in forced
   colors (the icon then in the system text color), and its text stays `ink`.
   The home page's election date pill also uses the `info` pair, its ink as text on its fill.
-- The wait time ramp, `wait-1` to `wait-5`, for map markers and their legend only (see Map).
-- `shadow`: `ink` at 12%, the one color the `shadow-card` and `shadow-popover` shadows use.
+- The wait time ramp, `wait-1` to `wait-5`, for map markers and their legend only (see Map),
+  and `wait-number-light` and `wait-number-dark` for the marker numbers on it, the same in
+  both themes.
+- `shadow`: `ink` at 12%, the one color the `shadow-card` and `shadow-popover` shadows use
+  (in dark mode, near black).
+
+Dark mode (#77) follows the system setting, with no toggle (one would need storage, see
+Privacy). Every token but the marker number pair has a dark value in `src/index.css`, under
+`@media screen and (prefers-color-scheme: dark)`, so print stays light; `color-scheme: light dark`
+lets form controls and scrollbars follow, and the page itself paints `surface`. A new token
+gets a dark value too (a test fails on one left out).
 
 `src/test/contrast.test.js` checks every text and control pair the tokens make against WCAG
-2.1 AA (the wait markers are checked in `mapColors.test.js`): text 4.5:1 on
+2.1 AA, in both themes (the wait markers are checked in `mapColors.test.js`): text 4.5:1 on
 every surface and fill, `border-strong` 3:1. A new token or pair goes into it. The browser's
-chrome color, `<meta name="theme-color">` in `index.html`, is `surface` written as hex;
-`src/test/theme.test.js` checks it matches `surface` and is not red or blue, so change both
-together.
+chrome color, one `<meta name="theme-color">` per scheme in `index.html`, is each theme's
+`surface` written as hex; `src/test/theme.test.js` checks they match and are not red or blue,
+so change them together. `e2e/a11y.e2e.js` runs axe on every route in both schemes and checks,
+on five routes, that a dark page paints the same dark page color on every frame once its
+stylesheet applies; before that, the `color-scheme` meta lets the browser draw its own canvas
+dark.
 
 ## UI
 
@@ -906,9 +921,13 @@ marker outlined in ink so it is at least 3:1 against the basemap
 colored. On Election Day the precinct map's markers and legend follow the same rule while the
 polls are open (#107), with classes from that board's counts at the polling places listed.
 
-The basemap is [OpenFreeMap](https://openfreemap.org)'s Positron style: free, with no API key
-or account, and its terms allow embedding it. Its attribution (OpenFreeMap, OpenMapTiles,
-OpenStreetMap contributors) is shown as links under the map. Its water labels are blue and
+The basemap is [OpenFreeMap](https://openfreemap.org)'s Positron style, or in dark mode its
+Dark style (#77), which is all grays: free, with no API key
+or account, and its terms allow embedding it. Both maps pick the style for the system color
+scheme, read their token colors at each style load, and switch style when the scheme changes,
+fetching the new style first so a failed request keeps the drawn map. A page printed with the
+system dark leaves the maps out, so print stays light. Its attribution (OpenFreeMap, OpenMapTiles,
+OpenStreetMap contributors) is shown as links under the map. Positron's water labels are blue and
 its interstate shields slate blue, so the map draws every label in the muted token and
 interstates with the gray road shield. The precinct outline is drawn in ink, not the brand
 teal, which is within a shade of the ramp's first step (`mapColors.test.js` keeps it apart
@@ -916,9 +935,12 @@ from every step). Tile requests tell OpenFreeMap (and
 Cloudflare, its CDN) which area is on screen: the precinct and its nearest polling places,
 which depend a little on the searched point within the precinct, or, on the wait times page,
 the early voting sites (on Election Day, the polling places). The `no-referrer` policy
-keeps the page URL out of them. `src/features/lookup/basemap.js` holds the style URL and the
+keeps the page URL out of them. `src/features/lookup/basemap.js` holds the two style URLs and the
 credits; to change the basemap, change that file and the origin in `render.yaml`'s
-`connect-src` together, and check the new style's colors and sprite icons for red or blue.
+`connect-src` together, and check the new style's colors and sprite icons for red or blue. In
+dark mode each marker keeps its ink outline, light there, and the ramp is the same but for a
+deeper pale tan, so the light ink outline of the precinct stays apart from every step
+(`mapColors.test.js` checks both themes, each on its basemap's land).
 
 ## Contributing
 

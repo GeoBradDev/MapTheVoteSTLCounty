@@ -8,10 +8,9 @@ import { Map as MapLibreMap, Marker, setWorkerUrl } from 'maplibre-gl';
 // Bundled by Vite as a same-origin file, so the Content-Security-Policy needs
 // no blob: worker source.
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
-import { BASEMAP_STYLE_URL } from './basemap.js';
 import { mapBounds, oklchToRgb, placesKey } from './mapBounds.js';
 import { NO_COUNT_CLASS, WAIT_COLOR_CLASSES } from '../waitTimes/waitColors.js';
-import { neutralizeBasemap } from './mapStyle.js';
+import { basemapStyleUrl, followColorScheme, neutralizeBasemap } from './mapStyle.js';
 import './precinctMap.css';
 
 setWorkerUrl(workerUrl);
@@ -60,20 +59,27 @@ function markerElement(className, text) {
  * @throws When WebGL is unavailable or the inputs give nothing to show.
  */
 export function createPrecinctMap(container, { geometry, origin, polls, onReady, onFail }) {
-  const tokens = getComputedStyle(container);
-  // The outline is ink, not the brand teal (#76): the teal is within a shade
-  // of the line count ramp's first step (wait-1), so on Election Day a teal
-  // area could read as "short lines" next to the legend.
-  const color = oklchToRgb(tokens.getPropertyValue('--color-ink'));
-  const labelColor = oklchToRgb(tokens.getPropertyValue('--color-muted'));
-  if (!color || !labelColor) throw new Error('The map color tokens are not oklch colors');
+  // The token colors the canvas draws in, read again at each style load, as
+  // the dark theme (#77) gives them other values. Markers are DOM elements
+  // with token classes, so they follow the theme on their own.
+  function readColors() {
+    const tokens = getComputedStyle(container);
+    // The outline is ink, not the brand teal (#76): the teal is within a shade
+    // of the line count ramp's first step (wait-1), so on Election Day a teal
+    // area could read as "short lines" next to the legend.
+    const color = oklchToRgb(tokens.getPropertyValue('--color-ink'));
+    const labelColor = oklchToRgb(tokens.getPropertyValue('--color-muted'));
+    if (!color || !labelColor) throw new Error('The map color tokens are not oklch colors');
+    return { color, labelColor };
+  }
+  readColors();
   const boundsOf = (places) => mapBounds({ geometry, points: [origin, ...places] });
   const bounds = boundsOf(polls);
   if (!bounds) throw new Error('Nothing to show on the map');
 
   const map = new MapLibreMap({
     container,
-    style: BASEMAP_STYLE_URL,
+    style: basemapStyleUrl(),
     bounds,
     fitBoundsOptions: FIT,
     // Credited as text links under the map instead.
@@ -97,9 +103,14 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
   let markers = [];
   let drawnPlaces = placesKey(polls);
 
+  // The system color scheme changed (#77): the other basemap, and the
+  // precinct drawn again in the new theme's colors on its style load.
+  const stopWatching = followColorScheme(map);
+
   function fail(error) {
     if (state !== 'loading') return;
     state = 'failed';
+    stopWatching();
     map.remove();
     onFail(error);
   }
@@ -113,23 +124,27 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
     onReady();
   });
 
-  map.on('load', () => {
+  // Each style load, the first and any after a scheme change, starts with only
+  // the basemap's own layers. One MapLibre puts back after a lost WebGL
+  // context already holds the precinct, so its layers only get their colors.
+  map.on('style.load', () => {
     try {
+      const { color, labelColor } = readColors();
       // Every label in the muted token, interstates with the gray shield.
       neutralizeBasemap(map, labelColor);
-      map.addSource('precinct', { type: 'geojson', data: { type: 'Feature', geometry } });
-      map.addLayer({
-        id: 'precinct-fill',
-        type: 'fill',
-        source: 'precinct',
-        paint: { 'fill-color': color, 'fill-opacity': 0.1 },
-      });
-      map.addLayer({
-        id: 'precinct-line',
-        type: 'line',
-        source: 'precinct',
-        paint: { 'line-color': color, 'line-width': 2.5 },
-      });
+      const fill = { 'fill-color': color, 'fill-opacity': 0.1 };
+      const line = { 'line-color': color, 'line-width': 2.5 };
+      if (map.getSource('precinct')) {
+        // Already there: only this theme's colors.
+        map.setPaintProperty('precinct-fill', 'fill-color', fill['fill-color']);
+        map.setPaintProperty('precinct-line', 'line-color', line['line-color']);
+      } else {
+        // The paint goes in with the layer, so it draws at its final colors
+        // from the first frame instead of fading in from the defaults.
+        map.addSource('precinct', { type: 'geojson', data: { type: 'Feature', geometry } });
+        map.addLayer({ id: 'precinct-fill', type: 'fill', source: 'precinct', paint: fill });
+        map.addLayer({ id: 'precinct-line', type: 'line', source: 'precinct', paint: line });
+      }
     } catch (error) {
       fail(error);
     }
@@ -155,6 +170,7 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
     // The caller only learns of the throw, so free the map and its WebGL
     // context here.
     state = 'failed';
+    stopWatching();
     map.remove();
     throw error;
   }
@@ -172,6 +188,7 @@ export function createPrecinctMap(container, { geometry, origin, polls, onReady,
     remove() {
       if (state === 'failed' || state === 'removed') return;
       state = 'removed';
+      stopWatching();
       map.remove();
     },
   };

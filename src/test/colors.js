@@ -194,3 +194,33 @@ export function contrastRatio(a, b) {
   const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
   return (hi + 0.05) / (lo + 0.05);
 }
+
+// The text inside the `{...}` that follows `start` in `code`, or null.
+function blockAfter(code, start) {
+  const at = code.indexOf(start);
+  if (at === -1) return null;
+  const open = code.indexOf('{', at);
+  let depth = 0;
+  for (let i = open; i < code.length; i += 1) {
+    if (code[i] === '{') depth += 1;
+    if (code[i] === '}') depth -= 1;
+    if (depth === 0) return code.slice(open + 1, i);
+  }
+  return null;
+}
+
+/** The media query the dark theme's token values sit under (#77). */
+export const DARK_MEDIA = '@media screen and (prefers-color-scheme: dark)';
+
+// The oklch --color-* tokens of each theme (#77): light from the @theme block,
+// dark from the dark media block laid over it, as the browser resolves them.
+export function themeTokens(css) {
+  const code = stripComments(css);
+  const light = oklchTokens(blockAfter(code, '@theme') ?? '');
+  const darkBlock = blockAfter(code, DARK_MEDIA);
+  return {
+    light,
+    dark: { ...light, ...oklchTokens(darkBlock ?? '') },
+    darkOnly: oklchTokens(darkBlock ?? ''),
+  };
+}
