@@ -85,8 +85,9 @@ Noted, not changed here:
 
 ## Files that change
 
-- `src/features/learn/TopicArticle.jsx`: summary `min-h-11 py-2`, sources list links
-  `inline-flex min-h-11 items-center`.
+- `src/features/learn/TopicArticle.jsx`: summary `min-h-11 py-2`; each Sources link a
+  `block` with `py-2.5` (44 px for one line; the list's own `space-y-2` goes, since the
+  padding spaces the items, and the printed URL after it still flows inline).
 - `src/features/lookup/precinctMap.css`: gesture hint backdrop 75% ink.
 - `src/features/lookup/gestureHint.test.js` (new): the contrast check.
 - `e2e/a11y.e2e.js`: target size test per route, new routes and states.

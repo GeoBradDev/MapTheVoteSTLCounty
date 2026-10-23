@@ -124,7 +124,9 @@ function Section({ section, topic, copy }) {
   }
   return (
     <details className="mt-8">
-      <summary className="cursor-pointer [&>h2]:mt-0 [&>h2]:inline">{heading}</summary>
+      <summary className="min-h-11 cursor-pointer py-2 [&>h2]:mt-0 [&>h2]:inline">
+        {heading}
+      </summary>
       {body}
     </details>
   );
@@ -155,10 +157,10 @@ export default function TopicArticle({ topic, headingRef }) {
         <h2 id={sourcesId} className="text-xl font-semibold">
           {copy.sourcesHeading}
         </h2>
-        <ol className="mt-2 list-decimal space-y-2 pl-6">
+        <ol className="mt-2 list-decimal pl-6">
           {topic.sources.map((source) => (
             <li key={source.id}>
-              <a href={source.url} className={`${linkClass} print-href`}>
+              <a href={source.url} className={`${linkClass} print-href block py-2.5`}>
                 {source.label}
               </a>
             </li>
