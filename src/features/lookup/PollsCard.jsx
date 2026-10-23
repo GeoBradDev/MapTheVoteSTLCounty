@@ -9,7 +9,7 @@ import { cityComponent } from './cityComponent.js';
 import { orderSites, waitBin } from '../waitTimes/siteOrder.js';
 import { boardWaits, OFF_WAITS, useWaitTimes } from '../waitTimes/useWaitTimes.js';
 import WaitReport from '../waitTimes/WaitReport.jsx';
-import { electionDayStatus } from './electionDay.js';
+import { electionDayCountsOn, electionDayStatus } from './electionDay.js';
 import NearbySortControls from './NearbySortControls.jsx';
 import { useHeldOrder, withKeys } from './nearbySort.js';
 import { directionsLinks, isAppleMobile } from './nearbyPolls.js';
@@ -114,14 +114,6 @@ function ListSkeleton() {
   );
 }
 
-// Whether config lets each board's Election Day counts show (#107).
-const electionDayEnabled = Object.fromEntries(
-  ['county', 'city'].map((key) => {
-    const source = election.waitTimes[key];
-    return [key, election.waitTimes.enabled && source.enabled && source.electionDay.enabled];
-  }),
-);
-
 // A place's key in its board's Election Day line counts (#107): the County's
 // polls layer `username`, the City site's name (waitTimes.city.siteField).
 const waitKeyOf = { county: (poll) => poll.dayKey, city: (poll) => poll.name };
@@ -187,7 +179,7 @@ export default function PollsCard({ code, origin, waitSource, electionDayOn }) {
   const now = useNow();
   const board = isCity ? 'city' : 'county';
   const pollsOpen =
-    (electionDayOn ?? electionDayEnabled[board]) && electionDayStatus(now).kind === 'openNow';
+    (electionDayOn ?? electionDayCountsOn(board)) && electionDayStatus(now).kind === 'openNow';
   // Only this board's loop, and only while the polls are open: a County page
   // never asks the City's layer, nor a City page the County's.
   const waits = useWaitTimes(pollsOpen ? (waitSource ?? boardWaits[board]) : OFF_WAITS)[board];

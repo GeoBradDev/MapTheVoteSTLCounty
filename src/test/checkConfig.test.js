@@ -272,6 +272,10 @@ function stubFetch(world) {
     if (wait) {
       const [, layer] = wait;
       if (!url.pathname.endsWith('/query')) return json(layer.info);
+      // A filter the layer cannot run answers an ArcGIS error, as the service does.
+      if (world.badWhere && url.searchParams.get('where') === world.badWhere) {
+        return json({ error: { code: 400, message: 'Unable to complete operation.' } });
+      }
       world.waitQueries.push(url.searchParams);
       return json({ features: layer.rows.map((attributes) => ({ attributes })) });
     }
@@ -354,6 +358,7 @@ describe('runHealthCheck', () => {
       'known points',
       'wait layer county',
       'wait layer city',
+      'wait filter county election day',
       'wait reports county',
       'wait reports city',
       'city layer precincts',
@@ -889,6 +894,16 @@ describe('wait time checks', () => {
       expect(broken['wait layer county election day'].status).toBe('fail');
     });
 
+    it("runs the County's Election Day filter every day, before Election Day too", async () => {
+      const results = await run(healthyWorld());
+      expect(results['wait filter county election day']).toMatchObject({ status: 'pass' });
+      const world = healthyWorld();
+      world.badWhere = countyWait.electionDay.where;
+      const broken = await run(world);
+      expect(broken['wait filter county election day'].status).toBe('fail');
+      expect(broken['wait filter county election day'].detail).toContain('electionDay');
+    });
+
     it('warns when no polling place has the Election Day join field', async () => {
       const world = dayWorld();
       for (const row of world.dayPolls) row[countyWait.electionDay.pollsField] = '';
@@ -907,7 +922,9 @@ describe('wait time checks', () => {
   it('asks each layer for its own fields, filter and newest first', async () => {
     const world = healthyWorld();
     await run(world);
-    const [countyQuery, cityQuery] = world.waitQueries;
+    // The reports queries, newest first (the Election Day filter check, #107,
+    // asks for no order).
+    const [countyQuery, cityQuery] = world.waitQueries.filter((q) => q.get('orderByFields'));
     expect(countyQuery.get('where')).toBe(countyWait.where);
     expect(countyQuery.get('outFields').split(',').sort()).toEqual(
       [countyWait.siteField, countyWait.timeField, countyWait.valueField].sort(),

@@ -5,7 +5,7 @@
 // service, so an outage cannot fail a pull request.
 import { readFileSync } from 'node:fs';
 import election from '../src/config/election.js';
-import { asElectionDay } from '../src/data/waitTimes.fixtures.js';
+import { asElectionDay, ELECTION_DAY_SHIFT_MS } from '../src/data/waitTimes.fixtures.js';
 import { BASEMAP_STYLE_URL } from '../src/features/lookup/basemap.js';
 
 const fixture = (name) =>
@@ -77,6 +77,14 @@ const WAIT_FIXTURES = {
     stale: staleCopy(countyFresh, election.waitTimes.county.timeField, STALE_SHIFT_MS),
     empty: fixture('county-waits-empty'),
     electionDay: electionDayCopy(countyFresh, 'county'),
+    // Today's view on Election Day: the fresh early voting reports, moved to
+    // Election Day morning but still named by absentee username, as the view
+    // filtered to `abs%` would serve them. They match no polling place.
+    absenteeOnElectionDay: staleCopy(
+      countyFresh,
+      election.waitTimes.county.timeField,
+      -ELECTION_DAY_SHIFT_MS,
+    ),
   },
   city: {
     fresh: fixture('city-waits-fresh'),
@@ -89,7 +97,8 @@ const WAIT_FIXTURES = {
 /**
  * Which wait fixture each board answers with, unless a call picks another.
  * `electionDay` (#107) is the fresh recording moved to Election Day morning.
- * @typedef {{ county?: 'fresh' | 'stale' | 'empty' | 'electionDay',
+ * `absenteeOnElectionDay` is the County's early voting reports moved to then, unrenamed.
+ * @typedef {{ county?: 'fresh' | 'stale' | 'empty' | 'electionDay' | 'absenteeOnElectionDay',
  *   city?: 'fresh' | 'stale' | 'empty' | 'electionDay' }} WaitStates
  */
 export const DEFAULT_WAITS = Object.freeze({ county: 'fresh', city: 'stale' });

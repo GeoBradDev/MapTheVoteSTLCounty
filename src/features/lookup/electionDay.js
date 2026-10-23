@@ -35,3 +35,14 @@ export function isElectionDay(now) {
 export function electionDayStatus(now) {
   return earlyVotingStatus(electionDaySchedule, now, election.timeZone);
 }
+
+/**
+ * Whether config lets a board's Election Day line counts show (#107): line
+ * counts on, the board's source on and its Election Day source on.
+ * @param {'county' | 'city'} board
+ * @param {import('../../config/election.js').WaitTimesConfig} [waitTimes]
+ */
+export function electionDayCountsOn(board, waitTimes = election.waitTimes) {
+  const source = waitTimes[board];
+  return Boolean(waitTimes.enabled && source?.enabled && source.electionDay?.enabled);
+}

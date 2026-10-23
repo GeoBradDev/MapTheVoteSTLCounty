@@ -611,8 +611,8 @@ in a City precinct, a ward and the City outline while a County point lands in ne
 precinct nor the outline. A site filter that finds no site fails. For each
 wait time source in `waitTimes` that is turned on (County and City early voting
 line counts, or on Election Day each board's Election Day source, judged against every polling
-place and Election Day hours; a separate County Election Day layer is checked for its fields every
-day), it checks the layer has every field the config names, then prints one line naming
+place and Election Day hours; before Election Day the County's Election Day filter is run on its
+layer every day, and a separate Election Day layer's fields are checked), it checks the layer has every field the config names, then prints one line naming
 the board and whether its counts are fresh: open sites, how many have a count the app would show
 now, County reports that match no early voting site, and the newest report time. An empty County
 view while sites are closed passes. Sites open with no fresh count, County reports that match

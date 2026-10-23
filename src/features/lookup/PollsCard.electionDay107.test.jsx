@@ -264,4 +264,36 @@ describe('PollsCard on Election Day (#107)', () => {
     await waitFor(async () => expect((await items())[0]).toHaveTextContent(/About 12 people/));
     expect(document.activeElement).toBe(link);
   });
+
+  it('holds the order under the shortest line sort while focus is in the list', async () => {
+    const [a, b] = nearestPolls(polls, ORIGIN);
+    let values = { [a.dayKey]: 3, [b.dayKey]: 9 };
+    const entry = (row) => ({
+      siteId: row.dayKey,
+      jurisdiction: 'county',
+      unit: 'people',
+      value: values[row.dayKey],
+      reportedAt: new Date(Date.now() - 60_000),
+      source: countyWaits.source,
+      openUntil: new Date(nov3(19)),
+    });
+    const fetcher = async () => [entry(a), entry(b)];
+    const source = createWaitTimesStore({ county: fetcher, city: null }, { refreshMs: 50 });
+    render(<PollsCard code="CC007" origin={ORIGIN} waitSource={source} />);
+    await list();
+    await userEvent.click(screen.getByRole('radio', { name: waitCopy.sort.nearby(5) }));
+    const heading = async (i) =>
+      within((await items())[i]).getByRole('heading', { level: 3 }).textContent;
+    await waitFor(async () => expect(await heading(0)).toBe(a.name));
+    const link = within((await items())[0]).getAllByRole('link')[0];
+    act(() => link.focus());
+    values = { [a.dayKey]: 20, [b.dayKey]: 1 };
+    await waitFor(async () => expect((await items())[0]).toHaveTextContent(/About 20 people/));
+    // Held: the focused row stays first, and keeps focus.
+    expect(await heading(0)).toBe(a.name);
+    expect(document.activeElement).toBe(link);
+    // Once focus leaves the list, the current order applies.
+    act(() => link.blur());
+    await waitFor(async () => expect(await heading(0)).toBe(b.name));
+  });
 });

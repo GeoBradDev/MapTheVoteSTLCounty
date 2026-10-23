@@ -604,6 +604,37 @@ export async function runHealthCheck(
       );
     }
 
+    // Before Election Day, the County's Election Day filter (#107) runs on its
+    // layer every day, so a filter the layer cannot run fails the day it goes
+    // in the config. Rows are not judged: the view may hold none until then.
+    if (!electionDay && waitTimes.county?.enabled && countyDay?.enabled) {
+      const where = `waitTimes.county.electionDay (${countyDay.layer})`;
+      const { siteField, valueField, timeField } = waitTimes.county;
+      await check('wait filter county election day', async () => {
+        let body;
+        try {
+          body = await request(
+            `${countyDay.serviceRoot}/${countyDay.layer}/query?${new URLSearchParams({
+              f: 'json',
+              where: countyDay.where,
+              outFields: [siteField, timeField, valueField].join(','),
+              returnGeometry: 'false',
+            })}`,
+          );
+        } catch (error) {
+          if (!(error instanceof CheckError)) throw error;
+          const hint = error.transient
+            ? ''
+            : '. Check the layer and its where clause in src/config/election.js.';
+          throw new CheckError(`${where}: ${error.message}${hint}`);
+        }
+        if (!Array.isArray(body?.features)) {
+          throw new CheckError(`${where}: the response has no features list`);
+        }
+        return `${where}: the filter runs (${body.features.length} rows now)`;
+      });
+    }
+
     // The rows of one wait layer. Any failure names the config key and layer;
     // a feature without fields fails, as it fails every load in the app.
     const waitRows = async (key, outFields) => {

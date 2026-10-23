@@ -272,7 +272,7 @@ test.describe('the early voting wait times page', () => {
 // reports (#107): every polling place shows the no-data state.
 test('Election Day with no Election Day reports shows only the no-data state', async ({ page }) => {
   await page.clock.setFixedTime(ELECTION_DAY_AT);
-  await answerFromFixtures(page, { waits: { county: 'fresh', city: 'empty' } });
+  await answerFromFixtures(page, { waits: { county: 'absenteeOnElectionDay', city: 'empty' } });
   await page.goto(`/p/${CODE}`);
   const polls = page.getByRole('list', { name: 'Nearest polling places' });
   await expect(polls).toBeVisible();
