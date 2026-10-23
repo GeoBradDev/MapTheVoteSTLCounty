@@ -84,7 +84,7 @@ describe('topicDescription', () => {
   // A paragraph under a heading describes that section, not the page (owner
   // decision on #99): the "How to vote" intro stands in for it.
   const LEARN_INTRO =
-    'Short guides to voting in St. Louis County, each checked against official sources. For the City, see the St. Louis City election board.';
+    'St. Louis County voting guides, checked against official sources. For now, City voters should see the St. Louis City Board of Election Commissioners.';
   const text = (value) => [{ type: 'text', value }];
 
   it('is the learn intro when the topic starts with a heading', () => {
@@ -148,7 +148,7 @@ describe('pageHead', () => {
     const head = pageHead('/learn/');
     expect(head).toEqual({
       title: 'How to vote | St. Louis Voter Guide',
-      description: expect.stringMatching(/^Short guides to voting in St. Louis County/),
+      description: expect.stringMatching(/^St\. Louis County voting guides/),
       canonical: `${siteUrl}/learn`,
     });
   });

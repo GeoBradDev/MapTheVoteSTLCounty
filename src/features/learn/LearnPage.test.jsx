@@ -90,7 +90,8 @@ describe('LearnPage with topics', () => {
     renderPage();
     const intro = screen.getByText(copy.intro);
     expect(intro).toHaveTextContent(/St\. Louis County/);
-    expect(intro).toHaveTextContent(/St\. Louis City/);
+    expect(intro).toHaveTextContent(/For now/);
+    expect(intro).toHaveTextContent(/St\. Louis City Board of Election Commissioners/);
     const nav = screen.getByRole('navigation', { name: copy.moreHelp });
     expect(within(nav).getByRole('link', { name: copy.countySite })).toHaveAttribute(
       'href',

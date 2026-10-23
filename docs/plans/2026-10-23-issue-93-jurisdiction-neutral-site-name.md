@@ -46,13 +46,15 @@ County text (#89). The learn topics themselves are County-sourced; City topics a
   `home.citySite`, `learn.citySite`, `learn.empty.citySite`, `learn.intro`,
   `lookup.errors.failed`, `privacy.links.text`.
 - `index.html`: title and description.
-- `src/components/BothLookups.jsx` (new): "the <County lookup> or the <City lookup>".
-- `src/components/ErrorBoundary.jsx`, `errorBoundaryCopy.js`: both lookups when the error is
+- `src/components/OfficialLookups.jsx` and `officialLookupsCopy.js` (new): "the <County
+  lookup> or the <City lookup>".
+- `src/components/ErrorBoundary.jsx`: both lookups when the error is
   not on a County or City precinct page. On a County precinct page it keeps the County
   lookup (criterion 7). `App.jsx` passes the jurisdiction for `/p/<county code>` too.
 - `src/features/lookup/AddressLookup.jsx`, `lookupCopy.js`: both lookups.
 - `src/features/lookup/PrecinctPage.jsx`: both lookups when `jurisdictionFor(code)` is null.
-- `src/features/lookup/HomePage.jsx`, `homeCopy.js`: City board link.
+- `src/features/lookup/HomePage.jsx`, `homeCopy.js`: City board link, and an intro that
+  names the City and the County.
 - `src/features/learn/LearnPage.jsx`, `learnCopy.js`: City board links.
 - Tests and e2e that pin the old name or copy; `e2e/lighthouse.js`.
 - `README.md`: name and the opening's audience, and the copy lines that say only "county's
@@ -61,7 +63,10 @@ County text (#89). The learn topics themselves are County-sourced; City topics a
   so the error screen knows a County precinct page too.
 - `e2e/failures.e2e.js` (the lookup error's links), `docs/data.md` and the comment in
   `scripts/check-geocoder.mjs` (both lookups where they said the county's). The unused
-  `lookup.officialLookup` key goes.
+  `lookup.officialLookup` key goes. The comment in `src/data/photon.js`, `package.json`'s
+  description and the README disclaimer name both too. The header comment of the frozen
+  `src/data/geocoder.sharedzip58.test.js` still says "the county's official lookup"; it is
+  left alone, since a frozen test is not edited without the owner's approval.
 
 ## Order of work
 
