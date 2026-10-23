@@ -146,6 +146,29 @@ describe('PrecinctMap', () => {
     expect(createPrecinctMap).toHaveBeenCalledTimes(1);
   });
 
+  it('redraws nothing when a new list has the same places and bins (#107)', async () => {
+    const { rerender } = render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
+    await waitFor(() => expect(createPrecinctMap).toHaveBeenCalled());
+    rerender(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS.map((p) => ({ ...p }))} />);
+    expect(view.setPolls).not.toHaveBeenCalled();
+    const binned = POLLS.map((p, i) => ({ ...p, bin: i === 0 ? 2 : null }));
+    rerender(<PrecinctMap code="CC007" origin={ORIGIN} polls={binned} />);
+    expect(view.setPolls).toHaveBeenLastCalledWith(binned);
+  });
+
+  it('shows the people-in-line legend only once a place has a count (#107)', async () => {
+    const { rerender } = render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
+    await waitFor(() => expect(createPrecinctMap).toHaveBeenCalled());
+    expect(screen.queryByText('People in line')).toBeNull();
+    const counted = POLLS.map((p) => ({ ...p, bin: null }));
+    rerender(<PrecinctMap code="CC007" origin={ORIGIN} polls={counted} />);
+    expect(screen.queryByText('People in line')).toBeNull();
+    rerender(
+      <PrecinctMap code="CC007" origin={ORIGIN} polls={[{ ...POLLS[0], bin: 0 }, counted[1]]} />,
+    );
+    expect(screen.getByText('People in line')).toBeInTheDocument();
+  });
+
   it('starts with the latest polling places when they change while it loads', async () => {
     let resolve;
     getPrecinctGeometry.mockReturnValue(new Promise((r) => (resolve = r)));

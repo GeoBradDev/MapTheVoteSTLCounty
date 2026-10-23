@@ -48,6 +48,7 @@
     "intro": "For voters in St. Louis City and St. Louis County: find your precinct, polling places near you and your sample ballot.",
     "unofficial": "This is an independent, nonpartisan guide, not an official county or city site.",
     "waitTimes": "See early voting wait times",
+    "waitTimesElectionDay": "See Election Day line counts",
     "electionDay": "Election Day is {date}.",
     "moreInfo": "More information",
     "howToVote": "How to vote",
@@ -186,6 +187,10 @@
       "appleMaps": "Apple Maps",
       "linkTarget": "to {name}",
       "showMore": "Show more polling places",
+      "waits": {
+        "none": "No current line count for these polling places.",
+        "seeAll": "See line counts at every St. Louis County and City polling place"
+      },
       "hoursLabel": "Election Day hours:",
       "hours": "{open} to {close}",
       "inLine": "If you are in line at {close}, you can still vote.",
@@ -349,7 +354,18 @@
     "disclaimer": "Each board's staff report these counts, and lines change quickly. A count is a guide, not a promise of how long you will wait.",
     "sources": "Official sources:",
     "countyLink": "{board} absentee voting lookup",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "electionDay": {
+      "heading": "Election Day line counts",
+      "intro": "How many people are in line right now at each St. Louis County and St. Louis City polling place, as each board's staff report it. No address needed.",
+      "city": "Each board's polling places are for its own voters: a St. Louis County voter may vote at any St. Louis County polling place, and a St. Louis City voter at any City polling place.",
+      "listLabel": "Polling places",
+      "closed": "Polls closed at {close}",
+      "failed": "We could not load polling places right now. Find them with the",
+      "none": "We could not find polling places. Find them with the",
+      "mapLabel": "Map of polling places",
+      "countyLink": "{board} polling place lookup"
+    }
   },
   "learn": {
     "pageHeading": "How to vote",
@@ -398,15 +414,15 @@
       },
       "useMyLocation": {
         "heading": "Use my location",
-        "text": "Your browser asks for your permission before it shares your location with this site, unless you allowed it before. The site uses it only to find your precinct, mark it on the map and list the nearest places to vote. On the early voting wait times page, it is used only on your device, to sort the sites by distance: it is not sent anywhere."
+        "text": "Your browser asks for your permission before it shares your location with this site, unless you allowed it before. The site uses it only to find your precinct, mark it on the map and list the nearest places to vote. On the wait times page, it is used only on your device, to sort the early voting sites, or on Election Day the polling places, by distance: it is not sent anywhere."
       },
       "map": {
         "heading": "The map",
-        "text": "The map's streets and labels come from OpenFreeMap ({basemap}). Those requests show which area is on screen: your precinct and the polling places near it, or, on the early voting wait times page, the early voting sites."
+        "text": "The map's streets and labels come from OpenFreeMap ({basemap}). Those requests show which area is on screen: your precinct and the polling places near it, or, on the early voting wait times page, the early voting sites, and on Election Day the polling places."
       },
       "waitTimes": {
-        "heading": "Early voting wait times",
-        "text": "The early voting wait times page, and the early voting part of a precinct's results while early voting is running, ask the line count layers of the {countyBoard} ({countyLayers}) and the {cityBoard} ({cityLayers}), both on Esri's ArcGIS Online, for the current counts every {seconds} seconds while they are open on your screen. These requests carry nothing about you: no address, location or precinct."
+        "heading": "Line counts",
+        "text": "The early voting wait times page, the early voting part of a precinct's results while early voting is running, and, on Election Day, that page and the polling places part of a precinct's results while the polls are open, ask the line count layers of the {countyBoard} ({countyLayers}) and the {cityBoard} ({cityLayers}), both on Esri's ArcGIS Online, for the current counts every {seconds} seconds while they are open on your screen. On Election Day, a precinct's results ask only its own board's layer. These requests carry nothing about you: no address, location or precinct."
       },
       "website": {
         "heading": "This website",

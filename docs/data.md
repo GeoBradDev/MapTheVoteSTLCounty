@@ -339,8 +339,15 @@ in a different ArcGIS org from the polls layer. Keyless, CORS `*`,
   (`polls_2026_08_view`) has the line count popup, joining `Creator` = `username` (for
   example `loc019boec`). The visible "Polling Places (Election Day)" layer
   (`polls_2026_11_view`) has a plain popup with no line count (checked 2026-10-22). Today's
-  view filter also keeps only `abs%` reports. So Election Day counts need the County to
-  change both the view and the app (#107).
+  view filter also keeps only `abs%` reports. So the County must change the view (or
+  publish another) before any Election Day count can show, and its own app's popup too.
+  This app is ready (#107): `waitTimes.county.electionDay` in `src/config/election.js` holds
+  the layer, filter and join field (`username`), so pointing at a new view is a config change.
+  Until then every County polling place shows no count. No Election Day report has been
+  recorded, so the Election Day fixtures (`asElectionDay` in `src/data/waitTimes.fixtures.js`)
+  are the early voting recordings moved to Election Day morning, the County's renamed to
+  each site's `username`; the browser tests' City rows instead keep each recorded count and
+  report it at 8:50 a.m. on Election Day (`e2e/fixtures.js`).
 - **Not the source:** `polls_2026_11_view.inline` is blank and neither official popup reads
   it. It was the 2024 source; keep it only as a fallback if #107 finds Election Day uses it
   again.

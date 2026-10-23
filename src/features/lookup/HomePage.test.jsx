@@ -39,6 +39,22 @@ describe('HomePage', () => {
     ).toBeTruthy();
   });
 
+  it('names the same link for the Election Day line counts on Election Day (#107)', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    // 9 a.m. Central on Election Day, November 3, 2026.
+    vi.setSystemTime(Date.UTC(2026, 10, 3, 15));
+    try {
+      renderHome();
+      expect(screen.getByRole('link', { name: copy.waitTimesElectionDay })).toHaveAttribute(
+        'href',
+        '/early-voting',
+      );
+      expect(screen.queryByRole('link', { name: copy.waitTimes })).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('formats Election Day in the election time zone', () => {
     expect(copy.electionDay('2030-11-05', 'America/Chicago')).toBe(
       'Election Day is Tuesday, November 5, 2030.',

@@ -6,6 +6,15 @@
 /** The workflow's open-hours cron: every 2 hours of the voting day (#106). */
 export const WAITS_CRON = '0 14-22/2 * * *';
 
+/**
+ * The workflow's Election Day evening cron (#107): 23:00 and 00:00 UTC, so one
+ * run lands at 6 p.m. Central whether Election Day is in standard time (00:00,
+ * as in 2026) or daylight time (23:00, as on November 2, 2027). With the daily
+ * run and WAITS_CRON, Election Day is checked about every 2 hours from opening
+ * to 6 p.m., before the polls close at 7.
+ */
+export const ELECTION_DAY_CRON = '0 0,23 * * *';
+
 /** Today's date (YYYY-MM-DD) in the config's time zone. */
 function today(config, now) {
   const parts = Object.fromEntries(
@@ -47,9 +56,19 @@ export function isEarlyVotingPeriod(config, now = new Date()) {
 }
 
 /**
+ * Whether today, in the config's time zone, is Election Day.
+ * @param {{ electionDate: string, timeZone: string }} config
+ * @param {Date} [now]
+ */
+export function isElectionDay(config, now = new Date()) {
+  return today(config, now) === config.electionDate;
+}
+
+/**
  * What a run checks: `full` (every check), `waits` (the config check only, on
- * the open-hours runs during early voting) or `off`. A run by hand always
- * checks everything; the daily run stops after Election Day.
+ * the open-hours runs during early voting and on Election Day, #107) or `off`.
+ * A run by hand always checks everything; the daily run stops after Election
+ * Day.
  * @param {object} config The election config.
  * @param {{ event?: string, schedule?: string }} trigger The GitHub event name
  *   and, for a scheduled run, the cron that fired.
@@ -58,6 +77,9 @@ export function isEarlyVotingPeriod(config, now = new Date()) {
  */
 export function windowFor(config, { event, schedule } = {}, now = new Date()) {
   if (event !== 'schedule') return 'full';
-  if (schedule === WAITS_CRON) return isEarlyVotingPeriod(config, now) ? 'waits' : 'off';
+  if (schedule === WAITS_CRON) {
+    return isEarlyVotingPeriod(config, now) || isElectionDay(config, now) ? 'waits' : 'off';
+  }
+  if (schedule === ELECTION_DAY_CRON) return isElectionDay(config, now) ? 'waits' : 'off';
   return isPastElection(config, now) ? 'off' : 'full';
 }

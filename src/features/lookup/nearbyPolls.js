@@ -107,6 +107,8 @@ function zipOf(value) {
  * @property {string | null} absNote The layer's voter-facing `notes_abs`.
  * @property {string | null} waitKey The early voting site's key in the
  *   County's line count reports (the polls layer's `absentee`, #103).
+ * @property {string | null} dayKey The polling place's key in the County's
+ *   Election Day line count reports (the polls layer's `username`, #107).
  * @property {string | null} entry The City Board's entrance note (#89).
  * @property {string | null} accessibleEntry The City Board's accessible
  *   entrance note (#89).
@@ -140,6 +142,7 @@ export function pollRows(collection) {
       absType: typeof props.abs_type === 'string' ? props.abs_type : null,
       absNote: typeof props.notes_abs === 'string' ? props.notes_abs : null,
       waitKey: textOrNull(props[election.waitTimes.county.pollsField]),
+      dayKey: textOrNull(props[election.waitTimes.county.electionDay.pollsField]),
       entry: textOrNull(props.entry),
       accessibleEntry: textOrNull(props.accessibleEntry),
       lat: point.lat,

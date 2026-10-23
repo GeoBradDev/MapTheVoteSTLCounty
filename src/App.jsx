@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useLayoutEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Route, Switch, useLocation } from 'wouter';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { jurisdictionOnPath } from './data/jurisdictions.js';
@@ -10,6 +10,7 @@ import HomePage from './features/lookup/HomePage.jsx';
 import PrecinctPage from './features/lookup/PrecinctPage.jsx';
 import PrivacyPage from './features/privacy/PrivacyPage.jsx';
 import { copy as waitCopy } from './features/waitTimes/waitTimesCopy.js';
+import { isElectionDay } from './features/lookup/electionDay.js';
 import { t, useLocale } from './i18n/index.js';
 import LanguageSwitcher from './i18n/LanguageSwitcher.jsx';
 import { endHydration } from './hydrate.js';
@@ -20,6 +21,20 @@ import { applyHead, pageHead } from './pageHead.js';
 // time loop itself is in the first load: the results page's early voting card
 // reads it (#105).
 const WaitTimesPage = lazy(() => import('./features/waitTimes/WaitTimesPage.jsx'));
+
+// The wait times page's heading and intro while its code loads (#151), the
+// Election Day text on Election Day (#107), as the page renders them.
+function WaitTimesFallbackText() {
+  const [electionDay] = useState(() => isElectionDay(Date.now()));
+  const text = electionDay ? waitCopy.electionDay : waitCopy;
+  return (
+    <>
+      <h1 className="text-2xl font-semibold">{text.heading}</h1>
+      <p className="mt-2">{text.intro}</p>
+      <p className="mt-2">{text.city}</p>
+    </>
+  );
+}
 
 // The path as wouter reports it: decoded with decodeURI, or as is when that fails.
 function decodedPath() {
@@ -135,9 +150,7 @@ export default function App() {
               <Suspense
                 fallback={
                   <div className="min-h-screen">
-                    <h1 className="text-2xl font-semibold">{waitCopy.heading}</h1>
-                    <p className="mt-2">{waitCopy.intro}</p>
-                    <p className="mt-2">{waitCopy.city}</p>
+                    <WaitTimesFallbackText />
                   </div>
                 }
               >

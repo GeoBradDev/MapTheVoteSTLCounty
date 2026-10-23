@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { BASEMAP_ATTRIBUTION } from '../lookup/basemap.js';
 import { copy as resultsCopy } from '../lookup/resultsCopy.js';
-import { WAIT_BINS } from './siteOrder.js';
-import { NO_COUNT_CLASS, WAIT_BIN_CLASSES } from './waitColors.js';
+import WaitLegend from './WaitLegend.jsx';
 import { copy } from './waitTimesCopy.js';
 
 const linkClass = 'text-primary underline';
-const SWATCH = 'inline-block size-4 shrink-0 rounded-full border-2';
 
 // How long the map may take to first render before it is dropped.
 const LOAD_TIMEOUT_MS = 15_000;
@@ -23,37 +21,16 @@ function loadView() {
   return viewModule;
 }
 
-function Legend() {
-  return (
-    <div className="mt-2 text-sm">
-      <p id="wait-map-legend" className="font-semibold">
-        {copy.map.legend}
-      </p>
-      <ul aria-labelledby="wait-map-legend" className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
-        {WAIT_BINS.map((bin, i) => (
-          <li key={bin.min} className="flex items-center gap-2">
-            <span aria-hidden="true" className={`${SWATCH} ${WAIT_BIN_CLASSES[i]}`} />
-            {copy.map.bin(bin)}
-          </li>
-        ))}
-        <li className="flex items-center gap-2">
-          <span aria-hidden="true" className={`${SWATCH} ${NO_COUNT_CLASS}`} />
-          {copy.map.noCount}
-        </li>
-      </ul>
-    </div>
-  );
-}
-
 /**
  * The wait times map (#104), shown when the voter asks for it. Extra help
  * only: everything on it is in the list, so it is removed whenever anything
  * fails. The legend shows only when some site has a count.
  * @param {{ sites: { lat: number, lng: number, bin: number | null }[],
- *   onFail?: () => void }} props `sites` in list order; markers are numbered
- *   to match. `onFail` is called once if the map fails.
+ *   onFail?: () => void, label?: string }} props `sites` in list order;
+ *   markers are numbered to match. `onFail` is called once if the map fails.
+ *   `label` names the map region (the polling places on Election Day, #107).
  */
-export default function WaitTimesMap({ sites, onFail }) {
+export default function WaitTimesMap({ sites, onFail, label = copy.map.label }) {
   const [state, setState] = useState('loading');
   const containerRef = useRef(null);
   const viewRef = useRef(null);
@@ -117,7 +94,7 @@ export default function WaitTimesMap({ sites, onFail }) {
   const hasCounts = sites.some((site) => site.bin !== null);
 
   return (
-    <div role="region" aria-label={copy.map.label} className="mt-3">
+    <div role="region" aria-label={label} className="mt-3">
       <div className="relative h-72 overflow-hidden rounded-md border border-border">
         {/* MapLibre adds its own classes to this element: React never changes its className. */}
         <div ref={containerRef} className="isolate h-full w-full" />
@@ -129,7 +106,7 @@ export default function WaitTimesMap({ sites, onFail }) {
         )}
       </div>
       <p className="mt-2 text-sm text-muted">{copy.map.numbers}</p>
-      {hasCounts && <Legend />}
+      {hasCounts && <WaitLegend />}
       <p className="mt-1 text-xs text-muted">
         {resultsCopy.map.basemap}{' '}
         {BASEMAP_ATTRIBUTION.map(({ label, href }, i) => (

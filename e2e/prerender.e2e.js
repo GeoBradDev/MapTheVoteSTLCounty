@@ -4,7 +4,7 @@
 // content and head; with it on the page hydrates in place with no error, and
 // stays interactive. Precinct pages stay client-rendered from the empty shell.
 import { expect, test } from '@playwright/test';
-import { CODE, fixtureBody } from './fixtures.js';
+import { CODE, ELECTION_DAY_AT, fixtureBody } from './fixtures.js';
 
 const SITE = 'https://mapthevotestl.com';
 
@@ -100,6 +100,18 @@ test.describe('hydration', () => {
       expect(problems).toEqual([]);
     });
   }
+
+  // The home page is pre-rendered with the early voting label; on Election Day
+  // the client switches it after hydration (#107), with no mismatch.
+  test('/ hydrates on Election Day with no error, then names the line counts', async ({ page }) => {
+    const problems = collectProblems(page);
+    await page.clock.setFixedTime(ELECTION_DAY_AT);
+    await answerFromFixtures(page);
+    await page.goto('/');
+    await expect(page.getByRole('link', { name: 'See Election Day line counts' })).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    expect(problems).toEqual([]);
+  });
 
   test('keeps the pre-rendered heading element instead of rendering a new one', async ({
     page,

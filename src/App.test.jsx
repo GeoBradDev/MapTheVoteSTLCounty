@@ -93,6 +93,26 @@ describe('App', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Early voting wait times');
   });
 
+  it('shows the Election Day heading at /early-voting on Election Day (#107)', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    // 9 a.m. Central on Election Day, November 3, 2026.
+    vi.setSystemTime(Date.UTC(2026, 10, 3, 15));
+    try {
+      renderAt('/early-voting');
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        'Election Day line counts',
+      );
+      await vi.waitFor(() =>
+        expect(screen.getByRole('heading', { level: 1 })).toHaveAttribute('tabindex', '-1'),
+      );
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        'Election Day line counts',
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('opens the wait times page from the home page without a full reload', async () => {
     const user = userEvent.setup();
     const location = renderAt('/');

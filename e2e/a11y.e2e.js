@@ -6,7 +6,16 @@
 // navigation and reduced motion while the results load.
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { CITY_CODE, CODE, fixtureBody, WAITS_RECORDED_AT } from './fixtures.js';
+import {
+  BASEMAP_STYLE_URL,
+  BLANK_STYLE,
+  CITY_CODE,
+  CODE,
+  ELECTION_DAY_AT,
+  ELECTION_DAY_WAITS,
+  fixtureBody,
+  WAITS_RECORDED_AT,
+} from './fixtures.js';
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'];
 
@@ -18,11 +27,15 @@ const TEXT_SPACING = `
 
 // ArcGIS from the fixtures, the app's own origin as is, everything else
 // (geocoders, map tiles) blocked.
-async function answerFromFixtures(page, { delayMs = 0 } = {}) {
+async function answerFromFixtures(page, { delayMs = 0, waits, basemap = false } = {}) {
   await page.route('**/*', async (route) => {
     const href = route.request().url();
     if (new URL(href).hostname === 'localhost') return route.continue();
-    const body = fixtureBody(href);
+    // A blank style, so the map draws with no tiles (the Election Day routes, #107).
+    if (basemap && href === BASEMAP_STYLE_URL) {
+      return route.fulfill({ contentType: 'application/json', body: BLANK_STYLE });
+    }
+    const body = fixtureBody(href, null, { waits });
     if (body === null) return route.abort();
     if (delayMs) await new Promise((resolve) => setTimeout(resolve, delayMs));
     return route.fulfill({ contentType: 'application/json', body });
@@ -85,6 +98,43 @@ const ROUTES = [
     },
   },
   {
+    // Election Day (#107): the polling places card's line counts, sort and
+    // link, and the map's legend once it draws, from the Election Day fixtures.
+    name: `/p/${CODE} on Election Day`,
+    path: `/p/${CODE}`,
+    at: ELECTION_DAY_AT,
+    waits: ELECTION_DAY_WAITS,
+    basemap: true,
+    ready: async (page) => {
+      await expect(page.getByText(`Results for precinct ${CODE} are ready.`)).toBeAttached();
+      const polls = page.getByRole('list', { name: 'Nearest polling places' });
+      await expect(polls).toBeVisible();
+      await page.getByRole('radio', { name: 'Shortest line within 5 miles' }).check();
+      await expect(polls.getByText(/in line, reported/).first()).toBeVisible();
+      await expect(
+        page.getByRole('link', {
+          name: 'See line counts at every St. Louis County and City polling place',
+        }),
+      ).toBeVisible();
+    },
+  },
+  {
+    // Election Day (#107): every polling place of both boards with its count.
+    name: '/early-voting on Election Day',
+    path: '/early-voting',
+    at: ELECTION_DAY_AT,
+    waits: ELECTION_DAY_WAITS,
+    ready: async (page) => {
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Election Day line counts');
+      const list = page.getByRole('list', { name: 'Polling places' });
+      await expect(list).toBeVisible();
+      await expect(list.getByText(/in line, reported/).first()).toBeVisible();
+      await expect(
+        list.getByRole('heading', { name: '12th & Park Recreation Center' }),
+      ).toBeVisible();
+    },
+  },
+  {
     path: '/learn',
     ready: (page) => expect(page.getByRole('heading', { level: 1 })).toBeVisible(),
   },
@@ -107,11 +157,11 @@ async function horizontalOverflow(page) {
   });
 }
 
-for (const { path, ready, at } of ROUTES) {
-  test.describe(path, () => {
+for (const { name, path, ready, at, waits, basemap } of ROUTES) {
+  test.describe(name ?? path, () => {
     test.beforeEach(async ({ page }) => {
       if (at) await page.clock.setFixedTime(at);
-      await answerFromFixtures(page);
+      await answerFromFixtures(page, { waits, basemap });
       await page.goto(path);
       await ready(page);
     });
@@ -216,6 +266,18 @@ test.describe('the early voting wait times page', () => {
     const names = await list.locator('li h3').allTextContents();
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
   });
+});
+
+// Election Day with today's County view, which keeps only early voting
+// reports (#107): every polling place shows the no-data state.
+test('Election Day with no Election Day reports shows only the no-data state', async ({ page }) => {
+  await page.clock.setFixedTime(ELECTION_DAY_AT);
+  await answerFromFixtures(page, { waits: { county: 'absenteeOnElectionDay', city: 'empty' } });
+  await page.goto(`/p/${CODE}`);
+  const polls = page.getByRole('list', { name: 'Nearest polling places' });
+  await expect(polls).toBeVisible();
+  await expect(page.getByText('No current line count for these polling places.')).toBeVisible();
+  await expect(polls.getByText(/in line, reported/)).toHaveCount(0);
 });
 
 test.describe('with reduced motion', () => {

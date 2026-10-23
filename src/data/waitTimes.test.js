@@ -3,8 +3,9 @@
 // test scans this file.
 // @vitest-environment node
 import absenteeSites from '../../docs/raw/fixtures/absentee-sites.json';
+import polls from '../../docs/raw/fixtures/polls.json';
 import election from '../config/election.js';
-import { cityFresh, cityStale, countyFresh } from './waitTimes.fixtures.js';
+import { asElectionDay, cityFresh, cityStale, countyFresh } from './waitTimes.fixtures.js';
 import {
   parseCityHours,
   reportedTimeParts,
@@ -128,6 +129,60 @@ describe('selectCountyWaits', () => {
 
   it('returns nothing for the empty view', () => {
     expect(selectCountyWaits([], sites, now)).toEqual([]);
+  });
+});
+
+// Election Day, Tuesday, November 3, 2026, in Chicago (UTC-6 then).
+const nov3 = (hours, minutes = 0) => Date.UTC(2026, 10, 3, hours + 6, minutes);
+
+describe('selectCountyWaits on Election Day (#107)', () => {
+  const day = { electionDay: true };
+  const ed = election.waitTimes.county.electionDay;
+  const reports = asElectionDay(countyFresh, 'county', polls.features);
+  const now = nov3(9, 0, 30);
+
+  it("joins reports on the polls layer's Election Day field, not the absentee one", () => {
+    const entries = selectCountyWaits(reports, polls.features, now, day);
+    expect(entries).toHaveLength(19);
+    const board = byId(entries).loc019boec;
+    expect(board).toMatchObject({
+      siteId: 'loc019boec',
+      jurisdiction: 'county',
+      unit: 'people',
+      value: 0,
+      openUntil: new Date(nov3(19)),
+    });
+    for (const e of entries) {
+      const site = polls.features.find((f) => f.properties[ed.pollsField] === e.siteId);
+      expect(site).toBeDefined();
+    }
+  });
+
+  it("matches nothing in today's view, whose reports carry absentee usernames", () => {
+    const today = countyFresh.map((r) => ({
+      ...r,
+      CreationDate: r.CreationDate + (reports[0].CreationDate - countyFresh[0].CreationDate),
+    }));
+    expect(selectCountyWaits(today, polls.features, now, day)).toEqual([]);
+  });
+
+  it('shows counts only during Election Day hours', () => {
+    expect(selectCountyWaits(reports, polls.features, nov3(5, 59), day)).toEqual([]);
+    expect(selectCountyWaits(reports, polls.features, nov3(19), day)).toEqual([]);
+  });
+
+  it('drops a report older than maxAgeMinutes', () => {
+    const later = now + (election.waitTimes.maxAgeMinutes + 60) * MINUTE;
+    expect(selectCountyWaits(reports, polls.features, later, day)).toEqual([]);
+  });
+
+  it('returns nothing for the empty view', () => {
+    expect(selectCountyWaits([], polls.features, now, day)).toEqual([]);
+  });
+
+  it('shows no Election Day count on another day', () => {
+    const early = countyFresh;
+    expect(selectCountyWaits(early, polls.features, oct22(9, 0, 30), day)).toEqual([]);
   });
 });
 
@@ -260,6 +315,44 @@ describe('selectCityWaits', () => {
     };
     const older = { ...board, [city.valueField]: 12, [city.timeField]: oct22(8, 30) };
     expect(selectCityWaits([older, closed], oct22(9, 5))).toEqual([]);
+  });
+});
+
+describe('selectCityWaits on Election Day (#107)', () => {
+  const day = { electionDay: true };
+  const rows = asElectionDay(cityFresh, 'city');
+
+  it('uses Election Day hours, not the early voting hours field', () => {
+    // At 9:00 a.m. the libraries are closed for early voting on a Tuesday,
+    // but the polls are open: every site with a report from today shows.
+    const entries = selectCityWaits(rows, nov3(9, 0, 30), day);
+    expect(entries.map((e) => e.siteId)).toEqual(['St. Louis City Board of Elections']);
+    expect(entries[0].openUntil).toEqual(new Date(nov3(19)));
+  });
+
+  it('shows a report made after 6 a.m. even at a site the hours field calls closed', () => {
+    const row = {
+      ...rows[0],
+      earlyvotingoperhours: 'Su (Closed)',
+      created_date_1740505041182: nov3(6, 30),
+    };
+    expect(selectCityWaits([row], nov3(7), day)).toHaveLength(1);
+  });
+
+  it('shows nothing before the polls open or after they close', () => {
+    const row = { ...rows[0], created_date_1740505041182: nov3(5, 50) };
+    expect(selectCityWaits([row], nov3(5, 55), day)).toEqual([]);
+    const late = { ...rows[0], created_date_1740505041182: nov3(18, 50) };
+    expect(selectCityWaits([late], nov3(19), day)).toEqual([]);
+  });
+
+  it('still drops a site whose comments say the poll is closed', () => {
+    const row = { ...rows[0], comments: 'Poll closed', created_date_1740505041182: nov3(8) };
+    expect(selectCityWaits([row], nov3(9), day)).toEqual([]);
+  });
+
+  it('shows nothing for the stale fixture', () => {
+    expect(selectCityWaits(cityStale, nov3(9), day)).toEqual([]);
   });
 });
 

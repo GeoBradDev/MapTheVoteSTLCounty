@@ -1,6 +1,6 @@
 import geometry from '../../../docs/raw/fixtures/precinct-geometry.json';
 import { parseOklch, partyColor, toOklch } from '../../test/colors.js';
-import { mapBounds, oklchToRgb } from './mapBounds.js';
+import { mapBounds, oklchToRgb, placesKey } from './mapBounds.js';
 
 const square = {
   type: 'Polygon',
@@ -108,5 +108,19 @@ describe('oklchToRgb', () => {
     expect(oklchToRgb(undefined)).toBeNull();
     expect(oklchToRgb('#205943')).toBeNull();
     expect(oklchToRgb('oklch(a b c)')).toBeNull();
+  });
+});
+
+describe('placesKey (#107)', () => {
+  const a = { lat: 38.6, lng: -90.3 };
+  const b = { lat: 38.7, lng: -90.4 };
+
+  it('is the same for the same places in another order, so a reorder keeps the camera', () => {
+    expect(placesKey([a, b])).toBe(placesKey([b, a]));
+  });
+
+  it('changes when a place is added or moved', () => {
+    expect(placesKey([a])).not.toBe(placesKey([a, b]));
+    expect(placesKey([a, b])).not.toBe(placesKey([a, { ...b, lat: 38.71 }]));
   });
 });

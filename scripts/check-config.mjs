@@ -135,10 +135,19 @@ export function expectedLayers(config) {
   ];
   return {
     precincts: { geometryType: 'esriGeometryPolygon', fields: [...new Set(precinctFields)] },
-    // The wait time join field (#103): the County's reports name a site by it.
+    // The wait time join fields (#103, #107): the County's early voting and
+    // Election Day reports name a site by them.
     polls: {
       geometryType: 'esriGeometryPoint',
-      fields: [...POLL_FIELDS, config.waitTimes.county.pollsField],
+      fields: [
+        ...new Set([
+          ...POLL_FIELDS,
+          config.waitTimes.county.pollsField,
+          ...(config.waitTimes.county.electionDay
+            ? [config.waitTimes.county.electionDay.pollsField]
+            : []),
+        ]),
+      ],
     },
     countyBoundary: { geometryType: 'esriGeometryPolygon', fields: BOUNDARY_FIELDS },
   };
@@ -529,15 +538,32 @@ export async function runHealthCheck(
   // pass or fail: the County view is empty whenever its sites are closed.
   // Open sites with nothing fresh, or County reports that match no site, are
   // warnings for a person to look at.
+  //
+  // On Election Day (#107) each board's Election Day source is checked
+  // instead: the County's Election Day layer and filter, joined on its
+  // Election Day field to every polling place, and the City's Election Day
+  // polling places, all open by Election Day hours.
   if (waitTimes?.enabled) {
-    const sources = Object.entries(WAIT_SOURCES).filter(([key]) => waitTimes[key]?.enabled);
+    const electionDay =
+      zonedNow(fixedNow ?? Date.now(), config.timeZone).date === config.electionDate;
+    const dayHours = config.electionDayHours;
+    // Each board's source for today: its Election Day values on Election Day.
+    const sourceOf = (key) => {
+      const base = waitTimes[key];
+      if (!electionDay || !base?.electionDay) return base;
+      return key === 'city'
+        ? {
+            ...base,
+            where: base.electionDay.where,
+            enabled: base.enabled && base.electionDay.enabled,
+          }
+        : { ...base, ...base.electionDay, enabled: base.enabled && base.electionDay.enabled };
+    };
+    const sources = Object.entries(WAIT_SOURCES).filter(([key]) => sourceOf(key)?.enabled);
     const waitLayerOk = {};
-    for (const [key, { extraFields }] of sources) {
-      const source = waitTimes[key];
-      const where = `waitTimes.${key} (${source.layer})`;
-      const want = [source.siteField, source.valueField, source.timeField];
-      for (const field of extraFields) want.push(source[field]);
-      waitLayerOk[key] = await check(`wait layer ${key}`, async () => {
+    // One wait layer answers with the fields the app reads.
+    const layerFields = (name, source, where, want) =>
+      check(name, async () => {
         let info;
         try {
           info = await request(`${source.serviceRoot}/${source.layer}?f=json`);
@@ -551,12 +577,68 @@ export async function runHealthCheck(
         if (missing.length) throw new CheckError(`${where}: missing fields ${missing.join(', ')}`);
         return `${where}: ${info.name ?? 'unnamed'}, expected fields present (${want.length})`;
       });
+    for (const [key, { extraFields }] of sources) {
+      const source = sourceOf(key);
+      const where = `waitTimes.${key}${electionDay && source !== waitTimes[key] ? '.electionDay' : ''} (${source.layer})`;
+      const want = [source.siteField, source.valueField, source.timeField];
+      for (const field of extraFields) want.push(source[field]);
+      waitLayerOk[key] = await layerFields(`wait layer ${key}`, source, where, want);
+    }
+    // Before Election Day, a separate County Election Day layer (#107) is
+    // checked too, so a new view is checked the day it goes in the config,
+    // not first at 6 a.m. on Election Day.
+    const countyDay = waitTimes.county?.electionDay;
+    if (
+      !electionDay &&
+      waitTimes.county?.enabled &&
+      countyDay?.enabled &&
+      `${countyDay.serviceRoot}/${countyDay.layer}` !==
+        `${waitTimes.county.serviceRoot}/${waitTimes.county.layer}`
+    ) {
+      const { siteField, valueField, timeField } = waitTimes.county;
+      await layerFields(
+        'wait layer county election day',
+        countyDay,
+        `waitTimes.county.electionDay (${countyDay.layer})`,
+        [siteField, valueField, timeField],
+      );
+    }
+
+    // Before Election Day, the County's Election Day filter (#107) runs on its
+    // layer every day, so a filter the layer cannot run fails the day it goes
+    // in the config. Rows are not judged: the view may hold none until then.
+    if (!electionDay && waitTimes.county?.enabled && countyDay?.enabled) {
+      const where = `waitTimes.county.electionDay (${countyDay.layer})`;
+      const { siteField, valueField, timeField } = waitTimes.county;
+      await check('wait filter county election day', async () => {
+        let body;
+        try {
+          body = await request(
+            `${countyDay.serviceRoot}/${countyDay.layer}/query?${new URLSearchParams({
+              f: 'json',
+              where: countyDay.where,
+              outFields: [siteField, timeField, valueField].join(','),
+              returnGeometry: 'false',
+            })}`,
+          );
+        } catch (error) {
+          if (!(error instanceof CheckError)) throw error;
+          const hint = error.transient
+            ? ''
+            : '. Check the layer and its where clause in src/config/election.js.';
+          throw new CheckError(`${where}: ${error.message}${hint}`);
+        }
+        if (!Array.isArray(body?.features)) {
+          throw new CheckError(`${where}: the response has no features list`);
+        }
+        return `${where}: the filter runs (${body.features.length} rows now)`;
+      });
     }
 
     // The rows of one wait layer. Any failure names the config key and layer;
     // a feature without fields fails, as it fails every load in the app.
     const waitRows = async (key, outFields) => {
-      const source = waitTimes[key];
+      const source = sourceOf(key);
       const where = `waitTimes.${key} (${source.layer})`;
       let body;
       try {
@@ -598,16 +680,49 @@ export async function runHealthCheck(
     // Read the clock here, not at the start: the checks above can take minutes
     // of retries, and a report made since then would look like a clock error.
     const now = fixedNow ?? Date.now();
+    // The polling places with their Election Day join field (#107), for the
+    // County's Election Day reports.
+    let dayPolls = null;
+    if (electionDay && layerOk.polls && sources.some(([key]) => key === 'county')) {
+      const field = sourceOf('county').pollsField;
+      await check('election day polling places', async () => {
+        const body = await query('polls', {
+          where: '1=1',
+          outFields: ['loc', field].join(','),
+          returnGeometry: 'false',
+        });
+        const rows = (body.features ?? []).map((f) => f?.attributes ?? {});
+        if (rows.length === 0) throw new CheckError('the polls layer returns no polling places');
+        dayPolls = rows.map((row) =>
+          Object.fromEntries(
+            Object.entries(row).map(([k, v]) => [k, typeof v === 'string' ? v.trim() : v]),
+          ),
+        );
+        const keyed = dayPolls.filter((row) => row[field]).length;
+        const detail = `${rows.length} polling places, ${keyed} with a ${field}`;
+        // No key at all: no Election Day report can match a polling place.
+        return keyed === 0
+          ? { warn: `${detail}. No Election Day report can match a polling place.` }
+          : detail;
+      });
+    }
+    const dayOpen = () => {
+      const { minutes } = zonedNow(now, config.timeZone);
+      return minutes >= toMinutes(dayHours.open) && minutes < toMinutes(dayHours.close);
+    };
+
     for (const [key] of sources) {
-      const source = waitTimes[key];
+      const source = sourceOf(key);
       const name = `wait reports ${key}`;
       if (!waitLayerOk[key]) {
         record(name, 'skip', `the wait layer ${key} check failed`);
         continue;
       }
       if (key === 'county') {
-        if (!absenteeSites) {
-          record(name, 'skip', 'the absentee sites check failed');
+        const siteRows = electionDay ? dayPolls : absenteeSites;
+        if (!siteRows) {
+          const failed = electionDay ? 'election day polling places' : 'absentee sites';
+          record(name, 'skip', `the ${failed} check failed`);
           continue;
         }
         await check(name, async () => {
@@ -616,17 +731,23 @@ export async function runHealthCheck(
             source.timeField,
             source.valueField,
           ]);
-          const keys = new Set(absenteeSites.map((s) => s[source.pollsField]).filter(Boolean));
-          const open = absenteeSites.filter(
+          const keys = new Set(siteRows.map((s) => s[source.pollsField]).filter(Boolean));
+          const open = siteRows.filter(
             (s) =>
               keys.has(s[source.pollsField]) &&
-              earlyVotingStatus(config.earlyVoting?.schedules?.[s.abs_type], now, config.timeZone)
-                .kind === 'openNow',
+              (electionDay
+                ? dayOpen()
+                : earlyVotingStatus(
+                    config.earlyVoting?.schedules?.[s.abs_type],
+                    now,
+                    config.timeZone,
+                  ).kind === 'openNow'),
           ).length;
           const shown = selectCountyWaits(
             reports,
-            absenteeSites.map((properties) => ({ properties })),
+            siteRows.map((properties) => ({ properties })),
             now,
+            { electionDay },
           ).length;
           const unmatched = reports.filter((r) => !keys.has(r[source.siteField]));
           const newest = newestReport(reports, source.timeField);
@@ -636,6 +757,13 @@ export async function runHealthCheck(
           if (unmatched.length) {
             warnings.push(
               `${unmatched.length} reports match no site's ${source.pollsField} on the polls layer.`,
+            );
+          }
+          // On Election Day (#107) the polls are open, but no polling place has
+          // the join field, so the check cannot call it closed and pass.
+          if (electionDay && dayOpen() && keys.size === 0) {
+            warnings.push(
+              `The polls are open and no polling place has a ${source.pollsField}, so no count can show.`,
             );
           }
           let detail;
@@ -679,27 +807,32 @@ export async function runHealthCheck(
                 .includes(closedText)
             )
               return false;
-            const hours = parseCityHours(row[source.hoursField])?.[weekday];
+            // On Election Day (#107) every polling place keeps Election Day hours.
+            const hours = electionDay
+              ? dayHours
+              : parseCityHours(row[source.hoursField])?.[weekday];
             return (
               Boolean(hours) && minutes >= toMinutes(hours.open) && minutes < toMinutes(hours.close)
             );
           }).length;
           const withValue = rows.filter((r) => Number.isInteger(r[source.valueField])).length;
-          const shown = selectCityWaits(rows, now).length;
+          const shown = selectCityWaits(rows, now, { electionDay }).length;
           const newest = newestReport(rows, source.timeField);
           const counts = `${withValue} of ${rows.length} rows have a ${source.valueField}`;
           // The app treats a site whose hours it cannot read as closed, so a
           // change in the board's hours format would hide every count while
           // this check said "closed".
-          const unreadable = rows.filter(
-            (r) => parseCityHours(r[source.hoursField]) === null,
-          ).length;
+          // Not on Election Day, when the hours field is not read (#107).
+          const unreadable = electionDay
+            ? 0
+            : rows.filter((r) => parseCityHours(r[source.hoursField]) === null).length;
           const warnings = [];
           // The City layer lists its sites all season, open or not: no row at
           // all means the filter no longer matches, and every count is gone.
           if (rows.length === 0) {
             warnings.push(
-              `No row matches waitTimes.${key}.where (${source.where}): check the filter ` +
+              `No row matches waitTimes.${key}${electionDay ? '.electionDay' : ''}.where ` +
+                `(${source.where}): check the filter ` +
                 "against the City board's dashboard.",
             );
           }

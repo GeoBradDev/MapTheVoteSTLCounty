@@ -11,7 +11,13 @@ import PollsCard from './PollsCard.jsx';
 import { createPrecinctMap } from './precinctMapView.js';
 import { copy, formatTime } from './resultsCopy.js';
 
-vi.mock('../../data/arcgis.js', () => ({ getPolls: vi.fn(), getPrecinctGeometry: vi.fn() }));
+// The Election Day line counts (#107) import the wait fetchers too.
+vi.mock('../../data/arcgis.js', () => ({
+  getPolls: vi.fn(),
+  getPrecinctGeometry: vi.fn(),
+  getCountyWaits: vi.fn(),
+  getCityWaits: vi.fn(),
+}));
 vi.mock('./precinctMapView.js', () => ({ createPrecinctMap: vi.fn() }));
 
 // Which topics exist: none by default, as content/en/learn/ ships today.
