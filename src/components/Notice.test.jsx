@@ -65,4 +65,15 @@ describe('Notice', () => {
     );
     expect(screen.getByRole('alert')).toHaveTextContent('Failed');
   });
+
+  // In forced colors Chromium keeps an SVG's own color (preserve-parent-color),
+  // so a kind's ink stays dark on a dark theme's black, under 3:1 (#76). There
+  // the icon takes the text's system color instead.
+  it.each(['info', 'warning', 'danger', 'success'])(
+    'draws the %s icon in the system text color in forced colors',
+    (variant) => {
+      const { container } = render(<Notice variant={variant}>Text</Notice>);
+      expect(container.querySelector('svg')).toHaveClass('forced-colors:text-current');
+    },
+  );
 });
