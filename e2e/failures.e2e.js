@@ -1,8 +1,8 @@
 // Failure states in a real browser (#18), on the production build. Each test
 // answers or breaks every service the app calls, from recorded fixtures: the
 // county's address layers (live and hosted), Photon, the City of St. Louis
-// geocoder, the county's precinct and polls layers, and the County and City
-// early voting line count layers (#106). Nothing reaches the
+// geocoder, the county's precinct and polls layers, the City Board's election
+// layers (#89), and the County and City early voting line count layers (#106). Nothing reaches the
 // network. A failure is a network error (what a CORS refusal or a dropped
 // connection looks like to the page), a timeout or an HTTP 5xx.
 import AxeBuilder from '@axe-core/playwright';

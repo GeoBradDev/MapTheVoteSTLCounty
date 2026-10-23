@@ -1,9 +1,8 @@
-// The county's ArcGIS layers, the City Board's precincts and voting locations
-// (#89), and the County and City wait time layers, answered from recorded
-// fixtures, for the browser
-// runs: the accessibility checks (a11y.e2e.js), the failure states
-// (failures.e2e.js) and the Lighthouse run (lighthouse.js). Neither calls a live service, so an outage cannot fail a
-// pull request.
+// The county's ArcGIS layers, the City Board's election layers (#89), and the
+// County and City wait time layers, answered from recorded fixtures, for the
+// browser runs: the accessibility checks (a11y.e2e.js), the failure states
+// (failures.e2e.js) and the Lighthouse run (lighthouse.js). None calls a live
+// service, so an outage cannot fail a pull request.
 import { readFileSync } from 'node:fs';
 import election from '../src/config/election.js';
 import { BASEMAP_STYLE_URL } from '../src/features/lookup/basemap.js';
@@ -147,7 +146,8 @@ function shape(body, params) {
 }
 
 /**
- * The JSON body for a request to the county's ArcGIS layers, or null for a
+ * The JSON body for a request to the county's or the City Board's ArcGIS
+ * layers, or null for a
  * request that is not one (the caller blocks it). The fixture is shaped to the
  * request's `outFields` and `geometryPrecision`, so a browser run sees only
  * the fields the app asked for.
