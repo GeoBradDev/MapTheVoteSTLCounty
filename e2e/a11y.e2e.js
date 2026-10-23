@@ -28,6 +28,7 @@ import {
   tintedStyle,
   WAITS_RECORDED_AT,
 } from './fixtures.js';
+import election from '../src/config/election.js';
 import { oklchToRgb } from '../src/features/lookup/mapBounds.js';
 import { themeTokens } from '../src/test/colors.js';
 
@@ -946,6 +947,14 @@ test.describe('home page dot map', () => {
       const search = page.getByRole('combobox');
       await expect(search).toBeVisible();
       await expect(page.locator('html')).toHaveAttribute('data-home-map', '');
+      // The app is held: the box is still the pre-rendered empty one, yet the
+      // stylesheet already reserves its height.
+      const box = page.locator('[data-home-map-box]');
+      await expect(box).toBeEmpty();
+      await expect(box).not.toHaveAttribute('data-open');
+      await expect
+        .poll(() => box.evaluate((el) => el.getBoundingClientRect().height))
+        .toBeGreaterThan(500);
       const before = await search.boundingBox();
       release();
       await expect(page.locator('[data-home-map-box]').getByText(line)).toBeVisible();
@@ -971,7 +980,7 @@ test.describe('home page dot map', () => {
     });
   }
 
-  test('asks for no address or location, and only the boards’ own layers', async ({ page }) => {
+  test('asks for no location, and only the boards’ own layers', async ({ page }) => {
     await page.clock.setFixedTime(WAITS_RECORDED_AT);
     const asked = [];
     page.on('request', (request) => {
@@ -983,8 +992,20 @@ test.describe('home page dot map', () => {
     await page.goto('/');
     await expect(page.getByText('Shortest lines now')).toBeVisible();
     expect(asked.length).toBeGreaterThan(0);
+    // Each board's own services, from the config: the County's election and
+    // line count services and the City's.
+    const roots = [
+      election.serviceRoot,
+      election.jurisdictions.city.serviceRoot,
+      election.waitTimes.county.serviceRoot,
+      election.waitTimes.county.electionDay.serviceRoot,
+      election.waitTimes.city.serviceRoot,
+    ].map((root) => `${root}/`);
     for (const line of asked) {
-      expect(line).toMatch(/^https:\/\/services6\.arcgis\.com\//);
+      expect(
+        roots.some((root) => line.startsWith(root)),
+        line,
+      ).toBe(true);
       expect(line).not.toMatch(/(^|[?&\s])geometry=|esriGeometryPoint/i);
     }
   });
@@ -1012,11 +1033,35 @@ test.describe('home page dot map', () => {
   test('drops the reserved box when the app’s script fails to load', async ({ page }) => {
     await page.clock.setFixedTime(WAITS_RECORDED_AT);
     await answerFromFixtures(page);
-    await page.route(/\/assets\/index-[\w-]+\.js$/, (route) => route.abort());
-    await page.goto('/');
+    let fail;
+    const failing = new Promise((resolve) => {
+      fail = resolve;
+    });
+    await page.route(/\/assets\/index-[\w-]+\.js$/, async (route) => {
+      await failing;
+      await route.abort();
+    });
+    await page.goto('/', { waitUntil: 'commit' });
+    // The head script ran and reserved the box first.
+    await expect(page.locator('html')).toHaveAttribute('data-home-map', '');
+    fail();
+    await page.waitForLoadState('load');
     await expect(page.locator('html')).not.toHaveAttribute('data-home-map');
     await expect(page.locator('[data-home-map-box]')).toBeHidden();
     await expect(page.getByRole('combobox')).toBeVisible();
+  });
+
+  // If the map's own chunk cannot load, the box closes and the page is as it
+  // was, with its wait times link.
+  test('closes the box when the map’s chunk fails to load', async ({ page }) => {
+    await page.clock.setFixedTime(WAITS_RECORDED_AT);
+    await answerFromFixtures(page);
+    await page.route(/\/assets\/WaitTimesPage-[\w-]+\.js$/, (route) => route.abort());
+    await page.goto('/');
+    const box = page.locator('[data-home-map-box]');
+    await expect(box).toHaveAttribute('data-closed', '');
+    await expect(box).toBeHidden();
+    await expect(page.getByRole('link', { name: 'See early voting wait times' })).toBeVisible();
   });
 
   // Stale counts keep the box, already on screen at its height, so nothing

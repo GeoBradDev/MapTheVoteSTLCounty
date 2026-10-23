@@ -48,7 +48,7 @@ export function zonedInstant(date, time, timeZone) {
 
 /**
  * The window, or null when the config turns the home map off (its own flag,
- * `waitTimes.homeMap`, or every line count).
+ * `waitTimes.homeMap`, or every line count) or names no early voting dates.
  * @param {typeof election} [config]
  * @param {typeof cityResults} [city]
  * @returns {{ start: number, end: number } | null}
@@ -59,6 +59,7 @@ export function homeMapWindow(config = election, city = cityResults) {
     ...Object.values(config.earlyVoting.schedules).flat(),
     ...Object.values(city.earlyVoting.schedules).flat(),
   ].map((entry) => entry.from);
+  if (firsts.length === 0) return null;
   const first = firsts.reduce((min, from) => (from < min ? from : min));
   return {
     start: zonedInstant(first, '00:00', config.timeZone),

@@ -6,7 +6,7 @@
 // demand, after the home page's text has painted. The map is one link to the
 // wait times page, which lists everything it shows; the SVG itself is hidden
 // from screen readers, and the summary carries the data.
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'wouter';
 import election, { jurisdictions } from '../../config/election.js';
 import { getAbsenteeSites, getPolls } from '../../data/arcgis.js';
@@ -261,7 +261,12 @@ export default function WaitDotMap({
   const heading = electionDay ? text.headingElectionDay : text.heading;
   const mapLabel = electionDay ? text.mapLinkElectionDay : text.mapLink;
   const status = statusLine(model, waits, electionDay, now);
-  const ready = Boolean(model && settled);
+  // Once shown, the legend, summary and rule stay while a refresh is asked
+  // (when a site opens with the page open, the first answer can take a few
+  // seconds): the dots and lines update when it answers.
+  const [shownOnce, setShownOnce] = useState(false);
+  if (model && settled && !shownOnce) setShownOnce(true);
+  const ready = Boolean(model && (settled || shownOnce));
 
   return (
     <section aria-labelledby="home-map-heading">

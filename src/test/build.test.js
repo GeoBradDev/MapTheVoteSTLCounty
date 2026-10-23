@@ -10,7 +10,9 @@ import { build } from 'vite';
 import cityResults from '../config/cityResults.js';
 import election from '../config/election.js';
 import { parseTopic } from '../features/learn/content/topic.js';
+import { DOT_RADIUS } from '../features/waitTimes/dotMapModel.js';
 import { homeMapWindow, windowScript } from '../features/waitTimes/homeMapWindow.js';
+import { COUNTY_RING } from '../features/waitTimes/outline.js';
 import { topicFiles } from '../features/learn/content/vitePlugin.js';
 import {
   colorLiterals,
@@ -149,10 +151,15 @@ describe('production build', () => {
   // with the wait times page's chunk, never in the first load.
   it('keeps the home dot map out of the first load, in the wait times page chunk', () => {
     const firstLoad = [...html.matchAll(/(?:src|href)="\/assets\/([\w-]+\.js)"/g)].map((m) => m[1]);
-    const mapChunks = Object.keys(js).filter((f) => js[f].includes('data-outline'));
-    expect(mapChunks).toHaveLength(1);
-    expect(mapChunks[0]).toMatch(/^WaitTimesPage-/);
-    for (const f of firstLoad) expect(js[f].includes('data-outline'), f).toBe(false);
+    // The component, the outline (its first points as the build writes them)
+    // and the model (its dot radii).
+    const marks = ['data-outline', COUNTY_RING.slice(0, 6).join(','), DOT_RADIUS.join(',')];
+    for (const mark of marks) {
+      const chunks = Object.keys(js).filter((f) => js[f].includes(mark));
+      expect(chunks, mark).toHaveLength(1);
+      expect(chunks[0], mark).toMatch(/^WaitTimesPage-/);
+      for (const f of firstLoad) expect(js[f].includes(mark), `${f}: ${mark}`).toBe(false);
+    }
   });
 
   // render.yaml's Content-Security-Policy allows only same-origin scripts,

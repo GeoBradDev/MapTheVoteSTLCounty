@@ -41,6 +41,12 @@ describe('homeMapWindow', () => {
     expect(homeMapWindow(election, city).start).toBe(Date.UTC(2026, 8, 1, 5, 0));
   });
 
+  it('is null when neither board names an early voting date', () => {
+    const config = { ...election, earlyVoting: { ...election.earlyVoting, schedules: {} } };
+    const city = { ...cityResults, earlyVoting: { ...cityResults.earlyVoting, schedules: {} } };
+    expect(homeMapWindow(config, city)).toBeNull();
+  });
+
   it('is null with the home map flag off, or every line count off', () => {
     const off = (waitTimes) => ({
       ...election,

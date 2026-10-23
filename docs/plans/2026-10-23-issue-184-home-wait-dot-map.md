@@ -76,8 +76,8 @@ Domain skills:
   plain name. Outline projection: longitude scaled by cos(38.6 deg), latitude
   as is, fitted to a fixed viewBox, coordinates rounded to 0.1 unit. County
   outline stroked, City filled with the sunken surface and labeled "City"; a
-  "St. Louis County" label; four small graticule ticks with degree labels at the
-  frame (the quiet, precise signature).
+  "St. Louis County" label; graticule ticks at the frame (four of latitude, three
+  of longitude), labeled where no outline is drawn (the quiet, precise signature).
 - Dots: filled with the wait tokens (`fill-wait-1..5`), ink hairline, radius by
   class index; hollow `stroke-muted` rings for closed or no count, drawn first
   so counted dots sit on top.
@@ -192,3 +192,10 @@ centering on the voter (privacy).
   page's map among the pages that ask the line count layers; the map asks
   them only while a site is open (`OFF_WAITS` otherwise), as the results
   page's cards do.
+- Review round 3: the no-move e2e proves the app was held and the box
+  reserved; the head-script failure e2e proves the mark was set first; the
+  request e2e checks each board's own services from the config; the build
+  test keeps the outline and the model out of the first load too; an e2e
+  aborts the map's chunk; once shown, the map's text stays while a refresh is
+  asked.
+
