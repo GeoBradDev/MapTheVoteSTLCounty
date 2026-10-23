@@ -3,8 +3,9 @@
 // topics.js loads them with import.meta.glob, so the browser gets plain data
 // and no YAML or Markdown parser ships, and the topics can be pre-rendered:
 // each topic's summary (`?meta`) in the first load, and its whole text in a
-// chunk of its own that loads with its page (#147). A topic that fails any check in topic.js fails the dev server,
-// the tests and the build, naming the file and every problem.
+// chunk of its own that loads with its page (#147). A topic that fails any
+// check in topic.js fails the dev server, the tests and the build, naming the
+// file and every problem.
 //
 // Every topic file is checked when the build (or dev server) starts, whether
 // or not app code imports it yet, so a bad topic can never wait in content/
@@ -70,12 +71,14 @@ export default function learnContent({ electionDate = election.electionDate } = 
     },
     transform(code, id) {
       // `?meta` asks for the topic's summary (#147): what the first load
-      // carries. Any other query (?raw, ?url) means Vite or another plugin owns
-      // this import.
-      const summary = id.endsWith('?meta');
-      if (summary) id = id.slice(0, -'?meta'.length);
-      else if (id.includes('?')) return null;
-      const file = id.replaceAll('\\', '/');
+      // carries, with the dev server's `t` timestamp after an edit. Any other
+      // query (?raw, ?url) means Vite or another plugin owns this import.
+      const [path, query] = id.split('?');
+      const params = new URLSearchParams(query ?? '');
+      const summary =
+        params.has('meta') && [...params.keys()].every((k) => ['meta', 't'].includes(k));
+      if (query !== undefined && !summary) return null;
+      const file = path.replaceAll('\\', '/');
       if (!TOPIC_FILE.test(file)) return null;
       let topic;
       try {

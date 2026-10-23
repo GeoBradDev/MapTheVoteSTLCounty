@@ -11,15 +11,22 @@ const linkClass = 'inline-flex min-h-11 items-center text-primary underline';
 
 /**
  * The whole topic once its body has loaded (#147), else null; throws, for the
- * error boundary (#18), when it cannot load.
+ * error boundary (#18), when it cannot load. While another language's body of
+ * the same topic loads, the one shown stays, so a new language is not a new
+ * page (#19): focus, the title and the folded sections stay as they are.
  * @param {import('./content/topic.js').TopicSummary | null} summary
  */
 function useTopicBody(summary) {
   const [, setLoaded] = useState(null);
   const [error, setError] = useState(null);
-  const topic = summary ? loadedTopic(summary) : null;
+  const shown = useRef(null);
+  const ready = summary ? loadedTopic(summary) : null;
+  const topic = ready ?? (summary && shown.current?.id === summary.id ? shown.current : null);
   useEffect(() => {
-    if (!summary || topic) return undefined;
+    if (ready) shown.current = ready;
+  }, [ready]);
+  useEffect(() => {
+    if (!summary || ready) return undefined;
     let live = true;
     loadTopic(summary).then(
       (loaded) => live && setLoaded(loaded),
@@ -28,7 +35,7 @@ function useTopicBody(summary) {
     return () => {
       live = false;
     };
-  }, [summary, topic]);
+  }, [summary, ready]);
   if (error) throw error;
   return topic;
 }

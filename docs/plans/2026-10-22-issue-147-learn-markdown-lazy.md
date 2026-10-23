@@ -20,10 +20,14 @@ e2e axe run already covers /learn/voter-id after hydration; focus behavior is un
 3. Each topic body loads on demand, one chunk per topic file, when its topic page renders.
 4. Pre-rendering still writes every topic page with its full text, title and description.
 5. A pre-rendered topic page hydrates with no mismatch: its body is loaded before hydration,
-   and the static HTML stays on screen meanwhile.
+   and the static HTML stays on screen meanwhile. If the body cannot load, the static page
+   stays as it is (a plain page) rather than being replaced.
 6. Navigating in-app to a topic shows a placeholder at least a screen tall while the body
    loads (no footer jump), then the topic, with focus on its heading.
-7. A body that fails to load shows the error screen (#18), not a blank page.
+7. A body that fails to load on in-app navigation shows the error screen (#18), not a blank
+   page.
+9. Switching language on a topic page keeps the topic and focus while the translation's
+   body loads (#19).
 8. /learn, the cards' topic links and the page heads work with no body loaded.
 
 ## Files that change
@@ -37,10 +41,13 @@ e2e axe run already covers /learn/voter-id after hydration; focus behavior is un
   carries `blocks` counts as loaded (test fixtures).
 - `src/features/learn/LearnTopicPage.jsx`: renders the placeholder until the body is loaded.
 - `src/pageHead.js`: `topicDescription` reads `topic.intro`.
-- `src/main.jsx`: before hydrating a topic page, load its body.
+- `src/main.jsx`, `src/hydrate.js` (`loadForHydration`): before hydrating a topic page, load
+  its body; on failure leave the pre-rendered page alone.
 - `src/entry-server.jsx`, `src/prerender/worker.js`: load every body before rendering.
 - Tests: topic.test.js, vitePlugin.test.js, topics.test.js, LearnTopicPage.test.jsx,
-  pageHead.test.js, entry-server.test.jsx, build.test.js.
+  pageHead.test.js, entry-server.test.jsx, hydrate.test.js, build.test.js and
+  e2e/prerender.e2e.js (in-app navigation with the chunk held back; a failed chunk on a hard
+  load).
 - README Performance / Learn content: the rule that topic bodies load with their page.
 
 ## Order of work
@@ -66,5 +73,10 @@ e2e axe run already covers /learn/voter-id after hydration; focus behavior is un
 - 3: build.test.js finds a voter-id body chunk; topics.test.js loader tests.
 - 4: build.test.js pre-rendered page tests, entry-server.test.jsx.
 - 5: e2e/prerender.e2e.js hydration checks; live drive of a hard load of /learn/voter-id.
-- 6, 7: LearnTopicPage.test.jsx; live drive navigating /learn to a topic.
+- 6, 7, 9: LearnTopicPage.test.jsx; e2e/prerender.e2e.js navigating /learn to a topic.
+- 5 (failure): e2e/prerender.e2e.js with the topic chunk aborted.
 - 8: LearnPage, PollsCard, EarlyVotingCard, pageHead tests.
+
+Revision after the first review: a failed body load before hydration now keeps the static page
+(it used to clear it and render fresh), a language switch keeps the shown topic while the
+translation loads, and the plugin accepts the dev server's `?meta&t=` after an edit.

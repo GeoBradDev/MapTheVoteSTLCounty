@@ -26,17 +26,21 @@ const root = document.getElementById('root');
 // markup rendered for another path is replaced, not hydrated.
 // A topic page's body loads on demand (#147), so it is loaded first: the
 // pre-rendered page stays on screen meanwhile, and the first render matches it.
-// If it cannot load, the page renders fresh, and the topic page tries again.
+// If it cannot load, the pre-rendered page stays as it is, a plain page whose
+// links still work, rather than giving up the text the voter already has.
 function renderFresh() {
   root.replaceChildren();
   createRoot(root, options).render(app);
 }
 
 if (shouldHydrate(root, window.location.pathname)) {
-  loadForHydration(window.location.pathname).then(() => {
-    startHydration();
-    hydrateRoot(root, app, options);
-  }, renderFresh);
+  loadForHydration(window.location.pathname).then(
+    () => {
+      startHydration();
+      hydrateRoot(root, app, options);
+    },
+    () => {},
+  );
 } else {
   renderFresh();
 }

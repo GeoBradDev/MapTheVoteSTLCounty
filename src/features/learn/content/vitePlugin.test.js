@@ -63,6 +63,12 @@ describe('learnContent plugin', () => {
     });
   });
 
+  it("reads ?meta with the dev server's timestamp, and no other query", () => {
+    const id = '/repo/content/en/learn/voter-id.md';
+    expect(plugin.transform.call(context, topic(), `${id}?meta&t=123`).code).toContain('"intro"');
+    expect(plugin.transform.call(context, topic(), `${id}?meta&raw`)).toBeNull();
+  });
+
   it('fails on a topic with a missing source', () => {
     expect(() =>
       plugin.transform.call(context, topic({ sources: false }), '/r/content/en/learn/voter-id.md'),

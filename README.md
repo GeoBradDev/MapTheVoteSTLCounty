@@ -504,7 +504,8 @@ until it has one.
 
 For each new election, re-read every topic's sources, then update its `election` and
 `lastVerified`; the build fails until you do. `src/features/learn/topics.js` loads the topics
-(`getTopics`, `getTopic`) and `src/features/learn/TopicArticle.jsx` renders one.
+(`getTopics` and `getTopic` for summaries, `loadTopic` for a body) and
+`src/features/learn/TopicArticle.jsx` renders one.
 
 **Topic bodies load with their pages (owner decision on #147).** The first load carries only
 each topic's summary (id, locale, title, group and the intro its description is cut from, made
@@ -512,7 +513,8 @@ by `topicSummary` in `src/features/learn/content/topic.js`), which `/learn`, the
 links and the page heads read. A topic's text and sources are a chunk of their own, loaded by
 `loadTopic()` when its page renders; until then the page holds a screen-tall placeholder. The
 build loads every body before it pre-renders, and `src/main.jsx` loads a pre-rendered topic's
-body before hydrating it, so its static HTML stays on screen. Anything new that only a topic's
+body before hydrating it, so its static HTML stays on screen (and stays, as a plain page, if the
+body cannot load). Anything new that only a topic's
 page reads belongs in the body, not the summary. `src/test/build.test.js` fails when a topic's
 text reaches the first load.
 

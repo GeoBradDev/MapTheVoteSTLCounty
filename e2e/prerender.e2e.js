@@ -174,6 +174,22 @@ test.describe('hydration', () => {
     expect(problems).toEqual([]);
   });
 
+  // If the topic's own chunk cannot load, the pre-rendered text the voter
+  // already has stays on screen, as a plain page (#147).
+  test('a topic keeps its pre-rendered text when its chunk fails to load', async ({ page }) => {
+    await answerFromFixtures(page);
+    await page.route(/\/assets\/voter-id-[\w-]+\.js$/, (route) => route.abort());
+    const failed = page.waitForEvent('requestfailed', (request) =>
+      /\/assets\/voter-id-/.test(request.url()),
+    );
+    await page.goto('/learn/voter-id');
+    await failed;
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('What ID to bring');
+    await expect(page.getByText(/In Missouri, you must show a photo ID/)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Something went wrong' })).toHaveCount(0);
+  });
+
   test('the home page search works after hydration', async ({ page }) => {
     const problems = collectProblems(page);
     await answerFromFixtures(page);
