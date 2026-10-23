@@ -59,7 +59,10 @@ describe('ErrorBoundary (#18)', () => {
   });
 
   it('finds the City only on a City precinct path', () => {
-    expect(cityOnPath('/p/W01P12')?.id).toBe('city');
+    // The forms the /p/:precinct route also matches: a trailing slash, any case.
+    for (const path of ['/p/W01P12', '/p/W01P12/', '/P/W01P12']) {
+      expect(cityOnPath(path)?.id, path).toBe('city');
+    }
     for (const path of ['/p/CC007', '/p/W1P12', '/', '/p/W01P12/x', '/learn']) {
       expect(cityOnPath(path)).toBeUndefined();
     }

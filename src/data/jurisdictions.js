@@ -113,6 +113,7 @@ export function isPrecinctCode(code) {
  * @param {string} path
  */
 export function cityOnPath(path) {
-  const j = jurisdictionFor(/^\/p\/([^/]+)$/.exec(path)?.[1]);
+  // As the /p/:precinct route matches it: any case, an optional trailing slash.
+  const j = jurisdictionFor(/^\/p\/([^/]+?)\/?$/i.exec(path)?.[1]);
   return j?.id === 'city' ? j : undefined;
 }
