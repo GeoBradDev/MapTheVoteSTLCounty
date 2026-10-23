@@ -22,7 +22,10 @@ markup structure is unchanged (fewer paragraphs, same links pattern).
 3. The County board's phone number stays, with its source.
 4. City pages (W..P.. codes) are unchanged: the City Board's quote, source and date; a test
    proves the City card shows none of the County rule text.
-5. The /early-voting "ended" line says, for each jurisdiction, where to vote on Election Day.
+5. The /early-voting "ended" line says where a County voter may vote on Election Day. (Revised
+   during review: a City clause pushed the first-load JavaScript over its 120 KB budget, which
+   has 6 bytes to spare until #147 moves the learn topics out of the first load. City voters
+   reach their own rule through the line's "Find your polling place" link.)
 6. README, docs/data.md and the learn topics no longer state the #72 rule; docs/data.md
    records the owner decision replacing #72, with the County page's quote and read date.
 
@@ -48,8 +51,9 @@ may vote at any polling place in the County on Election Day." The April 7, 2026 
   `CityElectionDayRule.jsx`, `src/config/cityResults.js`: imports and comments.
 - Tests: `HomePage.test.jsx`, `PollsCard.test.jsx`, `PrecinctPage.city89.test.jsx`,
   `WaitTimesPage.test.jsx`.
-- `content/en/learn/provisional-ballots.md`, `what-to-expect.md`: the County rule, citing the
-  County page.
+- `content/en/learn/provisional-ballots.md`, `what-to-expect.md`, `moved-or-changed-name.md`:
+  the County rule, citing the County page (`moved-or-changed-name.md` added in review: it told a
+  voter who moved within the County to go to the polling place for the new address).
 - `README.md`, `docs/data.md`.
 
 ## Order of work

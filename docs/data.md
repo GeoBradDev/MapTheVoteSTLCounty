@@ -89,10 +89,11 @@ The #72 decision (2026-10-21) had followed RSMo 115.430
 to appear and vote at the correct polling place" and "Provisional ballots voted in the wrong
 polling place shall not be counted", and the Secretary of State's On Election Day page
 (https://www.sos.mo.gov/elections/goVoteMissouri/electionday), which says a voter can only
-vote at their assigned polling place. The County Board says any polling place in the County is
-the voter's polling place, so the app no longer cites either for the County rule and no
-longer says "assigned polling place" to County voters. The provisional ballots topic still
-cites RSMo 115.430 for what happens at the wrong polling place, after the County rule.
+vote at their assigned polling place. The County Board's page quoted above says County voters
+may vote at any polling place in the County, so the app no longer cites either for the County
+rule and no longer says "assigned polling place" to County voters. The provisional ballots topic still
+cites RSMo 115.430 for what happens at the wrong polling place, for voters elsewhere in
+Missouri, after the County rule.
 
 The City of St. Louis Board says City voters may vote at any of its listed locations
 (https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/polling-places/index.cfm,

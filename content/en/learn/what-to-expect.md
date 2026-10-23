@@ -41,8 +41,8 @@ the polls close, you cannot vote.[^sos-election-day]
 
 Check where to vote before Election Day.[^sos-election-day] In St. Louis County, a registered
 voter may vote at any polling place in St. Louis County on Election Day.[^county-polling-places]
-This does not apply in the City of St. Louis, which has its own rule. For help, call the county
-board at 314-615-1800.[^county-polls-app]
+This does not apply in the City of St. Louis, which has its own rule. Call 314-615-1800 for
+help.[^county-polls-app]
 
 To find polling places near you, look up your address on the [home page](/) or use the
 county's

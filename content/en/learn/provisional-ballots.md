@@ -65,7 +65,8 @@ In St. Louis County, a registered voter may vote at any polling place in St. Lou
 Election Day.[^county-polling-places] This does not apply in the City of St. Louis, which has
 its own rule.
 
-A provisional ballot cast at the wrong polling place is not counted.[^rsmo-115-430] If the
+Elsewhere in Missouri, a provisional ballot cast at the wrong polling place is not
+counted.[^rsmo-115-430] If the
 election judges find you are at the wrong place, they tell you where to go.[^rsmo-115-430] You can go to your
 correct polling place or a central polling place.[^rsmo-115-430][^sos-other-questions]
 

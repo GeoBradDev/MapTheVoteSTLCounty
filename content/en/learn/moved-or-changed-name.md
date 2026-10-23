@@ -23,6 +23,9 @@ sources:
   - id: county-polls-app
     label: St. Louis County Board of Elections, Polling Place Lookup (November 3, 2026)
     url: https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=13fb36e785c84dbdbcc5219f999652ba
+  - id: county-polling-places
+    label: St. Louis County Board of Elections, Polling Places
+    url: https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/elections/polling-places/
 ---
 
 Tell the county board when you move or change your name.[^sos-other-questions] It is best to do this before
@@ -30,8 +33,8 @@ Election Day.[^sos-other-questions] Call 314-615-1800 with questions.[^county-po
 
 ## You moved within St. Louis County
 
-If you are still on the voter list, you can still vote.[^rsmo-115-165] On Election Day, go to
-the polling place for your new address, or to a central polling place.[^sos-other-questions][^rsmo-115-165] Update your address
+If you are still on the voter list, you can still vote.[^rsmo-115-165] On Election Day, you may
+vote at any polling place in St. Louis County.[^county-polling-places] Update your address
 there and vote.[^sos-other-questions][^rsmo-115-165] You tell the election judges your new
 address, out loud or in writing.[^rsmo-115-165]
 

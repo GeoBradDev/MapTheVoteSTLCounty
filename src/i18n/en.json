@@ -290,7 +290,7 @@
     "intro": "How many people are in line right now at each St. Louis County and St. Louis City early voting site, as each board's staff report it. No address needed.",
     "season": {
       "before": "Early voting runs from {from} to {to}. Line counts show here while sites are open.",
-      "ended": "Early voting has ended. On Election Day, County voters may vote at any St. Louis County polling place, and City voters at any listed City polling place.",
+      "ended": "Early voting has ended. On Election Day, a St. Louis County voter may vote at any polling place in St. Louis County.",
       "findPollingPlace": "Find your polling place"
     },
     "status": {
