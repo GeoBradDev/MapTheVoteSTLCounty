@@ -122,14 +122,18 @@ describe('PrecinctPage', () => {
     );
     expect(precinctQueries).toHaveLength(1);
     expect(precinctQueries[0].searchParams.get('where')).toBe("precinct='CC007'");
-    // Everything else is the polls list, this precinct's outline, or, while
-    // early voting runs, the boards' line counts (#105), which carry nothing
-    // about the voter.
+    // Everything else is the polls list, the polling place rooms (#100), this
+    // precinct's outline, or, while early voting runs, the boards' line counts
+    // (#105), which carry nothing about the voter.
     const { county, city } = election.waitTimes;
     const waitLayer = (url) =>
       [county, city].some((s) => url.href.startsWith(`${s.serviceRoot}/${s.layer}/`));
     for (const url of urls.filter((u) => !precinctQueries.includes(u))) {
       if (url.pathname.includes(election.layers.polls)) continue;
+      if (url.pathname.includes(election.layers.pollRooms)) {
+        expect(url.href).not.toContain('CC007');
+        continue;
+      }
       if (waitLayer(url)) {
         expect(url.href).not.toContain('CC007');
         continue;
@@ -141,7 +145,7 @@ describe('PrecinctPage', () => {
   });
 
   // #27: the cards' requests do not wait for the precinct to answer.
-  it('requests the polls, absentee sites and outline while the precinct loads', () => {
+  it('requests the polls, absentee sites, rooms and outline while the precinct loads', () => {
     fetchMock.mockImplementation(() => new Promise(() => {}));
     renderAt('CC007');
     const urls = fetchMock.mock.calls.map(([input]) => new URL(input));
@@ -149,6 +153,8 @@ describe('PrecinctPage', () => {
     expect(polls.map((url) => url.searchParams.get('where')).sort()).toEqual(
       ['1=1', election.absenteeWhere].sort(),
     );
+    // One rooms request, shared by both cards (#100).
+    expect(urls.filter((url) => url.pathname.includes(election.layers.pollRooms))).toHaveLength(1);
     const outline = precinctCalls().filter((url) => url.searchParams.get('f') === 'geojson');
     expect(outline).toHaveLength(1);
     expect(outline[0].searchParams.get('where')).toBe("precinct='CC007'");

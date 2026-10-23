@@ -183,6 +183,8 @@
       "entryBoth": "Entrance and accessible entrance: {text}",
       "entry": "Entrance: {text}",
       "accessibleEntry": "Accessible entrance: {text}",
+      "room": "Room: {room}",
+      "roomSource": "Room names are from {board} data.",
       "directions": "Get directions",
       "appleMaps": "Apple Maps",
       "linkTarget": "to {name}",

@@ -27,6 +27,9 @@ export {
  * @property {() => Promise<object>} getPolls Every polling place, as GeoJSON.
  * @property {() => Promise<object>} getEarlyVotingSites The early voting sites, as GeoJSON.
  * @property {(code: string) => Promise<object>} getOutline The precinct's outline.
+ * @property {() => Promise<object>} [getPollRooms] The room inside each polling
+ *   place and early voting site, as GeoJSON with no geometry (#100). The
+ *   County's only: the City's sites carry their own entrance notes (#89).
  */
 
 /**
@@ -46,6 +49,7 @@ export const county = Object.freeze({
   getPolls: () => arcgis.getPolls(),
   getEarlyVotingSites: () => arcgis.getAbsenteeSites(),
   getOutline: (code) => arcgis.getPrecinctGeometry(code),
+  getPollRooms: () => arcgis.getPollRooms(),
 });
 
 let cityClient;

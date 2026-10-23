@@ -1,0 +1,2000 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "EPSG:4326"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 172,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM 1"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 38,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 111,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 82,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM LOBBY"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 601,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "VOTING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 160,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "HERITAGE ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 51,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "ACTIVITY CENTER"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 191,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 176,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "LOUNGE"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 99,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "PERFORMING ARTS CENTER"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 130,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CORNERSTONE BUILDING"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 197,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "COUNCIL CHAMBERS"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 162,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "COURT ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 35,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "ROOM 106&107"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 143,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MULTIPURPOSE GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 4,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM A&B"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 27,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "FOYER/HALLWAY"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 78,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MULTIPURPOSE ROOM 106"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 126,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "LOWER GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 89,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 105,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MUNICIPAL COURT"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 39,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM 2+3"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 58,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM 1"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 9,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 20,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CAFETERIA"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 21,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM A+B+C"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 24,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "SMALL GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 28,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 34,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "BOARD OF ALDERMEN CHAMBERS"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 41,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MULTIPURPOSE ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 43,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "SCHROER COMMONS"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 56,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "RECREATION ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 67,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "FAMILY LIFE CENTER"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 95,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "EAST GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 94,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GREAT HALL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 92,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "NEW GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 118,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 75,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CAFETERIA"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 146,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "WELCOME CENTER"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 76,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "BOARD ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 164,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "ROOM HS109A"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 49,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "THE GRUB HUB"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 194,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "FOYER (CHURCH ENTRANCE)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 79,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "LIBRARY"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 113,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 102,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "COUNCIL CHAMBERS"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 198,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 132,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 1,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "UNION HALL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 10,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 101,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 133,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 77,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "COUNCIL CHAMBERS"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 141,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM 1"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 72,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CAFETERIA"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 26,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MULTIPURPOSE ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 85,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 137,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 175,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "ASSEMBLY ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 185,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "VFW BANQUET ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 136,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "COMMUNITY ROOM A & B"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 159,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "NARTHEX"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 151,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MULTIPURPOSE ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 53,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEMORIAL HALL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 83,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "ATRIUM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 44,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 66,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CITY HALL AUDITORIUM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 166,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "FELLOWSHIP HALL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 127,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM A"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 142,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "THEATER LOBBY"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 16,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 187,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CAFETERIA"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 15,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 144,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "FIRST FLOOR HALLWAY COMMONS"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 135,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CHURCH HALL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 189,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "LOBBY"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 167,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MULTIPURPOSE ROOM AB"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 13,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CAFETERIA"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 183,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "BOARD ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 200,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CAFETERIA"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 54,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "ACTIVITY CENTER"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 109,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 196,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 121,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "COMMUNITY ROOM 104 + 105"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 184,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "HALL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 110,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 14,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "COUNCIL CHAMBERS"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 32,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM (room 300)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 23,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 174,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 60,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYMNASIUM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 123,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "AUDITORIUM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 119,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 71,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM 1+ 2"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 138,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 106,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "COMMONS"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 19,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "VOTING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 11,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "COURTROOM AREA"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 73,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MAIN LOBBY ATRIUM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 140,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MP1/MP2 ROOMS"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 163,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "STUDENT CENTER 125"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 173,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CAFETERIA"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 36,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MULTIPURPOSE ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 52,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "LOBBY"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 6,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 33,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CAFETERIA"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 103,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "SMALL GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 59,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYMNASIUM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 154,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 40,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 74,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "LIBRARY"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 37,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "RM 140 GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 42,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 57,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "COURT ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 3,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "COMMONS"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 100,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 145,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 165,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM A&B"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 168,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "ARGUS ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 182,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "2ND FLOOR MEETING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 192,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CHEYENNE ROOMS"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 7,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "BANQUET ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 80,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 129,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "NORTH GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 31,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 107,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 147,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "LIBRARY"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 112,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 93,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "STRICKERT HALL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 125,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM C"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 193,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "FRONT FOYER"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 25,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "NEW GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 124,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 84,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CAFETERIA"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 122,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MULTIPURPOSE ROOMS"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 139,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "LOWER LOBBY"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 195,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MAIN HALL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 61,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "COUNCIL ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 68,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYMNASIUM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 150,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 170,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "OAK ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 8,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 47,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 114,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 116,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CITY HALL MEETING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 63,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 88,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CONFERENCE ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 90,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 96,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "LIBRARY"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 98,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 22,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOMS 1+2"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 62,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 69,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 104,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MILLENNIUM ROOM \"B+C\""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 30,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 120,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM B"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 70,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM 1"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 117,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 157,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "PARISH CENTER NORTH"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 179,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 12,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 65,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 81,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CAFETERIA"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 5,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 17,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM (LOWER LEVEL)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 86,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM 1"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 115,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "WARMING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 178,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 91,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 181,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CENTURY ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 188,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "LIBRARY"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 18,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM 101"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 149,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MULTIPURPOSE ROOM "
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 152,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 171,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM B"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 45,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 97,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "COUNCIL ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 180,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CENTURY ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 156,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 64,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CAFETERIA"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 108,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 50,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "FELLOWSHIP HALL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 2,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING SPACE"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 128,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "BOARD ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 134,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 48,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "BASEMENT HALL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 169,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "CO-WORKING SPACE"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 199,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "LARGE ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 186,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "HALL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 161,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "ROOM 127"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 55,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MULTIPURPOSE ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 153,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "COMMONS"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 155,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 29,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "EVENT SPACE A + B"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 177,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "FELLOWSHIP HALL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 131,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 619,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "MEETING ROOM 1"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 604,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "AUDITORIUM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 603,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "EVENT SPACE A + B"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 605,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "MEETING ROOM 2+3"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 608,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "MEETING ROOM 1"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 609,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "AUDITORIUM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 611,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "AUDITORIUM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 612,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "MEETING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 613,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "WARMING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 620,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "CENTURY ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 621,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "COUNCIL CHAMBERS"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 46,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING HALL"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 190,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "MEETING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 616,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 607,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "RECREATION ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 87,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 606,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 610,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "LILAC ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 602,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "GYM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 618,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "ROOM 125"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 617,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "REC ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 158,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "REC ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 148,
+        "ACTIVE": "ACTIVE",
+        "ACTIVE_ROOM": "VOTING ROOM"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 614,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": null,
+      "properties": {
+        "LOCATION_ID": 615,
+        "ACTIVE": "ABSENTEE",
+        "ACTIVE_ROOM": "VOTING ROOM"
+      }
+    }
+  ]
+}

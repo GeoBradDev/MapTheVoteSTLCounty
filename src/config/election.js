@@ -19,10 +19,15 @@
  * @property {string} electionName Display name of the election.
  * @property {string} timeZone IANA zone for every time in this file.
  * @property {string} serviceRoot ArcGIS REST services root, no trailing slash.
- * @property {{ precincts: string, polls: string, countyBoundary: string }} layers
+ * @property {{ precincts: string, polls: string, countyBoundary: string,
+ *   pollRooms: string }} layers
  *   Layer paths relative to `serviceRoot`.
  * @property {string} absenteeWhere Where clause on the polls layer for in-person
  *   absentee sites.
+ * @property {{ where: string, fields: { id: string, kind: string, room: string },
+ *   electionDay: string, absentee: string }} pollRooms The polling place room
+ *   layer's filter, the fields the app reads, and the `kind` values of
+ *   Election Day and early voting rows (#100).
  * @property {RegExp} sampleBallotUrlPattern A sample ballot link from the
  *   precinct `html` field must match this before it is shown.
  * @property {string} congressionalField Precinct field with the congressional
@@ -174,6 +179,10 @@ const countyLayers = {
   precincts: 'precincts_2026_11_view/FeatureServer/1',
   polls: 'polls_2026_11_view/FeatureServer/1',
   countyBoundary: 'St_Louis_County_Boundary/FeatureServer/0',
+  // The board's polling place dashboard view: the room each site votes in
+  // (#100). Never ask it for `*`: it also holds staffing, photo, turnout and
+  // task fields (`pollRooms` below names the only ones the app reads).
+  pollRooms: 'November_3_2026_Polling_Places_Dashboard_view/FeatureServer/0',
 };
 
 // St. Louis County. Every value is the one the app has always used.
@@ -186,6 +195,17 @@ const county = {
   // The layers above; docs/data.md has the inspection.
   sources: layerSources(countyServiceRoot, countyLayers),
   absenteeWhere: "abs_type IN ('abs','boe')",
+  // The room inside each polling place (#100; owner decision, 2026-10-23: shown,
+  // labeled as St. Louis County Board of Elections data). `id` is the location
+  // number: the polls layer's `loc` on Election Day rows (`kind` is
+  // `electionDay`), its `loc_abs` on early voting rows (`absentee`). Checked
+  // live on 2026-10-23 (docs/data.md).
+  pollRooms: {
+    where: "ACTIVE IN ('ACTIVE','ABSENTEE')",
+    fields: { id: 'LOCATION_ID', kind: 'ACTIVE', room: 'ACTIVE_ROOM' },
+    electionDay: 'ACTIVE',
+    absentee: 'ABSENTEE',
+  },
   sampleBallotUrlPattern:
     /^https:\/\/stlouiscovotes\.maps\.arcgis\.com\/sharing\/rest\/content\/items\/[0-9a-f]{32}\/data$/,
   congressionalField,

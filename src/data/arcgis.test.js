@@ -7,6 +7,7 @@ import errorBody from '../../docs/raw/fixtures/error-body.json';
 import outside from '../../docs/raw/fixtures/precinct-at-point-outside.json';
 import atPoint from '../../docs/raw/fixtures/precinct-at-point.json';
 import polls from '../../docs/raw/fixtures/polls.json';
+import pollRooms from '../../docs/raw/fixtures/poll-rooms.json';
 import byId from '../../docs/raw/fixtures/precinct-by-id.json';
 import geometry from '../../docs/raw/fixtures/precinct-geometry.json';
 import nonresidential from '../../docs/raw/fixtures/precinct-nonresidential.json';
@@ -322,7 +323,7 @@ describe('getPolls', () => {
     expect(base).toBe(POLLS);
     expect(params).toEqual({
       where: '1=1',
-      outFields: 'loc,name,address,zipcode,abs_type,notes_abs,absentee,username',
+      outFields: 'loc,name,address,zipcode,abs_type,notes_abs,absentee,username,loc_abs',
       outSR: '4326',
       geometryPrecision: '6',
       f: 'geojson',
@@ -391,6 +392,7 @@ describe('getPolls', () => {
 describe.each([
   ['getPolls', polls],
   ['getAbsenteeSites', absenteeSites],
+  ['getPollRooms', pollRooms],
 ])('%s max age', (name, fixture) => {
   const MINUTE = 60_000;
   // Ten days before Election Day, at noon in Chicago, built from the config.
@@ -469,7 +471,7 @@ describe('getAbsenteeSites', () => {
     expect(base).toBe(POLLS);
     expect(params).toEqual({
       where: election.absenteeWhere,
-      outFields: 'loc,name,address,zipcode,abs_type,notes_abs,absentee,username',
+      outFields: 'loc,name,address,zipcode,abs_type,notes_abs,absentee,username,loc_abs',
       outSR: '4326',
       geometryPrecision: '6',
       f: 'geojson',
@@ -506,6 +508,59 @@ describe('getAbsenteeSites', () => {
       .mockResolvedValueOnce(respond(absenteeSites));
     await expect(client.getAbsenteeSites()).rejects.toBeInstanceOf(client.ServiceError);
     expect((await client.getAbsenteeSites()).features).toHaveLength(absenteeSites.features.length);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+});
+
+// The room inside each polling place (#100), from the board's dashboard view.
+describe('getPollRooms', () => {
+  const ROOMS = `${election.serviceRoot}/${election.layers.pollRooms}/query`;
+  // The layer's staffing, photo, turnout and task fields: never asked for.
+  const FORBIDDEN = [
+    'ROUTE_CAPTAIN',
+    'JUDGE_DEPUTY',
+    'DEPUTY',
+    'CAPTAIN',
+    'SUPER_CAPTAIN',
+    'TECH_AREA',
+    'PHOTO_URL',
+    'ED_VOTES',
+    'ABS_VOTES',
+  ];
+
+  it('asks only for the location number, kind and room, with no geometry', async () => {
+    fetchMock.mockResolvedValue(respond(pollRooms));
+    await client.getPollRooms();
+    const { base, params } = onlyRequest();
+    expect(base).toBe(ROOMS);
+    expect(params).toEqual({
+      where: "ACTIVE IN ('ACTIVE','ABSENTEE')",
+      outFields: 'LOCATION_ID,ACTIVE,ACTIVE_ROOM',
+      outSR: '4326',
+      geometryPrecision: '6',
+      returnGeometry: 'false',
+      f: 'geojson',
+    });
+  });
+
+  it('never names a staffing, photo, turnout or task field, or *', async () => {
+    fetchMock.mockResolvedValue(respond(pollRooms));
+    await client.getPollRooms();
+    const fields = onlyRequest().params.outFields.split(',');
+    expect(fields).not.toContain('*');
+    for (const field of fields) {
+      expect(FORBIDDEN).not.toContain(field);
+      expect(field).not.toMatch(/^esritask_/i);
+    }
+    expect(client.ROOM_FIELDS).toEqual(['LOCATION_ID', 'ACTIVE', 'ACTIVE_ROOM']);
+  });
+
+  it('shares one request and does not keep a failure', async () => {
+    fetchMock.mockResolvedValueOnce(respond(errorBody)).mockResolvedValue(respond(pollRooms));
+    await expect(client.getPollRooms()).rejects.toBeInstanceOf(client.ServiceError);
+    const [a, b] = await Promise.all([client.getPollRooms(), client.getPollRooms()]);
+    expect(b).toBe(a);
+    expect(a.features).toHaveLength(pollRooms.features.length);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

@@ -24,6 +24,7 @@ import { cityPrecinctCode } from '../src/data/cityPrecinctCode.js';
 import { fileNameMatchesPrecinct, parseSampleBallot } from '../src/data/sampleBallot.js';
 import { parseCityHours, selectCityWaits, selectCountyWaits } from '../src/data/waitTimes.js';
 import { earlyVotingStatus, zonedNow } from '../src/features/lookup/earlyVoting.js';
+import { roomIndex } from '../src/features/lookup/pollRooms.js';
 import { isPastElection } from './electionWindow.mjs';
 
 export { isPastElection };
@@ -42,7 +43,16 @@ export const PRECINCT_RANGE = { min: 900, max: 1600 };
 export const BALLOT_SAMPLE_SIZE = 5;
 
 /** Fields the app reads from the polls layer, and the boundary layer's query field. */
-const POLL_FIELDS = ['loc', 'name', 'address', 'zipcode', 'abs_type', 'notes_abs', 'inline'];
+const POLL_FIELDS = [
+  'loc',
+  'name',
+  'address',
+  'zipcode',
+  'abs_type',
+  'notes_abs',
+  'inline',
+  'loc_abs',
+];
 const BOUNDARY_FIELDS = ['OBJECTID'];
 
 // One polling place at a public building per County Council district, from
@@ -150,6 +160,12 @@ export function expectedLayers(config) {
       ],
     },
     countyBoundary: { geometryType: 'esriGeometryPolygon', fields: BOUNDARY_FIELDS },
+    // The room inside each polling place (#100): only these fields, never the
+    // layer's staffing, photo, turnout or task fields.
+    pollRooms: {
+      geometryType: 'esriGeometryPoint',
+      fields: Object.values(config.pollRooms.fields),
+    },
   };
 }
 
@@ -500,6 +516,50 @@ export async function runHealthCheck(
     });
   } else {
     skip('absentee sites', 'polls');
+  }
+
+  // 6b. The room inside each polling place (#100): how many Election Day
+  // places (by `loc`) and early voting sites (by `loc_abs`) have none. A
+  // warning, never a failure: the app shows a place without its room.
+  if (layerOk.pollRooms && layerOk.polls) {
+    await check('polling place rooms', async () => {
+      const [roomRows, pollRows] = await Promise.all([
+        query('pollRooms', {
+          where: config.pollRooms.where,
+          outFields: Object.values(config.pollRooms.fields).join(','),
+          returnGeometry: 'false',
+        }),
+        query('polls', { where: '1=1', outFields: 'loc,loc_abs', returnGeometry: 'false' }),
+      ]);
+      const rooms = roomIndex({
+        features: roomRows.features.map((f) => ({ properties: f?.attributes ?? {} })),
+      });
+      const places = pollRows.features.map((f) => f?.attributes ?? {});
+      const keys = (field) =>
+        [...new Set(places.map((p) => String(p[field] ?? '').trim()).filter(Boolean))].sort();
+      const groups = [
+        ['Election Day places', 'loc', keys('loc'), rooms.electionDay],
+        ['early voting sites', 'loc_abs', keys('loc_abs'), rooms.absentee],
+      ];
+      const gaps = groups
+        .map(([label, field, all, found]) => {
+          const missing = all.filter((key) => !found.has(key));
+          if (missing.length === 0) return null;
+          const shown = missing.slice(0, 10).join(', ') + (missing.length > 10 ? ', ...' : '');
+          return `${label} without a room: ${missing.length} of ${all.length} (${field} ${shown})`;
+        })
+        .filter(Boolean);
+      if (gaps.length) {
+        const text = gaps.join('; ');
+        return {
+          warn: `${text[0].toUpperCase()}${text.slice(1)}. The app shows them without one.`,
+        };
+      }
+      const [[, , ed], [, , abs]] = groups;
+      return `a room for all ${ed.length} Election Day places and all ${abs.length} early voting sites`;
+    });
+  } else {
+    skip('polling place rooms', layerOk.polls ? 'pollRooms' : 'polls');
   }
 
   // 7. Known points land in a precinct in the right council district, inside

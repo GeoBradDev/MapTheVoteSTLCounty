@@ -107,6 +107,10 @@ against, and why. In short:
   The polls layer holds both Election Day and in-person absentee sites; no layer assigns a
   polling place to a precinct, so the app lists the nearest: a registered County voter may vote
   at any County polling place on Election Day (#152), as the board's Polling Places page says.
+- **Polling place rooms:** the room each County place and early voting site votes in, like
+  "Gym Lobby", from the board's polling place dashboard view (its `ACTIVE_ROOM` field only),
+  labeled as St. Louis County Board of Elections data (owner decision on #100). See
+  `docs/data.md`, Polling place rooms.
 - **St. Louis City:** the City Board of Election Commissioners' layers in the City's ArcGIS org
   (the one its polling places page's map comes from): precincts, districts (names and numbers only),
   the 56 Election Day sites and 8 early voting sites, and the City outline. See the St. Louis
@@ -144,7 +148,9 @@ may need new values too. Work on a branch and merge through the usual pull reque
    `precincts_YYYY_MM_view` and `polls_YYYY_MM_view`. List the services at the service root
    (append `?f=json`), or open the board's current lookup Instant App on its ArcGIS portal and
    read which layers its web map uses. Do not use the `lookup_view_*` services: their names
-   look current but they point at old data (`docs/data.md`).
+   look current but they point at old data (`docs/data.md`). The polling place rooms come
+   from the election's polling places dashboard view, named like
+   `November_3_2026_Polling_Places_Dashboard_view` (`layers.pollRooms`).
 2. **Inspect them.** Put the new service names in the `SERVICES` list at the top of
    `scripts/inspect-data.mjs` (and the new lookup app's id in `INSTANT_APP_ID` if it changed),
    then run `node scripts/inspect-data.mjs`. It writes each layer's fields, counts and sample

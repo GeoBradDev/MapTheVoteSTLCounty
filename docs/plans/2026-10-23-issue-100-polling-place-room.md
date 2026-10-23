@@ -59,9 +59,15 @@ Center, has none). The polls layer's `loc_abs` holds 601 to 621 on its 21 absent
 - `src/data/arcgis.js`: `POLL_FIELDS` gains `loc_abs`; `ROOM_FIELDS`; `sharedLayer` takes
   extra query params; `getPollRooms`.
 - `src/data/jurisdictions.js`: County `getPollRooms`; City none.
-- `src/features/lookup/pollRooms.js` (new): `roomCase`, `roomIndex`, `usePollRooms`.
+- `src/features/lookup/pollRooms.js` (new): `roomCase`, `roomIndex`, with no React, so the
+  health check reads the same index; `src/features/lookup/usePollRooms.js` (new): the hook.
+  (Revised in implementation: split so `scripts/check-config.mjs` can import the index.)
 - `src/features/lookup/nearbyPolls.js`: rows gain `absLoc`; export `caseWord`.
 - `src/features/lookup/PollsCard.jsx`, `EarlyVotingCard.jsx`: the room line and source line.
+- `src/features/lookup/PrecinctPage.jsx`: starts the rooms request with its polls and
+  early voting requests, before the precinct answers (revised in implementation: the cards
+  mount only after the precinct loads, so the page's own early start is where "with the
+  polls request" happens).
 - `src/features/lookup/resultsCopy.js`, `src/i18n/en.json`: copy.
 - `scripts/check-config.mjs`, `src/test/checkConfig.test.js`: layer and coverage check.
 - `scripts/record-fixtures.mjs`, `docs/raw/fixtures/poll-rooms.json`, `e2e/fixtures.js`.

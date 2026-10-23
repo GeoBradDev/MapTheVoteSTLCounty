@@ -31,9 +31,9 @@ export const PRECINCT_FIELDS = Object.freeze([
 ]);
 
 /**
- * The polling place fields the app reads (#27). The last two are the site's
- * key in the County's early voting (#103) and Election Day (#107) wait time
- * reports.
+ * The polling place fields the app reads (#27): the site's key in the
+ * County's early voting (#103) and Election Day (#107) wait time reports, and
+ * its early voting location number, which its room row is keyed by (#100).
  */
 export const POLL_FIELDS = Object.freeze([
   'loc',
@@ -44,7 +44,15 @@ export const POLL_FIELDS = Object.freeze([
   'notes_abs',
   election.waitTimes.county.pollsField,
   election.waitTimes.county.electionDay.pollsField,
+  'loc_abs',
 ]);
+
+/**
+ * The room layer's fields the app reads (#100): the location number, the
+ * kind of row and the room. Never any other: the layer also holds staffing,
+ * photo, turnout and task fields.
+ */
+export const ROOM_FIELDS = Object.freeze(Object.values(countyConfig.pollRooms.fields));
 
 /** How long one attempt may take before it is aborted. */
 export const TIMEOUT_MS = 8000;
@@ -345,9 +353,11 @@ export async function getPrecinctGeometry(code) {
  * @param {readonly string[]} fields
  * @param {(properties: object) => object} [toProperties] Turns each feature's
  *   properties into what the app reads; `normalize` by default.
+ * @param {Record<string, string>} [extraParams] More query parameters, like
+ *   `returnGeometry: 'false'` for a layer read for its fields only.
  * @returns {() => Promise<object>}
  */
-export function sharedLayer(layer, where, fields, toProperties = normalize) {
+export function sharedLayer(layer, where, fields, toProperties = normalize, extraParams = {}) {
   let entry;
   return () => {
     if (entry && (entry.loadedAt === undefined || isFresh(entry.loadedAt, layerMaxAgeMs()))) {
@@ -360,6 +370,7 @@ export function sharedLayer(layer, where, fields, toProperties = normalize) {
       outSR: '4326',
       geometryPrecision: '6',
       f: 'geojson',
+      ...extraParams,
     })
       .then((body) => {
         next.loadedAt = Date.now();
@@ -395,6 +406,22 @@ export const getPolls = sharedLayer('polls', '1=1', POLL_FIELDS);
  *   normalized properties, including `abs_type` and `notes_abs`.
  */
 export const getAbsenteeSites = sharedLayer('polls', countyConfig.absenteeWhere, POLL_FIELDS);
+
+/**
+ * The room inside each polling place (#100): one row per Election Day place
+ * and early voting site, fields only, no geometry. Shared and refreshed like
+ * getPolls; the cards ask for it beside the polls request and show a place
+ * without its room until it answers, or when it fails.
+ * @returns {Promise<object>} A GeoJSON FeatureCollection with normalized
+ *   properties and `loadedAt`.
+ */
+export const getPollRooms = sharedLayer(
+  'pollRooms',
+  countyConfig.pollRooms.where,
+  ROOM_FIELDS,
+  normalize,
+  { returnGeometry: 'false' },
+);
 
 // The rows of a wait time layer: attributes only, no geometry. A plain GET:
 // the query carries no voter data, and the layers send max-age=30.

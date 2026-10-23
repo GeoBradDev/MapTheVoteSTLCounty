@@ -211,7 +211,7 @@ in-person absentee voting, and which kind of absentee site it is.
 | `zipcode` | `63123` | Integer. City name is not in this layer. |
 | `gmap` | `https://www.google.com/maps/search/?api=1&query=38.559645%2C-90.322720` | Ready-made directions link |
 | `abs_type` | `none` | `none` (179): Election Day only. `abs` (20): also a satellite absentee site. `boe` (1): also the Board of Elections absentee office. |
-| `loc_abs` | `601` | Absentee site number, 601 to 621. Null for `none`. |
+| `loc_abs` | `601` | Absentee site number, 601 to 621. Null for `none`. Keys the site's early voting room (Polling place rooms, #100). |
 | `absentee` | `abs601boec` | Username for the absentee site. Not for display. |
 | `inline` | `""` | Blank (spaces or null), and not the 2026 line count source: see Wait times. In 2024 it held text like `"2 voters in line at 06:49 PM"`, padded with spaces. |
 | `notes` | `LOC001` | Internal. Not for display. |
@@ -260,18 +260,42 @@ Polygon, 1213 features, fields `precinct`, `precinct_type`, `in_election` only.
 Same precinct set as the main layer, stripped down, used by the county's
 absentee ballot application map. **Not needed.**
 
-### `November_3_2026_Polling_Places_Dashboard_view/FeatureServer/0`
+### Polling place rooms: `November_3_2026_Polling_Places_Dashboard_view/FeatureServer/0`
 
-Point, 221 features. Internal operations layer: staffing (`ROUTE_CAPTAIN`,
-`JUDGE_DEPUTY`, `TECH_AREA`), room names, photos (`PHOTO_URL`), and
-`ED_VOTES` / `ABS_VOTES` turnout counts. Joins to the polls layer on
-`LOCATION_ID` (integer) = `loc` (zero-padded string), confirmed for
-Thornhill Branch Library (172).
+Point, 221 features. The board's internal operations layer: staffing (`ROUTE_CAPTAIN`,
+`JUDGE_DEPUTY`, `DEPUTY`, `CAPTAIN`, `SUPER_CAPTAIN`, `TECH_AREA`), room names, photos
+(`PHOTO_URL`), `ED_VOTES` / `ABS_VOTES` turnout counts and `esritask_*` task fields.
+Published publicly by the County Board's own org (`wkbq75VVf2MvUvs7`), by the same editors
+as the polls layer; `Query` only, CORS `*`.
 
-**Not for v1.** It carries no wait times, has more rows than the public polls
-layer (221 vs 200, so some are not active sites), and turnout by site is not
-something voters need. `PHOTO_URL` could be a later nice-to-have for finding the
-entrance.
+**Used for one field only: the room (#100).** Owner decision, 2026-10-23: show the room a
+voter goes to inside the building, labeled as coming from St. Louis County Board of
+Elections data ("Room names are from St. Louis County Board of Elections data." under the
+list). County only: the City's voting locations carry their own entrance notes (#89). The
+app asks for `LOCATION_ID,ACTIVE,ACTIVE_ROOM` only, with no geometry, never `*` and never a
+staffing, photo, turnout or task field (`src/data/arcgis.js` `getPollRooms`; a test fails
+if the query names one). It is shared and refreshed like the polls layer (#84), and the
+results page asks for it beside the polls request; a place shows without its room until it
+answers, and when it fails.
+
+- **Join:** `ACTIVE = 'ACTIVE'` rows (200, one per Election Day place, distinct
+  `LOCATION_ID`s): `LOCATION_ID` (integer) = `loc` (zero-padded string), on the polls card.
+  `ACTIVE = 'ABSENTEE'` rows (21): `LOCATION_ID` = `loc_abs` (601 to 621), on the early
+  voting card. An absentee site has both: its Election Day room by `loc` and its early
+  voting room by `loc_abs` (Clark Family Branch Library, `loc` 029: `EVENT SPACE A + B`
+  as 603).
+- **Rooms:** all caps, title-cased with care (`GYM LOBBY` reads "Gym Lobby"; room letters
+  and codes stay upper case: `EVENT SPACE A + B`, `MP1/MP2 ROOMS`, `ROOM HS109A`). A row
+  with no room, or a location whose rows name different rooms, shows no room line.
+- **Checked live on 2026-10-23** (data last edited 2026-10-07): `ACTIVE_ROOM` is filled on
+  all 200 Election Day rows and on 20 of the 21 absentee rows; Olivette City Center (614)
+  has none. The data health check (`scripts/check-config.mjs`, "polling place rooms")
+  warns with the count of places and sites that have no room.
+- The layer is named per election, like the polls layer: `layers.pollRooms` in
+  `src/config/election.js`.
+
+Not used: the rest. Turnout by site is not something voters need, and `PHOTO_URL` could be
+a later nice-to-have for finding the entrance.
 
 ### `November_3_2026_Precincts_Dashboard_view/FeatureServer/0`
 
