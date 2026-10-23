@@ -71,7 +71,8 @@
   will-change: transform;
 }
 
-/* The "Use two fingers to move the map" hint. */
+/* The "Use two fingers to move the map" hint. Its backdrop is dark enough that the
+   text stays 4.5:1 over the white parts of the map (gestureHint.test.js, #26). */
 .maplibregl-cooperative-gesture-screen {
   position: absolute;
   inset: 0;
@@ -80,7 +81,7 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: color-mix(in oklab, var(--color-ink) 60%, transparent);
+  background: color-mix(in oklab, var(--color-ink) 75%, transparent);
   color: var(--color-surface);
   font-size: 1.125rem;
   line-height: 1.3;
