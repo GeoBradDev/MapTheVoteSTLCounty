@@ -49,9 +49,11 @@ const GOOD_HEADERS = {
 // them with the shell, as Render does. `pages` set to 'shell' leaves the
 // pre-rendered pages out, so the shell answers them too; `deepLink` set to
 // 'home' answers a precinct link with the pre-rendered home page, and
-// 'indexable' with a production shell (no noindex).
+// 'indexable' with a production shell (no noindex). `cityDeepLink` does the
+// same for the City precinct link (#95): 'shell', '404' or 'home'.
 function stubHost({
   deepLink = 'shell',
+  cityDeepLink = 'shell',
   pages = 'prerendered',
   asset = 'js',
   headers = true,
@@ -103,6 +105,14 @@ function stubHost({
     if (req.url === '/early-voting') {
       res.writeHead(200, { ...common, 'content-type': 'text/html; charset=utf-8' });
       return res.end(shell);
+    }
+    if (req.url === '/p/W01P12') {
+      if (cityDeepLink === '404') {
+        res.writeHead(404, { 'content-type': 'text/html' });
+        return res.end('Not Found');
+      }
+      res.writeHead(200, { ...common, 'content-type': 'text/html; charset=utf-8' });
+      return res.end(cityDeepLink === 'home' ? prerendered(shell, '/') : shell);
     }
     if (deepLink === 'indexable' && req.url === '/p/CC007') {
       res.writeHead(200, { ...common, 'content-type': 'text/html; charset=utf-8' });
@@ -158,6 +168,7 @@ describe('smoke test against stub hosts', () => {
     expect(results.map((r) => r.name)).toEqual([
       'GET / returns the home page',
       'hard load of /p/CC007 returns the app shell',
+      'hard load of /p/W01P12 returns the app shell',
       'hard load of /early-voting returns the app shell',
       'hashed asset returns JavaScript',
       'hard load of / returns the pre-rendered page',
@@ -199,6 +210,7 @@ describe('smoke test against stub hosts', () => {
     expect(results.map((r) => r.name)).toEqual([
       'GET / returns the home page',
       'hard load of /p/CC007 returns the app shell',
+      'hard load of /p/W01P12 returns the app shell',
       'hard load of /early-voting returns the app shell',
       'hashed asset returns JavaScript',
       'hard load of / returns the pre-rendered page',
@@ -240,6 +252,20 @@ describe('smoke test against stub hosts', () => {
     const results = await runSmoke(await listen(server));
 
     expect(failedChecks(results)).toEqual(['hard load of /p/CC007 returns the app shell']);
+  });
+
+  it('fails when a City precinct link is not rewritten to the app shell', async () => {
+    server = stubHost({ cityDeepLink: '404' });
+    const results = await runSmoke(await listen(server));
+
+    expect(failedChecks(results)).toEqual(['hard load of /p/W01P12 returns the app shell']);
+  });
+
+  it('fails when a City precinct link gets a pre-rendered page', async () => {
+    server = stubHost({ cityDeepLink: 'home' });
+    const results = await runSmoke(await listen(server));
+
+    expect(failedChecks(results)).toEqual(['hard load of /p/W01P12 returns the app shell']);
   });
 
   it('fails when the public pages are answered with the shell, not pre-rendered', async () => {
@@ -303,7 +329,7 @@ describe('smoke test against stub hosts', () => {
     const results = await runSmoke(await listen(server), { checkHeaders: false });
 
     expect(failedChecks(results)).toEqual([]);
-    expect(results).toHaveLength(9);
+    expect(results).toHaveLength(10);
   });
 
   it('fails instead of throwing when the host is unreachable', async () => {
@@ -331,7 +357,7 @@ describe('smoke test CLI', () => {
     server = stubHost();
     const { stdout } = await promisify(execFile)('node', [SCRIPT, await listen(server)]);
 
-    expect(stdout).toContain('11 of 11 checks passed');
+    expect(stdout).toContain('12 of 12 checks passed');
   });
 
   it('runs the preview checks with --preview', async () => {
@@ -343,7 +369,7 @@ describe('smoke test CLI', () => {
     ]);
 
     expect(stdout).toContain('PASS /robots.txt keeps every crawler out');
-    expect(stdout).toContain('11 of 11 checks passed');
+    expect(stdout).toContain('12 of 12 checks passed');
   });
 
   it('exits 1 and prints the failure when a check fails', async () => {

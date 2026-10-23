@@ -25,7 +25,7 @@ import lighthouse from 'lighthouse';
 import puppeteer from 'puppeteer-core';
 import { preview } from 'vite';
 import election from '../src/config/election.js';
-import { BASEMAP_STYLE_URL, BLANK_STYLE, CODE, fixtureBody } from './fixtures.js';
+import { BASEMAP_STYLE_URL, BLANK_STYLE, CITY_CODE, CODE, fixtureBody } from './fixtures.js';
 
 /** Lowest performance score allowed, 0 to 100. */
 const MIN_SCORE = 90;
@@ -35,7 +35,8 @@ const MAX_LCP_MS = 2500;
 
 /**
  * The pages the issue names: landing, results (fixture precinct) and a learn
- * page, and the early voting wait times page (#104). `shows` checks, in the page, that the run measured the real content
+ * page, the early voting wait times page (#104), and a City precinct's results
+ * (#95). `code` is the precinct `shows` is given. `shows` checks, in the page, that the run measured the real content
  * and not the not-found page, an error or a loading state. On the results page
  * it also checks content built from the precinct and poll fields the app asks
  * ArcGIS for: the municipality, the districts, the sample ballot link and each
@@ -64,6 +65,29 @@ const ROUTES = [
             !/^Polling place\b/.test(li.querySelector('h3')?.textContent ?? '') &&
             /MO \d{5}/.test(li.querySelector('p')?.textContent ?? ''),
         )
+      );
+    },
+  },
+  {
+    // A City precinct (#95): the City Board's Election Day rule, each nearest
+    // polling place's real name, and the districts card (#90). The City's
+    // sample ballot card links the City Board's site until #92, so no ballot
+    // link is checked.
+    path: `/p/${CITY_CODE}`,
+    code: CITY_CODE,
+    shows: (code) => {
+      const rows = [...document.querySelectorAll('ol[aria-label="Nearest polling places"] > li')];
+      const main = document.querySelector('main')?.textContent ?? '';
+      return (
+        document.querySelector('h1')?.textContent === `Precinct ${code}` &&
+        !document.querySelector('[role="alert"]')?.textContent.trim() &&
+        main.includes('The St. Louis City Board of Election Commissioners says:') &&
+        main.includes('Missouri House District') &&
+        rows.length > 0 &&
+        rows.every((li) => {
+          const name = li.querySelector('h3')?.textContent ?? '';
+          return name !== '' && !/^Polling place\b/.test(name);
+        })
       );
     },
   },
@@ -138,11 +162,27 @@ async function certificate(dir) {
   return { key: await readFile(key), cert: await readFile(cert) };
 }
 
-// Answers the county's layers and the basemap style; 404 for anything else.
-function answer(request, response) {
+// A POST's form body, or null: the app sends a point query's parameters, its
+// coordinates among them, in the body (#38), as the City districts card does
+// (#90). Never logged.
+async function formBody(request) {
+  if (request.method !== 'POST') return null;
+  let form = '';
+  for await (const chunk of request) form += chunk;
+  return form;
+}
+
+// Answers the county's and the City Board's layers and the basemap style; 404
+// for anything else.
+async function answer(request, response) {
+  if (request.method !== 'GET' && request.method !== 'POST') {
+    response.writeHead(404).end();
+    return;
+  }
   const href = `https://${request.headers.host}${request.url}`;
-  const body = href === BASEMAP_STYLE_URL ? BLANK_STYLE : fixtureBody(href);
-  if (request.method !== 'GET' || body === null) {
+  const form = await formBody(request);
+  const body = href === BASEMAP_STYLE_URL ? BLANK_STYLE : fixtureBody(href, form);
+  if (body === null) {
     response.writeHead(404).end();
     return;
   }
@@ -155,7 +195,7 @@ function answer(request, response) {
   response.writeHead(200, headers).end(gzip ? gzipSync(body) : body);
 }
 
-async function measure(browser, { path: route, shows }) {
+async function measure(browser, { path: route, shows, code = CODE }) {
   const page = await browser.newPage();
   try {
     const url = `http://localhost:${PORT}${route}`;
@@ -170,7 +210,7 @@ async function measure(browser, { path: route, shows }) {
       tbt: audit('total-blocking-time'),
       cls: audit('cumulative-layout-shift'),
       si: audit('speed-index'),
-      shown: await page.evaluate(shows, CODE),
+      shown: await page.evaluate(shows, code),
       report: result.report,
     };
   } finally {

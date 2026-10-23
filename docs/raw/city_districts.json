@@ -1,0 +1,525 @@
+{
+  "url": "https://services6.arcgis.com/HZXbCkpCSqbGd0vK/ArcGIS/rest/services/ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a/FeatureServer/2",
+  "name": "Electoral Districts",
+  "geometryType": "esriGeometryPolygon",
+  "maxRecordCount": 2000,
+  "supportedQueryFormats": "JSON, geoJSON, PBF",
+  "count": 46,
+  "fields": [
+    {
+      "name": "OBJECTID",
+      "type": "esriFieldTypeOID",
+      "alias": "OBJECTID",
+      "domain": null
+    },
+    {
+      "name": "electedoffice",
+      "type": "esriFieldTypeString",
+      "alias": "Elected Office",
+      "domain": [
+        "Alderman",
+        "Alderwoman",
+        "Attorney General",
+        "Circuit Attorney",
+        "Collector of Revenue",
+        "Comptroller",
+        "Governor",
+        "License Collector",
+        "Mayor",
+        "President of the Board of Aldermen",
+        "Recorder of Deeds",
+        "Sheriff",
+        "Community College Trustee",
+        "State Auditor",
+        "State House Representative",
+        "State Senate",
+        "State Treasurer",
+        "Treasurer",
+        "United States House of Representatives",
+        "United States Senate",
+        "Lieutenant Governor",
+        "President of the United States",
+        "Secretary of State",
+        "Vice-President of the United States",
+        "Committeeman (R)",
+        "Committeeman (D)",
+        "Committeeman (L)",
+        "Committeeman (C)",
+        "Committeeman (G)",
+        "Committeewoman (R)",
+        "Committeewoman (D)",
+        "Committeewoman (L)",
+        "Committeewoman (C)",
+        "Committeewoman (G)",
+        "Board of Education of the City of St. Louis"
+      ]
+    },
+    {
+      "name": "district",
+      "type": "esriFieldTypeString",
+      "alias": "District Name",
+      "domain": null
+    },
+    {
+      "name": "districtid",
+      "type": "esriFieldTypeString",
+      "alias": "District ID",
+      "domain": null
+    },
+    {
+      "name": "repname1",
+      "type": "esriFieldTypeString",
+      "alias": "Representative Name",
+      "domain": null
+    },
+    {
+      "name": "repimageurl1",
+      "type": "esriFieldTypeString",
+      "alias": "Representative Image URL",
+      "domain": null
+    },
+    {
+      "name": "party1",
+      "type": "esriFieldTypeString",
+      "alias": "Party",
+      "domain": [
+        "Republican",
+        "Democratic",
+        "Green",
+        "Libertarian",
+        "Independent"
+      ]
+    },
+    {
+      "name": "districturl1",
+      "type": "esriFieldTypeString",
+      "alias": "Website",
+      "domain": null
+    },
+    {
+      "name": "phone1",
+      "type": "esriFieldTypeString",
+      "alias": "Phone",
+      "domain": null
+    },
+    {
+      "name": "email1",
+      "type": "esriFieldTypeString",
+      "alias": "Email",
+      "domain": null
+    },
+    {
+      "name": "facebook1",
+      "type": "esriFieldTypeString",
+      "alias": "Facebook Site",
+      "domain": null
+    },
+    {
+      "name": "twitter1",
+      "type": "esriFieldTypeString",
+      "alias": "Twitter Handle",
+      "domain": null
+    },
+    {
+      "name": "fulladdr1",
+      "type": "esriFieldTypeString",
+      "alias": "Full Address",
+      "domain": null
+    },
+    {
+      "name": "repname2",
+      "type": "esriFieldTypeString",
+      "alias": "Representative Name",
+      "domain": null
+    },
+    {
+      "name": "repimageurl2",
+      "type": "esriFieldTypeString",
+      "alias": "Representative Image URL",
+      "domain": null
+    },
+    {
+      "name": "party2",
+      "type": "esriFieldTypeString",
+      "alias": "Party",
+      "domain": [
+        "Republican",
+        "Democratic",
+        "Green",
+        "Libertarian",
+        "Independent"
+      ]
+    },
+    {
+      "name": "districturl2",
+      "type": "esriFieldTypeString",
+      "alias": "Website",
+      "domain": null
+    },
+    {
+      "name": "phone2",
+      "type": "esriFieldTypeString",
+      "alias": "Phone",
+      "domain": null
+    },
+    {
+      "name": "email2",
+      "type": "esriFieldTypeString",
+      "alias": "Email",
+      "domain": null
+    },
+    {
+      "name": "facebook2",
+      "type": "esriFieldTypeString",
+      "alias": "Facebook Site",
+      "domain": null
+    },
+    {
+      "name": "twitter2",
+      "type": "esriFieldTypeString",
+      "alias": "Twitter Handle",
+      "domain": null
+    },
+    {
+      "name": "fulladdr2",
+      "type": "esriFieldTypeString",
+      "alias": "Full Address",
+      "domain": null
+    },
+    {
+      "name": "repname3",
+      "type": "esriFieldTypeString",
+      "alias": "Representative Name",
+      "domain": null
+    },
+    {
+      "name": "repimageurl3",
+      "type": "esriFieldTypeString",
+      "alias": "Representative Image URL",
+      "domain": null
+    },
+    {
+      "name": "party3",
+      "type": "esriFieldTypeString",
+      "alias": "Party",
+      "domain": [
+        "Republican",
+        "Democratic",
+        "Green",
+        "Libertarian",
+        "Independent"
+      ]
+    },
+    {
+      "name": "districturl3",
+      "type": "esriFieldTypeString",
+      "alias": "Website",
+      "domain": null
+    },
+    {
+      "name": "phone3",
+      "type": "esriFieldTypeString",
+      "alias": "Phone",
+      "domain": null
+    },
+    {
+      "name": "email3",
+      "type": "esriFieldTypeString",
+      "alias": "Email",
+      "domain": null
+    },
+    {
+      "name": "facebook3",
+      "type": "esriFieldTypeString",
+      "alias": "Facebook Site",
+      "domain": null
+    },
+    {
+      "name": "twitter3",
+      "type": "esriFieldTypeString",
+      "alias": "Twitter Handle",
+      "domain": null
+    },
+    {
+      "name": "fulladdr3",
+      "type": "esriFieldTypeString",
+      "alias": "Full Address",
+      "domain": null
+    },
+    {
+      "name": "globalid",
+      "type": "esriFieldTypeGlobalID",
+      "alias": "GlobalID",
+      "domain": null
+    },
+    {
+      "name": "created_user",
+      "type": "esriFieldTypeString",
+      "alias": "Created By",
+      "domain": null
+    },
+    {
+      "name": "created_date",
+      "type": "esriFieldTypeDate",
+      "alias": "Created On",
+      "domain": null
+    },
+    {
+      "name": "last_edited_user",
+      "type": "esriFieldTypeString",
+      "alias": "Last Edited By",
+      "domain": null
+    },
+    {
+      "name": "last_edited_date",
+      "type": "esriFieldTypeDate",
+      "alias": "Last Edited On",
+      "domain": null
+    },
+    {
+      "name": "Shape__Area",
+      "type": "esriFieldTypeDouble",
+      "alias": "Shape__Area",
+      "domain": null
+    },
+    {
+      "name": "Shape__Length",
+      "type": "esriFieldTypeDouble",
+      "alias": "Shape__Length",
+      "domain": null
+    },
+    {
+      "name": "repname4",
+      "type": "esriFieldTypeString",
+      "alias": "Representative Name",
+      "domain": null
+    },
+    {
+      "name": "repimageurl4",
+      "type": "esriFieldTypeString",
+      "alias": "Representative Image URL",
+      "domain": null
+    },
+    {
+      "name": "party4",
+      "type": "esriFieldTypeString",
+      "alias": "Party",
+      "domain": null
+    },
+    {
+      "name": "districturl4",
+      "type": "esriFieldTypeString",
+      "alias": "Website",
+      "domain": null
+    },
+    {
+      "name": "phone4",
+      "type": "esriFieldTypeString",
+      "alias": "Phone",
+      "domain": null
+    },
+    {
+      "name": "email4",
+      "type": "esriFieldTypeString",
+      "alias": "Email",
+      "domain": null
+    },
+    {
+      "name": "facebook4",
+      "type": "esriFieldTypeString",
+      "alias": "Facebook Site",
+      "domain": null
+    },
+    {
+      "name": "twitter4",
+      "type": "esriFieldTypeString",
+      "alias": "Twitter Handle",
+      "domain": null
+    },
+    {
+      "name": "fulladdr4",
+      "type": "esriFieldTypeString",
+      "alias": "Full Address",
+      "domain": null
+    },
+    {
+      "name": "repname5",
+      "type": "esriFieldTypeString",
+      "alias": "Representative Name",
+      "domain": null
+    },
+    {
+      "name": "repimageurl5",
+      "type": "esriFieldTypeString",
+      "alias": "Representative Image URL",
+      "domain": null
+    },
+    {
+      "name": "party5",
+      "type": "esriFieldTypeString",
+      "alias": "Party",
+      "domain": null
+    },
+    {
+      "name": "districturl5",
+      "type": "esriFieldTypeString",
+      "alias": "Website",
+      "domain": null
+    },
+    {
+      "name": "phone5",
+      "type": "esriFieldTypeString",
+      "alias": "Phone",
+      "domain": null
+    },
+    {
+      "name": "email5",
+      "type": "esriFieldTypeString",
+      "alias": "Email",
+      "domain": null
+    },
+    {
+      "name": "facebook5",
+      "type": "esriFieldTypeString",
+      "alias": "Facebook Site",
+      "domain": null
+    },
+    {
+      "name": "twitter5",
+      "type": "esriFieldTypeString",
+      "alias": "Twitter Handle",
+      "domain": null
+    },
+    {
+      "name": "fulladdr5",
+      "type": "esriFieldTypeString",
+      "alias": "Full Address",
+      "domain": null
+    },
+    {
+      "name": "repname6",
+      "type": "esriFieldTypeString",
+      "alias": "Representative Name",
+      "domain": null
+    },
+    {
+      "name": "repimageurl6",
+      "type": "esriFieldTypeString",
+      "alias": "Representative Image URL",
+      "domain": null
+    },
+    {
+      "name": "party6",
+      "type": "esriFieldTypeString",
+      "alias": "Party",
+      "domain": null
+    },
+    {
+      "name": "districturl6",
+      "type": "esriFieldTypeString",
+      "alias": "Website",
+      "domain": null
+    },
+    {
+      "name": "phone6",
+      "type": "esriFieldTypeString",
+      "alias": "Phone",
+      "domain": null
+    },
+    {
+      "name": "email6",
+      "type": "esriFieldTypeString",
+      "alias": "Email",
+      "domain": null
+    },
+    {
+      "name": "facebook6",
+      "type": "esriFieldTypeString",
+      "alias": "Facebook Site",
+      "domain": null
+    },
+    {
+      "name": "twitter6",
+      "type": "esriFieldTypeString",
+      "alias": "Twitter Handle",
+      "domain": null
+    },
+    {
+      "name": "fulladdr6",
+      "type": "esriFieldTypeString",
+      "alias": "Full Address",
+      "domain": null
+    },
+    {
+      "name": "repname7",
+      "type": "esriFieldTypeString",
+      "alias": "Representative Name",
+      "domain": null
+    },
+    {
+      "name": "repimageurl7",
+      "type": "esriFieldTypeString",
+      "alias": "Representative Image URL",
+      "domain": null
+    },
+    {
+      "name": "party7",
+      "type": "esriFieldTypeString",
+      "alias": "Party",
+      "domain": null
+    },
+    {
+      "name": "districturl7",
+      "type": "esriFieldTypeString",
+      "alias": "Website",
+      "domain": null
+    },
+    {
+      "name": "phone7",
+      "type": "esriFieldTypeString",
+      "alias": "Phone",
+      "domain": null
+    },
+    {
+      "name": "email7",
+      "type": "esriFieldTypeString",
+      "alias": "Email",
+      "domain": null
+    },
+    {
+      "name": "facebook7",
+      "type": "esriFieldTypeString",
+      "alias": "Facebook Site",
+      "domain": null
+    },
+    {
+      "name": "twitter7",
+      "type": "esriFieldTypeString",
+      "alias": "Twitter Handle",
+      "domain": null
+    },
+    {
+      "name": "fulladdr7",
+      "type": "esriFieldTypeString",
+      "alias": "Full Address",
+      "domain": null
+    }
+  ],
+  "samples": [
+    {
+      "electedoffice": "Governor",
+      "district": "State of Missouri",
+      "districtid": "State of Missouri"
+    },
+    {
+      "electedoffice": "United States House of Representatives",
+      "district": "First District",
+      "districtid": "First District"
+    },
+    {
+      "electedoffice": "Mayor",
+      "district": "City of St. Louis",
+      "districtid": "City of St. Louis"
+    }
+  ]
+}

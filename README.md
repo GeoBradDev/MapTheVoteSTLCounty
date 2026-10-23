@@ -80,7 +80,7 @@ The scripts that talk to live services are run by hand (and some by the daily da
 workflow), never in CI:
 
 ```sh
-node scripts/inspect-data.mjs         # dump the county layers' schemas and samples to docs/raw/
+node scripts/inspect-data.mjs         # dump the County and City layers' schemas and samples to docs/raw/
 node scripts/record-fixtures.mjs      # re-record the live responses the tests use (docs/raw/fixtures/)
 node scripts/check-config.mjs         # check the layers src/config/election.js names (Data health check)
 node scripts/check-geocoder.mjs       # check address search end to end (Address search)
@@ -147,7 +147,10 @@ may need new values too. Work on a branch and merge through the usual pull reque
 2. **Inspect them.** Put the new service names in the `SERVICES` list at the top of
    `scripts/inspect-data.mjs` (and the new lookup app's id in `INSTANT_APP_ID` if it changed),
    then run `node scripts/inspect-data.mjs`. It writes each layer's fields, counts and sample
-   rows to `docs/raw/`. Compare them with `docs/data.md`: the field names, the congressional
+   rows to `docs/raw/`, and the City Board's layers that `src/config/election.js` names to
+   `docs/raw/city_*.json` (put new City layer paths in the config first; their samples hold
+   only the fields the app reads, never `*`, as those layers also hold officeholder and staff
+   contact details). Compare them with `docs/data.md`: the field names, the congressional
    district field (which map is in effect for the election: check the Revisor's note on
    RSMo 128.346 and a few sample ballots, see `docs/data.md`, then set `congressionalField`
    and `congressionalMap`) and the sample ballot link format. The script saves only 3 sample
@@ -275,8 +278,8 @@ After a deploy, check the live site or a PR preview:
 npm run smoke -- https://<site-or-preview-url>
 ```
 
-It checks that `/` returns the home page and a hard load of `/p/CC007` the app shell (with
-nothing pre-rendered in it), that a hashed asset is served as JavaScript, that a hard load of `/`,
+It checks that `/` returns the home page and a hard load of `/p/CC007` and of the City
+precinct `/p/W01P12` the app shell (with nothing pre-rendered in it), that a hashed asset is served as JavaScript, that a hard load of `/`,
 `/learn` and `/learn/voter-id` returns the page pre-rendered, with its `h1` and canonical, that `/robots.txt` is a text file with a `Sitemap:` line and
 `/sitemap.xml` is XML (not the app shell), and that the expected security and cache headers are
 present. It exits 1 and lists what failed. Against a host that sets no headers, such as
@@ -344,8 +347,9 @@ against the production build (`vite preview`), at 360 px and 1280 px. On each ke
 runs axe-core (WCAG 2.1 A and AA plus best practice, contrast included) and checks for
 horizontal scroll (also with the WCAG text spacing override), one `h1`, the page language and
 the skip link; it also checks focus after an in-app link and reduced motion. The county's
-layers, and the County and City wait time layers, are answered from `docs/raw/fixtures/`
-(the wait times route and the results route at the time those were recorded, so counts show) and every other outside request is blocked, so
+layers, the City Board's layers, and the County and City wait time layers, are answered from
+`docs/raw/fixtures/` (the wait times route and the County and City results routes at the time
+those were recorded, so counts show) and every other outside request is blocked, so
 it needs no network. The first run needs `npx playwright install chromium`. Add a route there
 when the app gets a new one. In jsdom, without layout, `src/test/a11yPages.test.jsx` runs axe on home, the wait times page, privacy and
 the two not-found pages, and `src/features/learn/learnA11y.test.jsx` on `/learn` with fixture
@@ -364,16 +368,17 @@ zoom on a desktop; and Windows High Contrast (forced colors).
 
 The target is a mid-range phone on a weak signal (#27). `npm run test:perf` runs
 `e2e/lighthouse.js`: Lighthouse's mobile emulation at 360 x 640 px on simulated slow 4G with a
-4x CPU slowdown, three runs each of `/`, `/p/CC007`, `/early-voting` and `/learn` against the production build
+4x CPU slowdown, three runs each of `/`, `/p/CC007`, the City precinct `/p/W01P12` (#95), `/early-voting` and `/learn` against the production build
 (`vite preview`). It fails when a page's median performance score is under 90, its median LCP
 is 2.5 s or more, or any run reports no LCP or ends without the page's own content (its
 heading, and on the results page the municipality, districts, sample ballot link and each
-polling place's name and ZIP; on the wait times page each site's name, or the note that early
-voting has ended). It writes the report of the run with the median score to
+polling place's name and ZIP; on the City results page the City Board's Election Day rule,
+the districts card and each polling place's name; on the wait times page each site's name, or
+the note that early voting has ended). It writes the report of the run with the median score to
 `lighthouse-reports/` (CI keeps it as the `lighthouse-reports` artifact). No live service is
-called: Chromium resolves the county's ArcGIS host and the basemap host to a local HTTPS
-server, and every other host except `localhost` to nothing. That server answers the layers
-from `docs/raw/fixtures/` (shaped to the query's `outFields` and `geometryPrecision`, gzipped
+called: Chromium resolves the county's ArcGIS host (the City Board's layers are on it too) and the basemap host to a local HTTPS
+server, and every other host except `localhost` to nothing. That server answers the County
+and City layers (GET, or a point query's POST) from `docs/raw/fixtures/` (shaped to the query's `outFields` and `geometryPrecision`, gzipped
 like the county's service) and the basemap style with a blank style (`BLANK_STYLE` in
 `e2e/fixtures.js`). It needs `openssl` for the local server's throwaway certificate, and
 Playwright's Chromium (`npx playwright install chromium`).
