@@ -59,8 +59,10 @@ const DISTRICT_KEYS = [
 ];
 
 export const copy = translated((t) => ({
+  // The page answers the question first (#81); the precinct is the line under it.
+  heading: t('results.heading'),
   /** @param {string} code */
-  heading: (code) => t('results.heading', { code }),
+  precinct: (code) => t('results.precinct', { code }),
   // For a URL whose text is not a precinct code: never echo that text.
   notFoundHeading: t('results.notFoundHeading'),
   unincorporated: t('results.unincorporated'),
@@ -87,8 +89,24 @@ export const copy = translated((t) => ({
   notFoundTitle: t('results.notFoundTitle'),
   // Under a precinct code that was not found: search instead.
   searchInstead: t('results.searchInstead'),
+  // The answer-first summary at the top of the results (#81).
+  summary: {
+    electionDay: t('results.summary.electionDay'),
+    /**
+     * Election Day's date and hours, like "Tuesday, November 3, 6 a.m. to 7 p.m.".
+     * @param {string} date Already formatted. @param {string} open @param {string} close
+     */
+    // No closing period: every time already ends in "a.m." or "p.m.".
+    when: (date, open, close) => t('results.summary.when', { date, open, close }),
+    nearestPoll: t('results.summary.nearestPoll'),
+    early: t('results.summary.early'),
+    nearestOpen: t('results.summary.nearestOpen'),
+    nearestSite: t('results.summary.nearestSite'),
+  },
   share: {
     button: t('results.share.button'),
+    // The button's visible text (#81); `button` is its accessible name.
+    short: t('results.share.short'),
     /** @param {string} code The share sheet's title. */
     title: (code) => t('results.share.title', { code }),
     /** @param {string} code */
@@ -148,11 +166,6 @@ export const copy = translated((t) => ({
       none: t('results.polls.waits.none'),
       seeAll: t('results.polls.waits.seeAll'),
     },
-    hoursLabel: t('results.polls.hoursLabel'),
-    /** @param {string} open HH:MM @param {string} close HH:MM */
-    // No closing period: every time already ends in "a.m." or "p.m.".
-    hours: (open, close) =>
-      t('results.polls.hours', { open: formatTime(open), close: formatTime(close) }),
     /** @param {string} close HH:MM */
     inLine: (close) => t('results.polls.inLine', { close: formatTime(close) }),
     // Any County polling place will do on Election Day (#152).
@@ -161,7 +174,6 @@ export const copy = translated((t) => ({
     nearestNoteCity: t('results.polls.nearestNoteCity'),
     // Before the City Board's quoted rule (#89).
     cityRule: t('results.polls.cityRule', { board: t('results.polls.sourceNames.cityBoard') }),
-    earlyVotingPointer: t('results.polls.earlyVotingPointer'),
     // Before the voter ID topic's title, which is the link (#23).
     beforeYouGo: t('results.polls.beforeYouGo'),
     source: t('results.polls.source'),
@@ -207,9 +219,9 @@ export const copy = translated((t) => ({
     districtsPointer: t('results.ballot.districtsPointer'),
   },
   earlyVoting: {
-    // The board's own dates, hours and sites; no eligibility rules here.
-    intro: t('results.earlyVoting.intro'),
     groupsLabel: t('results.earlyVoting.groupsLabel'),
+    // The County card's dates and hours are folded away behind this (#81).
+    seeDates: t('results.earlyVoting.seeDates'),
     // Keyed by the polls layer's `abs_type`, like the schedules in the config.
     groups: {
       boe: t('results.earlyVoting.groups.boe'),
@@ -281,6 +293,8 @@ export const copy = translated((t) => ({
     multipleCity: t('results.districts.multipleCity'),
     failed: t('results.districts.failed'),
     missing: t('results.districts.missing'),
+    // The districts list folds away on phones (#81).
+    show: t('results.districts.show'),
   },
   map: {
     /** @param {string} code */

@@ -81,7 +81,9 @@ const ROUTES = [
       await expect(early.getByRole('heading', { level: 3 }).first()).toBeVisible();
       await early.getByText('Dates and hours').first().click();
       await expect(early.getByText(/^Monday: /).first()).toBeVisible();
-      // Its districts card (#90).
+      // Its districts card (#90), folded away on phones (#81).
+      const districts = page.getByText('Districts for this precinct');
+      if ((await districts.locator('..').getAttribute('open')) === null) await districts.click();
       await expect(page.getByText('Missouri House District 78')).toBeVisible();
       // Its sample ballot card (#92).
       await expect(

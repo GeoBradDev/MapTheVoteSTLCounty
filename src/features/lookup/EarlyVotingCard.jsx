@@ -16,7 +16,9 @@ import StaleNote from './StaleNote.jsx';
 import { useJurisdiction } from './jurisdictionContext.js';
 import NearbySortControls from './NearbySortControls.jsx';
 import { useHeldOrder, withKeys } from './nearbySort.js';
-import { Entrances, OfficialLookupLink, Room, RoomSource } from './PollsCard.jsx';
+import { countySchedule, countyWaitKey } from './countyEarlyVoting.js';
+import Disclosure from './Disclosure.jsx';
+import { Entrances, NameAndDistance, OfficialLookupLink, Room, RoomSource } from './PollsCard.jsx';
 import { usePollRooms } from './usePollRooms.js';
 import { useNearestSites } from './useNearestSites.js';
 import { useNow } from './useNow.js';
@@ -52,15 +54,12 @@ function SiteRow({ site, room, now, apple, headingRef, Detail }) {
   const target = <span className="sr-only">{copy.polls.linkTarget(name)}</span>;
   return (
     <li className="border-t border-border pt-3 first:border-t-0 first:pt-0">
-      <h3 ref={headingRef} tabIndex={headingRef ? -1 : undefined} className="font-semibold">
-        {name}
-      </h3>
+      <NameAndDistance name={name} miles={site.miles} headingRef={headingRef} />
       <Detail site={site} now={now} />
       <WaitReport wait={site.wait} now={now} />
       <p>{copy.polls.address(site.address, site.zip)}</p>
       <Room room={room} />
       <Entrances entry={site.entry} accessibleEntry={site.accessibleEntry} />
-      <p className="text-muted">{copy.polls.distance(site.miles)}</p>
       {site.absNote && (
         <p>
           <span className="font-semibold">{t.note}</span> {site.absNote}
@@ -80,10 +79,11 @@ function SiteRow({ site, room, now, apple, headingRef, Detail }) {
   );
 }
 
+// Folded away (#81): the summary and each row's status say what matters today.
 function Schedules({ now }) {
   return (
-    <>
-      <h3 className="mt-4 font-semibold">{t.groupsLabel}</h3>
+    <Disclosure summary={t.seeDates} className="mt-3">
+      <h3 className="mt-1 font-semibold">{t.groupsLabel}</h3>
       {groupKeys.map((key) => (
         <div key={key} className="mt-2">
           <h4 className="font-semibold">{t.groups[key]}</h4>
@@ -109,7 +109,7 @@ function Schedules({ now }) {
         ))}
         . {t.lastVerified(formatLongDate(lastVerified, { year: true }))}
       </p>
-    </>
+    </Disclosure>
   );
 }
 
@@ -198,8 +198,6 @@ export function EarlyVotingSites({
 
   return (
     <div ref={targetRef} tabIndex={-1} className="mt-2">
-      <p>{t.intro}</p>
-
       {!result && (
         <div data-testid="early-voting-skeleton" aria-hidden="true" className="mt-3">
           <div className={`h-4 w-3/4 ${bar}`} />
@@ -227,7 +225,6 @@ export function EarlyVotingSites({
 
       {rows && rows.length > 0 && (
         <>
-          {!origin && <p className="mt-3 text-muted">{copy.polls.fromCenter(code)}</p>}
           {waitsOn && <NearbySortControls sort={sort} onSort={setSort} />}
           <ol
             ref={listRef}
@@ -266,7 +263,8 @@ export function EarlyVotingSites({
         </>
       )}
 
-      {season !== 'ended' && (
+      {/* While early voting runs, the summary at the top has this link (#81). */}
+      {season === 'before' && (
         <p className="mt-3">
           <Link href="/early-voting" className={tapLinkClass}>
             {t.waits.seeAll}
@@ -300,9 +298,6 @@ export function MailLine({ href, label }) {
     </p>
   );
 }
-
-const countySchedule = (site) => schedules[site.absType];
-const countyWaitKey = (site) => site.waitKey;
 
 /**
  * The body of the County's "Early voting" card: the nearest in-person

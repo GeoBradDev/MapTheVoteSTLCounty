@@ -7,6 +7,9 @@
 export * from './data/cityArcgis.js';
 export { cityHours, cityScheduleFor, citySchedules } from './features/lookup/cityEarlyVoting.js';
 export { default as CityDistrictsCard } from './features/lookup/CityDistrictsCard.jsx';
-export { default as CityEarlyVotingCard } from './features/lookup/CityEarlyVotingCard.jsx';
+export {
+  default as CityEarlyVotingCard,
+  CityEarlyVoteSummary,
+} from './features/lookup/CityEarlyVotingCard.jsx';
 export { default as CityElectionDayRule } from './features/lookup/CityElectionDayRule.jsx';
 export { default as CitySampleBallotCard } from './features/lookup/CitySampleBallotCard.jsx';

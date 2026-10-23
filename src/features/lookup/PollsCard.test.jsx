@@ -106,14 +106,14 @@ describe('PollsCard', () => {
     ).toBeInTheDocument();
   });
 
-  it('measures from the precinct center without a looked-up point, and says so', async () => {
+  it('measures from the precinct center without a looked-up point, leaving the note to the summary (#81)', async () => {
     render(<PollsCard code="CC007" origin={null} />);
     const ol = await list();
     expect(getPrecinctGeometry).toHaveBeenCalledWith('CC007');
     const center = polygonCenter(geometry.features[0].geometry);
     const expected = nearestPolls(polls, center).slice(0, COUNT);
     expect(rowNames(ol)).toEqual(expected.map((r) => r.name));
-    expect(screen.getByText(copy.polls.fromCenter('CC007'))).toBeInTheDocument();
+    expect(screen.queryByText(copy.polls.fromCenter('CC007'))).toBeNull();
   });
 
   it('shows more places on request, moves focus to the first new one, and stops at the end', async () => {
@@ -143,21 +143,11 @@ describe('PollsCard', () => {
     expect(screen.queryByRole('button', { name: copy.polls.showMore })).toBeNull();
   });
 
-  it('shows Election Day hours from the config, the in-line rule and its sources', () => {
+  it('leaves Election Day hours to the summary at the top (#81)', () => {
     getPolls.mockReturnValue(new Promise(() => {}));
     render(<PollsCard code="CC007" origin={ORIGIN} />);
-    const { open, close, sources } = election.electionDayHours;
-    const hours = screen.getByText(copy.polls.hoursLabel).closest('p');
-    expect(hours).toHaveTextContent(copy.polls.hours(open, close));
-    expect(hours).toHaveTextContent(formatTime(open));
-    expect(screen.getByText(copy.polls.inLine(close))).toBeInTheDocument();
-    for (const source of sources) {
-      const host = new URL(source).host;
-      expect(screen.getByRole('link', { name: copy.polls.sourceNames[host] })).toHaveAttribute(
-        'href',
-        source,
-      );
-    }
+    const { close } = election.electionDayHours;
+    expect(screen.queryByText(copy.polls.inLine(close), { exact: false })).toBeNull();
   });
 
   it('says a County voter may vote at any County polling place, with sources (#152)', () => {
@@ -216,12 +206,6 @@ describe('PollsCard', () => {
     }
   });
 
-  it('points to early voting for voting in person before Election Day (#72)', () => {
-    getPolls.mockReturnValue(new Promise(() => {}));
-    render(<PollsCard code="CC007" origin={ORIGIN} />);
-    expect(screen.getByText(copy.polls.earlyVotingPointer)).toBeInTheDocument();
-  });
-
   it('links to the voter ID topic by its title once that topic exists (#23)', () => {
     getPolls.mockReturnValue(new Promise(() => {}));
     shown.topics = fixtureTopics;
@@ -252,32 +236,13 @@ describe('PollsCard', () => {
     const rows = screen.getByTestId('polls-skeleton').children;
     expect(rows).toHaveLength(COUNT);
     for (const row of rows) {
-      // A name, an address and a distance line, then a row of links.
+      // A name and distance line, an address line, then a row of links.
       expect([...row.children].map((c) => c.className)).toEqual([
-        expect.stringContaining('h-6'),
         expect.stringContaining('h-6'),
         expect.stringContaining('h-6'),
         expect.stringContaining('min-h-11'),
       ]);
     }
-  });
-
-  it('says distances are from the center while loading too, without a looked-up point', () => {
-    getPolls.mockReturnValue(new Promise(() => {}));
-    render(<PollsCard code="CC007" origin={null} />);
-    expect(screen.getByText(copy.polls.fromCenter('CC007'))).toBeInTheDocument();
-  });
-
-  it('drops the center line when the places fail to load or none are found', async () => {
-    getPolls.mockRejectedValue(new Error('down'));
-    const { unmount } = render(<PollsCard code="CC007" origin={null} />);
-    await screen.findByText(copy.polls.failed, { exact: false });
-    expect(screen.queryByText(copy.polls.fromCenter('CC007'))).toBeNull();
-    unmount();
-    getPolls.mockResolvedValue({ ...polls, features: [] });
-    render(<PollsCard code="CC007" origin={null} />);
-    await screen.findByText(copy.polls.none, { exact: false });
-    expect(screen.queryByText(copy.polls.fromCenter('CC007'))).toBeNull();
   });
 
   it('says the polling places failed to load, with the official lookup', async () => {
@@ -509,9 +474,14 @@ describe('formatTime', () => {
 });
 
 describe('polls copy', () => {
-  it('ends the hours line with one period, after a p.m. time', () => {
-    expect(copy.polls.hours('06:00', '19:00')).toBe('6 a.m. to 7 p.m.');
-    expect(copy.polls.hours('06:00', '19:30')).toBe('6 a.m. to 7:30 p.m.');
+  it("ends the summary's Election Day line with one period, after a p.m. time (#81)", () => {
+    const date = 'Tuesday, November 3';
+    expect(copy.summary.when(date, formatTime('06:00'), formatTime('19:00'))).toBe(
+      'Tuesday, November 3, 6 a.m. to 7 p.m.',
+    );
+    expect(copy.summary.when(date, formatTime('06:00'), formatTime('19:30'))).toBe(
+      'Tuesday, November 3, 6 a.m. to 7:30 p.m.',
+    );
   });
 
   it('ends the stale note with one period, after a p.m. time (#84)', () => {

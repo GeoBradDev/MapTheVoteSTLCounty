@@ -114,3 +114,24 @@ Not done here: Election Day line counts in the summary (the card has them, #107)
 - Live drive: the production build with fixtures at 360 x 640 (County and City, during early
   voting, Election Day, after early voting), screenshots of the first screen and full page
   heights before and after for criterion 3.
+
+## Revisions during implementation
+
+- Election Day hours, the "in line at closing" rule and their source moved from the polls card
+  into the summary's Election Day section; the polls card no longer repeats them.
+- The County Election Day rule stays visible in the polls card; its City note, the board's
+  phone number and its sources are folded under "Help and sources" (`CountyElectionDayRule`).
+- The early voting card's intro line and the polls card's early voting pointer are gone; the
+  card's "See wait times" link shows only before early voting (during it, the summary has it,
+  which also avoids two links with one name).
+- The h1 of a code-shaped precinct that is not found reads "Precinct not found", like its tab
+  title, instead of naming the code.
+- `cityComponent` renders a City component at once when the City chunk is already loaded
+  (`loadedCityClient` in `src/data/jurisdictions.js`): the first build of the City summary
+  suspended at the top of the page and caused a 0.125 CLS on /p/W01P12 in `npm run test:perf`
+  (main: 0.000). After the change: 0.000.
+- The County helpers the summary shares with the card are in `countyEarlyVoting.js`, and the
+  wide-screen check is `useWideOnMount.js` (fast refresh lint rule: component files export
+  only components).
+- Criterion 3 (40% shorter) is not reached; measured results and the question to the owner are
+  in the pull request.

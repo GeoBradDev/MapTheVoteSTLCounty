@@ -2,6 +2,8 @@ import { Fragment, useEffect, useState } from 'react';
 import { NotFound } from '../../data/arcgis.js';
 import { getCityDistrictsForPrecinct } from '../../data/cityArcgis.js';
 import { cityDistrictRows } from './cityDistricts.js';
+import Disclosure from './Disclosure.jsx';
+import { useWideOnMount } from './useWideOnMount.js';
 import { OfficialLookupLink } from './PollsCard.jsx';
 import { copy } from './resultsCopy.js';
 import RetryButton from './RetryButton.jsx';
@@ -14,7 +16,8 @@ const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
  * precinct is in, as the City Board's districts layer names them, asked at a
  * point inside the precinct's outline (getCityDistrictsForPrecinct), never the
  * voter's own point. Names and numbers only: never an office, officeholder or
- * party. In the City chunk (src/cityChunk.js).
+ * party. Folded away on phones and open on wider screens (owner decision on
+ * #81). In the City chunk (src/cityChunk.js).
  * @param {{ code: string }} props A City precinct code like W01P12.
  */
 export default function CityDistrictsCard({ code }) {
@@ -24,6 +27,7 @@ export default function CityDistrictsCard({ code }) {
   // (useRetry, #18).
   const [result, setResult] = useState(null);
   const { attempt, loading, retry, done, targetRef } = useRetry();
+  const wide = useWideOnMount();
 
   useEffect(() => {
     let live = true;
@@ -85,20 +89,22 @@ export default function CityDistrictsCard({ code }) {
 
   return (
     <div ref={targetRef} tabIndex={-1}>
-      <dl className="mt-3 grid gap-x-4 sm:grid-cols-[auto_1fr]">
-        {rows.map(({ key, label, values }) => (
-          <Fragment key={key}>
-            <dt className="mt-2 font-semibold sm:mt-1">{label}</dt>
-            <dd className="sm:mt-1">{values.join(', ')}</dd>
-          </Fragment>
-        ))}
-      </dl>
-      {rows.some(({ values }) => values.length > 1) && (
-        <p className="mt-3">
-          {copy.districts.multipleCity} <OfficialLookupLink />.
-        </p>
-      )}
-      <p className="mt-3 text-sm text-muted">{copy.districts.sourceCity}</p>
+      <Disclosure summary={copy.districts.show} defaultOpen={wide} className="mt-2">
+        <dl className="mt-1 grid gap-x-4 sm:grid-cols-[auto_1fr]">
+          {rows.map(({ key, label, values }) => (
+            <Fragment key={key}>
+              <dt className="mt-2 font-semibold sm:mt-1">{label}</dt>
+              <dd className="sm:mt-1">{values.join(', ')}</dd>
+            </Fragment>
+          ))}
+        </dl>
+        {rows.some(({ values }) => values.length > 1) && (
+          <p className="mt-3">
+            {copy.districts.multipleCity} <OfficialLookupLink />.
+          </p>
+        )}
+        <p className="mt-3 text-sm text-muted">{copy.districts.sourceCity}</p>
+      </Disclosure>
     </div>
   );
 }

@@ -94,7 +94,13 @@ function renderAt(code) {
 
 const heading = () => screen.getByRole('heading', { level: 1 });
 const liveRegion = () => document.querySelector('[aria-live="polite"]');
-const cardHeadings = () => screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
+// The section headings in page order, less the summary's own (#81). The
+// sample ballot's is in the summary.
+const cardHeadings = () =>
+  screen
+    .getAllByRole('heading', { level: 2 })
+    .map((h) => h.textContent)
+    .filter((name) => !Object.values(copy.summary).includes(name));
 const ready = (code) => screen.findByText(copy.ready(code));
 
 // The page's alert is always there, empty until a load fails, so waiting for
@@ -176,7 +182,8 @@ describe('PrecinctPage', () => {
   it('shows the heading and skeletons, and an empty live region, while loading', () => {
     fetchMock.mockImplementation(() => new Promise(() => {}));
     renderAt('CC007');
-    expect(heading()).toHaveTextContent(copy.heading('CC007'));
+    expect(heading()).toHaveTextContent(copy.heading);
+    expect(screen.getByText(copy.precinct('CC007'))).toBeInTheDocument();
     expect(liveRegion()).toBeInTheDocument();
     expect(liveRegion()).toHaveTextContent(/^$/);
     const skeleton = screen.getByTestId('results-skeleton');
@@ -188,16 +195,23 @@ describe('PrecinctPage', () => {
     expect(screen.getByRole('link', { name: copy.searchAnother })).toHaveAttribute('href', '/');
   });
 
-  it('shows the header, no banner and the four cards in order for an In Election precinct', async () => {
+  it('shows the header, no banner, the summary and the cards in order for an In Election precinct', async () => {
     routeFetch(byId);
     renderAt('CC007');
     expect(await ready('CC007')).toBe(liveRegion());
-    expect(heading()).toHaveTextContent('Precinct CC007');
+    // The answer first, then the precinct (#81).
+    expect(heading()).toHaveTextContent(copy.heading);
+    expect(heading().nextElementSibling).toHaveTextContent(
+      `${copy.precinct('CC007')} · ${copy.unincorporated}`,
+    );
     expect(screen.getByTestId('municipality')).toHaveTextContent(copy.unincorporated);
     expect(screen.queryByRole('region', { name: copy.status.label })).toBeNull();
+    expect(screen.getAllByRole('heading', { level: 2 })[0]).toHaveTextContent(
+      copy.summary.electionDay,
+    );
     expect(cardHeadings()).toEqual([
-      copy.cards.polls,
       copy.cards.ballot,
+      copy.cards.polls,
       copy.cards.earlyVoting,
       copy.cards.districts,
     ]);
@@ -383,7 +397,7 @@ describe('PrecinctPage', () => {
       routeFetch(byId);
       const location = renderAt(typed);
       await ready('CC007');
-      expect(heading()).toHaveTextContent(copy.heading('CC007'));
+      expect(heading().nextElementSibling).toHaveTextContent(copy.precinct('CC007'));
       expect(location.history).toEqual(['/p/CC007']);
       expect(precinctCalls().every((url) => !url.search.includes(typed))).toBe(true);
     },
@@ -444,8 +458,8 @@ describe('PrecinctPage', () => {
       const alert = await alertSaying(copy.errors.notFound);
       expect(fetchMock).toHaveBeenCalled();
       expect(onlyCityLayers()).toBe(true);
-      // Code-shaped, so the heading names it, as for an unknown County code.
-      expect(heading()).toHaveTextContent(copy.heading('W01P12'));
+      // Not found, so the heading says so, as the tab title does (#81).
+      expect(heading()).toHaveTextContent(copy.notFoundHeading);
       expect(document.title).toBe(copy.notFoundTitle);
       // The City board's own lookup, never the County's.
       const link = within(alert).getByRole('link', { name: copy.officialLookupFor('city') });
@@ -671,7 +685,8 @@ describe('PrecinctPage', () => {
         .getAllByRole('heading', { level: 3 })
         .map((h) => h.textContent),
     ).toEqual(expected.map((row) => row.name));
-    expect(within(card).getByText(copy.polls.fromCenter('CC007'))).toBeInTheDocument();
+    // Said once, in the summary at the top (#81).
+    expect(screen.getAllByText(copy.polls.fromCenter('CC007'))).toHaveLength(1);
   });
 
   it('never puts the looked-up point in a request, the URL or storage', async () => {

@@ -53,3 +53,28 @@ describe('DistrictsCard', () => {
     );
   });
 });
+
+// Owner decision on #81: folded away on phones, open on wider screens.
+describe('DistrictsCard on phones and wide screens', () => {
+  const screenWidth = (width) =>
+    vi.stubGlobal('matchMedia', (query) => ({
+      matches: query === '(min-width: 640px)' && width >= 640,
+    }));
+  afterEach(() => vi.unstubAllGlobals());
+  const details = () => list().closest('details');
+
+  it('starts folded on a phone, and opens from its summary line', async () => {
+    screenWidth(360);
+    render(<DistrictsCard precinct={attributesOf(cc007)} />);
+    expect(details()).not.toHaveAttribute('open');
+    expect(screen.getByText(copy.districts.show).tagName).toBe('SUMMARY');
+    screen.getByText(copy.districts.show).click();
+    expect(details()).toHaveAttribute('open');
+  });
+
+  it('starts open on a wide screen', () => {
+    screenWidth(1280);
+    render(<DistrictsCard precinct={attributesOf(cc007)} />);
+    expect(details()).toHaveAttribute('open');
+  });
+});

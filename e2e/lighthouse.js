@@ -38,8 +38,9 @@ const MAX_LCP_MS = 2500;
  * page, the early voting wait times page (#104), and a City precinct's results
  * (#95). `code` is the precinct `shows` is given. `shows` checks, in the page, that the run measured the real content
  * and not the not-found page, an error or a loading state. On the results page
- * it also checks content built from the precinct and poll fields the app asks
- * ArcGIS for: the municipality, the districts, the sample ballot link and each
+ * it also checks the heading (#81) and the precinct line under it, and content
+ * built from the precinct and poll fields the app asks ArcGIS for: the
+ * municipality, the districts, the sample ballot link and each
  * polling place's name and ZIP.
  */
 const ROUTES = [
@@ -54,7 +55,10 @@ const ROUTES = [
     shows: (code) => {
       const rows = [...document.querySelectorAll('ol[aria-label="Nearest polling places"] > li')];
       return (
-        document.querySelector('h1')?.textContent === `Precinct ${code}` &&
+        document.querySelector('h1')?.textContent === 'Where you can vote' &&
+        (document.querySelector('h1')?.nextElementSibling?.textContent ?? '').startsWith(
+          `Precinct ${code}`,
+        ) &&
         !document.querySelector('[role="alert"]')?.textContent.trim() &&
         Boolean(document.querySelector('[data-testid="municipality"]')?.textContent.trim()) &&
         document.querySelectorAll('dl dd').length >= 3 &&
@@ -78,7 +82,10 @@ const ROUTES = [
       const rows = [...document.querySelectorAll('ol[aria-label="Nearest polling places"] > li')];
       const main = document.querySelector('main')?.textContent ?? '';
       return (
-        document.querySelector('h1')?.textContent === `Precinct ${code}` &&
+        document.querySelector('h1')?.textContent === 'Where you can vote' &&
+        (document.querySelector('h1')?.nextElementSibling?.textContent ?? '').startsWith(
+          `Precinct ${code}`,
+        ) &&
         !document.querySelector('[role="alert"]')?.textContent.trim() &&
         main.includes('The St. Louis City Board of Election Commissioners says:') &&
         main.includes('Missouri House District') &&

@@ -146,27 +146,39 @@ function PrecinctResults({ code }) {
   let status = null;
   if (precinct) status = isCity ? CITY_STATUS : precinctStatus(precinct);
   const municipality = placeLine(jurisdiction, code, precinct);
+  const searchLink = (
+    <Link href="/" className={`inline-flex min-h-11 items-center ${linkClass}`}>
+      {copy.searchAnother}
+    </Link>
+  );
 
   return (
     <JurisdictionContext value={jurisdiction}>
       <header>
-        <h1 ref={headingRef} tabIndex={-1} className="text-3xl font-semibold">
-          {/* Only a code-shaped value goes in the heading: a link could
-              otherwise put any text there. */}
-          {validCode ? copy.heading(code) : copy.notFoundHeading}
+        {/* The answer first (#81): what the page is for, then the precinct
+            as the line under it. */}
+        <h1 ref={headingRef} tabIndex={-1} className="text-2xl font-semibold sm:text-3xl">
+          {titled ? copy.heading : copy.notFoundHeading}
         </h1>
-        {!result && <SkeletonLine className="mt-2 h-5 w-48" />}
-        {municipality && (
-          <p data-testid="municipality" className="mt-1 text-lg">
-            {municipality}
+        {/* Only a code-shaped value is shown: a link could otherwise put any
+            text there. */}
+        {titled && (
+          <p className="mt-1 sm:text-lg">
+            {copy.precinct(code)}
+            {municipality && (
+              <>
+                {' · '}
+                <span data-testid="municipality">{municipality}</span>
+              </>
+            )}
           </p>
         )}
-        <p className="mt-2">
-          <Link href="/" className={`inline-flex min-h-11 items-center ${linkClass}`}>
-            {copy.searchAnother}
-          </Link>
-        </p>
-        {precinct && <ShareLink code={code} />}
+        {!result && <SkeletonLine className="mt-2 h-5 w-48" />}
+        {precinct ? (
+          <ShareLink code={code}>{searchLink}</ShareLink>
+        ) : (
+          <p className="mt-2">{searchLink}</p>
+        )}
       </header>
 
       <p aria-live="polite" className="sr-only">

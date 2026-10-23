@@ -16,7 +16,7 @@ import { useHeldOrder, withKeys } from './nearbySort.js';
 import { directionsLinks, isAppleMobile } from './nearbyPolls.js';
 import PrecinctMap from './PrecinctMap.jsx';
 import RetryButton from './RetryButton.jsx';
-import { copy, sourceName } from './resultsCopy.js';
+import { copy } from './resultsCopy.js';
 import StaleNote from './StaleNote.jsx';
 import { useJurisdiction } from './jurisdictionContext.js';
 import { usePollRooms } from './usePollRooms.js';
@@ -63,30 +63,6 @@ export function RoomSource({ shown }) {
   return shown ? <p className="mt-3 text-sm">{copy.polls.roomSource}</p> : null;
 }
 
-function Hours() {
-  const { open, close, inLineAtCloseMayVote, sources } = election.electionDayHours;
-  return (
-    <>
-      <p className="mt-3">
-        <span className="font-semibold">{copy.polls.hoursLabel}</span>{' '}
-        {copy.polls.hours(open, close)}
-      </p>
-      {inLineAtCloseMayVote && <p>{copy.polls.inLine(close)}</p>}
-      <p className="text-sm">
-        {copy.polls.source}:{' '}
-        {sources.map((url, i) => (
-          <span key={url}>
-            {i > 0 && ', '}
-            <a href={url} rel="noreferrer" className={linkClass}>
-              {sourceName(url)}
-            </a>
-          </span>
-        ))}
-      </p>
-    </>
-  );
-}
-
 // Shown only once the voter ID topic is published (#22, #23).
 function VoterIdLink() {
   const topic = getTopic(CARD_TOPICS.voterId, getLocale());
@@ -101,8 +77,8 @@ function VoterIdLink() {
   );
 }
 
-// Placeholders shaped like the first rows of the list (a name, an address, a
-// distance and a row of links each), so the list takes about the same space
+// Placeholders shaped like the first rows of the list (a name and distance,
+// an address and a row of links each), so the list takes about the same space
 // when it arrives and the page below it does not jump (#27).
 function ListSkeleton() {
   const line = (width) => (
@@ -116,12 +92,26 @@ function ListSkeleton() {
         <div key={i} className="border-t border-border pt-3 first:border-t-0 first:pt-0">
           {line('w-3/4')}
           {line('w-2/3')}
-          {line('w-1/4')}
           <div className="flex min-h-11 items-center">
             <div className={`h-4 w-1/3 ${bar}`} />
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+/**
+ * A row's heading, the place's name, with its distance on the same line when
+ * it fits (#81). `headingRef` is set on the row "Show more" focuses.
+ */
+export function NameAndDistance({ name, miles, headingRef }) {
+  return (
+    <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+      <h3 ref={headingRef} tabIndex={headingRef ? -1 : undefined} className="font-semibold">
+        {name}
+      </h3>
+      <span className="text-sm text-muted">{copy.polls.distance(miles)}</span>
     </div>
   );
 }
@@ -136,14 +126,11 @@ function PollRow({ poll, room, apple, headingRef, now }) {
   const target = <span className="sr-only">{copy.polls.linkTarget(name)}</span>;
   return (
     <li className="border-t border-border pt-3 first:border-t-0 first:pt-0">
-      <h3 ref={headingRef} tabIndex={headingRef ? -1 : undefined} className="font-semibold">
-        {name}
-      </h3>
+      <NameAndDistance name={name} miles={poll.miles} headingRef={headingRef} />
       <WaitReport wait={poll.wait} now={now} />
       <p>{copy.polls.address(poll.address, poll.zip)}</p>
       <Room room={room} />
       <Entrances entry={poll.entry} accessibleEntry={poll.accessibleEntry} />
-      <p className="text-muted">{copy.polls.distance(poll.miles)}</p>
       <p className="flex flex-wrap gap-x-4">
         <a href={links.google} rel="noreferrer" className={tapLinkClass}>
           {copy.polls.directions} {target}
@@ -160,7 +147,7 @@ function PollRow({ poll, room, apple, headingRef, now }) {
 
 /**
  * The body of the "Polling places near you" card: the closest Election Day
- * polling places, Election Day hours, and the jurisdiction's Election Day
+ * polling places (Election Day's date and hours are in the summary, #81), and the jurisdiction's Election Day
  * rule: in the County a registered voter may vote at any County polling place
  * (#152); in the City any City voter may vote at any listed location (#89).
  * While the polls are open on Election Day (#107), each place's current line
@@ -258,12 +245,10 @@ export default function PollsCard({ code, origin, waitSource, electionDayOn }) {
     <div ref={targetRef} tabIndex={-1} className="mt-2">
       {/* Said while loading too, so the lines do not push the card down when
           the list arrives (#27). The nearest note comes before the list, so it
-          is read first: it says the voter may vote at any of them (#152). */}
+          is read first: it says the voter may vote at any of them (#152).
+          Where distances are measured from is said once, in the summary (#81). */}
       {!result?.error && !(rows && rows.length === 0) && (
-        <>
-          <p>{isCity ? copy.polls.nearestNoteCity : copy.polls.nearestNote}</p>
-          {!origin && <p className="mt-2 text-muted">{copy.polls.fromCenter(code)}</p>}
-        </>
+        <p>{isCity ? copy.polls.nearestNoteCity : copy.polls.nearestNote}</p>
       )}
 
       {!result && <ListSkeleton />}
@@ -332,8 +317,6 @@ export default function PollsCard({ code, origin, waitSource, electionDayOn }) {
         </p>
       )}
 
-      <Hours />
-
       <VoterIdLink />
 
       <div className="mt-3">
@@ -345,8 +328,6 @@ export default function PollsCard({ code, origin, waitSource, electionDayOn }) {
           <CountyElectionDayRule linkClass={linkClass} />
         )}
       </div>
-
-      <p className="mt-3">{copy.polls.earlyVotingPointer}</p>
     </div>
   );
 }

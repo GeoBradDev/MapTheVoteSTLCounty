@@ -30,7 +30,7 @@ afterEach(async () => {
 describe('t', () => {
   it('reads a message by its dotted key and fills in its values', () => {
     expect(t('home.heading')).toBe('St. Louis Voter Guide');
-    expect(t('results.heading', { code: 'CC007' })).toBe('Precinct CC007');
+    expect(t('results.precinct', { code: 'CC007' })).toBe('Precinct CC007');
   });
 
   it('returns the key for a message that does not exist, so it shows and fails tests', () => {

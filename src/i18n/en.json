@@ -134,13 +134,15 @@
     "cityNote": "This does not apply in the City of St. Louis, which has its own rule.",
     "help": "For help finding a polling place, call the St. Louis County Board of Elections at",
     "sources": "Sources:",
+    "more": "Help and sources",
     "sourceNames": {
       "countyBoard": "St. Louis County Board of Elections Polling Places",
       "countyLookup": "St. Louis County Board of Elections Polling Place Lookup"
     }
   },
   "results": {
-    "heading": "Precinct {code}",
+    "heading": "Where you can vote",
+    "precinct": "Precinct {code}",
     "notFoundHeading": "Precinct not found",
     "unincorporated": "Unincorporated St. Louis County",
     "cityPrecinct": "{place}, Ward {ward}, Precinct {precinct}",
@@ -151,8 +153,17 @@
     "pageTitle": "Precinct {code} | St. Louis Voter Guide",
     "notFoundTitle": "Precinct not found | St. Louis Voter Guide",
     "searchInstead": "Search for your address",
+    "summary": {
+      "electionDay": "Election Day",
+      "when": "{date}, {open} to {close}",
+      "nearestPoll": "Nearest polling place",
+      "early": "Vote early",
+      "nearestOpen": "Nearest site open now",
+      "nearestSite": "Nearest site"
+    },
     "share": {
       "button": "Share this page",
+      "short": "Share",
       "title": "Precinct {code} voter information",
       "note": "The link opens the results for precinct {code}. It does not include your address.",
       "copied": "Link copied.",
@@ -191,13 +202,10 @@
         "none": "No current line count for these polling places.",
         "seeAll": "See line counts at every St. Louis County and City polling place"
       },
-      "hoursLabel": "Election Day hours:",
-      "hours": "{open} to {close}",
       "inLine": "If you are in line at {close}, you can still vote.",
       "nearestNote": "These are the nearest Election Day polling places. You may vote at any polling place in St. Louis County.",
       "nearestNoteCity": "These are the nearest of the City's Election Day polling places.",
       "cityRule": "The {board} says:",
-      "earlyVotingPointer": "To vote in person before Election Day, see Early voting below.",
       "beforeYouGo": "Before you go:",
       "source": "Source",
       "sourceNames": {
@@ -221,8 +229,8 @@
       "districtsPointer": "Your districts are listed under Your districts, below."
     },
     "earlyVoting": {
-      "intro": "Places to vote in person before Election Day, with their dates and hours.",
       "groupsLabel": "Dates and hours",
+      "seeDates": "See dates and hours",
       "groups": {
         "boe": "Board of Elections office",
         "abs": "Satellite sites"
@@ -287,7 +295,8 @@
       "sourceCity": "From the St. Louis City Board of Election Commissioners' election data.",
       "multipleCity": "The City's data lists more than one district for an office here, so each is shown. Check yours with the",
       "failed": "We could not load your districts right now. Find them with the",
-      "missing": "We could not find the districts for this precinct. Find them with the"
+      "missing": "We could not find the districts for this precinct. Find them with the",
+      "show": "Districts for this precinct"
     },
     "map": {
       "label": "Map of precinct {code} and nearby polling places",
