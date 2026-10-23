@@ -312,7 +312,9 @@ describe('production build', () => {
   // kill switch. #183 replaces this check with those.
   it('ships no service worker and registers none', async () => {
     await expect(stat(path.join(outDir, 'sw.js'))).rejects.toThrow();
-    for (const [file, source] of Object.entries(js)) {
+    const shell = await readFile(path.join(outDir, 'shell.html'), 'utf8');
+    const sources = { ...js, 'index.html': html, 'shell.html': shell };
+    for (const [file, source] of Object.entries(sources)) {
       expect(source, file).not.toContain('serviceWorker');
     }
   });

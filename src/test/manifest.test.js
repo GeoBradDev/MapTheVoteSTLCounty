@@ -66,6 +66,11 @@ function rgbPixels(file) {
   return rows;
 }
 
+const brandFill = readFileSync(path.join(PUBLIC, 'favicon.svg'), 'utf8')
+  .match(/<rect\b[^>]*\bfill="#([0-9a-f]{6})"/i)[1]
+  .match(/../g)
+  .map((hex) => parseInt(hex, 16));
+
 const iconFile = (icon) => path.join(PUBLIC, icon.src.replace(/^\//, ''));
 
 describe('web app manifest', () => {
@@ -128,6 +133,8 @@ describe('web app manifest', () => {
       const rows = rgbPixels(iconFile(icon));
       const size = rows.length;
       const fill = [...rows[0].subarray(0, 3)];
+      // The corner is the mark's own fill, the brand color favicon.svg draws.
+      expect(fill, icon.src).toEqual(brandFill);
       const center = size / 2;
       const outside = [];
       let mark = 0;

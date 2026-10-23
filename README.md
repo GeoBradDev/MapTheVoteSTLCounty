@@ -287,7 +287,7 @@ headers and the cache rules. `src/test/render.test.js` checks it.
   registers no service worker and works offline no better than before; offline support is
   #183, deferred past the November 2026 election because a worker that served old hours,
   polling places or wait times on Election Day would be worse than none. A build test fails if
-  a `sw.js` or a `serviceWorker.register` call appears before #183 replaces it with that
+  a `sw.js`, or any mention of `serviceWorker` in the built HTML or scripts, appears before #183 replaces it with that
   worker's own tests. With no worker, there is nothing to unregister; #183 adds the kill
   switch (a self-destroying `/sw.js`, which `no-cache` lets a revert ship in one deploy)
   before its worker. Before each election, check Add to Home Screen on a real iPhone (the
@@ -470,7 +470,8 @@ cannot read the page's CSS, so `favicon.svg` writes the light `--color-primary` 
 `--color-on-primary` as hex (one icon for both schemes), and `favicon.ico`, `apple-touch-icon.png`
 and the web app manifest's icons in `public/icons/` (#25) are drawn from it. A build test fails on
 red or blue in `favicon.svg` (not in the raster icons); when those tokens change, redraw them all.
-`node scripts/draw-icons.mjs` redraws the manifest's icons from `favicon.svg`. The maskable
+`node scripts/draw-icons.mjs` redraws the manifest's icons from `favicon.svg` (with Playwright's
+Chromium: `npx playwright install chromium` first). The maskable
 icons fill their square with `--color-primary` and keep the mark at 80% of its size, inside the
 central circle a launcher never crops. The manifest's `theme_color` and
 `background_color` are the light `theme-color` meta's value (a manifest has one color, so an
