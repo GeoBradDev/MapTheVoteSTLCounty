@@ -465,6 +465,7 @@ The tokens (#76), each with its role and minimum contrast beside it in `src/inde
   `success` (green, free because the brand is teal). Color is never the only cue: a notice
   also has its kind's icon and edge (`Notice` in `src/components/`), which stay in forced
   colors (the icon then in the system text color), and its text stays `ink`.
+  The home page's election date pill also uses the `info` pair, its ink as text on its fill.
 - The wait time ramp, `wait-1` to `wait-5`, for map markers and their legend only (see Map).
 
 `src/test/contrast.test.js` checks every text and control pair the tokens make against WCAG
