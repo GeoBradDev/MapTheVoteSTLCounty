@@ -7,7 +7,8 @@ import { buttonClass } from './buttonClass.js';
  * in-app link; else a `button` (`type="button"` unless given). `busy` marks it
  * aria-disabled, so it keeps focus and stays in the tab order, and a press
  * while busy does nothing (#18). It guards only its own `onClick`: a submit
- * button's form checks its own busy state.
+ * button's form checks its own busy state. `busy` is for buttons only: a link
+ * drawn as a button is never busy.
  * @param {{ variant?: 'primary' | 'secondary' | 'quiet', size?: 'md' | 'sm',
  *   stack?: boolean, busy?: boolean, href?: string, to?: string,
  *   type?: 'button' | 'submit', className?: string,
@@ -30,14 +31,14 @@ export default function Button({
   const classes = `${buttonClass({ variant, size, stack })} ${className}`.trim();
   if (to !== undefined) {
     return (
-      <Link href={to} className={classes} {...rest}>
+      <Link href={to} className={classes} onClick={onClick} {...rest}>
         {children}
       </Link>
     );
   }
   if (href !== undefined) {
     return (
-      <a href={href} className={classes} {...rest}>
+      <a href={href} className={classes} onClick={onClick} {...rest}>
         {children}
       </a>
     );

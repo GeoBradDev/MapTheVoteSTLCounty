@@ -378,10 +378,11 @@ the two not-found pages, and `src/features/learn/learnA11y.test.jsx` on `/learn`
 topics.
 
 Page rules the checks rely on: every page has one `h1`, set with `tabIndex={-1}` so the app
-can focus it after an in-app link (`App.jsx`); a heading focused that way draws no focus ring
-(it is not a control; `src/index.css`), while everything a voter can operate keeps it, and its own tab title (`usePageTitle` in
+can focus it after an in-app link (`App.jsx`), and its own tab title (`usePageTitle` in
 `src/components/`, or the page's own layout effect: a title put back in a passive effect's
 cleanup lands after the next page's layout effect set its own, leaving the old one in the tab).
+A heading focused from script draws no focus ring, as it is not a control (`src/index.css`, #78);
+everything a voter can operate keeps it.
 A heading inside a section keeps the level below that section's heading.
 
 Before each election, check by hand what automation cannot: VoiceOver on iOS, TalkBack on

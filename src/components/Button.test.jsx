@@ -70,6 +70,17 @@ describe('Button', () => {
     expect(inApp).toHaveClass('bg-primary');
   });
 
+  it('passes onClick to a link drawn as a button', async () => {
+    const onClick = vi.fn((event) => event.preventDefault());
+    render(
+      <Button href="https://example.org" onClick={onClick}>
+        Go
+      </Button>,
+    );
+    await userEvent.click(screen.getByRole('link', { name: 'Go' }));
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
   it('adds layout classes from the caller', () => {
     render(<Button className="mt-2 w-full">Go</Button>);
     expect(screen.getByRole('button')).toHaveClass('mt-2', 'w-full');

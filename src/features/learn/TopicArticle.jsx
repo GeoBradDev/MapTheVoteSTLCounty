@@ -63,12 +63,12 @@ function Inline({ nodes, topic, copy }) {
         const source = topic.sources[index];
         return (
           <sup key={i}>
-            {/* Still inline in the sentence, but with padding a margin takes
-                back, so the tap area is larger than the small number while
-                the line's layout does not change (#26, #78). */}
+            {/* Still inline in the sentence, with vertical padding only: it
+                makes the tap area taller without moving the line, and does
+                not reach over the next marker of a run like [1][2] (#26, #78). */}
             <TextLink
               href={source.url}
-              className="-mx-1.5 px-1.5 py-2"
+              className="py-1"
               aria-label={copy.citationLabel(index + 1, source.label)}
             >
               [{index + 1}]

@@ -54,8 +54,10 @@ Domain skills:
    `linkClass` props of `CountyElectionDayRule`, `CityElectionDayRule` and `OfficialLookups`
    go away. A unit test greps `src/features` and `src/components` for those names.
 6. Learn, topic, Privacy and not found pages use the components.
-7. Topic citation markers `[1]` get a larger hit area without changing the line layout
-   (padding offset by negative margin, still inline so WCAG exempts them).
+7. Topic citation markers `[1]` get a taller hit area without changing the line layout
+   (vertical padding only, still inline so WCAG exempts them). Revised after finder 1:
+   horizontal padding offset by a negative margin made a run like `[1][2]` overlap, so a tap
+   on the end of `[1]` opened source 2.
 8. README gets a short "UI" section: which component to use for what.
 9. All existing unit and e2e tests pass with only selector updates where markup changed.
    First load JavaScript stays under 120 KB gzipped, no web font. Lighthouse budgets pass
@@ -65,7 +67,8 @@ Domain skills:
 ## Files that change
 
 - `src/index.css`: tokens; heading focus rule.
-- New: `src/components/Button.jsx`, `TextLink.jsx`, `Card.jsx`, `Notice.jsx`,
+- `src/i18n/LanguageSwitcher.jsx`: `rounded-control` (same radius).
+- New: `src/components/Button.jsx`, `buttonClass.js`, `TextLink.jsx`, `Card.jsx`, `Notice.jsx`,
   `Disclosure.jsx` (moved), tests `src/components/{Button,TextLink,Card,Notice}.test.jsx`,
   `src/test/sharedStyles.test.js` (no local class strings).
 - Removed: `src/features/lookup/Disclosure.jsx` (moved).
@@ -110,12 +113,18 @@ Domain skills:
   proves the budget.
 - Small visual changes are deliberate and listed in the PR: headings on the scale, 8 px card
   radius with a faint shadow, error messages in a danger Notice box, secondary buttons all
-  with the 2 px border "Use my location" already had, the filename line of the sample ballot
-  button keeps its normal weight.
+  with the 2 px border and surface fill "Use my location" already had (so the summary's
+  directions button gets a surface fill on the raised summary box), the filename line of the
+  sample ballot button keeps its normal weight, the results `h1` is 28 px on every width (it
+  was 24 on phones and 30 from the `sm` breakpoint), and the address suggestions list uses
+  `shadow-popover` instead of Tailwind's `shadow-md`.
+- Form fields (the address box, the share field, the language select) take `rounded-control`,
+  the same 6 px as the `rounded-md` they had: the token only, no new look.
 
 Not done here: palette changes (#76), the external-link icon, the skip link's own classes in
-`App.jsx` (it is visually hidden until focused, with its own positioning), form field
-classes (inputs and the language select are not links or buttons).
+`App.jsx` (it is visually hidden until focused, with its own positioning), a shared form
+field component (inputs and the language select are not links or buttons; they only take the
+radius token).
 
 ## Proof
 
