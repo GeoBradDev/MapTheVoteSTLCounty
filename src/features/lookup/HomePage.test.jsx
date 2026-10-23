@@ -86,7 +86,18 @@ describe('HomePage', () => {
     }
   });
 
-  // #80: the hero is the date, the heading, the intro and the nonpartisan
+  // The app focuses the h1 after an in-app link (App.jsx), so a screen reader
+  // reads on from there: the date must come after the heading, not before it.
+  it('puts the election date after the heading, where reading from the focused h1 reaches it', () => {
+    renderHome();
+    const h1 = screen.getByRole('heading', { level: 1 });
+    const date = screen
+      .getByText(copy.electionDay(election.electionDate, election.timeZone))
+      .closest('time');
+    expect(h1.compareDocumentPosition(date) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  // #80: the hero is the heading, the date, the intro and the nonpartisan
   // line, then the wait times link and the address search.
   it('puts the wait times link between the header and the address box', () => {
     const { container } = renderHome();
