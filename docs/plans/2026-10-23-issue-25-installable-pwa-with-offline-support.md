@@ -1,6 +1,7 @@
 # Plan: Installable PWA with offline support (issue #25)
 
-Risk tier: Medium. No service worker and no app code change, but installability and the
+Risk tier: Medium. No service worker; the only app code change is a small module that links the manifest
+after load (see Risks). Installability and the
 iOS home screen icon cannot be fully proven by unit tests (stateful browser behavior), it
 touches several files (manifest, icons, `index.html`, `render.yaml`, CI, smoke test, docs),
 and it reverses the #79 rule that no page links an icon.
@@ -9,10 +10,12 @@ Domain skills:
 - superpowers:test-driven-development: invoke.
 - frontend-design: not applicable because no UI is drawn; the icons are the #79 mark at new
   sizes.
-- vercel-react-best-practices: not applicable because no React code changes.
+- vercel-react-best-practices: not applicable because no React component changes; `main.jsx`
+  only calls a plain function after rendering.
 - chrome-devtools-mcp:a11y-debugging: not applicable because nothing a voter operates changes.
-- chrome-devtools-mcp:debug-optimize-lcp: not applicable because no script or render path
-  changes; the Lighthouse gate still runs and must stay green.
+- chrome-devtools-mcp:debug-optimize-lcp: not invoked as a skill, but its concern applied: the
+  Lighthouse gate caught a 150 ms LCP cost from the manifest link, fixed in Phase 4 (Risks),
+  and the gate still runs and must stay green.
 
 ## Scope decision
 
@@ -66,7 +69,7 @@ task to do before its worker ships.
 
 - `public/manifest.webmanifest` (new)
 - `public/icons/icon-192.png`, `icon-512.png`, `maskable-192.png`, `maskable-512.png` (new,
-  drawn from `public/favicon.svg`)
+  drawn from `public/favicon.svg` by `scripts/draw-icons.mjs`, new, with Playwright's Chromium)
 - `index.html`: the apple-touch-icon link
 - `src/linkManifest.js`, `src/linkManifest.test.js` (new), `src/main.jsx`: the manifest link
   added after load

@@ -121,7 +121,8 @@ describe('web app manifest', () => {
 
   // A launcher may crop a maskable icon to a circle 80% of its width
   // (https://web.dev/articles/maskable-icon): every pixel outside that circle
-  // is the fill of its corner, so the mark is never cut off.
+  // is the fill of its corner, so the mark is never cut off. Drawn by
+  // scripts/draw-icons.mjs.
   it('keeps the mark of each maskable icon inside the safe zone', () => {
     for (const icon of manifest.icons.filter((i) => i.purpose === 'maskable')) {
       const rows = rgbPixels(iconFile(icon));
@@ -129,15 +130,19 @@ describe('web app manifest', () => {
       const fill = [...rows[0].subarray(0, 3)];
       const center = size / 2;
       const outside = [];
+      let mark = 0;
       rows.forEach((row, y) => {
         for (let x = 0; x < size; x += 1) {
           const distance = Math.hypot(x + 0.5 - center, y + 0.5 - center);
-          if (distance <= size * 0.4) continue;
           const pixel = row.subarray(x * 3, x * 3 + 3);
-          if (pixel.some((v, i) => Math.abs(v - fill[i]) > 2)) outside.push([x, y]);
+          const isMark = pixel.some((v, i) => Math.abs(v - fill[i]) > 2);
+          if (distance > size * 0.4 && isMark) outside.push([x, y]);
+          if (isMark) mark += 1;
         }
       });
       expect(outside.slice(0, 5), icon.src).toEqual([]);
+      // And there is a mark: at least 5% of the icon is not the fill.
+      expect(mark, icon.src).toBeGreaterThan(size * size * 0.05);
     }
   });
 

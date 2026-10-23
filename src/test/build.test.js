@@ -313,7 +313,7 @@ describe('production build', () => {
   it('ships no service worker and registers none', async () => {
     await expect(stat(path.join(outDir, 'sw.js'))).rejects.toThrow();
     for (const [file, source] of Object.entries(js)) {
-      expect(source, file).not.toMatch(/serviceWorker\s*\.\s*register\b/);
+      expect(source, file).not.toContain('serviceWorker');
     }
   });
 

@@ -470,8 +470,9 @@ cannot read the page's CSS, so `favicon.svg` writes the light `--color-primary` 
 `--color-on-primary` as hex (one icon for both schemes), and `favicon.ico`, `apple-touch-icon.png`
 and the web app manifest's icons in `public/icons/` (#25) are drawn from it. A build test fails on
 red or blue in `favicon.svg` (not in the raster icons); when those tokens change, redraw them all.
-The maskable icons fill their square with `--color-primary` and keep the mark at 80% of its size,
-inside the central circle a launcher never crops. The manifest's `theme_color` and
+`node scripts/draw-icons.mjs` redraws the manifest's icons from `favicon.svg`. The maskable
+icons fill their square with `--color-primary` and keep the mark at 80% of its size, inside the
+central circle a launcher never crops. The manifest's `theme_color` and
 `background_color` are the light `theme-color` meta's value (a manifest has one color, so an
 installed app's launch screen is light in dark mode too); `src/test/manifest.test.js` checks the
 colors and the maskable icons' safe zone.
