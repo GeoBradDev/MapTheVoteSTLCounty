@@ -53,10 +53,10 @@ one of these happens:[^sos-voter-id]
 - Or the election office checks that the signature on your ballot envelope matches the
   signature on your voter record.[^sos-voter-id]
 
-You get a stub with steps to find out if your provisional ballot was counted.[^sos-voter-id]
-
 To vote early in the City of St. Louis, bring a photo ID: the City Board says no provisional
 ballots are available at its no excuse absentee sites.[^city-no-excuse][^city-absentee-requirements]
+
+You get a stub with steps to find out if your provisional ballot was counted.[^sos-voter-id]
 See [Provisional ballots](/learn/provisional-ballots).
 
 ## Get a free ID for voting

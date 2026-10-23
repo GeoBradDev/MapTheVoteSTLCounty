@@ -65,8 +65,8 @@ asked by then.[^rsmo-115-914] If your request comes in later, your election boar
 within two business days.[^rsmo-115-914] You can ask to get your ballot by email or
 fax.[^rsmo-115-914]
 
-The City Board says a Federal Post Card Application is good for one year: send a new one each
-January and each time you move.[^city-overseas] City voters can call the City Board's
+The City Board asks you to send a new Federal Post Card Application each January and each
+time you move.[^city-overseas] City voters can call the City Board's
 absentee office at 314-622-3230.[^city-overseas]
 
 ## If you missed the registration deadline

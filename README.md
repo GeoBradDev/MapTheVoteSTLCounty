@@ -544,7 +544,8 @@ each its own short `### City of St. Louis` and `### St. Louis County` section, o
 per board, each citing that board's own page; say "your election board" where a sentence holds
 for both. `src/test/cityContent.test.js` fails when a paragraph or list item that names the City
 cites only County Board sources or none, and when a topic that names the City lists no City
-Board source.
+Board source; `src/test/citySections.test.js` does the same for blocks under a City heading and
+blocks that say "the City".
 
 A new topic also needs its rewrite in `render.yaml` (see [Deploy](#deploy)); the tests fail
 until it has one.

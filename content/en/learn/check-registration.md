@@ -23,6 +23,12 @@ sources:
   - id: city-check-registration
     label: St. Louis City Board of Election Commissioners, Check your Voter Registration
     url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/check-registration.cfm
+  - id: city-register
+    label: St. Louis City Board of Election Commissioners, Register to Vote
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/voter-registration.cfm
+  - id: city-update-registration
+    label: St. Louis City Board of Election Commissioners, Update Voter Registration Name or Address
+    url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/name-change.cfm
   - id: city-inactive
     label: St. Louis City Board of Election Commissioners, Check for Your Name on the Inactive Voter List
     url: https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/inactive-voter-list.cfm
@@ -57,8 +63,14 @@ steps at the polls.[^city-inactive]
 
 ## If you registered by mail
 
-The election office sends you a notice after it gets your form.[^sos-other-questions] If you do not get it within
-seven to ten days, call your election board to make sure your form was received.[^sos-other-questions]
+The Secretary of State says the election office sends you a notice after it gets your
+form.[^sos-other-questions] If you do not get it within seven to ten days, call your election
+board to make sure your form was received.[^sos-other-questions]
+
+The City Board says it does not send a confirmation for a new registration, so City voters
+should check their registration online or call 314-622-4336.[^city-register] For a change of
+name or address, the City Board confirms by mail within seven business
+days.[^city-update-registration]
 
 ## If you are not registered
 

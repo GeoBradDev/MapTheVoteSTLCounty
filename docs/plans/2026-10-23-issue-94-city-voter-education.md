@@ -55,6 +55,8 @@ separate pause.
   County URLs were switched from literals to `referrals.stlCityBoard.url` and
   `election.countySiteUrl`, as the repo's no-hard-coded-URL tests require; no assertion
   changed.
+- `src/test/citySections.test.js` (new, after finder 1): the same rule for blocks under a City
+  heading and blocks that say "the City", which `cityContent.test.js` (frozen) misses.
 - `src/features/learn/LearnPage.test.jsx`: the #93 test that pinned the County-only intro.
 - `README.md`: Learn content's official hosts sentence names the City Board's site; a rule
   for City and County sections and the new test; the empty `/learn` state links both boards
@@ -83,6 +85,11 @@ separate pause.
 - The City's "Vote in Person" page says voters use "their designated location or a Voting
   Center", while the polling places page says any of the listed locations. The topics follow
   the polling places page, as #89's config quote does.
+- The City Board's Register to Vote page says it sends no confirmation for a new
+  registration, while the Secretary of State says the election office sends a notice; the
+  topic gives both, attributed (found by finder 1).
+- The City pages list 314-622-3319 both as an absentee phone and as a fax number; the topics
+  repeat it as the pages do.
 - Topic bodies are separate chunks (#147), so longer topics do not touch the first-load budget.
 
 ## Proof

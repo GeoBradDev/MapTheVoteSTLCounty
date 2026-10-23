@@ -73,7 +73,9 @@ absentee in person.[^rsmo-115-277][^county-absentee-app] You do not need a reaso
 - If you do not have one, state law lets you vote a provisional ballot.[^rsmo-115-427][^sos-how-to-vote]
   But the City Board says no provisional ballots are available at its no excuse absentee
   sites, so City voters must bring a photo ID.[^city-no-excuse][^city-absentee-requirements]
-- The last chance is 5 p.m. on Monday, November 2.[^sos-how-to-vote][^county-absentee-app][^city-board]
+- The last chance is Monday, November 2.[^sos-how-to-vote][^city-board] The County's sites and
+  the City Board's office close at 5 p.m. that day.[^county-absentee-app][^city-absentee-ballot]
+  The City's library sites and St. Joan of Arc close at 4 p.m.[^city-polling-places]
 
 ## Where and when to vote early
 
