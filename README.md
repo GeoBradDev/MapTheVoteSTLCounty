@@ -369,8 +369,9 @@ topics.
 
 Page rules the checks rely on: every page has one `h1`, set with `tabIndex={-1}` so the app
 can focus it after an in-app link (`App.jsx`), and its own tab title (`usePageTitle` in
-`src/components/`, or the page's own effect). A heading inside a section keeps the level below
-that section's heading.
+`src/components/`, or the page's own layout effect: a title put back in a passive effect's
+cleanup lands after the next page's layout effect set its own, leaving the old one in the tab).
+A heading inside a section keeps the level below that section's heading.
 
 Before each election, check by hand what automation cannot: VoiceOver on iOS, TalkBack on
 Android and NVDA on Windows through search, results, share and a topic page; 200% browser
