@@ -77,6 +77,11 @@ County text (#89). The learn topics themselves are County-sourced; City topics a
 
 ## Risks
 
+- `learn.intro` is also the meta description of every topic without a paragraph before its
+  first heading (`topicDescription` in `src/pageHead.js`, 7 topics today). Those topics are
+  County-sourced, so their description saying so, with the City Board pointer, is accurate;
+  kept, and the pre-rendered pages pick it up.
+
 - ErrorBoundary currently gets `city` only; on a County precinct page it must still show the
   County lookup, not both. Mitigation: App passes the County jurisdiction for county codes;
   tested.

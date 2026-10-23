@@ -530,8 +530,8 @@ Typing a suggestion's own label back always matches. So the Galleria (Photon's a
 gives no match instead of a nearby building. Photon also answers "8025 Maryland Ave"
 with 8025 Bonhomme Ave, which the check turns into no match. Neither apartment
 address above is in OpenStreetMap; both give no match. A no match tells the voter
-to add the ZIP, pick a suggestion, try "Use my location" or use the county's official
-lookup.
+to add the ZIP, pick a suggestion, try "Use my location" or use either board's official
+lookup (#93).
 Photon gives St. Louis City, an independent city, as `city: Saint Louis` with no
 `county`; the provider fills `county: St. Louis city` for that case so `locate` asks the
 City's precinct layer first (#88).
