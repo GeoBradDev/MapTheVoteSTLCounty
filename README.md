@@ -489,8 +489,8 @@ polls layer join field, `username` today) and `waitTimes.city.electionDay` (the 
 Election Day polling places), open by `electionDayHours` rather than the early voting hours.
 The polling places card then shows each listed place's count from its own board only, a
 "Shortest line within 5 miles" sort and a link to `/early-voting`, which lists every polling
-place of both boards that day; the precinct map colors its markers by the same bins as the wait
-times map. On 2026-10-22 the County's view kept only early voting reports (docs/data.md, Wait
+place of both boards that day; the precinct map colors its markers by the same rule as the wait
+times map (Jenks classes of the current counts, see Map). On 2026-10-22 the County's view kept only early voting reports (docs/data.md, Wait
 times), so until the County publishes Election Day counts every County place shows no count.
 When it does, point `waitTimes.county.electionDay.layer` (and `where`) at the view it names and
 run `node scripts/check-config.mjs`: a config change, nothing else. Set an `electionDay.enabled`
@@ -795,15 +795,23 @@ ships as a same-origin file, so the Content-Security-Policy needs no `blob:` sou
 ships its own few MapLibre layout rules (`src/features/lookup/precinctMap.css`) instead of
 `maplibre-gl.css`, which embeds `data:` icons and party blue.
 
-The early voting wait times page (`/early-voting`, #104) has its own map, loaded only when
-the voter presses "Show map", on the same terms: the list holds everything on it, and it goes
+The early voting wait times page (`/early-voting`, #104) has its own map, open on arrival
+(#172; "Hide map" collapses it) and, like the precinct map, loaded only once it scrolls into
+view, in a box of fixed height, on the same terms: the list holds everything on it, and it goes
 away on any failure. Its numbered markers match the list. A site with a current line count is
-filled by its bin: teal, tan or brown, from ColorBrewer's BrBG ramp (`--color-wait-*` in
-`src/index.css`, used only for markers and the legend, each marker outlined in ink so it is at
-least 3:1 against the basemap,
-`src/features/waitTimes/mapColors.test.js`), and the legend names the unit and is hidden when
-no site has a count. On Election Day the precinct map's markers and legend follow the same rule
-while the polls are open (#107).
+filled by its class (#172): the fresh counts listed, both boards on one scale, are split by Jenks
+natural breaks (`src/features/waitTimes/jenks.js`, its own chunk, out of the first load),
+recomputed whenever the counts change. The number of classes is one per distinct count when
+there are fewer than 3, else the smallest of 3, 4 or 5 (at most the number of distinct counts)
+whose goodness of variance fit reaches 0.9, else 5. Each class is a range of whole numbers,
+lowest count to highest with no gaps. The colors are five steps of a BrBG-style ramp, teal
+through tan to brown (`--color-wait-*` in `src/index.css`, used only for markers and the legend;
+k classes use a fixed subset, `WAIT_RAMP` in `src/features/waitTimes/waitColors.js`), each
+marker outlined in ink so it is at least 3:1 against the basemap
+(`src/features/waitTimes/mapColors.test.js`). The legend lists each class's range with the unit
+("0 to 3 people") and is hidden when no site has a count; a stale or missing count is never
+colored. On Election Day the precinct map's markers and legend follow the same rule while the
+polls are open (#107), with classes from that board's counts at the polling places loaded.
 
 The basemap is [OpenFreeMap](https://openfreemap.org)'s Positron style: free, with no API key
 or account, and its terms allow embedding it. Its attribution (OpenFreeMap, OpenMapTiles,

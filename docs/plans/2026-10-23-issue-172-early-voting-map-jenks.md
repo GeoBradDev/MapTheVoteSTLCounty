@@ -35,8 +35,12 @@ Domain skills:
 
 ## Files that change
 
-- `src/features/waitTimes/jenks.js` (new): `jenksBreaks(values, k)`, `gvf`, `waitClasses(values)`
-  returning `[{ min, max }]` contiguous integer ranges, and `classOf(value, classes)`.
+- `src/features/waitTimes/jenks.js` (new): `jenksGroups(values, k)`, `gvf`, `waitClasses(values)`
+  returning `[{ min, max }]` contiguous integer ranges, `classOf(value, classes)` and
+  `waitColor(value, classes)` (the marker's color step). Its own chunk.
+- `src/features/waitTimes/useWaitScale.js` (new, revision): PollsCard is in the first load,
+  so it loads jenks.js with `import()` only while Election Day counts are on.
+- `src/test/build.test.js` (revision): jenks is its own chunk, outside the first load.
 - `src/features/waitTimes/jenks.test.js` (new).
 - `src/features/waitTimes/siteOrder.js` / `siteOrder.test.js`: drop `WAIT_BINS` and `waitBin`.
 - `src/features/waitTimes/waitColors.js`: five tokens and classes, `colorsFor(k)` subset.
@@ -49,7 +53,8 @@ Domain skills:
   marker fill from `{ bin, classCount }`.
 - `src/features/waitTimes/WaitTimesPage.jsx` (+ tests): map open by default, classes from
   the shown fresh counts.
-- `src/features/lookup/PollsCard.jsx`, `PrecinctMap.jsx`: classes from the board's counts.
+- `src/features/lookup/PollsCard.jsx`, `PrecinctMap.jsx` (+ test): classes from the board's
+  counts; PrecinctMap takes a `classes` prop for its legend.
 - `src/i18n/en.json`, `waitTimesCopy.js`: legend copy with the unit.
 - `e2e/a11y.e2e.js`: `/early-voting` route draws the map (blank basemap) and checks the legend.
 - `README.md` (Map, Wait times: Election Day), `docs/data.md` if it names the bins.

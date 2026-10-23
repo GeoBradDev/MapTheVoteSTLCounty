@@ -95,14 +95,24 @@ const ROUTES = [
   },
   {
     // The wait times page (#104), at the time the wait fixtures were recorded,
-    // so the County's line counts show, with the City's sites (#91).
+    // so the County's line counts show, with the City's sites (#91), and the
+    // map open on arrival with its Jenks classes legend once it draws (#172).
     path: '/early-voting',
     at: WAITS_RECORDED_AT,
+    basemap: true,
     ready: async (page) => {
       const list = page.getByRole('list', { name: 'Early voting sites' });
       await expect(list).toBeVisible();
       await expect(page.getByText(/people in line, reported/).first()).toBeVisible();
       await expect(list.getByRole('heading', { name: 'Buder Library' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Hide map' })).toBeVisible();
+      const map = page.getByRole('region', { name: 'Map of early voting sites' });
+      await map.scrollIntoViewIfNeeded();
+      const legend = map.getByRole('list', { name: 'People in line' });
+      await expect(legend).toBeVisible();
+      await expect(legend.getByRole('listitem').first()).toHaveText(
+        /^\d+( to \d+)? (person|people)$/,
+      );
     },
   },
   {

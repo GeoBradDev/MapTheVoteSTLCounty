@@ -18,6 +18,7 @@ import { cityScheduleFor, citySchedules } from '../lookup/cityEarlyVoting.js';
 import { titleCase } from '../lookup/nearbyPolls.js';
 import { copy as resultsCopy } from '../lookup/resultsCopy.js';
 import { createWaitTimesStore } from './useWaitTimes.js';
+import { waitClasses, waitColor } from './jenks.js';
 import { createWaitTimesMap } from './waitTimesMapView.js';
 import WaitTimesPage from './WaitTimesPage.jsx';
 import { copy } from './waitTimesCopy.js';
@@ -276,12 +277,10 @@ describe('WaitTimesPage', () => {
   });
 
   it('leaves focus on a list link when the map fails', async () => {
-    const user = userEvent.setup();
     vi.stubGlobal('WebGL2RenderingContext', function WebGL2RenderingContext() {});
     createWaitTimesMap.mockReturnValue({ setSites: vi.fn(), remove: vi.fn() });
     renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
     await screen.findByRole('list', { name: copy.listLabel });
-    await user.click(screen.getByRole('button', { name: copy.map.show }));
     await waitFor(() => expect(createWaitTimesMap).toHaveBeenCalled());
     const link = within(items()[3]).getByRole('link', { name: /Get directions/ });
     link.focus();
@@ -293,14 +292,34 @@ describe('WaitTimesPage', () => {
   });
 
   it('hides the map button when the map fails', async () => {
-    const user = userEvent.setup();
     vi.stubGlobal('WebGL2RenderingContext', function WebGL2RenderingContext() {});
     createWaitTimesMap.mockImplementation(() => {
       throw new Error('no WebGL context');
     });
     renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
     await screen.findByRole('list', { name: copy.listLabel });
+    await waitFor(() => expect(createWaitTimesMap).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByRole('button', { name: copy.map.hide })).toBeNull());
+    expect(screen.queryByRole('region', { name: copy.map.label })).toBeNull();
+    createWaitTimesMap.mockReset();
+  });
+
+  it('moves focus from the map button to the list when the map fails', async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal('WebGL2RenderingContext', function WebGL2RenderingContext() {});
+    let fail;
+    createWaitTimesMap.mockImplementation((_, options) => {
+      fail = options.onFail;
+      return { setSites: vi.fn(), remove: vi.fn() };
+    });
+    renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
+    await screen.findByRole('list', { name: copy.listLabel });
+    await waitFor(() => expect(createWaitTimesMap).toHaveBeenCalled());
+    await user.click(screen.getByRole('button', { name: copy.map.hide }));
     await user.click(screen.getByRole('button', { name: copy.map.show }));
+    await waitFor(() => expect(createWaitTimesMap).toHaveBeenCalledTimes(2));
+    expect(screen.getByRole('button', { name: copy.map.hide })).toHaveFocus();
+    act(() => fail(new Error('no tiles')));
     await waitFor(() => expect(screen.queryByRole('button', { name: copy.map.hide })).toBeNull());
     expect(screen.queryByRole('button', { name: copy.map.show })).toBeNull();
     // Focus moves to the list rather than falling to the page.
@@ -418,7 +437,7 @@ describe('WaitTimesPage', () => {
     ).toHaveAttribute('href', election.waitTimes.city.sourceUrl);
   });
 
-  it('shows the map on request, with a legend only when a site has a count', async () => {
+  it('shows the map on arrival, colored by the Jenks classes of the counts shown (#172)', async () => {
     const user = userEvent.setup();
     vi.stubGlobal('WebGL2RenderingContext', function WebGL2RenderingContext() {});
     createWaitTimesMap.mockReturnValue({ setSites: vi.fn(), remove: vi.fn() });
@@ -426,20 +445,51 @@ describe('WaitTimesPage', () => {
       waitSource: createWaitTimesStore({ county: countyFresh, city: null }),
     });
     await waitFor(() => expect(screen.getAllByText(COUNT_TEXT).length).toBeGreaterThan(0));
-    const show = screen.getByRole('button', { name: copy.map.show });
-    expect(show).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.queryByRole('region', { name: copy.map.label })).toBeNull();
-    await user.click(show);
+    const hide = screen.getByRole('button', { name: copy.map.hide });
+    expect(hide).toHaveAttribute('aria-expanded', 'true');
     await waitFor(() => expect(createWaitTimesMap).toHaveBeenCalled());
     const region = screen.getByRole('region', { name: copy.map.label });
-    expect(within(region).getByRole('list', { name: copy.map.legend })).toBeInTheDocument();
+
+    // The legend lists the classes of the counts the list shows, by the rule
+    // in jenks.js, and a marker is colored only when its site has a count.
+    const counts = items().map((item) => {
+      if (item.textContent.includes('No one in line')) return 0;
+      const m = item.textContent.match(/About (\d+) (?:person|people) in line/);
+      return m ? Number(m[1]) : null;
+    });
+    const classes = waitClasses(counts.filter((c) => c !== null));
+    expect(classes.length).toBeGreaterThanOrEqual(1);
+    expect(classes.length).toBeLessThanOrEqual(5);
+    const legend = within(region).getByRole('list', { name: copy.map.legend });
+    expect(
+      within(legend)
+        .getAllByRole('listitem')
+        .map((li) => li.textContent),
+    ).toEqual([...classes.map((range) => copy.map.bin(range)), copy.map.noCount]);
+    const { sites } = createWaitTimesMap.mock.calls.at(-1)[1];
+    sites.forEach((site, i) => {
+      if (counts[i] === null) expect(site.bin).toBeNull();
+      else expect(site.bin).toBe(waitColor(counts[i], classes));
+    });
+
+    await user.click(hide);
+    expect(screen.queryByRole('region', { name: copy.map.label })).toBeNull();
+    expect(screen.getByRole('button', { name: copy.map.show })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
     unmount();
 
+    // Stale or no counts: no colors and no legend.
+    createWaitTimesMap.mockClear();
     renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: cityStale }) });
     await waitFor(() => expect(statusLine()).toHaveTextContent(copy.status.checked('09:00')));
-    await user.click(screen.getByRole('button', { name: copy.map.show }));
+    await waitFor(() => expect(createWaitTimesMap).toHaveBeenCalled());
     expect(screen.getByRole('region', { name: copy.map.label })).not.toHaveTextContent(
       copy.map.legend,
+    );
+    expect(createWaitTimesMap.mock.calls.at(-1)[1].sites.every((site) => site.bin === null)).toBe(
+      true,
     );
   });
 
@@ -447,6 +497,8 @@ describe('WaitTimesPage', () => {
     renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
     await screen.findByRole('list', { name: copy.listLabel });
     expect(screen.queryByRole('button', { name: copy.map.show })).toBeNull();
+    expect(screen.queryByRole('button', { name: copy.map.hide })).toBeNull();
+    expect(screen.queryByRole('region', { name: copy.map.label })).toBeNull();
   });
 
   it('still links both boards once early voting has ended', () => {

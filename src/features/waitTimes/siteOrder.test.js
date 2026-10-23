@@ -1,5 +1,5 @@
-// The wait times page's sort orders and the map's bins (#104).
-import { NEARBY_MILES, orderSites, waitBin, WAIT_BINS } from './siteOrder.js';
+// The wait times page's sort orders (#104).
+import { NEARBY_MILES, orderSites } from './siteOrder.js';
 
 const row = (key, name, extra = {}) => ({ key, name, loc: key, miles: null, ...extra });
 
@@ -63,26 +63,5 @@ describe('orderSites', () => {
   it('sorts a site with no name after named ones', () => {
     const rows = [row('x', null), row('y', 'Zinnia Hall')];
     expect(keys(orderSites(rows, { ...options('name'), isOpen: () => false }))).toBe('yx');
-  });
-});
-
-describe('waitBin', () => {
-  it.each([
-    [0, 0],
-    [4, 0],
-    [5, 1],
-    [14, 1],
-    [15, 2],
-    [120, 2],
-  ])('puts %i people in bin %i', (value, bin) => {
-    expect(waitBin(value)).toBe(bin);
-  });
-
-  it('has one bin per legend entry, from 0 up with no gaps', () => {
-    expect(WAIT_BINS[0].min).toBe(0);
-    for (let i = 1; i < WAIT_BINS.length; i += 1) {
-      expect(WAIT_BINS[i].min).toBe(WAIT_BINS[i - 1].max + 1);
-    }
-    expect(WAIT_BINS.at(-1).max).toBeNull();
   });
 });

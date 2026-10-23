@@ -164,9 +164,16 @@ describe('PrecinctMap', () => {
     rerender(<PrecinctMap code="CC007" origin={ORIGIN} polls={counted} />);
     expect(screen.queryByText('People in line')).toBeNull();
     rerender(
-      <PrecinctMap code="CC007" origin={ORIGIN} polls={[{ ...POLLS[0], bin: 0 }, counted[1]]} />,
+      <PrecinctMap
+        code="CC007"
+        origin={ORIGIN}
+        polls={[{ ...POLLS[0], bin: 0 }, counted[1]]}
+        classes={[{ min: 3, max: 3 }]}
+      />,
     );
     expect(screen.getByText('People in line')).toBeInTheDocument();
+    // The legend names the class of the counts shown (#172).
+    expect(screen.getByText('3 people')).toBeInTheDocument();
   });
 
   it('starts with the latest polling places when they change while it loads', async () => {

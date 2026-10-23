@@ -1,6 +1,7 @@
-// The map's line count colors (#104): teal, tan and brown from ColorBrewer's
-// BrBG ramp (the owner's choice, after one hue in three shades proved too
-// hard to tell apart). Never red or blue; each bin far enough from the others
+// The maps' line count colors (#104, #172): five steps of a BrBG-style ramp,
+// teal through tan to brown (the owner's choice, after one hue in three shades
+// proved too hard to tell apart), of which a map with k classes uses a fixed
+// subset. Never red or blue; each step far enough from the others
 // and from the plain no-count marker to tell apart; each marker's fill or its
 // outline at least 3:1 against the basemap's land, so a marker is visible to
 // low-vision readers (WCAG 1.4.11); each marker number readable on its fill.
@@ -9,8 +10,14 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { partyColor } from '../../test/colors.js';
 import { oklchToRgb } from '../lookup/mapBounds.js';
-import { NO_COUNT_CLASS, WAIT_BIN_CLASSES, WAIT_BIN_TOKENS } from './waitColors.js';
-import { WAIT_BINS } from './siteOrder.js';
+import { MAX_CLASSES } from './jenks.js';
+import {
+  colorIndex,
+  NO_COUNT_CLASS,
+  WAIT_COLOR_CLASSES,
+  WAIT_RAMP,
+  WAIT_TOKENS,
+} from './waitColors.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../../..');
 // Positron's land background (its `background` layer), the lightest thing a
@@ -40,7 +47,7 @@ beforeAll(async () => {
   );
 });
 
-// The token value behind a class such as `bg-wait-low` or `border-ink`.
+// The token value behind a class such as `bg-wait-1` or `border-ink`.
 const colorOf = (classes, prefix) =>
   tokens[`--color-${classes.match(new RegExp(`\\b${prefix}-([\\w-]+)`))[1]}`];
 
@@ -55,31 +62,46 @@ const oklab = (value) => {
 };
 
 describe('line count colors', () => {
-  it('has one token per bin', () => {
-    expect(WAIT_BIN_TOKENS).toHaveLength(WAIT_BINS.length);
-    for (const token of WAIT_BIN_TOKENS) expect(tokens[`--color-${token}`]).toBeDefined();
+  it('has one token per step, enough for the most classes', () => {
+    expect(WAIT_TOKENS).toHaveLength(MAX_CLASSES);
+    expect(WAIT_COLOR_CLASSES).toHaveLength(MAX_CLASSES);
+    for (const token of WAIT_TOKENS) expect(tokens[`--color-${token}`]).toBeDefined();
   });
 
-  it.each([0, 1, 2])('bin %i is not red or blue and stands out 3:1 on the basemap', (i) => {
-    const value = tokens[`--color-${WAIT_BIN_TOKENS[i]}`];
+  it.each([1, 2, 3, 4, 5])('gives %i classes distinct steps in ramp order', (k) => {
+    const steps = WAIT_RAMP[k];
+    expect(steps).toHaveLength(k);
+    for (let i = 1; i < k; i += 1) expect(steps[i]).toBeGreaterThan(steps[i - 1]);
+    if (k > 1) expect([steps[0], steps.at(-1)]).toEqual([0, MAX_CLASSES - 1]);
+    expect(steps.map((_, i) => colorIndex(i, k))).toEqual(steps);
+  });
+
+  it('has no color without a class', () => {
+    expect(colorIndex(null, 3)).toBeNull();
+    expect(colorIndex(0, 0)).toBeNull();
+  });
+
+  it.each([0, 1, 2, 3, 4])('step %i is not red or blue and stands out 3:1 on the basemap', (i) => {
+    const value = tokens[`--color-${WAIT_TOKENS[i]}`];
     expect(partyColor(value)).toBeNull();
     const fill = contrast(rgbOf(oklchToRgb(value)), BASEMAP_LAND);
     const outline = contrast(
-      rgbOf(oklchToRgb(colorOf(WAIT_BIN_CLASSES[i], 'border'))),
+      rgbOf(oklchToRgb(colorOf(WAIT_COLOR_CLASSES[i], 'border'))),
       BASEMAP_LAND,
     );
     expect(Math.max(fill, outline)).toBeGreaterThanOrEqual(3);
   });
 
-  it.each([0, 1, 2])('bin %i keeps its marker number readable (4.5:1)', (i) => {
-    const fill = rgbOf(oklchToRgb(tokens[`--color-${WAIT_BIN_TOKENS[i]}`]));
-    const ink = rgbOf(oklchToRgb(colorOf(WAIT_BIN_CLASSES[i], 'text')));
+  it.each([0, 1, 2, 3, 4])('step %i keeps its marker number readable (4.5:1)', (i) => {
+    const fill = rgbOf(oklchToRgb(tokens[`--color-${WAIT_TOKENS[i]}`]));
+    const ink = rgbOf(oklchToRgb(colorOf(WAIT_COLOR_CLASSES[i], 'text')));
+    expect(colorOf(WAIT_COLOR_CLASSES[i], 'bg')).toBe(tokens[`--color-${WAIT_TOKENS[i]}`]);
     expect(contrast(fill, ink)).toBeGreaterThanOrEqual(4.5);
   });
 
-  it('keeps the bins and the no-count marker clearly apart', () => {
+  it('keeps every step and the no-count marker clearly apart', () => {
     const fills = [
-      ...WAIT_BIN_TOKENS.map((t) => tokens[`--color-${t}`]),
+      ...WAIT_TOKENS.map((t) => tokens[`--color-${t}`]),
       colorOf(NO_COUNT_CLASS, 'bg'),
     ].map(oklab);
     for (let i = 0; i < fills.length; i += 1) {

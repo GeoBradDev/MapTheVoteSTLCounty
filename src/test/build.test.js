@@ -177,6 +177,19 @@ describe('production build', () => {
     expect(html).not.toMatch(/WaitTimesPage/);
   });
 
+  // The line count classes (#172) are their own chunk, loaded by the wait
+  // times page and by the polling places card on Election Day only.
+  it('keeps the Jenks line count classes out of the first load', () => {
+    const firstLoad = [...html.matchAll(/(?:src|href)="\/assets\/([\w-]+\.js)"/g)].map((m) => m[1]);
+    const chunks = Object.keys(js).filter((f) => /^jenks-[\w-]+\.js$/.test(f));
+    expect(chunks).toHaveLength(1);
+    expect(firstLoad).not.toContain(chunks[0]);
+    const entry = html.match(/src="\/assets\/(index-[\w-]+\.js)"/)[1];
+    expect(js[entry]).toMatch(
+      new RegExp(`import\\(["'\`][^"'\`]*${chunks[0].replace('.', '\\.')}`),
+    );
+  });
+
   // The City data client (#87) is loaded on demand (loadCityClient), never in
   // the first load. Its own error text marks it: names are minified.
   it('keeps the City data client out of the first load', () => {
