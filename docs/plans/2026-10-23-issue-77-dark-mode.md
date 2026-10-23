@@ -84,7 +84,8 @@ Domain skills:
 
 - A token missing a dark value silently stays light: the contrast test reads the merged
   dark map, and a test asserts every light color token has a dark value.
-- `setStyle` drops the precinct source and layers: they are added on every `style.load`.
+- `setStyle` drops the precinct source and layers: they are added on every `style.load` that
+  lacks them (a context restore keeps them, and only their colors are set).
 - Theme switching while the map is still loading: style errors before the first render
   still drop the map, as before.
 - Ink is light in dark mode, so the precinct outline (ink) nears the pale tan step: the
@@ -106,6 +107,8 @@ Domain skills:
 - After review finder 4: a style load that already holds the precinct (MapLibre restoring a
   lost WebGL context) only recolors its layers instead of adding them again, which threw and
   dropped a still-loading map.
+- After review finder 5: the precinct layers are added with their paint again (setting it
+  after `addLayer` made them fade in from the spec's default black for 300 ms on each load).
 
 ## Proof
 
