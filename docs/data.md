@@ -345,8 +345,9 @@ in a different ArcGIS org from the polls layer. Keyless, CORS `*`,
   the layer, filter and join field (`username`), so pointing at a new view is a config change.
   Until then every County polling place shows no count. No Election Day report has been
   recorded, so the Election Day fixtures (`asElectionDay` in `src/data/waitTimes.fixtures.js`)
-  are the early voting recordings moved to Election Day morning and renamed to each site's
-  `username`.
+  are the early voting recordings moved to Election Day morning, the County's renamed to
+  each site's `username`; the browser tests' City rows instead keep each recorded count and
+  report it at 8:50 a.m. on Election Day (`e2e/fixtures.js`).
 - **Not the source:** `polls_2026_11_view.inline` is blank and neither official popup reads
   it. It was the 2024 source; keep it only as a fallback if #107 finds Election Day uses it
   again.
