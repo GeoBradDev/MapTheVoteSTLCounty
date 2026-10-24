@@ -33,6 +33,8 @@ layer or config change.
 - `src/features/lookup/PrecinctPage.city89.test.jsx`: assert the City polling places card links
   `/learn/voter-id`.
 - `src/i18n/en.json`: remove `results.earlyVoting.mailCity`.
+- `docs/data.md`: the City early voting sites entry says the card links the absentee topic
+  (found by the Phase 5 finder; it said the card did not, pending #168).
 
 ## Order of work
 
