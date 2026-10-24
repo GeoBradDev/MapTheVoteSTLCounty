@@ -100,10 +100,12 @@ off; the owner adds the `G-` ID in `src/config/site.js` and applies the GA prope
 ## Risks
 
 - GA's automatic events (`user_engagement`, `session_start`) read the page's own URL unless
-  `page_location` is set globally: handled by `gtag('set', ...)` before each page view and in
-  `config`. Enhanced measurement must be turned off in GA (README checklist).
+  `page_location` is set globally: handled by `gtag('set', ...)` before `config` and before
+  each page view, never in `config` (gtag ranks config over set). Enhanced measurement must be turned off in GA (README checklist).
 - `document.referrer` can hold another site's URL: `page_referrer` is forced empty.
-- StrictMode double effects: deduped with a ref; the case redirect: deduped case-insensitively.
+- StrictMode double effects and the precinct redirect: `pageView` keeps the last path sent in
+  the module and skips the same path again, a `/p/` path compared as the redirect
+  canonicalizes it (letter case, spaces, trailing slash).
 - The e2e cannot run the real `gtag.js` (no live services in CI), so it checks the loader
   request and the `dataLayer` gtag.js would read, not real `collect` hits. The manual check
   before each election covers the real hits.
@@ -116,8 +118,8 @@ off; the owner adds the `G-` ID in `src/config/site.js` and applies the GA prope
 - 7: `src/test/analyticsOnly.test.js`. 8: `src/test/render.test.js`.
 - 9: `PrivacyPage.test.jsx`. 10: `no-storage.test.js` unchanged and green.
 - 12: `src/test/build.test.js`, `npm run test:perf`.
-- e2e: `e2e/analytics.e2e.js`. Live drive: the e2e run plus a browser check of `/privacy`
-  in both states.
+- e2e: `e2e/analytics.e2e.js`. Live drive: the e2e run (a real browser at the production
+  origin); `/privacy` in both states is covered by the two notice tests and the axe e2e run.
 
 ## Revisions
 

@@ -42,7 +42,7 @@ function testMeasurementId() {
     name: 'e2e-analytics-id',
     enforce: 'pre',
     transform(code, id) {
-      if (!id.endsWith(`${path.sep}src${path.sep}config${path.sep}site.js`)) return null;
+      if (!id.replace(/\\/g, '/').endsWith('/src/config/site.js')) return null;
       const next = code.replace(/gaMeasurementId = '[^']*'/, `gaMeasurementId = '${TEST_ID}'`);
       if (!next.includes(TEST_ID)) throw new Error('site.js has no gaMeasurementId to replace');
       return next;
@@ -56,6 +56,8 @@ let testOrigin;
 
 test.beforeAll(async () => {
   if (test.info().project.name !== ONCE) return;
+  // A full build and pre-render, past the default 30 s on a slow runner.
+  test.setTimeout(180_000);
   expect(existsSync(path.join(ROOT, 'content', 'en', 'learn', `${TOPIC}.md`))).toBe(true);
   outDir = await mkdtemp(path.join(os.tmpdir(), 'analytics-e2e-'));
   await build({

@@ -150,7 +150,6 @@ describe('analyticsAllowed', () => {
     }
   });
 
-  // The owner adds the ID later (owner decision on #69).
   // It ships empty (owner decision on #69); the owner sets it later, and
   // this holds either way: an ID that is set must be a GA4 one.
   it('follows the measurement ID in the config, empty or a G- ID', () => {
