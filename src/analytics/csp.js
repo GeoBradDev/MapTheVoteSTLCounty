@@ -27,7 +27,10 @@ export const ANALYTICS_CSP = Object.freeze({
 // domains GA and Tag Manager use, and their subdomains, with or without a
 // trailing dot.
 const GOOGLE_HOST =
-  /^(?:[a-z][a-z0-9+.-]*:\/\/)?(?:[*a-z0-9-]+\.)*(?:google(?:\.com?)?\.[a-z]{2,}|(?:googletagmanager|google-analytics|googleadservices|googlesyndication|doubleclick|gstatic)\.(?:com|net))\.?(?::\d+|:\*)?(?:\/.*)?$/i;
+  /^(?:[a-z][a-z0-9+.-]*:\/\/)?(?:[*a-z0-9-]+\.)*(?:google(?:\.com?)?\.[a-z]{2,}|(?:googletagmanager|google-analytics|googleadservices|googlesyndication|googletagservices|doubleclick|gstatic)\.(?:com|net))\.?(?::\d+|:\*)?(?:\/.*)?$/i;
+
+// A source that allows any host, Google's among them.
+const ANY_HOST = /^(?:\*|https?:)$/i;
 
 function directives(policy) {
   return policy
@@ -61,10 +64,10 @@ export function analyticsCspProblems(policy, measurementId) {
     });
   }
   return parsed.flatMap(([name, values]) => {
-    const google = values.filter((source) => GOOGLE_HOST.test(source));
+    const google = values.filter((source) => GOOGLE_HOST.test(source) || ANY_HOST.test(source));
     return google.length
       ? [
-          `gaMeasurementId is empty (or not a GA4 ID), so render.yaml's Content-Security-Policy must name no ` +
+          `gaMeasurementId is empty (or not a GA4 ID), so render.yaml's Content-Security-Policy must allow no ` +
             `Google host: remove ${google.join(' ')} from ${name}`,
         ]
       : [];

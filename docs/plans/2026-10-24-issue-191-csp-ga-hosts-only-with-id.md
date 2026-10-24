@@ -51,6 +51,10 @@ policy; with the ID set, the first copy of a repeated directive is the one check
 browser enforces); and the Google host pattern also covers country domains, the ad and static
 domains and a trailing dot, for the live smoke check.
 
+Review revision (finder 2): with the ID empty, a source that allows any host (`*`, `https:`,
+`http:`) also counts as allowing Google, and `googletagservices.com` is in the host pattern;
+the stale comment in `src/features/privacy/privacyCopy.js` is corrected.
+
 ## Order of work
 
 1. Red: write `src/analytics/csp.test.js` (helper does not exist) and confirm it fails.

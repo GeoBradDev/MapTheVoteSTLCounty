@@ -115,9 +115,19 @@ describe('analyticsCspProblems', () => {
       'https://ssl.gstatic.com',
       'https://*.doubleclick.net',
       'https://www.googleadservices.com',
+      'https://www.googletagservices.com',
     ]) {
       expect(analyticsCspProblems(`${BASE}; frame-src ${source}`, ''), source).toEqual([
         expect.stringContaining(`remove ${source} from frame-src`),
+      ]);
+    }
+  });
+
+  // A source that allows every host allows Google's too.
+  it('finds a scheme or wildcard source that would allow Google while the ID is empty', () => {
+    for (const source of ['*', 'https:', 'http:', 'HTTPS:']) {
+      expect(analyticsCspProblems(`${BASE}; script-src-elem ${source}`, ''), source).toEqual([
+        expect.stringContaining(`remove ${source} from script-src-elem`),
       ]);
     }
   });
