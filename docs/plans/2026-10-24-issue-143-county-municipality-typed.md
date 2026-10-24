@@ -125,7 +125,12 @@ layer; besides real towns it holds `ST LOUIS COUNTY` (unincorporated), `ST LOUIS
   St. Louis City pool rule to the no-ZIP case and the unit rule to every case, as the code
   does. Docs finder 2: the community also meets "a named town needs its town or ZIP typed".
   Docs finder 3: the community does not count for "a typed ZIP needs a result postcode,
-  unless its own town is typed too"; that town is the mailing city.
+  unless its own town is typed too"; that town is the mailing city. Docs finder 4 (the
+  resumed run, after main was merged in, owner decision 2026-10-24: one more doc round, fix
+  trivial wording and proceed): that sentence now says the mailing city must be a named town
+  other than St. Louis and the typed town may be it or its community, as `matchesTyped` does;
+  only a record's `&` reads as AND (a typed `&` is dropped); and the README's check-geocoder
+  paragraph now lists the #143 community cases.
 - Main's `node scripts/check-geocoder.mjs` cannot resolve City precincts under Node since #147
   (issue #198), so the live check exits 1 on its City lines on main and here; its #143 lines pass.
 - Budget: the first-load JavaScript sat 15 bytes over 120 KB gzipped after finder 1's fix, so

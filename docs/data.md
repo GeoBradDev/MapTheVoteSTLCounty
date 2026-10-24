@@ -569,8 +569,9 @@ City" must be a City result); and a result in a named
 town other than St. Louis needs that town (for a county record, its mailing city or
 community) or its ZIP typed, because the same address
 can exist in two towns ("St. Louis" is the mailing city for much of the county, so it
-confirms nothing). A typed ZIP needs a result postcode, unless the result's own
-town (its mailing city, not its community, and not St. Louis) is typed too, and when matching results are not one address (same
+confirms nothing). A typed ZIP needs a result postcode, unless the result's mailing
+city is a named town other than St. Louis and that town (or, for a county record, its
+community) is typed too, and when matching results are not one address (same
 county, and the same postcode or within about 50 m), the answer is no match rather than
 Photon's first pick.
 Typing a suggestion's own label back always matches. So the Galleria (Photon's answer is 1155, the mall, not 1417)
@@ -643,8 +644,9 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
 - **Typed community:** a typed town also agrees with a record's community,
   `MSAG_COMMUNITY_NAME`, both where a typed town must agree and where a named town needs
   its town or ZIP typed (41 S Central Ave 63105 is mailed Saint Louis, community Clayton,
-  so "41 S Central Ave, Clayton" finds it, #143; `&` reads as AND, so Town and Country
-  matches TOWN & COUNTRY). It is the emergency-services community and can differ from the
+  so "41 S Central Ave, Clayton" finds it, #143; a record's `&` reads as AND, so a typed
+  "Town and Country" matches TOWN & COUNTRY, while a typed `&` is dropped like other
+  punctuation and does not). It is the emergency-services community and can differ from the
   record's `MUNI` code (a `LADUE` community with `MUNI` `CLY`); only the community name is
   compared. A value that starts with ST LOUIS or ends in COUNTY (`ST LOUIS COUNTY`,
   `ST LOUIS CITY`, `JEFFERSON COUNTY`) is not a town. The community can differ between the

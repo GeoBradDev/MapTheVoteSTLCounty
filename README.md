@@ -888,10 +888,13 @@ and other City addresses (5010 Nottingham Ave 63109, addresses near the City lin
 precinct, typed and picked from the suggestions, that those #58 addresses typed with no ZIP are
 no match and picked from the county's suggestion open the county precinct, that addresses outside both (St. Charles, out of state) get no
 precinct, and that addresses the county and the City both list in one ZIP (6135 Horton Pl
-63133, 1 Brookings Dr 63130) are no match. It exits 1 if the chain puts any address in the
+63133, 1 Brookings Dr 63130) are no match, and that a county address typed with its community
+rather than its mailing city (41 S Central Ave, Clayton) opens the same county precinct as the
+address typed with only its ZIP (#143). It exits 1 if the chain puts any address in the
 wrong precinct, a City address does not open a City precinct, an address outside both gets a
 precinct, a pick does not open its label's jurisdiction, a shared address or a twin typed with
-no ZIP is not no match, or one of those gets a precinct with the City geocoder blocked. "No match" is
+no ZIP is not no match, a county address typed with its community does not open its county
+precinct, or one of those gets a precinct with the City geocoder blocked. "No match" is
 allowed: the app then points the voter to "Use my location" and both boards' official
 lookups. Results are recorded in `docs/data.md` under Geocoding.
 
