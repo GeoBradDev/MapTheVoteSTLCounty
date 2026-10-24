@@ -56,9 +56,9 @@ ballot.[^sos-other-questions]
 
 If you voted provisionally because you had no photo ID, your ballot counts if:[^rsmo-115-427]
 
-- You come back to your polling place by 7 p.m. on Election Day with a photo ID from the list.
-  If you voted absentee in person, you go back to the election office by 7 p.m.
-  instead.[^rsmo-115-427]
+- You come back to the same polling place where you voted, by 7 p.m. on Election Day, with a
+  photo ID from the list.[^rsmo-115-427] If you voted absentee in person, you go back to the
+  election office by 7 p.m. instead.[^rsmo-115-427]
 - Or your election board finds that the signature on your envelope matches the one on your voter
   record.[^rsmo-115-427][^sos-voter-id]
 

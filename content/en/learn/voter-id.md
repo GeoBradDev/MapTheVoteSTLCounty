@@ -47,8 +47,8 @@ No other kinds of ID are accepted.[^rsmo-115-427]
 If you are registered, you can still vote a provisional ballot.[^sos-voter-id] It counts if
 one of these happens:[^sos-voter-id]
 
-- You come back to your polling place on Election Day, before 7 p.m., with a photo ID from the
-  list.[^rsmo-115-427] If you voted absentee in person, you go back to the election office by
+- You come back to the same polling place where you voted, by 7 p.m. on Election Day, with a
+  photo ID from the list.[^rsmo-115-427] If you voted absentee in person, you go back to the election office by
   7 p.m. on Election Day instead.[^rsmo-115-427]
 - Or the election office checks that the signature on your ballot envelope matches the
   signature on your voter record.[^sos-voter-id]
