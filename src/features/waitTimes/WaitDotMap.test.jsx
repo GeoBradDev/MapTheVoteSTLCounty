@@ -400,6 +400,46 @@ describe('WaitDotMap with every site closed', () => {
     }
   });
 
+  // A slow answer (#187): the loop skips a tick while it is out, and the next
+  // request on the usual interval is not a resume, so nothing blanks.
+  it('keeps the status line through a refresh after a slow answer', async () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+    // 10:00 a.m. Central on 2026-10-22.
+    const t0 = Date.UTC(2026, 9, 22, 15, 0);
+    vi.setSystemTime(t0);
+    let resolveSlow;
+    let answer = () => new Promise((r) => (resolveSlow = r));
+    const county = vi.fn(() => answer());
+    const noCitySites = async () => ({ ...(await loadCity()), layer: { features: [] } });
+    // A tick on the loop's own schedule, made by showing the page again
+    // within the interval (no timer runs here).
+    const tickAt = async (at) => {
+      vi.setSystemTime(at);
+      act(() => setVisibility('hidden'));
+      await act(async () => setVisibility('visible'));
+    };
+    const refresh = election.waitTimes.refreshSeconds * 1000;
+    try {
+      const { container } = renderMap({ waits: { county, city: none }, city: noCitySites });
+      await waitFor(() => expect(dots(container).length).toBeGreaterThan(0));
+      expect(county).toHaveBeenCalledTimes(1);
+      // A tick while the slow request is out asks nothing.
+      await tickAt(t0 + refresh * 1.2);
+      expect(county).toHaveBeenCalledTimes(1);
+      await act(async () => resolveSlow([countyEntry(3, Date.UTC(2026, 9, 22, 21, 30))]));
+      expect(await screen.findByText(copy.status.checked('10:00'))).toBeInTheDocument();
+      // The next tick, one interval on, asks again; its answer is not in yet.
+      answer = () => new Promise(() => {});
+      await tickAt(t0 + refresh * 2.2);
+      expect(county).toHaveBeenCalledTimes(2);
+      // The City's answer to this tick is in; the County's is not.
+      expect(screen.getByText(/^Line counts checked at /)).toBeInTheDocument();
+    } finally {
+      setVisibility('visible');
+      delete document.visibilityState;
+    }
+  });
+
   it('on the evening of November 2, says Election Day is tomorrow', async () => {
     vi.setSystemTime(EVE_AT);
     const { onClose } = renderMap({ waits: { county: none, city: none } });
