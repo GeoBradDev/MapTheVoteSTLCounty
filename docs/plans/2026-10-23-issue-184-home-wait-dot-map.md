@@ -198,4 +198,9 @@ centering on the voter (privacy).
   test keeps the outline and the model out of the first load too; an e2e
   aborts the map's chunk; once shown, the map's text stays while a refresh is
   asked.
+- Review round 4: while the first counts load after a site opens with the
+  page open, the summary and status line stay empty instead of saying no site
+  has a count, and a check older than 5 minutes is not shown as "checked at".
+  `src/features/lookup/useNow.js`'s comment now names the home map among its
+  readers.
 

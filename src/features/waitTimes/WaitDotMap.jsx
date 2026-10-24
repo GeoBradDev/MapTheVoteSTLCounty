@@ -63,6 +63,9 @@ const LNG_TICKS = [-90.6, -90.4, -90.2].map((lng) => ({ lng, x: project(lng, 38.
 
 const KEYS = ['county', 'city'];
 
+/** How old a check may be and still be shown as when the counts were checked. */
+const RECENT_CHECK_MS = 5 * 60_000;
+
 function Swatch({ step, r }) {
   const size = 2 * 9 + 2;
   return (
@@ -188,16 +191,21 @@ function MapDrawing({ dots }) {
 
 // The line under the heading: when the counts were checked, or when sites
 // open again.
-function statusLine(model, waits, electionDay, now) {
+function statusLine(model, waits, electionDay, now, settled) {
   if (!model) return '';
   if (model.anyOpen) {
+    // Nothing until the first answer: no time from before, no "no counts".
+    if (!settled) return '';
     const asked = KEYS.filter((key) => waits[key].status !== 'off');
     const failed = asked.filter((key) => waits[key].status === 'unavailable');
     if (failed.length && failed.length === asked.length) return text.unavailable;
     // One board's counts failing is said, so its sites' rings are not read
     // as closed.
     if (failed.length) return text.boardUnavailable(jurisdictions[failed[0]].name);
-    const times = KEYS.map((key) => waits[key].checkedAt).filter((at) => at !== null);
+    // A check from an earlier session (the evening before) is not "now".
+    const times = KEYS.map((key) => waits[key].checkedAt).filter(
+      (at) => at !== null && now - at < RECENT_CHECK_MS,
+    );
     return times.length ? copy.status.checked(clockTime(Math.max(...times))) : '';
   }
   const { open, close } = election.electionDayHours;
@@ -260,10 +268,10 @@ export default function WaitDotMap({
 
   const heading = electionDay ? text.headingElectionDay : text.heading;
   const mapLabel = electionDay ? text.mapLinkElectionDay : text.mapLink;
-  const status = statusLine(model, waits, electionDay, now);
-  // Once shown, the legend, summary and rule stay while a refresh is asked
-  // (when a site opens with the page open, the first answer can take a few
-  // seconds): the dots and lines update when it answers.
+  const status = statusLine(model, waits, electionDay, now, settled);
+  // Once shown, the legend and rule stay while the counts are first asked
+  // (when a site opens with the page open, the answer can take a few
+  // seconds); the summary and the status line wait for the answer.
   const [shownOnce, setShownOnce] = useState(false);
   if (model && settled && !shownOnce) setShownOnce(true);
   const ready = Boolean(model && (settled || shownOnce));
@@ -296,6 +304,7 @@ export default function WaitDotMap({
         <>
           <Legend legend={model.legend} />
           {model.anyOpen &&
+            settled &&
             (model.shortest.length ? (
               <div className="mt-3 text-sm">
                 <p id="home-map-shortest" className="font-semibold">

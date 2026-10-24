@@ -1,7 +1,7 @@
 // The home page's line count dot map (#184), with the County and City
 // fixtures #102 recorded on 2026-10-22 and the real selection and loop.
 import { StrictMode } from 'react';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import sites from '../../../docs/raw/fixtures/absentee-sites.json';
@@ -204,6 +204,28 @@ describe('WaitDotMap with every site closed', () => {
     ).toBeInTheDocument();
     expect(county).not.toHaveBeenCalled();
     expect(city).not.toHaveBeenCalled();
+  });
+
+  it('says nothing false while its first counts load after a site opens', async () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+    // 5:59 a.m. Central on Election Day, then the polls open at 6 with the
+    // page left open; the line counts have not answered yet.
+    vi.setSystemTime(Date.UTC(2026, 10, 3, 11, 59));
+    const pending = () => new Promise(() => {});
+    renderMap({ waits: { county: pending, city: pending } });
+    expect(
+      await screen.findByText(homeCopy.waitMap.pollsOpen(election.electionDayHours.open)),
+    ).toBeInTheDocument();
+    await act(async () => {
+      vi.setSystemTime(Date.UTC(2026, 10, 3, 12, 0, 30));
+      vi.advanceTimersByTime(60_000);
+    });
+    expect(
+      screen.queryByText(homeCopy.waitMap.pollsOpen(election.electionDayHours.open)),
+    ).toBeNull();
+    expect(screen.queryByText(homeCopy.waitMap.noCounts)).toBeNull();
+    expect(screen.queryByRole('list', { name: homeCopy.waitMap.shortest })).toBeNull();
+    expect(screen.getByText(copy.electionDay.city)).toBeInTheDocument();
   });
 
   it('on the evening of November 2, says Election Day is tomorrow', async () => {
