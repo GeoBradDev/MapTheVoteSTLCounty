@@ -109,6 +109,35 @@ export const OUTSIDE_POINT = { name: 'Gateway Arch, St. Louis City', lat: 38.624
 /** A sane number of City precincts (#87). 207 for November 2026. */
 export const CITY_PRECINCT_RANGE = { min: 150, max: 300 };
 
+/**
+ * The City districts layer's offices the districts card leaves out on purpose
+ * (#90, docs/data.md): citywide and statewide offices, the same for every City
+ * voter, and the two placeholder rows. Read from the layer on 2026-10-24. Any
+ * other office no row of `districts.rows` names is a WARN (#160): it may be a
+ * row's office renamed on some polygons only, which the card would drop there.
+ * A party committee post is never listed here.
+ */
+export const CITY_OFFICES_LEFT_OUT = Object.freeze([
+  'Attorney General',
+  'Circuit Attorney',
+  'Collector of Revenue',
+  'Comptroller',
+  'Governor',
+  'License Collector',
+  'Lieutenant Governor',
+  'Mayor',
+  'President of the Board of Aldermen',
+  'President of the United States',
+  'Recorder of Deeds',
+  'Secretary of State',
+  'Sheriff',
+  'State Auditor',
+  'State Treasurer',
+  'Treasurer',
+  'United States Senate',
+  'Vice-President of the United States',
+]);
+
 /** City Hall, 1200 Market St: in a City precinct, a ward and the City outline. */
 export const CITY_KNOWN_POINT = {
   name: 'City Hall, St. Louis City',
@@ -254,6 +283,8 @@ export async function runHealthCheck(
     // The City districts card's rows and the offices each reads
     // (src/config/cityResults.js, #90, #160).
     cityDistricts = cityResults.districts,
+    // The offices the districts card leaves out (#160).
+    leftOut = CITY_OFFICES_LEFT_OUT,
   } = {},
 ) {
   const results = [];
@@ -1106,8 +1137,9 @@ export async function runHealthCheck(
 
     // The districts card matches office names exactly (#90), so a renamed
     // office would drop its row with no error: every row must find at least
-    // one of its offices among the layer's values (#160). Reads the office
-    // names only, never the officeholder fields.
+    // one of its offices among the layer's values, and an office no row names
+    // and the card does not leave out is a WARN (#160). Reads the office names
+    // only, never the officeholder fields.
     if (ok.districts) {
       await check('city district offices', async () => {
         const field = city.districtLayerFields.office;
@@ -1121,7 +1153,8 @@ export async function runHealthCheck(
         const have = new Set(
           rows.map((r) => normalize(r)[field]).filter((v) => typeof v === 'string'),
         );
-        const loose = (v) => v.replace(/\s+/g, ' ').trim().toLowerCase();
+        if (have.size === 0) throw new CheckError('the districts layer returned no offices');
+        const loose = (v) => v.replace(/\s+/g, '').toLowerCase();
         const bad = [];
         for (const { key, offices } of cityDistricts.rows) {
           if (offices.some((o) => have.has(o))) continue;
@@ -1139,7 +1172,19 @@ export async function runHealthCheck(
               'check districts.rows in src/config/cityResults.js.',
           );
         }
-        return `${cityDistricts.rows.length} districts card rows (districts.rows) each match an office on the layer`;
+        const known = new Set([...cityDistricts.rows.flatMap((r) => r.offices), ...leftOut]);
+        const unknown = [...have].filter((v) => !known.has(v)).sort();
+        const detail = `${cityDistricts.rows.length} districts card rows (districts.rows) each match an office on the layer`;
+        if (unknown.length) {
+          return {
+            warn:
+              `${detail}, but the layer also has ${unknown.map((v) => JSON.stringify(v)).join(', ')}, ` +
+              "which no row names. If it is a row's office renamed on some districts, the card " +
+              'drops that row there: add it to districts.rows in src/config/cityResults.js, or to ' +
+              'CITY_OFFICES_LEFT_OUT in scripts/check-config.mjs if the card leaves it out.',
+          };
+        }
+        return detail;
       });
     } else {
       record('city district offices', 'skip', 'the city layer districts check failed');

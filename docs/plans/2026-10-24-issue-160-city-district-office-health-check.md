@@ -28,6 +28,11 @@ is deferred; #160 stays open for it, and the PR says `Refs #160`.
 4. It is a SKIP (so the run exits 1) when the `city layer districts` check failed.
 5. A response with no features list fails, like the other City queries.
 6. The README's Data health check paragraph says the check covers the district offices.
+7. (Added after review.) The check is a WARN, never a failure, when the layer has an office
+   that no row names and that is not on `CITY_OFFICES_LEFT_OUT` (the citywide and statewide
+   offices and the two placeholders, at the top of the script), so an office renamed on only
+   some districts is seen. An answer with no offices at all fails with its own message. The
+   case or spacing hint ignores whitespace entirely.
 
 ## Files that change
 
@@ -45,6 +50,9 @@ is deferred; #160 stays open for it, and the PR says `Refs #160`.
    fails; skip when the districts layer check fails.
 2. Implement the check.
 3. README line.
+
+Revision after the second review: criterion 7 and its tests, and `CITY_OFFICES_LEFT_OUT` in
+`scripts/check-config.mjs`; the README sentence describes both outcomes.
 
 ## Risks
 

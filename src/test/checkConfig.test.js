@@ -27,6 +27,7 @@ import election from '../config/election.js';
 import {
   BALLOT_SAMPLE_SIZE,
   CITY_KNOWN_POINT,
+  CITY_OFFICES_LEFT_OUT,
   CITY_PRECINCT_RANGE,
   KNOWN_POINTS,
   OUTSIDE_POINT,
@@ -1788,6 +1789,39 @@ describe('the City layers (#87)', () => {
       status: 'fail',
       detail: 'the response has no features list',
     });
+  });
+
+  it('warns on an office no row names and the card does not leave out (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices.push('Alderperson', ...CITY_OFFICES_LEFT_OUT);
+    const { status, detail } = (await run(world))['city district offices'];
+    expect(status).toBe('warn');
+    expect(detail).toContain('but the layer also has "Alderperson", which no row names.');
+    expect(detail).not.toContain('Mayor');
+  });
+
+  it('fails when the districts layer returns no offices (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices = [];
+    expect((await run(world))['city district offices']).toMatchObject({
+      status: 'fail',
+      detail: 'the districts layer returned no offices',
+    });
+  });
+
+  it('checks the rows it is given, with a hint for a value that differs in spacing (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices.push('StateSenate');
+    const cityDistricts = { rows: [{ key: 'senate', offices: ['State  Senator'] }] };
+    const { status, detail } = (await run(world, election, { cityDistricts }))[
+      'city district offices'
+    ];
+    expect(status).toBe('fail');
+    expect(detail).toMatch(/^senate: no office "State {2}Senator" on the layer\. /);
+    const spaced = { rows: [{ key: 'senate', offices: ['State Sen ate'] }] };
+    expect(
+      (await run(world, election, { cityDistricts: spaced }))['city district offices'].detail,
+    ).toContain('(it has "State Senate", "StateSenate")');
   });
 
   it('trims the office names as the card does (#160)', async () => {
