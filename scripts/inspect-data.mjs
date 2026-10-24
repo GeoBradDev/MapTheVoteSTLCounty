@@ -3,10 +3,17 @@
 // Board's layers (#95) come from src/config/election.js and are sampled only
 // for the fields the app reads, never `*`: the districts layer also holds
 // officeholder names and contacts, the voting locations layer staff contacts.
-// Usage: node scripts/inspect-data.mjs
+//
+// It first lists every service in the County and City service directories
+// (#101) and prints the ones docs/data.md does not mention (Service inventory).
+// It reads only the directory listings: never a listed service's data or
+// metadata, as some are the Board's forms and hold voters' personal data.
+// Usage: node scripts/inspect-data.mjs [--inventory]
+//   --inventory  list the services the doc does not mention, then stop
+//                (nothing is written to docs/raw/).
 
 import { realpathSync } from 'node:fs';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import election from '../src/config/election.js';
@@ -29,6 +36,94 @@ const SERVICES = [
   'lookup_view_abs',
   'St_Louis_County_Boundary',
 ];
+
+const DATA_DOC = path.resolve('docs/data.md');
+
+/** The service directories the inventory lists (docs/data.md, Service inventory). */
+export const INVENTORY_ROOTS = [
+  { label: 'St. Louis County Board of Elections org', url: election.serviceRoot },
+  { label: 'St. Louis City org', url: election.jurisdictions.city.serviceRoot },
+  {
+    label: 'City Board folder on the City GIS server',
+    url: 'https://maps6.stlouis-mo.gov/arcgis/rest/services/BOE',
+  },
+];
+
+// A services block line needs this many characters besides `*`, so a stray
+// `*` cannot mark every service as documented.
+const MIN_PATTERN_LITERALS = 4;
+
+/** The service name a code span names, or null: a bare name, a layer path or a service URL. */
+function serviceFromSpan(span) {
+  if (/\s|\*/.test(span)) return null;
+  const name = span
+    .replace(/^.*\/rest\/services\//i, '')
+    .replace(/[?#].*$/, '')
+    .replace(/\/(FeatureServer|MapServer|GeocodeServer|SceneServer|ImageServer)(\/.*)?$/, '');
+  return /^[\w.()-]+(\/[\w.()-]+)?$/.test(name) ? name : null;
+}
+
+function globToRegExp(pattern) {
+  const body = pattern.split('*').map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  return new RegExp(`^${body.join('.*')}$`);
+}
+
+/**
+ * What docs/data.md documents: the exact names in its code spans, and each line
+ * of its ```services blocks (one name per line; `*` matches any characters).
+ * Globs count only inside a services block, never in a code span.
+ */
+export function documentedServices(markdown) {
+  const names = new Set();
+  const patterns = [];
+  const rest = markdown.replace(/^```services[^\n]*\n([\s\S]*?)^```/gm, (_, block) => {
+    for (const raw of block.split('\n')) {
+      const line = raw.trim();
+      if (!line) continue;
+      if (!line.includes('*')) names.add(line);
+      else if (line.replace(/\*/g, '').length >= MIN_PATTERN_LITERALS) {
+        patterns.push(globToRegExp(line));
+      }
+    }
+    return '';
+  });
+  // Other fenced blocks are code, not mentions.
+  const prose = rest.replace(/^```[^\n]*\n[\s\S]*?^```/gm, '');
+  for (const [, span] of prose.matchAll(/`([^`\n]+)`/g)) {
+    const name = serviceFromSpan(span);
+    if (name) names.add(name);
+  }
+  return { names, patterns };
+}
+
+/** The names `documentedServices` does not cover, each once, in order. */
+export function undocumentedServices(serviceNames, documented) {
+  const seen = new Set();
+  return serviceNames.filter((name) => {
+    if (seen.has(name)) return false;
+    seen.add(name);
+    return !documented.names.has(name) && !documented.patterns.some((re) => re.test(name));
+  });
+}
+
+async function inventory() {
+  const documented = documentedServices(await readFile(DATA_DOC, 'utf8'));
+  for (const { label, url } of INVENTORY_ROOTS) {
+    try {
+      const { services = [] } = await getJson(`${url}?f=json`);
+      const missing = undocumentedServices(
+        services.map((s) => s.name),
+        documented,
+      );
+      console.log(
+        `${missing.length ? 'new ' : 'ok  '} ${label}: ${services.length} services, ${missing.length} not in docs/data.md`,
+      );
+      for (const name of missing) console.log(`       ${name}`);
+    } catch (err) {
+      console.log(`fail ${label}: ${err.message}`);
+    }
+  }
+}
 
 async function getJson(url) {
   const res = await fetch(url);
@@ -114,6 +209,9 @@ async function inspectService(service) {
 }
 
 async function main() {
+  await inventory();
+  if (process.argv.includes('--inventory')) return;
+
   await mkdir(OUT_DIR, { recursive: true });
 
   for (const service of SERVICES) {
