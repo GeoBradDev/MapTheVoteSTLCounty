@@ -1841,6 +1841,32 @@ describe('the City layers (#87)', () => {
     ).toContain('(it has "State Senate", "StateSenate")');
   });
 
+  it('warns when some districts have no office, since the card drops their row (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices.push('', '  ', null);
+    const { status, detail } = (await run(world))['city district offices'];
+    expect(status).toBe('warn');
+    expect(detail).toContain('but 3 districts on the layer have no office.');
+  });
+
+  it('fails a districts answer cut off at the layer limit (#160)', async () => {
+    const world = healthyWorld();
+    const fetch = stubFetch(world);
+    const results = await run(world, election, {
+      fetch: async (url, init) => {
+        const res = await fetch(url, init);
+        if (new URL(url).searchParams.get('outFields') !== cityConfig.districtLayerFields.office) {
+          return res;
+        }
+        return json({ ...(await res.json()), exceededTransferLimit: true });
+      },
+    });
+    expect(results['city district offices']).toMatchObject({
+      status: 'fail',
+      detail: 'too many districts for one request: page the query',
+    });
+  });
+
   it('trims the office names as the card does (#160)', async () => {
     const world = healthyWorld();
     world.city.offices = world.city.offices.map((o) =>
