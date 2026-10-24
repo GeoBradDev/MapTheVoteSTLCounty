@@ -803,7 +803,10 @@ precincts are a sane count and every ID reads as a City code, that the Election 
 voting filters find sites with an id, name and address (a WARN when the Election Day count is
 not the config's `pollsListed`, the count the City Board's page gives), and that City Hall lands
 in a City precinct, a ward and the City outline while a County point lands in neither a City
-precinct nor the outline, and that the City's sample ballot (`sampleBallot` in
+precinct nor the outline, that every districts card row (`districts.rows` in
+`src/config/cityResults.js`, #90) finds at least one of its office names on the districts layer,
+matched exactly as the card matches them, so a renamed office fails instead of silently dropping
+its row (#160), and that the City's sample ballot (`sampleBallot` in
 `src/config/cityResults.js`, #92) answers HEAD with a PDF. The City publishes one ballot for
 all precincts, so the County's rule that a ballot names its precinct does not apply to it. A
 site filter that finds no site fails. For each

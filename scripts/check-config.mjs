@@ -251,6 +251,9 @@ export async function runHealthCheck(
     cityEarlyVoting = cityResults.earlyVoting,
     // The City's one sample ballot for all precincts (src/config/cityResults.js, #92).
     citySampleBallot = cityResults.sampleBallot,
+    // The City districts card's rows and the offices each reads
+    // (src/config/cityResults.js, #90, #160).
+    cityDistricts = cityResults.districts,
   } = {},
 ) {
   const results = [];
@@ -1099,6 +1102,44 @@ export async function runHealthCheck(
     } else {
       const failed = ['precincts', 'districts', 'boundary'].find((k) => !ok[k]);
       record('city known points', 'skip', `the city layer ${failed} check failed`);
+    }
+
+    // The districts card matches office names exactly (#90), so a renamed
+    // office would drop its row with no error: every row must find at least
+    // one of its offices among the layer's values (#160). Reads the office
+    // names only, never the officeholder fields.
+    if (ok.districts) {
+      await check('city district offices', async () => {
+        const field = city.districtLayerFields.office;
+        const rows = await cityQuery('districts', {
+          where: '1=1',
+          outFields: field,
+          returnDistinctValues: 'true',
+          returnGeometry: 'false',
+        });
+        const have = new Set(rows.map((r) => r[field]).filter((v) => typeof v === 'string'));
+        const loose = (v) => v.replace(/\s+/g, ' ').trim().toLowerCase();
+        const bad = [];
+        for (const { key, offices } of cityDistricts.rows) {
+          if (offices.some((o) => have.has(o))) continue;
+          const wanted = new Set(offices.map(loose));
+          const near = [...have].filter((v) => wanted.has(loose(v)));
+          const names = offices.map((o) => JSON.stringify(o)).join(' or ');
+          const hint = near.length
+            ? ` (it has ${near.map((v) => JSON.stringify(v)).join(', ')})`
+            : '';
+          bad.push(`${key}: no office ${names} on the layer${hint}`);
+        }
+        if (bad.length) {
+          throw new CheckError(
+            `${bad.join('; ')}. The card would drop these rows: ` +
+              'check districts.rows in src/config/cityResults.js.',
+          );
+        }
+        return `${cityDistricts.rows.length} districts card rows (districts.rows) each match an office on the layer`;
+      });
+    } else {
+      record('city district offices', 'skip', 'the city layer districts check failed');
     }
 
     // 10. The City's sample ballot (#92) answers HEAD with a PDF. The City

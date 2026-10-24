@@ -213,6 +213,9 @@ function healthyCity() {
           ]
         : [],
     inBoundary: (lng, lat) => lng === CITY_KNOWN_POINT.lng && lat === CITY_KNOWN_POINT.lat,
+    // The districts layer's distinct office names (#160): every row's first
+    // office, the other ward title and a citywide office the card leaves out.
+    offices: [...cityResults.districts.rows.map((row) => row.offices[0]), 'Alderwoman', 'Mayor'],
   };
 }
 
@@ -252,6 +255,10 @@ function cityAnswer(world, url) {
     if (where === cityConfig.pollsWhere) return features(world.city.polls);
     if (where === cityConfig.earlyVotingWhere) return features(world.city.earlyVoting);
     return json({ error: { code: 400, message: 'Unable to complete operation.' } });
+  }
+  if (params.get('returnDistinctValues') === 'true') {
+    const field = cityConfig.districtLayerFields.office;
+    return features(world.city.offices.map((office) => ({ [field]: office })));
   }
   if (where === cityConfig.boundaryWhere) {
     return features(world.city.inBoundary(lng, lat) ? [{ OBJECTID: 1 }] : []);
@@ -395,6 +402,7 @@ describe('runHealthCheck', () => {
       'city voting locations',
       'city early voting sites',
       'city known points',
+      'city district offices',
       'city sample ballot',
     ]);
     expect(results['city precincts'].detail).toBe('207 precincts, wards 1 to 14');
@@ -1712,6 +1720,71 @@ describe('the City layers (#87)', () => {
         `${KNOWN_POINTS[0].name}: in City precinct W 1 P 1; ` +
         `${KNOWN_POINTS[0].name}: inside the City outline`,
     );
+  });
+
+  it('passes when every districts card row finds an office on the layer (#160)', async () => {
+    const world = healthyWorld();
+    const results = await run(world);
+    const rows = cityResults.districts.rows.length;
+    expect(results['city district offices']).toEqual({
+      name: 'city district offices',
+      status: 'pass',
+      detail: `${rows} districts card rows (districts.rows) each match an office on the layer`,
+    });
+    const query = world.cityQueries.find((q) => q.get('returnDistinctValues') === 'true');
+    expect(query.get('outFields')).toBe(cityConfig.districtLayerFields.office);
+    expect(query.get('returnGeometry')).toBe('false');
+  });
+
+  it('passes a row that finds only one of its offices, like Alderwoman alone (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices = world.city.offices.filter((o) => o !== 'Alderman');
+    expect((await run(world))['city district offices'].status).toBe('pass');
+  });
+
+  it('fails when the City renames an office, naming the row and any near match (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices = world.city.offices
+      .filter((o) => o !== 'State Senate' && o !== 'Board of Education of the City of St. Louis')
+      .concat('State senate', 'School Board');
+    const { status, detail } = (await run(world))['city district offices'];
+    expect(status).toBe('fail');
+    expect(detail).toBe(
+      'stateSenate: no office "State Senate" on the layer (it has "State senate"); ' +
+        'school: no office "Board of Education of the City of St. Louis" on the layer. ' +
+        'The card would drop these rows: check districts.rows in src/config/cityResults.js.',
+    );
+  });
+
+  it('names every office a row looks for when none is on the layer (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices = world.city.offices.filter((o) => !/^Alder/.test(o));
+    const { detail } = (await run(world))['city district offices'];
+    expect(detail).toMatch(/^cityWard: no office "Alderman" or "Alderwoman" on the layer\. /);
+  });
+
+  it('skips the district offices when the districts layer check failed (#160)', async () => {
+    const world = healthyWorld();
+    const info = world.city.layers[cityConfig.layers.districts];
+    info.fields = info.fields.filter((f) => f.name !== cityConfig.districtLayerFields.office);
+    const results = await run(world);
+    expect(results['city layer districts'].status).toBe('fail');
+    expect(results['city district offices']).toMatchObject({
+      status: 'skip',
+      detail: 'the city layer districts check failed',
+    });
+  });
+
+  it('fails the district offices on an answer with no features list (#160)', async () => {
+    const world = healthyWorld();
+    const fetch = stubFetch(world);
+    const results = await run(world, election, {
+      fetch: (url, init) =>
+        new URL(url).searchParams.get('returnDistinctValues') === 'true'
+          ? Promise.resolve(json({ error: { code: 400, message: 'Invalid query' } }))
+          : fetch(url, init),
+    });
+    expect(results['city district offices'].status).toBe('fail');
   });
 
   it('asks the City layers only for the fields the app reads, never *', async () => {

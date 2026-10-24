@@ -105,6 +105,8 @@ export default deepFreeze({
   // in congressional District 1 under the 2022 map (RSMo 128.461), which stays
   // in effect for November 3, 2026, and under the 2025 HB 1 text (RSMo
   // 128.471); docs/data.md has the check. Read from the layer on 2026-10-22.
+  // scripts/check-config.mjs fails when a row finds none of its offices on the
+  // layer (#160).
   districts: {
     rows: [
       { key: 'congressional', offices: ['United States House of Representatives'] },
