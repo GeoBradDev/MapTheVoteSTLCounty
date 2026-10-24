@@ -60,7 +60,7 @@ name (#93) have landed. The favicon (#79) and the manifest (#25) exist.
   `headTags(shellHead())`).
 - `src/prerender/html.js`: strip every managed tag from the template (description,
   `og:*`, `twitter:*`) before writing the page's own.
-- `src/components/useNoindex.js` (new): adds a marked robots noindex tag while the page
+- `src/components/useNoindex.js` (new): adds a robots noindex tag while the page
   is shown. Used in `NotFoundPage.jsx`, `ErrorBoundary.jsx` (`ErrorScreen`) and
   `src/features/lookup/PrecinctPage.jsx`.
 - `src/i18n/en.json`: `site.shareImageAlt`, `site.shareTagline`.
