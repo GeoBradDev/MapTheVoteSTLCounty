@@ -763,10 +763,11 @@ Every word the app shows is in `src/i18n/en.json` and reaches the page through `
 names, election values from `src/config/election.js` (`electionName` is only the health
 check's log line, so it needs no value per language), and the names of the address search
 services and their data (from the geocoder modules, as the privacy notice requires) are shown as
-they are; the words around them, such as "address points" and "contributors", are messages. So are the home page's tab title and its search and link-preview description, both
+they are. So are the home page's tab title and its search and link-preview description, both
 `index.html`'s (also `site.name` and `site.description` in `en.json`, which a test keeps the
 same, for the pre-rendered pages and in-app navigation), the map credit's names and MapLibre's own
-built-in text (its gesture hints and the map's label). ESLint's `react/jsx-no-literals` fails on words typed straight into JSX.
+built-in text (its gesture hints and the map's label). The words around those names, such as
+"address points" and "contributors", are messages. ESLint's `react/jsx-no-literals` fails on words typed straight into JSX.
 
 To add a language, such as Spanish: copy `en.json` to `src/i18n/es.json`, translate the
 values (keep the keys and the `{...}` names), and add its line to `LOCALES` in

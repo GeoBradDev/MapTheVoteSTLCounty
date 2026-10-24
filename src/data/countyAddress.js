@@ -33,8 +33,10 @@ export const LIVE_URL =
 export const HOSTED_URL =
   'https://services2.arcgis.com/w657bnjzrjguNyOy/arcgis/rest/services/Address_Points/FeatureServer/2';
 
-/** Who to credit for the address data, shown under the address search. */
-// The words "address points" are a message in src/i18n (#120).
+/**
+ * Who to credit for the address data, shown under the address search. The
+ * words "address points" are a message in src/i18n (#120).
+ */
 export const attribution = Object.freeze({
   by: 'St. Louis County',
   publisher: 'GIS Service Center',
