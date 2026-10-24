@@ -182,7 +182,10 @@ export function createGeocoder({ sources, fallback, cityCheck }) {
   // it is asked for the street alone: a county twin, in any ZIP, makes the
   // text one that could mean either, so no match and the voter adds a ZIP
   // (owner decision, 2026-10-22, #58 and #88). A county that cannot answer
-  // is no match too, or with reportUnavailable a rejection.
+  // is no match too, or with reportUnavailable a rejection. Asked by the
+  // City's street, so a county record with a direction the City street lacks
+  // is a twin, and one without the direction the City street has is not: the
+  // county's strict rules say that text does not name it (#144).
   async function twinFree(cityPlace, signal, reportUnavailable) {
     const street = streetOf(cityPlace.label);
     const county = await firstAnswer((source) => source.find(street, { signal }), signal);

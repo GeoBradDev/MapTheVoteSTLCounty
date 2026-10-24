@@ -16,7 +16,7 @@ describe('OutOfCountyNotice', () => {
   it('sends a St. Louis City voter whose precinct was not found to the City board and its lookup', () => {
     render(<OutOfCountyNotice kind="stl-city" />);
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
-      'This address is in the City of St. Louis',
+      'This location is in the City of St. Louis',
     );
     expect(screen.getByText(/could not find its City precinct/)).toBeInTheDocument();
     expect(
@@ -93,7 +93,7 @@ describe('OutOfCountyNotice', () => {
   it('uses the heading level it is given, for a notice inside a titled section', () => {
     render(<OutOfCountyNotice kind="stl-city" headingLevel={3} />);
     expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent(
-      'This address is in the City of St. Louis',
+      'This location is in the City of St. Louis',
     );
     expect(screen.queryByRole('heading', { level: 2 })).toBeNull();
   });

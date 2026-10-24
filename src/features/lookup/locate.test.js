@@ -13,7 +13,8 @@ import atPoint from '../../../docs/raw/fixtures/precinct-at-point.json';
 import cityPrecinctAtPoint from '../../../docs/raw/fixtures/city-precinct-at-point.json';
 import cityPrecinctAtCounty from '../../../docs/raw/fixtures/city-precinct-at-county.json';
 import election, { jurisdictions } from '../../config/election.js';
-import { classifyPlace, locate } from './locate.js';
+import cityOutline from '../../../docs/raw/fixtures/city-outline.json';
+import { classifyPlace, eastOfCity, locate } from './locate.js';
 
 const PRECINCTS = `${election.serviceRoot}/${election.layers.precincts}/query`;
 const BOUNDARY = `${election.serviceRoot}/${election.layers.countyBoundary}/query`;
@@ -298,6 +299,70 @@ describe('locate, in St. Louis City (#88)', () => {
     );
     const result = await locate({ ...INSIDE, county: 'St. Louis city' });
     expect(result).toMatchObject({ kind: 'precinct', jurisdiction: 'county' });
+  });
+});
+
+describe('locate, on the Illinois bank while the City layer is down (#144)', () => {
+  // Venice, IL and East St. Louis, IL: inside the City's extent box, east of
+  // the river. Coordinates alone, as from "Use my location".
+  const VENICE = { lat: 38.672, lng: -90.17 };
+  const EAST_ST_LOUIS = { lat: 38.6285, lng: -90.172 };
+
+  function outage({ lat, lng }) {
+    return recorded({
+      [`${PRECINCTS} ${lng},${lat}`]: () => respond(EMPTY),
+      [`${CITY_PRECINCTS} ${lng},${lat}`]: () => respond({}, 500),
+      [`${BOUNDARY} ${lng},${lat}`]: () => respond(EMPTY),
+    });
+  }
+
+  it.each([
+    ['Venice', VENICE],
+    ['East St. Louis', EAST_ST_LOUIS],
+  ])('%s gets what it gets with the City layer up, not the City referral', async (_, point) => {
+    fetchMock.mockImplementation(outage(point));
+    expect(await locate(point)).toEqual({ kind: 'unknown' });
+  });
+
+  it('Venice with the boundary down too is still not sent to the City', async () => {
+    fetchMock.mockImplementation(
+      recorded({
+        [`${PRECINCTS} ${VENICE.lng},${VENICE.lat}`]: () => respond(EMPTY),
+        [`${CITY_PRECINCTS} ${VENICE.lng},${VENICE.lat}`]: () => respond({}, 500),
+        [`${BOUNDARY} ${VENICE.lng},${VENICE.lat}`]: () => respond({}, 500),
+      }),
+    );
+    expect(await locate(VENICE)).toEqual({ kind: 'unknown' });
+  });
+
+  it('a point in the City still gets the City referral when the City layer fails', async () => {
+    const point = { lat: CITY.lat, lng: CITY.lng };
+    fetchMock.mockImplementation(
+      recorded({ [`${CITY_PRECINCTS} ${CITY.lng},${CITY.lat}`]: () => respond({}, 500) }),
+    );
+    expect(await locate(point)).toEqual({ kind: 'stl-city' });
+  });
+
+  it('puts both Illinois points east of the City, and City Hall and the Arch west', () => {
+    expect(eastOfCity(VENICE)).toBe(true);
+    expect(eastOfCity(EAST_ST_LOUIS)).toBe(true);
+    expect(eastOfCity(CITY)).toBe(false);
+    // The Gateway Arch, on the riverfront.
+    expect(eastOfCity({ lat: 38.6247, lng: -90.1848 })).toBe(false);
+  });
+
+  it('never puts a point of the City outline east of the City', () => {
+    // Every vertex of every citywide office's polygon, as recorded for #144.
+    const vertices = cityOutline.features.flatMap((f) => f.geometry.rings.flat());
+    expect(vertices.length).toBeGreaterThan(1000);
+    const east = vertices.filter(([lng, lat]) => eastOfCity({ lat, lng }));
+    expect(east).toEqual([]);
+  });
+
+  it('says nothing about points north or south of the City', () => {
+    // Above the City's northeast corner, and south of the River des Peres.
+    expect(eastOfCity({ lat: 38.776, lng: -90.12 })).toBe(false);
+    expect(eastOfCity({ lat: 38.52, lng: -90.2 })).toBe(false);
   });
 });
 

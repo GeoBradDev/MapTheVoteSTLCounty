@@ -563,7 +563,7 @@ describe('PrecinctPage', () => {
     await userEvent.keyboard('{Escape}{Enter}');
 
     const notice = await screen.findByRole('heading', {
-      name: 'This address is in the City of St. Louis',
+      name: 'This location is in the City of St. Louis',
     });
     expect(notice.tagName).toBe('H3');
     expect(cardHeadings()).toEqual([copy.searchInstead]);

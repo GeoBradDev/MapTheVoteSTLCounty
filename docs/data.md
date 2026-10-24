@@ -458,7 +458,8 @@ puts it out of state or in another county, so a point far from the City is never
 it. A place named as the City whose point is in a county precinct gets that precinct: the
 point decides, as for every place. A City precinct opens `/p/<City code>`. With no
 precinct at the point, a place in St. Louis City (its precinct layer found nothing or
-failed), or coordinates alone or a place the geocoder puts in the county, near the City and not known to be in the county (the
+failed), or coordinates alone or a place the geocoder puts in the county, near the City, west of its river edge
+(`eastOfCity` in `locate.js`, #144) and not known to be in the county (the
 boundary says outside, or cannot answer) when the City's layer failed, is sent to the City's Board of Election Commissioners and its polling place lookup,
 one elsewhere in Missouri to the Secretary of State Voter Outreach Center (the
 county apps' own no-results link), and one outside Missouri gets a generic
@@ -989,8 +990,10 @@ City client is `src/data/cityArcgis.js`, with the same request rules as the Coun
 in the City block of `src/config/election.js`; `node scripts/check-config.mjs` checks them
 (Data health check in the README), and `node scripts/record-fixtures.mjs city-` re-records
 their fixtures (`docs/raw/fixtures/city-precinct-*`, `city-districts-*`, `city-polls`,
-`city-early-voting-sites` and `city-boundary-*`) along with the City geocoder's
-(`city-geocode-*`, #58); the City wait fixtures are recorded by hand (Wait times above).
+`city-early-voting-sites`, `city-boundary-*` and `city-outline`, #144) along with the City
+geocoder's (`city-geocode-*`, #58); when a new `city-outline` fails the river edge test in
+`locate.test.js`, redraw `RIVER_EDGE` in `src/features/lookup/locate.js` from it; the City
+wait fixtures are recorded by hand (Wait times above).
 
 **Official source.** The City Board of Election Commissioners' polling places page,
 `https://www.stlouis-mo.gov/government/departments/board-election-commissioners/voter/polling-places/index.cfm`,

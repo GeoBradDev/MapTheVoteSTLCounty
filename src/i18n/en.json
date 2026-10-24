@@ -120,7 +120,7 @@
   },
   "outOfCounty": {
     "stlCity": {
-      "heading": "This address is in the City of St. Louis",
+      "heading": "This location is in the City of St. Louis",
       "text": "We could not find its City precinct right now. The City of St. Louis has its own election board. For your polling place, sample ballot and registration, go to the",
       "link": "St. Louis City Board of Election Commissioners",
       "after": ".",
