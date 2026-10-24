@@ -1053,7 +1053,8 @@ Missouri Supreme Court found the H.B. 1 referendum petition sufficient on 2026-0
 Hoskins, No. SC101805), so H.B. 1 does not take effect unless voters approve it, and the 2022
 districts stay in effect for the November 2026 general election. The layer's single "First
 District" polygon is right under either map, so the card shows the row. Recheck when the map
-changes. (The County card reads the 2025 field; #150 tracks that.)
+changes. The County card reads the 2022 field, `congressional_district_20` (see "Which
+congressional map (#150)" under Precincts).
 
 **Districts for a precinct** (the districts card asks this way on every City page, after a
 lookup too, so the voter's own point never goes to the districts layer): `BOE/PRECINCTS_2023`
