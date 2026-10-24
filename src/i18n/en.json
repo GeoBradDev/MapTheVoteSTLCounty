@@ -2,7 +2,9 @@
   "site": {
     "name": "St. Louis Voter Guide",
     "description": "A nonpartisan, unofficial guide for St. Louis City and County voters: find your precinct, polling places and sample ballot. Not affiliated with any board of elections.",
-    "pageTitle": "{name} | St. Louis Voter Guide"
+    "pageTitle": "{name} | St. Louis Voter Guide",
+    "shareTagline": "Find where to vote",
+    "shareImageAlt": "St. Louis Voter Guide: Find where to vote"
   },
   "app": {
     "skipLink": "Skip to main content",

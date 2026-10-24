@@ -4,9 +4,12 @@
 // app writes them again on every in-app navigation, so the head always
 // matches the page.
 //
-// Every other page (a precinct, the not-found page) keeps the shell's head:
-// index.html's title and description, no canonical and no Open Graph tags.
-// What those pages carry is #98's to decide.
+// Every other page (a precinct, the wait times page, the not-found page)
+// keeps the shell's head: index.html's title, description and Open Graph tags,
+// with no canonical and no og:url, since the shell is served for all of them.
+// Every head has the one site-wide share image (owner decision on #98), so a
+// shared precinct link previews with the site name, description and image.
+// Whether a page may be indexed is not here: see src/components/useNoindex.js.
 //
 // Descriptions are each page's own text, never new claims. Nothing here may
 // hold a query string, a hash, an address or coordinates (#20).
@@ -17,6 +20,13 @@ import { copy as learnCopy } from './features/learn/learnCopy.js';
 import { DEFAULT_LOCALE, getTopic, getTopics } from './features/learn/topics.js';
 import { copy as privacyCopy } from './features/privacy/privacyCopy.js';
 import { getLocale, t } from './i18n/index.js';
+
+/**
+ * The site-wide share image (#98): public/share-image.png, drawn by
+ * scripts/draw-share-image.mjs. An absolute production URL, as link preview
+ * bots need, so a link shared from a preview build still shows it.
+ */
+export const SHARE_IMAGE = { url: `${siteUrl}/share-image.png`, width: 1200, height: 630 };
 
 /** Search engines show about this many characters of a description. */
 const DESCRIPTION_MAX = 155;
@@ -113,30 +123,37 @@ export function prerenderPaths() {
 }
 
 /**
- * The tags a head needs besides its title: the description, and for a public
- * page its canonical and Open Graph tags.
+ * The tags a head needs besides its title: the description, the Open Graph
+ * tags and the share card, and for a public page its canonical and og:url.
  * @param {{ title: string, description: string, canonical?: string }} head
  * @returns {{ tag: 'meta' | 'link', attrs: Record<string, string> }[]}
  */
 export function headTags(head) {
-  const tags = [{ tag: 'meta', attrs: { name: 'description', content: head.description } }];
-  if (!head.canonical) return tags;
   const og = (property, content) => ({ tag: 'meta', attrs: { property, content } });
+  const url = head.canonical
+    ? [{ tag: 'link', attrs: { rel: 'canonical', href: head.canonical } }]
+    : [];
   return [
-    ...tags,
-    { tag: 'link', attrs: { rel: 'canonical', href: head.canonical } },
+    { tag: 'meta', attrs: { name: 'description', content: head.description } },
+    ...url,
     og('og:type', 'website'),
     og('og:site_name', t('site.name')),
     og('og:title', head.title),
     og('og:description', head.description),
-    og('og:url', head.canonical),
+    ...(head.canonical ? [og('og:url', head.canonical)] : []),
+    og('og:image', SHARE_IMAGE.url),
+    og('og:image:width', String(SHARE_IMAGE.width)),
+    og('og:image:height', String(SHARE_IMAGE.height)),
+    og('og:image:alt', t('site.shareImageAlt')),
+    { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
   ];
 }
 
-const MANAGED = 'meta[name="description"], link[rel="canonical"], meta[property^="og:"]';
+const MANAGED =
+  'meta[name="description"], link[rel="canonical"], meta[property^="og:"], meta[name^="twitter:"]';
 
 /**
- * Replaces the description, canonical and Open Graph tags in `doc`'s head
+ * Replaces the description, canonical, Open Graph and card tags in `doc`'s head
  * with `head`'s, or with the shell's when `head` is null. It leaves the title
  * alone: the pages set theirs, and App.jsx's PageHead sets a public page's.
  * @param {Document} doc
