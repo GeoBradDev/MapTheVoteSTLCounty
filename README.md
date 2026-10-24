@@ -51,7 +51,7 @@ typed address or a device location, in the URL, browser storage, cookies or the 
 cache, and a share link holds only the precinct code, like `/p/CC007`. Once the ID is set,
 Google Analytics counts page views by page type, and which topic (every precinct page is `/p/:precinct`),
 and a few voter actions by fixed labels (a lookup's outcome, and presses of the sample ballot,
-directions, official lookup, Share and Try again), never what was searched or where; it
+directions, official lookup, Share and Try again), never what was searched or the address or location; it
 sets no cookies and is skipped with Global Privacy Control. The plain-language
 notice at [`/privacy`](https://mapthevotestl.com/privacy) says what each service gets; the
 [Privacy](#privacy) section below has the rules and the tests that hold the code to them.
@@ -991,9 +991,9 @@ send the same events, with no jurisdiction.
 | `lookup_result` | an address search or Use my location finishes | `source`: `address`, `location`; `outcome`: `precinct` (County or City), `no_precinct` (taken to be in the County, no precinct found), `city_referral` (sent to the City Board: its precinct not found, or the City's layer not answering, #88), `out_of_area`, `no_match`, `unavailable`, `failed`, `offline`, and for the device `denied`, `timeout`, `coarse` |
 | `sample_ballot_open` | the County or City sample ballot link is pressed | none |
 | `directions_open` | a directions link is pressed | `card`: `polls`, `early_voting` (the results summary's buttons count as their card's), `wait_times`; `provider`: `google`, `apple` |
-| `official_lookup_open` | a link to a board's official lookup is pressed | `card`: `polls`, `early_voting`, `sample_ballot`, `districts`, `lookup_error`, `precinct_error`, `wait_times`, `error_screen`, `referral` (the out-of-area and City referral notices), `status` (the precinct status banner) |
+| `official_lookup_open` | a results, error, referral or status message's link to a board's official lookup is pressed (not the How to vote topics' links) | `card`: `polls`, `early_voting`, `sample_ballot`, `districts`, `lookup_error`, `precinct_error`, `wait_times`, `error_screen`, `referral` (the out-of-area and City referral notices), `status` (the precinct status banner) |
 | `share` | Share this page finishes | `method`: `share_sheet`, `clipboard`, `manual` (closing the share sheet is not counted) |
-| `retry` | a Try again button is pressed | `where`: `lookup`, `precinct`, `polls`, `early_voting`, `districts`, `wait_times` |
+| `retry` | a Try again button is pressed (a retried lookup sends its own `lookup_result` too, so lookups count per attempt) | `where`: `lookup`, `precinct`, `polls`, `early_voting`, `districts`, `wait_times` |
 
 `src/features/lookup/lookupOutcome.js` maps the lookup's outcome kinds to those labels. A value is
 never an address, coordinates, a precinct code, a place's name, a ward or district, a distance, a
@@ -1008,10 +1008,13 @@ Before setting the ID, apply these settings in GA, since they live there, not in
    (the app sends its own redacted page views), outbound clicks, file downloads, site search and
    form interactions: each sends real URLs (a sample ballot PDF link names the precinct). Turn
    scrolls and video engagement off too; the app does not use them.
-3. Turn Google signals off, set data retention to the shortest option (2 months), and leave every
+3. In Admin, Custom definitions, add event-scoped custom dimensions for the event parameters
+   `source`, `outcome`, `card`, `provider`, `method` and `where` (#70), so reports can break the
+   events down by them (Realtime shows them without this).
+4. Turn Google signals off, set data retention to the shortest option (2 months), and leave every
    Google Ads and other product link off. In the property's data collection settings, turn off
    granular location and device data collection.
-4. Put the `G-` ID in `src/config/site.js`. The CSP in `render.yaml` already allows the loader
+5. Put the `G-` ID in `src/config/site.js`. The CSP in `render.yaml` already allows the loader
    (`www.googletagmanager.com`) and the collection hosts (`*.google-analytics.com`), and the
    tests pass with the ID empty or set: the unit tests of the notice pin each state themselves,
    and `e2e/analytics.e2e.js` replaces whatever ID is there with its own.

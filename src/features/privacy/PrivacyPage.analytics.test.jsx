@@ -74,7 +74,8 @@ describe('PrivacyPage with Google Analytics on', () => {
       'how a search ended',
       'whether it used an address or your location',
       'whether it found a precinct or why not',
-      'never what you searched for, where you are, or which place, precinct or web address it was',
+      'outside St. Louis City and County',
+      'never what you searched for, your address or location, or which place, precinct or web address it was',
     ]) {
       expect(ga).toHaveTextContent(text);
     }
