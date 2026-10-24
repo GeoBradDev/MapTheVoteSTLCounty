@@ -182,6 +182,17 @@ describe('a City precinct page (#89)', () => {
     for (const host of hosts) expect(county).not.toContain(host);
   });
 
+  // The voter ID topic is statewide law with the City Board's early voting
+  // rule, so the City card links it as the County card does (#168).
+  it('links the voter ID topic from the City polling places card', async () => {
+    routeFetch();
+    renderAt(CODE);
+    await screen.findByRole('list', { name: copy.polls.listLabel });
+    const link = within(pollsCard()).getByRole('link', { name: 'What ID to bring' });
+    expect(link).toHaveAttribute('href', '/learn/voter-id');
+    expect(link.closest('p')).toHaveTextContent(copy.polls.beforeYouGo);
+  });
+
   // Outside early voting the City sample ballot part's fixed intro is the
   // largest text on a phone, so it shows while the precinct loads (#27,
   // #156): from the City chunk, which the precinct request loads first.
