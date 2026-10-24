@@ -31,7 +31,10 @@ a different place, so the topics say "the same polling place where you voted".
    "tell the election judges at the polling place where you vote".
 4. `accessible-voting.md` checked; its "your polling place" means the place the voter planned
    to use and makes no claim about where a ballot must be cast, so it is left unchanged.
-5. `lastVerified` is today's date on each topic whose sources were re-read and changed.
+5. `lastVerified` stays 2026-10-21 on each topic: it means every source was re-read, and this
+   change re-read only RSMo 115.427, the SOS Voter ID page and the SOS Other Voting Questions
+   page (name change: "an election judge at your polling place"). (Revised during Phase 4:
+   the first draft bumped it, which would have claimed a full re-read.)
 6. The learn topics stay out of the first-load bundle (#147 landed); the build's budget check
    passes.
 7. Full gate green.
@@ -49,7 +52,7 @@ a different place, so the topics say "the same polling place where you voted".
    the block that cites rsmo-115-427 for the return, and neither says "come back to your
    polling place"; `moved-or-changed-name.md` does not say "judges at your polling place".
    Run it red, commit it alone.
-2. Edit the three topics and their `lastVerified`. Run it green.
+2. Edit the three topics. Run it green.
 3. Full gate.
 
 ## Risks

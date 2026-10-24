@@ -78,8 +78,8 @@ November 3, 2026 election was October 7, 2026.[^sos-calendar]
 
 ## You changed your name
 
-- Tell your election board before the election, or tell the election judges at your polling
-  place.[^sos-other-questions]
+- Tell your election board before the election, or tell the election judges at the polling
+  place where you vote.[^sos-other-questions]
 - After you tell the election judges, you can vote one time under your old
   name.[^sos-other-questions][^rsmo-115-167]
 - Your election board updates your record and sends you a new voter card.[^sos-other-questions]
