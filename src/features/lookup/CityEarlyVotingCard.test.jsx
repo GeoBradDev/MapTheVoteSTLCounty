@@ -215,16 +215,20 @@ describe('CityEarlyVotingCard', () => {
         { exact: false },
       ),
     ).toBeInTheDocument();
-    const links = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
-    // Not the absentee topic: it is the County's (a City topic is #94).
-    expect(links.some((href) => href.startsWith('/learn'))).toBe(false);
-    // The mail line links the page on voting by mail, not the No Excuse page,
-    // which says there is no mail option.
-    const mail = screen.getByText(/To vote by mail or with an absentee ballot, see the/);
+    // The mail line links the absentee topic, which has a City section (#94,
+    // #168), as the County card does, and the City Board's page on voting by
+    // mail, not the No Excuse page, which says there is no mail option.
+    const topic = screen.getByRole('link', { name: 'Absentee and early in-person voting' });
+    expect(topic).toHaveAttribute('href', '/learn/absentee');
+    const mail = topic.closest('p');
     expect(mail).toHaveTextContent(
-      `To vote by mail or with an absentee ballot, see the ${copy.polls.sourceNames['www.stlouis-mo.gov']}.`,
+      `To vote by mail or with an absentee ballot, see Absentee and early in-person voting or the ${copy.polls.sourceNames['www.stlouis-mo.gov']}.`,
     );
-    expect(within(mail).getByRole('link')).toHaveAttribute('href', absenteePage);
+    expect(
+      within(mail)
+        .getAllByRole('link')
+        .map((a) => a.getAttribute('href')),
+    ).toEqual(['/learn/absentee', absenteePage]);
     expect(document.body.textContent).not.toMatch(/county/i);
   });
 
