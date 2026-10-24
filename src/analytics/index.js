@@ -18,7 +18,8 @@
 //   events never carry the real URL either.
 // - ga.js and Google's script load after the load event, in idle time, so
 //   they cost the first load nothing (#27). No inline script: the CSP's
-//   script-src allows only 'self' and Google's loader. Page views and events
+//   script-src allows only 'self', and Google's loader once the ID is set
+//   (src/analytics/csp.js, #191). Page views and events
 //   until then wait here, as they were called.
 // - Voter actions (#70) go through track() only, and ga.js sends only the
 //   events, parameter names and values in its allowlist (EVENTS): fixed
@@ -28,7 +29,7 @@
 // the build split the topics into a chunk of their own, past the budget.
 import { gaMeasurementId, siteUrl } from '../config/site.js';
 
-/** The hosts GA uses, as the privacy notice and render.yaml's CSP name them. */
+/** The hosts GA uses, as the privacy notice and, once the ID is set, render.yaml's CSP name them. */
 export const ANALYTICS_HOSTS = Object.freeze({
   loader: 'www.googletagmanager.com',
   collector: '*.google-analytics.com',

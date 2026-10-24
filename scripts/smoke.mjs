@@ -11,7 +11,8 @@
 
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { siteUrl } from '../src/config/site.js';
+import { analyticsCspProblems } from '../src/analytics/csp.js';
+import { gaMeasurementId, siteUrl } from '../src/config/site.js';
 
 const DEEP_LINK = '/p/CC007';
 // A City precinct link (#95): the same shell, client-rendered by the City chunk.
@@ -24,16 +25,27 @@ const WAIT_TIMES = '/early-voting';
 const PRERENDERED = ['/', '/learn', '/learn/voter-id'];
 const TIMEOUT_MS = 10_000;
 
+// The policy a response enforces, or else the one it reports on.
+const policyOf = (v, headers) => v ?? headers.get('content-security-policy-report-only');
+
 // The headers the Render Blueprint (render.yaml) sets. Each entry passes when
-// `test` accepts the header's value. src/test/render.test.js checks render.yaml
-// against these tables, so change both together.
+// `test` accepts the header's value; `explain`, where present, says why not.
+// src/test/render.test.js checks render.yaml against these tables, so change
+// both together.
 export const SHELL_HEADERS = [
   { name: 'referrer-policy', test: (v) => v === 'no-referrer' },
   { name: 'x-content-type-options', test: (v) => v === 'nosniff' },
   { name: 'permissions-policy', test: (v) => v !== null },
+  // Present, and naming Google Analytics' hosts exactly when this checkout's
+  // measurement ID is set (#191): run the smoke test from the commit deployed.
   {
     name: 'content-security-policy',
-    test: (v, headers) => v !== null || headers.has('content-security-policy-report-only'),
+    test: (v, headers) => {
+      const policy = policyOf(v, headers);
+      return policy !== null && analyticsCspProblems(policy, gaMeasurementId).length === 0;
+    },
+    explain: (v, headers) =>
+      analyticsCspProblems(policyOf(v, headers) ?? '', gaMeasurementId).join('; '),
   },
   { name: 'cache-control', test: (v) => v?.includes('no-cache') ?? false },
 ];
@@ -98,7 +110,10 @@ async function fileBody(baseUrl, pathname, type) {
 function missingHeaders(headers, expected) {
   return expected
     .filter(({ name, test }) => !test(headers.get(name), headers))
-    .map(({ name }) => `${name}: ${headers.get(name) ?? 'missing'}`);
+    .map(({ name, explain }) => {
+      const why = explain?.(headers.get(name), headers);
+      return `${name}: ${headers.get(name) ?? 'missing'}${why ? ` (${why})` : ''}`;
+    });
 }
 
 async function check(name, fn) {
