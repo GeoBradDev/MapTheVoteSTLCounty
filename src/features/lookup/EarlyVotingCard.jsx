@@ -12,7 +12,7 @@ import { orderSites } from '../waitTimes/siteOrder.js';
 import { OFF_WAITS, useWaitTimes } from '../waitTimes/useWaitTimes.js';
 import WaitReport from '../waitTimes/WaitReport.jsx';
 import { earlyVotingStatus, formatLongDate, scheduleLines } from './earlyVoting.js';
-import { directionsLinks, isAppleMobile } from './nearbyPolls.js';
+import { isAppleMobile } from './nearbyPolls.js';
 import { copy, sourceName } from './resultsCopy.js';
 import RetryButton from './RetryButton.jsx';
 import StaleNote from './StaleNote.jsx';
@@ -20,7 +20,14 @@ import { useJurisdiction } from './jurisdictionContext.js';
 import NearbySortControls from './NearbySortControls.jsx';
 import { useHeldOrder, withKeys } from './nearbySort.js';
 import { countySchedule, countyWaitKey } from './countyEarlyVoting.js';
-import { Entrances, NameAndDistance, OfficialLookupLink, Room, RoomSource } from './PollsCard.jsx';
+import {
+  DirectionsLinks,
+  Entrances,
+  NameAndDistance,
+  OfficialLookupLink,
+  Room,
+  RoomSource,
+} from './PollsCard.jsx';
 import { usePollRooms } from './usePollRooms.js';
 import { useNearestSites } from './useNearestSites.js';
 import { useNow } from './useNow.js';
@@ -50,8 +57,6 @@ function CountyDetail({ site, now }) {
 
 function SiteRow({ site, room, now, apple, headingRef, Detail }) {
   const name = site.name ?? copy.polls.unnamed(site.loc);
-  const links = directionsLinks(site);
-  const target = <span className="sr-only">{copy.polls.linkTarget(name)}</span>;
   return (
     <li className="border-t border-border pt-3 first:border-t-0 first:pt-0">
       <NameAndDistance name={name} miles={site.miles} headingRef={headingRef} />
@@ -65,16 +70,7 @@ function SiteRow({ site, room, now, apple, headingRef, Detail }) {
           <span className="font-semibold">{t.note}</span> {site.absNote}
         </p>
       )}
-      <p className="flex flex-wrap gap-x-4">
-        <TextLink href={links.google} rel="noreferrer" variant="tap">
-          {copy.polls.directions} {target}
-        </TextLink>
-        {apple && (
-          <TextLink href={links.apple} rel="noreferrer" variant="tap">
-            {copy.polls.appleMaps} {target}
-          </TextLink>
-        )}
-      </p>
+      <DirectionsLinks place={site} name={name} apple={apple} card="early_voting" />
     </li>
   );
 }
@@ -210,16 +206,16 @@ export function EarlyVotingSites({
           <Notice role="alert" variant="danger" className="mt-3">
             {/* A new node per attempt, so a repeated failure is announced again. */}
             <span key={result.attempt}>
-              {t.failed} <OfficialLookupLink />.
+              {t.failed} <OfficialLookupLink card="early_voting" />.
             </span>
           </Notice>
-          <RetryButton onRetry={retry} busy={loading} className="mt-2" />
+          <RetryButton onRetry={retry} busy={loading} where="early_voting" className="mt-2" />
         </>
       )}
 
       {rows && rows.length === 0 && (
         <p className="mt-3">
-          {t.none} <OfficialLookupLink />.
+          {t.none} <OfficialLookupLink card="early_voting" />.
         </p>
       )}
 

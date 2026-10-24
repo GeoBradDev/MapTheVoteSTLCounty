@@ -1,4 +1,5 @@
 import { Component, useEffect, useRef } from 'react';
+import { track } from '../analytics/index.js';
 import { applyHead } from '../pageHead.js';
 import { copy } from './errorBoundaryCopy.js';
 import Button from './Button.jsx';
@@ -29,12 +30,16 @@ function ErrorScreen({ jurisdiction }) {
       <Notice role="alert" variant="danger" className="mt-4">
         {copy.body}{' '}
         {jurisdiction ? (
-          <TextLink href={jurisdiction.officialLookupUrl} rel="noreferrer">
+          <TextLink
+            href={jurisdiction.officialLookupUrl}
+            rel="noreferrer"
+            onClick={() => track('official_lookup_open', { card: 'error_screen' })}
+          >
             {jurisdiction.id === 'city' ? copy.officialLookupCity : copy.officialLookup}
           </TextLink>
         ) : (
           // Not a precinct page, so no jurisdiction is known (#93).
-          <OfficialLookups />
+          <OfficialLookups card="error_screen" />
         )}
         .
       </Notice>

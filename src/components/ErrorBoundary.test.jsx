@@ -1,9 +1,11 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import election from '../config/election.js';
 import referrals from '../config/referrals.js';
 import { jurisdictionOnPath } from '../data/jurisdictions.js';
+import { pressLink, trackEvents } from '../test/trackedEvents.js';
 import ErrorBoundary from './ErrorBoundary.jsx';
 import { copy } from './errorBoundaryCopy.js';
 import { copy as lookupsCopy } from './officialLookupsCopy.js';
@@ -106,5 +108,32 @@ describe('ErrorBoundary (#18)', () => {
   it('is told by main.jsx not to log caught errors', () => {
     const main = readFileSync(path.resolve(import.meta.dirname, '../main.jsx'), 'utf8');
     expect(main).toMatch(/onCaughtError: \(\) => \{\}/);
+  });
+});
+
+// #70: the error screen's lookup links are counted with a fixed label only.
+describe('ErrorBoundary analytics (#70)', () => {
+  let tracked;
+  beforeEach(() => {
+    tracked = trackEvents();
+  });
+  afterEach(() => tracked.stop());
+
+  it.each([
+    ['no precinct page', undefined, 2],
+    ['a County precinct page', '/p/CC007', 1],
+    ['a City precinct page', '/p/W01P12', 1],
+  ])('counts its lookup links on %s', async (_, path, count) => {
+    render(
+      <ErrorBoundary jurisdiction={path && jurisdictionOnPath(path)}>
+        <Broken />
+      </ErrorBoundary>,
+    );
+    const links = screen.getAllByRole('link', { name: /lookup/i });
+    expect(links).toHaveLength(count);
+    for (const link of links) expect(await pressLink(userEvent.click, link)).toBe(false);
+    expect(await tracked.events()).toEqual(
+      links.map(() => ['official_lookup_open', { card: 'error_screen' }]),
+    );
   });
 });

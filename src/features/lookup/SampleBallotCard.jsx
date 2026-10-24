@@ -1,3 +1,4 @@
+import { track } from '../../analytics/index.js';
 import Button from '../../components/Button.jsx';
 import TextLink from '../../components/TextLink.jsx';
 import election from '../../config/election.js';
@@ -21,7 +22,11 @@ export default function SampleBallotCard({ html, code }) {
     return (
       <p className="mt-2">
         {copy.ballot.missing}{' '}
-        <TextLink href={election.officialLookupUrl} rel="noreferrer">
+        <TextLink
+          href={election.officialLookupUrl}
+          rel="noreferrer"
+          onClick={() => track('official_lookup_open', { card: 'sample_ballot' })}
+        >
           {copy.officialLookup}
         </TextLink>
         .
@@ -30,7 +35,15 @@ export default function SampleBallotCard({ html, code }) {
   }
 
   return (
-    <Button stack href={ballot.url} target="_blank" rel="noopener noreferrer" className="mt-3">
+    <Button
+      stack
+      href={ballot.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      // Counted with no parameters (#70): its URL names the precinct.
+      onClick={() => track('sample_ballot_open')}
+      className="mt-3"
+    >
       {/* The spaces keep the parts apart in the accessible name. */}
       <span>{copy.ballot.open}</span> <span className="text-sm font-normal">{ballot.fileName}</span>{' '}
       <span className="sr-only">{copy.ballot.newTab}</span>

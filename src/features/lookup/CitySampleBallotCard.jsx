@@ -1,3 +1,4 @@
+import { track } from '../../analytics/index.js';
 import Button from '../../components/Button.jsx';
 import TextLink from '../../components/TextLink.jsx';
 import cityResults from '../../config/cityResults.js';
@@ -23,7 +24,14 @@ export default function CitySampleBallotCard() {
   } = cityResults.sampleBallot;
   return (
     <>
-      <Button stack href={url} target="_blank" rel="noopener noreferrer" className="mt-3">
+      <Button
+        stack
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => track('sample_ballot_open')}
+        className="mt-3"
+      >
         {/* The spaces keep the parts apart in the accessible name. */}
         <span>{copy.ballot.openCity}</span>{' '}
         <span className="text-sm font-normal">{copy.ballot.allPrecincts}</span>{' '}

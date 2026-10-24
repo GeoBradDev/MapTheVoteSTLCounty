@@ -69,10 +69,10 @@ export default function CityDistrictsCard({ code }) {
         <Notice role="alert" variant="danger" className="mt-2">
           {/* A new node per attempt, so a repeated failure is announced again. */}
           <span key={current.attempt}>
-            {copy.districts.failed} <OfficialLookupLink />.
+            {copy.districts.failed} <OfficialLookupLink card="districts" />.
           </span>
         </Notice>
-        <RetryButton onRetry={retry} busy={loading} className="mt-2" />
+        <RetryButton onRetry={retry} busy={loading} where="districts" className="mt-2" />
       </div>
     );
   }
@@ -82,7 +82,7 @@ export default function CityDistrictsCard({ code }) {
     return (
       <div ref={targetRef} tabIndex={-1}>
         <p className="mt-2">
-          {copy.districts.missing} <OfficialLookupLink />.
+          {copy.districts.missing} <OfficialLookupLink card="districts" />.
         </p>
       </div>
     );
@@ -101,7 +101,7 @@ export default function CityDistrictsCard({ code }) {
         </dl>
         {rows.some(({ values }) => values.length > 1) && (
           <p className="mt-3">
-            {copy.districts.multipleCity} <OfficialLookupLink />.
+            {copy.districts.multipleCity} <OfficialLookupLink card="districts" />.
           </p>
         )}
         <p className="mt-3 text-sm text-muted">{copy.districts.sourceCity}</p>

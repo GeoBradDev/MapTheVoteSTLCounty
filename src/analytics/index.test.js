@@ -5,13 +5,14 @@ import { readFileSync } from 'node:fs';
 import nodePath from 'node:path';
 import { gaMeasurementId, siteUrl } from '../config/site.js';
 import { getTopics } from '../features/learn/topics.js';
-import { LOADER_URL, pageTitleFor, PAGE_TITLES, routePattern } from './ga.js';
+import { EVENTS, eventParams, LOADER_URL, pageTitleFor, PAGE_TITLES, routePattern } from './ga.js';
 import {
   analyticsAllowed,
   analyticsEnabled,
   ANALYTICS_HOSTS,
   pageView,
   startAnalytics,
+  track,
 } from './index.js';
 
 const ID = 'G-TEST123';
@@ -352,5 +353,109 @@ describe('pageView', () => {
 
   it('does nothing before analytics starts', () => {
     expect(() => pageView('/')).not.toThrow();
+  });
+});
+
+// Voter actions (#70): only the events, parameter names and values in the
+// allowlist (EVENTS in ga.js) are sent, and only fixed labels.
+describe('track', () => {
+  const events = (fake) =>
+    fake.calls().filter(([command, name]) => command === 'event' && name !== 'page_view');
+
+  it('sends an allowed event with its allowed parameters unchanged', async () => {
+    const fake = await started();
+    track('directions_open', { card: 'polls', provider: 'apple' });
+    track('sample_ballot_open');
+    track('lookup_result', { source: 'address', outcome: 'precinct' });
+    expect(events(fake)).toEqual([
+      ['event', 'directions_open', { card: 'polls', provider: 'apple' }],
+      ['event', 'sample_ballot_open', {}],
+      ['event', 'lookup_result', { source: 'address', outcome: 'precinct' }],
+    ]);
+  });
+
+  it('drops an unknown event', async () => {
+    const fake = await started();
+    track('page_view', { page_location: `${siteUrl}/p/CC007` });
+    track('click', { link_url: 'https://example.com/CC007.pdf' });
+    track('toString');
+    track('__proto__');
+    expect(events(fake)).toEqual([]);
+    expect(JSON.stringify(fake.calls())).not.toContain('CC007');
+  });
+
+  it('drops an unknown parameter name and an unknown or non-string value', async () => {
+    const fake = await started();
+    track('share', {
+      method: 'clipboard',
+      link_url: 'https://mapthevotestl.com/p/CC007',
+      page_location: 'x',
+      precinct: 'CC007',
+    });
+    track('retry', { where: 'CC007' });
+    track('directions_open', { card: 'polls', provider: ['google'] });
+    track('directions_open', { card: { toString: () => 'polls' }, provider: 'google' });
+    track('lookup_result', { source: 'address', outcome: 'constructor' });
+    track('sample_ballot_open', { url: 'https://example.com/CC007.pdf' });
+    expect(events(fake)).toEqual([
+      ['event', 'share', { method: 'clipboard' }],
+      ['event', 'retry', {}],
+      ['event', 'directions_open', { card: 'polls' }],
+      ['event', 'directions_open', { provider: 'google' }],
+      ['event', 'lookup_result', { source: 'address' }],
+      ['event', 'sample_ballot_open', {}],
+    ]);
+    expect(JSON.stringify(fake.calls())).not.toMatch(/CC007|link_url|example/);
+  });
+
+  it('queues events until GA has loaded, in order with page views', async () => {
+    const fake = start();
+    pageView('/');
+    track('retry', { where: 'lookup' });
+    pageView('/p/CC007');
+    expect(fake.win.dataLayer).toBeUndefined();
+    await fake.runIdle();
+    const sent = fake.calls().filter(([command]) => command === 'event');
+    expect(sent.map(([, name]) => name)).toEqual(['page_view', 'retry', 'page_view']);
+  });
+
+  it('does nothing and throws nothing while GA is off', async () => {
+    const fake = start({}, '');
+    expect(() => track('retry', { where: 'lookup' })).not.toThrow();
+    expect(() => track(undefined, null)).not.toThrow();
+    await fake.runIdle();
+    expect(fake.win.dataLayer).toBeUndefined();
+  });
+
+  it('throws nothing for odd input while GA is on', async () => {
+    const fake = await started();
+    expect(() => track('share', null)).not.toThrow();
+    expect(() => track(null)).not.toThrow();
+    expect(() => track('share', 'clipboard')).not.toThrow();
+    expect(events(fake)).toEqual([
+      ['event', 'share', {}],
+      ['event', 'share', {}],
+    ]);
+  });
+
+  // The list itself: fixed, lowercase labels only, nothing that could be a
+  // code, a name or a URL.
+  it('allows only fixed lowercase labels', () => {
+    expect(Object.keys(EVENTS).sort()).toEqual([
+      'directions_open',
+      'lookup_result',
+      'official_lookup_open',
+      'retry',
+      'sample_ballot_open',
+      'share',
+    ]);
+    for (const [name, params] of Object.entries(EVENTS)) {
+      expect(Object.isFrozen(params), name).toBe(true);
+      for (const [param, values] of Object.entries(params)) {
+        expect(param).toMatch(/^[a-z_]+$/);
+        for (const value of values) expect(value, `${name}.${param}`).toMatch(/^[a-z_]+$/);
+      }
+    }
+    expect(eventParams('nope', {})).toBeNull();
   });
 });

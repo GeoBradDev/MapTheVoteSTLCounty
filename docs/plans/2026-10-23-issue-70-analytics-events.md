@@ -33,7 +33,7 @@ run); the coordinator's privacy limits below are the approved scope.
 | `lookup_result` | `source`: `address`, `location`; `outcome`: `precinct`, `no_precinct`, `city_referral`, `out_of_area`, `no_match`, `unavailable`, `failed`, `offline`, `denied`, `timeout`, `coarse` |
 | `sample_ballot_open` | none |
 | `directions_open` | `card`: `polls`, `early_voting`, `wait_times`; `provider`: `google`, `apple` |
-| `official_lookup_open` | `card`: `polls`, `early_voting`, `sample_ballot`, `districts`, `lookup_error`, `precinct_error`, `wait_times` |
+| `official_lookup_open` | `card`: `polls`, `early_voting`, `sample_ballot`, `districts`, `lookup_error`, `precinct_error`, `wait_times`, `error_screen` |
 | `share` | `method`: `share_sheet`, `clipboard`, `manual` |
 | `retry` | `where`: `lookup`, `precinct`, `polls`, `early_voting`, `districts`, `wait_times` |
 
@@ -89,6 +89,10 @@ A superseded, cancelled or edited-away lookup sends nothing.
 - `src/features/lookup/PrecinctPage.jsx`: lookup link `precinct_error`, retry `precinct`.
 - `src/features/waitTimes/WaitTimesPage.jsx`: directions, lookup link, retry `wait_times`.
 - `src/features/lookup/ShareLink.jsx`: `share` with its method.
+- `src/components/ErrorBoundary.jsx`: its lookup links, `error_screen` (added during
+  Phase 4: it also renders `OfficialLookups`, which now needs a `card`).
+- `src/features/lookup/PollsCard.jsx` also gets `DirectionsLinks`, shared by the polls,
+  early voting and wait times rows (one place for the directions event).
 - Component tests: a shared helper `src/test/trackSpy.js` starting GA on a stand-in window,
   as `analyticsPrivacy.test.jsx` does, so tests read the real dataLayer.
 - `src/test/analyticsPrivacy.test.jsx`: events checked for voter data.

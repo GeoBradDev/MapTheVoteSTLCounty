@@ -1,5 +1,6 @@
 import { Fragment } from 'react';
 import Disclosure from '../../components/Disclosure.jsx';
+import { track } from '../../analytics/index.js';
 import TextLink from '../../components/TextLink.jsx';
 import election from '../../config/election.js';
 import { useWideOnMount } from './useWideOnMount.js';
@@ -21,7 +22,11 @@ export default function DistrictsCard({ precinct }) {
     return (
       <p className="mt-2">
         {copy.districts.missing}{' '}
-        <TextLink href={election.officialLookupUrl} rel="noreferrer">
+        <TextLink
+          href={election.officialLookupUrl}
+          rel="noreferrer"
+          onClick={() => track('official_lookup_open', { card: 'districts' })}
+        >
           {copy.officialLookup}
         </TextLink>
         .

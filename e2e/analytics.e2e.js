@@ -10,7 +10,8 @@
 // Google's hosts are answered by a stub (the real gtag.js is never fetched:
 // no live service in CI), every other outside host but the fixtures' ArcGIS
 // layers is blocked. The real gtag.js's own hits are checked by hand before
-// each election (README, Privacy).
+// each election (README, Privacy). The voter action events (#70) are pressed
+// on the results page: the sample ballot, a directions link and Share.
 import { existsSync } from 'node:fs';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
@@ -126,6 +127,30 @@ const dataLayer = (page) =>
 
 const pageViews = (layer) =>
   layer.filter(([command, name]) => command === 'event' && name === 'page_view');
+const events = (layer) =>
+  layer
+    .filter(([command, name]) => command === 'event' && name !== 'page_view')
+    .map(([, name, params]) => [name, params]);
+
+// Stops the page's links from leaving it, after the app has handled the
+// click (a window listener runs after React's), and records whether the app
+// prevented any (it must not: an event never delays a link, #70).
+async function holdLinks(page) {
+  await page.evaluate(() => {
+    window.__prevented = [];
+    window.__hold = (event) => {
+      if (!event.target.closest('a')) return;
+      window.__prevented.push(event.defaultPrevented);
+      event.preventDefault();
+    };
+    window.addEventListener('click', window.__hold);
+  });
+}
+const releaseLinks = (page) =>
+  page.evaluate(() => {
+    window.removeEventListener('click', window.__hold);
+    return window.__prevented;
+  });
 
 // Well past the load event and the analytics module's longest idle wait (2 s).
 async function settle(page) {
@@ -137,7 +162,9 @@ test('with an ID: redacted page views, no voter data to Google, no cookies', asy
   page,
   context,
 }) => {
-  await context.grantPermissions(['geolocation'], { origin: siteUrl });
+  await context.grantPermissions(['geolocation', 'clipboard-read', 'clipboard-write'], {
+    origin: siteUrl,
+  });
   await context.setGeolocation(DEVICE);
   const google = await serve(page, testOrigin);
 
@@ -149,6 +176,18 @@ test('with an ID: redacted page views, no voter data to Google, no cookies', asy
   await page.getByRole('button', { name: 'Use my location' }).click();
   await expect(page).toHaveURL(`${siteUrl}/p/${CODE}`);
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  // #70: the results page's presses, each counted with fixed labels only.
+  await holdLinks(page);
+  await page.getByRole('link', { name: /^Open your sample ballot/ }).click();
+  await page
+    .getByRole('link', { name: /^Get directions/ })
+    .first()
+    .click();
+  await page.getByRole('button', { name: 'Share this page' }).click();
+  await expect
+    .poll(async () => events(await dataLayer(page)).map(([name]) => name))
+    .toEqual(['lookup_result', 'sample_ballot_open', 'directions_open', 'share']);
+  expect(await releaseLinks(page)).toEqual([false, false]);
   await page.getByRole('link', { name: 'How to vote' }).first().click();
   await expect(page).toHaveURL(`${siteUrl}/learn`);
   await page.locator(`main a[href="/learn/${TOPIC}"]`).first().click();
@@ -172,6 +211,14 @@ test('with an ID: redacted page views, no voter data to Google, no cookies', asy
     `${siteUrl}/learn/${TOPIC}`,
   ]);
   for (const [, , hit] of pageViews(layer)) expect(hit.page_referrer).toBe('');
+  const [lookup, ballot, directions, share] = events(layer);
+  expect(lookup).toEqual(['lookup_result', { source: 'location', outcome: 'precinct' }]);
+  expect(ballot).toEqual(['sample_ballot_open', {}]);
+  expect(directions).toEqual(['directions_open', { card: 'polls', provider: 'google' }]);
+  expect(share[0]).toBe('share');
+  expect(['share_sheet', 'clipboard', 'manual']).toContain(share[1].method);
+  expect(Object.keys(share[1])).toEqual(['method']);
+  expect(JSON.stringify(events(layer))).not.toMatch(/https?:|\.pdf|maps|\d/);
 
   const sent = JSON.stringify(layer);
   for (const needle of NEEDLES) expect(sent).not.toContain(needle);

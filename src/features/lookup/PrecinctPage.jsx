@@ -1,5 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useParams } from 'wouter';
+import { track } from '../../analytics/index.js';
 import Notice from '../../components/Notice.jsx';
 import OfficialLookups from '../../components/OfficialLookups.jsx';
 import TextLink from '../../components/TextLink.jsx';
@@ -208,18 +209,24 @@ function PrecinctResults({ code }) {
             <Notice variant="danger" key={result.attempt ?? 0}>
               {copy.errors[result.error]}{' '}
               {known ? (
-                <TextLink href={jurisdiction.officialLookupUrl} rel="noreferrer">
+                <TextLink
+                  href={jurisdiction.officialLookupUrl}
+                  rel="noreferrer"
+                  onClick={() => track('official_lookup_open', { card: 'precinct_error' })}
+                >
                   {copy.officialLookupFor(jurisdiction.id)}
                 </TextLink>
               ) : (
                 // Not a precinct code, so either board's (#93).
-                <OfficialLookups />
+                <OfficialLookups card="precinct_error" />
               )}
               .
             </Notice>
           )}
         </div>
-        {retryable && <RetryButton onRetry={retry} busy={loading} className="mt-3" />}
+        {retryable && (
+          <RetryButton onRetry={retry} busy={loading} where="precinct" className="mt-3" />
+        )}
       </div>
 
       {/* Below the skeleton and the error, so it pushes nothing down when it

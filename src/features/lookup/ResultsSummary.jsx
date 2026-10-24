@@ -1,4 +1,5 @@
 import { Suspense, useId } from 'react';
+import { track } from '../../analytics/index.js';
 import Button from '../../components/Button.jsx';
 import { CARD_EMPHASIS } from '../../components/Card.jsx';
 import TextLink, { LINK } from '../../components/TextLink.jsx';
@@ -76,8 +77,8 @@ export function PlaceSkeleton({ testId, early = false, count = false }) {
 }
 
 // A place: what it is and how far, its name and address, then `children` (its
-// status) and a directions link.
-function Place({ label, place, children }) {
+// status) and a directions link, counted as its card's (#70).
+function Place({ label, place, card, children }) {
   const name = place.name ?? copy.polls.unnamed(place.loc);
   return (
     <>
@@ -90,7 +91,12 @@ function Place({ label, place, children }) {
       <p>{copy.polls.address(place.address, place.zip)}</p>
       {children}
       <p className="mt-1">
-        <Button variant="secondary" href={directionsLinks(place).google} rel="noreferrer">
+        <Button
+          variant="secondary"
+          href={directionsLinks(place).google}
+          rel="noreferrer"
+          onClick={() => track('directions_open', { card, provider: 'google' })}
+        >
           {copy.polls.directions} <span className="sr-only">{copy.polls.linkTarget(name)}</span>
           <Arrow />
         </Button>
@@ -184,7 +190,7 @@ function ElectionDay({ code, origin }) {
     <ElectionDayPart>
       <HoursNote />
       {!result && <PlaceSkeleton testId="summary-poll-skeleton" />}
-      {nearest && <Place label={copy.summary.nearestPoll} place={nearest} />}
+      {nearest && <Place label={copy.summary.nearestPoll} place={nearest} card="polls" />}
     </ElectionDayPart>
   );
 }
@@ -246,7 +252,11 @@ export function EarlyVoteSummary({
         />
       )}
       {site && (
-        <Place label={openSite ? copy.summary.nearestOpen : copy.summary.nearestSite} place={site}>
+        <Place
+          label={openSite ? copy.summary.nearestOpen : copy.summary.nearestSite}
+          place={site}
+          card="early_voting"
+        >
           {siteStatus && <p>{copy.earlyVoting.status(siteStatus, formatLongDate)}</p>}
           {/* A count shows only for a site open now; while the first
                 counts load, two lines hold the count and its board (#27). */}

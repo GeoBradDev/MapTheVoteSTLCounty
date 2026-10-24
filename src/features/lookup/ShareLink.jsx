@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import { track } from '../../analytics/index.js';
 import Button from '../../components/Button.jsx';
 import { buttonClass } from '../../components/buttonClass.js';
 import { shareUrl } from '../../config/site.js';
@@ -86,6 +87,8 @@ export default function ShareLink({ code, children }) {
       sharingRef.current = true;
       try {
         await navigator.share({ title: copy.share.title(code), url });
+        // Counted by how it was shared only, never the link (#70).
+        track('share', { method: 'share_sheet' });
         return;
       } catch (error) {
         // The voter closed the share sheet.
@@ -98,8 +101,10 @@ export default function ShareLink({ code, children }) {
     try {
       await navigator.clipboard.writeText(url);
       setOutcome('copied');
+      track('share', { method: 'clipboard' });
     } catch {
       setOutcome('manual');
+      track('share', { method: 'manual' });
     }
   }
 

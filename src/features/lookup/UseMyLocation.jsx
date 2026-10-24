@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import Button from '../../components/Button.jsx';
 import Notice from '../../components/Notice.jsx';
 import { getDeviceLocation } from './deviceLocation.js';
+import { trackDeviceFailure } from './lookupOutcome.js';
 import { copy } from './useMyLocationCopy.js';
 
 /**
@@ -82,6 +83,8 @@ export default function UseMyLocation({ onLocate, onStart, addressInputRef }) {
     if (place) {
       onLocate(place);
     } else {
+      // Counted by its reason only (#70); a found place is counted by the lookup.
+      trackDeviceFailure(reason);
       setError({ reason, press });
       input?.focus();
     }
