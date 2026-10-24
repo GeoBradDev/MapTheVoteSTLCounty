@@ -963,7 +963,9 @@ views, Google signals and ad personalization. The app sends one page view per na
 `page_location` set to `siteUrl` plus the route pattern (`/`, `/p/:precinct` for every precinct
 page in any letter case, County or City, `/learn`, `/learn/<topic id>`, `/early-voting`,
 `/privacy`, `/not-found` for anything else; never a query string or hash), a fixed `page_title`
-per page type and an empty `page_referrer`, and sets the same values for GA's own later events.
+per page type and an empty `page_referrer`, and sets the same values with `set` for GA's own
+events. Never put a page field in `config`: gtag ranks event over config over set, so a config
+value would outrank every later `set` and GA's own events would keep reporting the first page.
 A new route in `src/App.jsx` needs its pattern in `routePattern` (a test fails until it has one).
 `e2e/analytics.e2e.js` builds the app with a test ID, serves it at the production origin and
 checks a lookup's page views and every request to Google's stubbed hosts.
@@ -973,8 +975,8 @@ Before setting the ID, apply these settings in GA, since they live there, not in
 1. Create a GA4 property and a web data stream for `mapthevotestl.com`.
 2. In the stream's Enhanced measurement, turn off page changes based on browser history events
    (the app sends its own redacted page views), outbound clicks, file downloads, site search and
-   form interactions: each sends real URLs (a sample ballot PDF link names the precinct). Scrolls
-   and video engagement may stay off too; the app does not need them.
+   form interactions: each sends real URLs (a sample ballot PDF link names the precinct). Turn
+   scrolls and video engagement off too; the app does not use them.
 3. Turn Google signals off, set data retention to the shortest option (2 months), and leave every
    Google Ads and other product link off.
 4. Put the `G-` ID in `src/config/site.js`. The CSP in `render.yaml` already allows the loader
@@ -983,7 +985,9 @@ Before setting the ID, apply these settings in GA, since they live there, not in
 Manual check before each election, once the ID is set: on the live site, open `/`, run a lookup
 and open a topic. In devtools, Application shows no cookies (`_ga*`), Local Storage or Session
 Storage for the site; each `collect` request in Network has `dl=https://mapthevotestl.com/p/:precinct`
-(never a real code) or another route pattern, a fixed `dt` and `gcs=G100` (all storage denied).
+(never a real code) or another route pattern, a fixed `dt`, no `dr` (or an empty one) and
+`gcs=G100` (all storage denied), and GA's own events (`user_engagement`) carry the current page's
+pattern, not the first page's.
 In GA's Realtime report, the page views show under the redacted paths. With Global Privacy
 Control on (Brave, or Firefox's setting), no request goes to Google.
 

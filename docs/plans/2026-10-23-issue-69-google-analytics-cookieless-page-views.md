@@ -23,8 +23,9 @@ off; the owner adds the `G-` ID in `src/config/site.js` and applies the GA prope
 3. The first `dataLayer` entry is `consent default` with `analytics_storage`, `ad_storage`,
    `ad_user_data` and `ad_personalization` all `denied`; nothing ever sends a consent
    `update`. `config` has `send_page_view: false`, `allow_google_signals: false`,
-   `allow_ad_personalization_signals: false`, and the redacted location, title and empty
-   referrer.
+   `allow_ad_personalization_signals: false`, and no page fields; the redacted location,
+   title and empty referrer are `set` before it (gtag ranks config over set, so a page field in
+   config would outrank every later set).
 4. The `gtag/js` script tag is added by a same-origin module (no inline script) after the
    `load` event, in idle time (bounded by a timeout), at most once.
 5. One page view per navigation (first load included; StrictMode double effects and the
@@ -124,3 +125,5 @@ off; the owner adds the `G-` ID in `src/config/site.js` and applies the GA prope
   against about 1.8 KB of headroom under the 120 KB budget. GA itself moved to `ga.js`, a chunk
   loaded only when analytics may run, after `load` in idle time; page views before it loads
   are queued as paths in memory. The first load grew 0.72 KB, 0.31 KB of it the notice text.
+- Review (finder 1): page fields moved from `config` to a `set` before it; the page view dedupe
+  now compares the canonical form the precinct redirect uses (case, spaces, trailing slash).

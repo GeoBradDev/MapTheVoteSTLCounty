@@ -75,11 +75,14 @@ export function startGa(win, id) {
     ad_personalization: 'denied',
   });
   gtag('js', new Date());
+  // The page fields go in set, never config: gtag ranks event over config
+  // over set, so a config value would outrank every later set and GA's own
+  // events would keep reporting the first page.
+  gtag('set', hitFor(win.location.pathname));
   gtag('config', id, {
     send_page_view: false,
     allow_google_signals: false,
     allow_ad_personalization_signals: false,
-    ...hitFor(win.location.pathname),
   });
   const script = win.document.createElement('script');
   script.async = true;

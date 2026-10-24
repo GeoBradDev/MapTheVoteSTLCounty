@@ -85,13 +85,15 @@ export function startAnalytics(win, id = gaMeasurementId, load = () => import('.
 
 /**
  * Sends a page view for `path`, once per navigation: the same path again (a
- * re-render, StrictMode's second effect, or the app replacing /p/cc007 with
- * /p/CC007) is not a new one. Does nothing while GA is off.
+ * re-render, StrictMode's second effect, or the app replacing /p/cc007/ or
+ * /p/%20cc007 with /p/CC007) is not a new one. Does nothing while GA is off.
  * @param {string} path
  */
 export function pageView(path) {
   if (!active) return;
-  const key = String(path).toLowerCase();
+  // As the app canonicalizes a precinct link (letter case, spaces, a
+  // trailing slash), so its replace of the URL is not a second page view.
+  const key = String(path).replace(/\s+/g, '').replace(/\/$/, '').toLowerCase();
   if (key === active.last) return;
   active.last = key;
   if (active.send) active.send(path);
