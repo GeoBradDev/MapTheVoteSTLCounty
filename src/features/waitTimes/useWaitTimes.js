@@ -108,7 +108,7 @@ export function createWaitTimesStore(
     if (inFlight.has(key) && !resumed) return;
     const sentAt = Date.now();
     inFlight.set(key, sentAt);
-    update(key, { askedAt: sentAt, resuming: Boolean(resumed) });
+    update(key, { askedAt: sentAt, resuming: resumed });
     const current = () => inFlight.get(key) === sentAt;
     try {
       const waits = await fetchers[key]();
