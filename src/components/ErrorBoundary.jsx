@@ -5,6 +5,7 @@ import Button from './Button.jsx';
 import Notice from './Notice.jsx';
 import OfficialLookups from './OfficialLookups.jsx';
 import TextLink from './TextLink.jsx';
+import { useNoindex } from './useNoindex.js';
 import { usePageTitle } from './usePageTitle.js';
 
 // What shows instead of a page that threw while rendering. It names no error
@@ -12,6 +13,7 @@ import { usePageTitle } from './usePageTitle.js';
 function ErrorScreen({ jurisdiction }) {
   const headingRef = useRef(null);
   usePageTitle(copy.heading);
+  useNoindex();
   useEffect(() => {
     headingRef.current?.focus();
   }, []);

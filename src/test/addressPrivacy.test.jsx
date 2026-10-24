@@ -2,7 +2,8 @@
 // precinct lookup (locate and the ArcGIS client) and the real Use my location
 // flow over stubbed network and geolocation, then looks everywhere the browser
 // could keep the address or its coordinates: storage, cookies, Cache Storage,
-// IndexedDB, the URL, the history state, the title and the console. Only the
+// IndexedDB, the URL, the history state, the title, the head's tags (#98) and
+// the console. Only the
 // geocoder is a fake. A real browser's HTTP cache and devtools storage are
 // checked by hand (README, Privacy).
 import { render, screen } from '@testing-library/react';
@@ -48,6 +49,7 @@ async function kept() {
     window.location.href,
     JSON.stringify(window.history.state),
     document.title,
+    document.head.outerHTML,
     document.cookie,
     ...entries(window.localStorage),
     ...entries(window.sessionStorage),
@@ -157,6 +159,34 @@ it('keeps no trace of the device location after Use my location', async () => {
   expectPointSentPrivately('-90.323456,38.523456');
 
   await expectNothingKept();
+});
+
+// The head tags (#98: description, Open Graph, card, robots) name no query
+// string or hash after a lookup either, on any route the lookup passes.
+it('puts no query string or hash in a head tag after a lookup', async () => {
+  renderApp();
+  await userEvent.type(screen.getByRole('combobox', { name: searchCopy.label }), ADDRESS);
+  await userEvent.click(screen.getByRole('button', { name: searchCopy.submit }));
+  await screen.findByText(copy.ready('CC007'));
+  const values = [...document.head.querySelectorAll('meta, link')].flatMap((el) =>
+    [...el.attributes].map((a) => a.value),
+  );
+  expect(values.some((v) => v.includes('mapthevotestl.com'))).toBe(true);
+  for (const value of values.filter((v) => /^https?:/.test(v))) {
+    expect(value).not.toMatch(/[?#]/);
+  }
+  expect(document.head.querySelector('meta[name="robots"]')?.content).toBe('noindex');
+});
+
+it('looks in the head for real, so an address in a head tag would fail', async () => {
+  const tag = document.createElement('meta');
+  tag.setAttribute('content', ADDRESS);
+  document.head.append(tag);
+  try {
+    expect(await kept()).toContain('7700');
+  } finally {
+    tag.remove();
+  }
 });
 
 it('looks in storage for real, so a stored address would fail', async () => {

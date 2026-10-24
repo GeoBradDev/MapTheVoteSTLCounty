@@ -3,6 +3,7 @@ import { useLocation, useParams } from 'wouter';
 import Notice from '../../components/Notice.jsx';
 import OfficialLookups from '../../components/OfficialLookups.jsx';
 import TextLink from '../../components/TextLink.jsx';
+import { useNoindex } from '../../components/useNoindex.js';
 import { NotFound } from '../../data/arcgis.js';
 import {
   cityWardPrecinct,
@@ -273,6 +274,9 @@ export default function PrecinctPage() {
   const { precinct } = useParams();
   const [, navigate] = useLocation();
   const canonical = canonicalCode(precinct);
+  // Out of search, County and City alike (owner decision on #98); shared links
+  // keep their preview, which comes from the shell's tags.
+  useNoindex();
 
   useEffect(() => {
     if (canonical) navigate(`/p/${canonical}`, { replace: true });
