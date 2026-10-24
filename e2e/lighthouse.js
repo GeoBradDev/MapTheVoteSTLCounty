@@ -1,6 +1,11 @@
 // Lighthouse performance run (#27) on the production build: build first
 // (`npm run build`), then `npm run test:perf`.
 //
+// Every run also takes Lighthouse's SEO category (#98): each of its scored
+// audits must pass, except the one a precinct page fails on purpose
+// (SEO_EXPECTED_FAILURES), which must fail there, so the gate also proves the
+// noindex is served.
+//
 // Each route is measured RUNS times with Lighthouse's mobile emulation at
 // 360 x 640 (the Moto G4 Lighthouse used to emulate) on simulated slow 4G with
 // a 4x CPU slowdown. The median run by score is compared with the budgets, and
@@ -42,6 +47,21 @@ const MIN_SCORE = 90;
 
 /** Largest Contentful Paint budget on simulated 4G, in ms. */
 const MAX_LCP_MS = 2500;
+
+/**
+ * The SEO audits a route fails on purpose, with the reason. Every other
+ * scored SEO audit must pass on every run of every route.
+ * @type {{ audit: string, applies: (path: string) => boolean, reason: string }[]}
+ */
+const SEO_EXPECTED_FAILURES = [
+  {
+    audit: 'is-crawlable',
+    applies: (route) => route.startsWith('/p/'),
+    reason:
+      'precinct pages are noindex (owner decision on #98): their polling places are right ' +
+      'only for the current election',
+  },
+];
 
 /**
  * The pages the issue names: landing, results (fixture precinct) and a learn
@@ -202,7 +222,7 @@ const REPORTS = new URL('../lighthouse-reports/', import.meta.url);
 const CONFIG = {
   extends: 'lighthouse:default',
   settings: {
-    onlyCategories: ['performance'],
+    onlyCategories: ['performance', 'seo'],
     formFactor: 'mobile',
     screenEmulation: {
       mobile: true,
@@ -282,8 +302,17 @@ async function measure(browser, { path: route, shows, code = CODE, clock }) {
     const { lhr } = result;
     if (lhr.runtimeError) throw new Error(`${route}: ${lhr.runtimeError.message}`);
     const audit = (id) => lhr.audits[id].numericValue;
+    // The scored SEO audits that did not pass (manual and not-applicable ones
+    // have a null score).
+    const seoFailed = lhr.categories.seo.auditRefs
+      .filter((ref) => ref.weight > 0)
+      .map((ref) => lhr.audits[ref.id])
+      .filter((a) => a.score !== null && a.score < 1)
+      .map((a) => a.id);
     return {
       score: Math.round(lhr.categories.performance.score * 100),
+      seo: Math.round(lhr.categories.seo.score * 100),
+      seoFailed,
       lcp: audit('largest-contentful-paint'),
       fcp: audit('first-contentful-paint'),
       tbt: audit('total-blocking-time'),
@@ -344,8 +373,24 @@ async function main() {
       console.log(
         `${route.label}: performance ${m.score} (runs ${runs.map((r) => r.score).join(', ')}), ` +
           `LCP ${Math.round(m.lcp)} ms, FCP ${Math.round(m.fcp)} ms, ` +
-          `TBT ${Math.round(m.tbt)} ms, CLS ${m.cls.toFixed(3)}, SI ${Math.round(m.si)} ms`,
+          `TBT ${Math.round(m.tbt)} ms, CLS ${m.cls.toFixed(3)}, SI ${Math.round(m.si)} ms, ` +
+          `SEO ${m.seo}`,
       );
+      const expected = SEO_EXPECTED_FAILURES.filter((e) => e.applies(route.path)).map(
+        (e) => e.audit,
+      );
+      for (const run of runs) {
+        const unexpected = run.seoFailed.filter((id) => !expected.includes(id));
+        const missing = expected.filter((id) => !run.seoFailed.includes(id));
+        if (unexpected.length) {
+          failures.push(`${route.label}: SEO audits failed: ${unexpected.join(', ')}`);
+        }
+        if (missing.length) {
+          failures.push(
+            `${route.label}: SEO audits passed that should fail: ${missing.join(', ')}`,
+          );
+        }
+      }
       if (!runs.every((r) => r.shown)) {
         failures.push(`${route.label}: a run ended without the page's content`);
       }
