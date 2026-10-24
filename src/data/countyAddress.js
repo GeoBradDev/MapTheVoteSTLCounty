@@ -247,6 +247,14 @@ function titleCase(value) {
 
 const text = (value) => (typeof value === 'string' ? value.trim() : '');
 
+// MSAG_COMMUNITY_NAME as a town, or undefined for ST LOUIS COUNTY (no
+// municipality), ST LOUIS CITY and another county's name.
+function municipalityOf(value) {
+  const name = text(value).toUpperCase();
+  if (!name || / COUNTY$/.test(name) || name === 'ST LOUIS CITY') return undefined;
+  return titleCase(name);
+}
+
 // A usable county record: current, an integer house number, a street and a
 // point. `props` has the fields addressMatch.js reads.
 function recordOf(feature) {
@@ -263,6 +271,10 @@ function recordOf(feature) {
     street,
     postcode: text(a.ZIPCODE) || undefined,
     city: titleCase(a.MAILINGCITY) || undefined,
+    // The town the record is in, which a voter may type in place of its
+    // mailing city (41 S Central Ave is in Clayton, mailed as Saint Louis,
+    // #143). Not a county or the City: those name no town.
+    municipality: municipalityOf(a.MSAG_COMMUNITY_NAME),
     state: 'Missouri',
     // The layer holds a few St. Louis City addresses (MUNI STL); they are City
     // places (their City precinct, #88), never a county precinct.
