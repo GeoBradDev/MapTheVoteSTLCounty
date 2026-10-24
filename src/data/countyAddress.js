@@ -60,7 +60,8 @@ const FIND_LIMIT = 1000;
 const SUGGEST_LIMIT = 25;
 const MAX_SUGGESTIONS = 5;
 
-const OUT_FIELDS = [
+/** The fields the source asks for, also used to record its test fixtures. */
+export const OUT_FIELDS = [
   'OBJECTID',
   'ADRNO',
   'ADRDIR',
@@ -73,6 +74,7 @@ const OUT_FIELDS = [
   'FULL_ADDRESS',
   'STATUS',
   'MUNI',
+  'MSAG_COMMUNITY_NAME',
 ].join(',');
 const CURRENT = "STATUS = 'Current'";
 // UNITDESC codes of records that are not homes.

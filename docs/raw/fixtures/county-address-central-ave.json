@@ -1,0 +1,132 @@
+{
+  "objectIdFieldName": "OBJECTID",
+  "globalIdFieldName": "GlobalID",
+  "geometryType": "esriGeometryPoint",
+  "spatialReference": {
+    "wkid": 4326,
+    "latestWkid": 4326
+  },
+  "hasZ": false,
+  "fields": [
+    {
+      "name": "OBJECTID",
+      "alias": "OBJECTID",
+      "type": "esriFieldTypeOID"
+    },
+    {
+      "name": "ADRNO",
+      "alias": "ADRNO",
+      "type": "esriFieldTypeDouble"
+    },
+    {
+      "name": "ADRDIR",
+      "alias": "ADRDIR",
+      "type": "esriFieldTypeString",
+      "length": 2
+    },
+    {
+      "name": "ADRSTR",
+      "alias": "ADRSTR",
+      "type": "esriFieldTypeString",
+      "length": 30
+    },
+    {
+      "name": "ADRSUF",
+      "alias": "ADRSUF",
+      "type": "esriFieldTypeString",
+      "length": 8
+    },
+    {
+      "name": "UNITDESC",
+      "alias": "UNITDESC",
+      "type": "esriFieldTypeString",
+      "length": 10
+    },
+    {
+      "name": "UNITNO",
+      "alias": "UNITNO",
+      "type": "esriFieldTypeString",
+      "length": 10
+    },
+    {
+      "name": "MAILINGCITY",
+      "alias": "MAILINGCITY",
+      "type": "esriFieldTypeString",
+      "length": 50
+    },
+    {
+      "name": "ZIPCODE",
+      "alias": "ZIPCODE",
+      "type": "esriFieldTypeString",
+      "length": 5
+    },
+    {
+      "name": "FULL_ADDRESS",
+      "alias": "FULL_ADDRESS",
+      "type": "esriFieldTypeString",
+      "length": 150
+    },
+    {
+      "name": "STATUS",
+      "alias": "STATUS",
+      "type": "esriFieldTypeString",
+      "length": 50
+    },
+    {
+      "name": "MUNI",
+      "alias": "MUNI",
+      "type": "esriFieldTypeString",
+      "length": 3
+    },
+    {
+      "name": "MSAG_COMMUNITY_NAME",
+      "alias": "MSAG_COMMUNITY_NAME",
+      "type": "esriFieldTypeString",
+      "length": 50
+    }
+  ],
+  "features": [
+    {
+      "attributes": {
+        "OBJECTID": 33817,
+        "ADRNO": 41,
+        "ADRDIR": "N",
+        "ADRSTR": "CENTRAL",
+        "ADRSUF": "AVE",
+        "UNITDESC": "",
+        "UNITNO": "",
+        "MAILINGCITY": "SAINT LOUIS",
+        "ZIPCODE": "63105",
+        "FULL_ADDRESS": "41 N CENTRAL AVE",
+        "STATUS": "Current",
+        "MUNI": "CLY",
+        "MSAG_COMMUNITY_NAME": "CLAYTON"
+      },
+      "geometry": {
+        "x": -90.33828188381896,
+        "y": 38.65131750489151
+      }
+    },
+    {
+      "attributes": {
+        "OBJECTID": 142783,
+        "ADRNO": 41,
+        "ADRDIR": "S",
+        "ADRSTR": "CENTRAL",
+        "ADRSUF": "AVE",
+        "UNITDESC": "",
+        "UNITNO": "",
+        "MAILINGCITY": "SAINT LOUIS",
+        "ZIPCODE": "63105",
+        "FULL_ADDRESS": "41 S CENTRAL AVE",
+        "STATUS": "Current",
+        "MUNI": "CLY",
+        "MSAG_COMMUNITY_NAME": "CLAYTON"
+      },
+      "geometry": {
+        "x": -90.33874215297153,
+        "y": 38.64933480391182
+      }
+    }
+  ]
+}

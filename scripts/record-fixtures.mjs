@@ -16,6 +16,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import election from '../src/config/election.js';
 import { CITY_GEOCODER_URL } from '../src/data/cityAddress.js';
+import { findWhere, LIVE_URL, OUT_FIELDS } from '../src/data/countyAddress.js';
 
 const OUT_DIR = path.resolve('docs/raw/fixtures');
 
@@ -191,6 +192,20 @@ const FIXTURES = {
   'city-boundary-at-county.json': [
     cityLayer('boundary'),
     cityPointQuery(COUNTY_POINT, 'OBJECTID', cityConfig.boundaryWhere),
+  ],
+  // The county's live address layer, asked as find() asks for a Clayton address
+  // whose mailing city is Saint Louis (#143): every 41 ...CENTRAL... record.
+  'county-address-central-ave.json': [
+    `${LIVE_URL}/query`,
+    {
+      where: findWhere('41 S Central Ave, Clayton, MO 63105'),
+      orderByFields: 'OBJECTID',
+      resultRecordCount: '1000',
+      outFields: OUT_FIELDS,
+      returnGeometry: 'true',
+      outSR: '4326',
+      f: 'json',
+    },
   ],
   // An invalid field: ArcGIS answers HTTP 200 with an error body.
   'error-body.json': [precincts, { where: 'no_such_field=1', f: 'json' }],
