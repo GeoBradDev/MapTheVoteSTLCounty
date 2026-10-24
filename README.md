@@ -947,7 +947,7 @@ set to 100 m or less. If it says the location is only a rough estimate, press it
 
 ### Google Analytics
 
-Page view counts with Google Analytics 4 (#69), in `src/analytics/`, the only app code that
+Page view and voter action counts with Google Analytics 4 (#69, #70), in `src/analytics/`, the only app code that
 calls `gtag`, reads the `dataLayer` or names Google's analytics hosts (`src/test/analyticsOnly.test.js`
 fails on any other; the notice's text and `render.yaml` name them too).
 It is off while `gaMeasurementId` in `src/config/site.js` is empty, as it ships (owner decision
@@ -991,7 +991,7 @@ send the same events, with no jurisdiction.
 | `lookup_result` | an address search or Use my location finishes | `source`: `address`, `location`; `outcome`: `precinct` (County or City), `no_precinct` (in the County, no precinct), `city_referral` (the City's precinct not found, #88), `out_of_area`, `no_match`, `unavailable`, `failed`, `offline`, and for the device `denied`, `timeout`, `coarse` |
 | `sample_ballot_open` | the County or City sample ballot link is pressed | none |
 | `directions_open` | a directions link is pressed | `card`: `polls`, `early_voting` (the results summary's buttons count as their card's), `wait_times`; `provider`: `google`, `apple` |
-| `official_lookup_open` | a link to a board's official lookup is pressed | `card`: `polls`, `early_voting`, `sample_ballot`, `districts`, `lookup_error`, `precinct_error`, `wait_times`, `error_screen` |
+| `official_lookup_open` | a link to a board's official lookup is pressed | `card`: `polls`, `early_voting`, `sample_ballot`, `districts`, `lookup_error`, `precinct_error`, `wait_times`, `error_screen`, `referral` (the out-of-area and City referral notices), `status` (the precinct status banner) |
 | `share` | Share this page finishes | `method`: `share_sheet`, `clipboard`, `manual` (closing the share sheet is not counted) |
 | `retry` | a Try again button is pressed | `where`: `lookup`, `precinct`, `polls`, `early_voting`, `districts`, `wait_times` |
 

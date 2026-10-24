@@ -71,8 +71,10 @@ describe('PrivacyPage with Google Analytics on', () => {
       'Share',
       'official lookup',
       'Try again',
-      'whether a search found a precinct',
-      'never what you searched for, where you are, or which place, precinct or link it was',
+      'how a search ended',
+      'whether it used an address or your location',
+      'whether it found a precinct or why not',
+      'never what you searched for, where you are, or which place, precinct or web address it was',
     ]) {
       expect(ga).toHaveTextContent(text);
     }

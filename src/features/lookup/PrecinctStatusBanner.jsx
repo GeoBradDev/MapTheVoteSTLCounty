@@ -1,11 +1,12 @@
+import { track } from '../../analytics/index.js';
 import Notice from '../../components/Notice.jsx';
 import TextLink from '../../components/TextLink.jsx';
 import election from '../../config/election.js';
 import { copy } from './resultsCopy.js';
 
-function Link({ href, children }) {
+function Link({ href, onClick, children }) {
   return (
-    <TextLink href={href} rel="noreferrer">
+    <TextLink href={href} rel="noreferrer" onClick={onClick}>
       {children}
     </TextLink>
   );
@@ -27,7 +28,13 @@ function bannerText({ kind, message }) {
     case 'unknown':
       return (
         <>
-          {copy.status.unknown} <Link href={election.officialLookupUrl}>{copy.officialLookup}</Link>
+          {copy.status.unknown}{' '}
+          <Link
+            href={election.officialLookupUrl}
+            onClick={() => track('official_lookup_open', { card: 'status' })}
+          >
+            {copy.officialLookup}
+          </Link>
           .
         </>
       );

@@ -14,6 +14,9 @@ import CitySampleBallotCard from './CitySampleBallotCard.jsx';
 import DistrictsCard from './DistrictsCard.jsx';
 import EarlyVotingCard from './EarlyVotingCard.jsx';
 import { copy as errorCopy } from './errorCopy.js';
+import OutOfCountyNotice from './OutOfCountyNotice.jsx';
+import { copy as noticeCopy } from './outOfCountyCopy.js';
+import PrecinctStatusBanner from './PrecinctStatusBanner.jsx';
 import PollsCard from './PollsCard.jsx';
 import { copy } from './resultsCopy.js';
 import SampleBallotCard from './SampleBallotCard.jsx';
@@ -158,4 +161,44 @@ describe('ShareLink', () => {
     await press();
     expect(await tracked.events()).toEqual([]);
   });
+});
+
+describe('OutOfCountyNotice', () => {
+  // Only its links to a board's official lookup; the City board's page and
+  // Missouri's voter outreach page are not lookups.
+  it.each([
+    ['stl-city', noticeCopy['stl-city']],
+    ['county-unmatched', noticeCopy['county-unmatched']],
+  ])('counts the official lookup link of the %s notice as a referral', async (kind, notice) => {
+    render(<OutOfCountyNotice kind={kind} />);
+    const labels = notice.paragraphs
+      .map(({ link }) => link)
+      .filter((link) => link && /Lookup$/.test(link.href));
+    expect(labels).toHaveLength(1);
+    const link = screen.getByRole('link', { name: labels[0].label });
+    expect(await pressLink(userEvent.click, link)).toBe(false);
+    expect(await tracked.events()).toEqual([['official_lookup_open', { card: 'referral' }]]);
+  });
+
+  it.each(['stl-city', 'missouri', 'unknown'])(
+    'counts nothing for the other links of the %s notice',
+    async (kind) => {
+      render(<OutOfCountyNotice kind={kind} />);
+      const others = noticeCopy[kind].paragraphs
+        .map(({ link }) => link)
+        .filter((link) => link && !/Lookup$/.test(link.href));
+      expect(others.length).toBeGreaterThan(0);
+      for (const { label } of others) {
+        await pressLink(userEvent.click, screen.getByRole('link', { name: label }));
+      }
+      expect(await tracked.events()).toEqual([]);
+    },
+  );
+});
+
+it('PrecinctStatusBanner counts its official lookup link when the status is unknown', async () => {
+  render(<PrecinctStatusBanner status={{ kind: 'unknown' }} />);
+  const link = screen.getByRole('link', { name: copy.officialLookup });
+  expect(await pressLink(userEvent.click, link)).toBe(false);
+  expect(await tracked.events()).toEqual([['official_lookup_open', { card: 'status' }]]);
 });

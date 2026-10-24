@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { track } from '../../analytics/index.js';
 import Notice from '../../components/Notice.jsx';
 import TextLink from '../../components/TextLink.jsx';
 import election from '../../config/election.js';
@@ -11,6 +12,9 @@ const HREFS = {
   moVoterOutreach: referrals.moVoterOutreach.url,
   countyLookup: election.officialLookupUrl,
 };
+// The boards' own lookups, counted when pressed (#70); the other links are not.
+const LOOKUPS = new Set(['stlCityLookup', 'countyLookup']);
+const onLookup = () => track('official_lookup_open', { card: 'referral' });
 
 /**
  * Tells a voter whose place is in neither a County nor a City precinct where
@@ -36,7 +40,11 @@ export default function OutOfCountyNotice({ kind, headingLevel = 2 }) {
           {link && (
             <>
               {' '}
-              <TextLink href={HREFS[link.href]} rel="noreferrer">
+              <TextLink
+                href={HREFS[link.href]}
+                rel="noreferrer"
+                onClick={LOOKUPS.has(link.href) ? onLookup : undefined}
+              >
                 {link.label}
               </TextLink>
               {after}

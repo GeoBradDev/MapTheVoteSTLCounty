@@ -48,6 +48,8 @@ export const EVENTS = Object.freeze({
       'precinct_error',
       'wait_times',
       'error_screen',
+      'referral',
+      'status',
     ),
   }),
   share: Object.freeze({ method: list('share_sheet', 'clipboard', 'manual') }),
