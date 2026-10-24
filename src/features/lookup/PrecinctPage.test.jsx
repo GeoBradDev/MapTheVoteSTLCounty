@@ -1,7 +1,15 @@
 // Fixtures are live responses recorded by scripts/record-fixtures.mjs. The real
 // data client runs against a stubbed fetch. The page is imported fresh for each
 // test, since the client caches the polls list for the page's lifetime.
-import { configure, getConfig, render, screen, waitFor, within } from '@testing-library/react';
+import {
+  cleanup,
+  configure,
+  getConfig,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
@@ -79,7 +87,25 @@ beforeEach(async () => {
   ({ rememberLookupPoint } = await import('./lookupPoint.js'));
 });
 
-afterEach(() => {
+// Whether any of this test's answers is one query() retries: a failed fetch,
+// a 5xx or a 429 (isTransient in src/data/arcgis.js).
+const retried = (mock) =>
+  mock.mock.settledResults.some(
+    ({ type, value }) =>
+      type === 'rejected' ||
+      (type === 'fulfilled' && (value?.status >= 500 || value?.status === 429)),
+  );
+
+// A retry waits RETRY_DELAY_MS on a real timer, and unmounting does not stop
+// one already waiting: it then called the global fetch, by then a later
+// test's stub, and failed that test's request checks (#186). So unmount, let
+// failures still being handled arm their retries, and, if any did, wait out
+// the delay here: Node fires timers of the same delay in the order they were
+// set, so each retry reaches this test's own stub before the next test starts.
+afterEach(async () => {
+  cleanup();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  if (retried(fetchMock)) await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
   vi.unstubAllGlobals();
   vi.useRealTimers();
 });
