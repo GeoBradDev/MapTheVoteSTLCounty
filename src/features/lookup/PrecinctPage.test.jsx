@@ -100,10 +100,12 @@ const retried = (mock) =>
 
 // A retry waits RETRY_DELAY_MS on a real timer, and unmounting does not stop
 // one already waiting: it then called the global fetch, by then a later
-// test's stub, and failed that test's request checks (#186). So unmount, let
-// failures still being handled arm their retries, and, if any did, wait out
-// the delay here: Node fires timers of the same delay in the order they were
-// set, so each retry reaches this test's own stub before the next test starts.
+// test's stub, and failed that test's request checks (#186). Unmounting only
+// after the unstub also let a still mounted page ask the setup file's failing
+// fetch, whose retry then did the same. So unmount first, let failures still
+// being handled arm their retries, and, if any did, wait out the delay here:
+// Node fires timers of the same delay in the order they were set, so each
+// retry reaches this test's own stub before the next test starts.
 // Only Date may be faked here: with fake timers this hook would never finish.
 afterEach(async () => {
   cleanup();

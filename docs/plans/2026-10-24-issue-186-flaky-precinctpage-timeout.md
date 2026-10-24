@@ -36,6 +36,11 @@ because nothing a voter sees changes.
   from matching runs to the 4000 ms wait timeout, and with the test's earlier waits that can pass
   Vitest's 5000 ms test timeout: the timeout the issue reports. (Not reproduced here as a timeout;
   the extra call is the one cause seen in about 75 runs.)
+- A second path to the same leak (found in review): the old `afterEach` unstubbed `fetch` before
+  the setup file's `cleanup()` unmounted the page, so a request the still mounted page sent in that
+  gap (the polling place rooms) reached `src/test/setup.js`'s failing fetch, which `query()` treats
+  as transient, and its retry landed in the next test. Unmounting first, in this file's
+  `afterEach`, closes it; this is the rooms call in the Revision below.
 - Why it is new: the wait loops run only while an early voting site is open. Tests that do not fake
   the date run at the real time, and early voting is now open, so since #184 and #105 these loops
   run in full test runs during opening hours.
