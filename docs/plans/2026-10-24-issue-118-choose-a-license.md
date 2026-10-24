@@ -33,8 +33,10 @@ or bundle code changes.
 ## Order of work
 
 1. Write `src/test/license.test.js` checking criteria 1 to 3; run it red.
-2. Add `LICENSE`, the `license` field (via `npm pkg set license=MIT`, then `npm install
-   --package-lock-only` so the lockfile records it), and the README section; run it green.
+2. Add `LICENSE`, the `license` field in `package.json` and in `package-lock.json`'s root
+   package entry (by hand: `npm install --package-lock-only` was tried and also added
+   unrelated optional wasm entries to the lockfile, so it was reverted; `npm ci` accepts the
+   hand-edited lockfile unchanged), and the README section; run it green.
 3. Full gate.
 
 ## Risks
