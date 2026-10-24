@@ -197,8 +197,15 @@ export function matchesStreet(text, props) {
 
 // Whether the typed town is the address's municipality (a county record's
 // MSAG community, like Clayton for an address mailed as Saint Louis, #143).
+// St. Louis confirms nothing, and "and" is left out, since the county writes
+// TOWN & COUNTRY.
 function isMunicipality(typedPlace, props) {
-  return Boolean(typedPlace) && typedPlace === words(props.municipality).join(' ');
+  const name = words(props.municipality).join(' ');
+  return (
+    Boolean(name) &&
+    !ST_LOUIS_NAMES.has(typedPlace) &&
+    typedPlace.replace(/\band /g, '') === name.replace(/\band /g, '')
+  );
 }
 
 // Typed text names a feature when:

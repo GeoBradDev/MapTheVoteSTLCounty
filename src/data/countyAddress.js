@@ -463,7 +463,14 @@ export function createCountyAddressSource({
       const place = aligned ? typedPlaceAfter(typed, aligned) : '';
       let pool = sameStreet;
       if (zip) pool = sameStreet.filter((r) => r.props.postcode === zip);
-      else if (place && place !== ST_LOUIS) pool = matches;
+      else if (place && place !== ST_LOUIS) {
+        // The town picks addresses, never records of one: the records of one
+        // address can name different municipalities (1950 Walton Rd 63114:
+        // the house in Overland, Unit R in Vinita Park, #143), so every record
+        // of each matching address stays for the unit and precinct checks.
+        const sites = new Set(matches.map(siteKey));
+        pool = sameStreet.filter((r) => sites.has(siteKey(r)));
+      }
       if (!pool.length) return { status: 'none' };
       // A house the text could mean, but not by the strict rules (its town or
       // direction is not typed): no match, rather than another source's guess.
