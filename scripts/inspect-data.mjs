@@ -3,10 +3,17 @@
 // Board's layers (#95) come from src/config/election.js and are sampled only
 // for the fields the app reads, never `*`: the districts layer also holds
 // officeholder names and contacts, the voting locations layer staff contacts.
-// Usage: node scripts/inspect-data.mjs
+//
+// It first lists every service in the County and City service directories
+// (#101) and prints the ones docs/data.md does not mention (Service inventory).
+// It reads only the directory listings: never a listed service's data or
+// metadata, as some are the Board's forms and hold voters' personal data.
+// Usage: node scripts/inspect-data.mjs [--inventory]
+//   --inventory  list the services the doc does not mention, then stop
+//                (nothing is written to docs/raw/).
 
 import { realpathSync } from 'node:fs';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import election from '../src/config/election.js';
@@ -29,6 +36,110 @@ const SERVICES = [
   'lookup_view_abs',
   'St_Louis_County_Boundary',
 ];
+
+const DATA_DOC = path.resolve('docs/data.md');
+
+/**
+ * The service directories the inventory lists (docs/data.md, Service inventory).
+ * `key` names each one's ```services blocks there.
+ */
+export const INVENTORY_ROOTS = [
+  { key: 'county', label: 'St. Louis County Board of Elections org', url: election.serviceRoot },
+  { key: 'city', label: 'St. Louis City org', url: election.jurisdictions.city.serviceRoot },
+  {
+    key: 'boe',
+    label: 'City Board folder on the City GIS server',
+    url: 'https://maps6.stlouis-mo.gov/arcgis/rest/services/BOE',
+  },
+];
+
+// A services block line needs this many characters besides `*`, so a stray
+// `*` cannot mark every service as documented.
+const MIN_PATTERN_LITERALS = 4;
+
+const INVENTORY_HEADING = '## Service inventory';
+
+/** The Service inventory section of docs/data.md: its heading up to the next `## ` heading. */
+function inventorySection(markdown) {
+  const lines = markdown.split('\n');
+  const start = lines.findIndex((l) => l.trim() === INVENTORY_HEADING);
+  if (start === -1) return '';
+  const end = lines.findIndex((l, i) => i > start && /^## /.test(l));
+  return lines.slice(start, end === -1 ? undefined : end).join('\n');
+}
+
+function globToRegExp(pattern) {
+  const body = pattern.split('*').map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  return new RegExp(`^${body.join('.*')}$`);
+}
+
+/**
+ * What the Service inventory section of docs/data.md documents, per root: each
+ * line of its ```services <key> blocks, one service name per line, where `*`
+ * matches any characters. Only those blocks count, never a code span: the
+ * tables' code spans also hold field names, which would hide a new service of
+ * the same name, and a block belongs to one root, so a name in one org cannot
+ * hide the same name in another.
+ */
+export function documentedServices(markdown) {
+  const documented = Object.fromEntries(
+    INVENTORY_ROOTS.map(({ key }) => [key, { names: new Set(), patterns: [] }]),
+  );
+  const section = inventorySection(markdown);
+  for (const [, key, block] of section.matchAll(/^```services (\w+)[ \t]*\n([\s\S]*?)^```/gm)) {
+    const entry = documented[key];
+    if (!entry) continue;
+    for (const raw of block.split('\n')) {
+      const line = raw.trim();
+      if (!line) continue;
+      if (!line.includes('*')) entry.names.add(line);
+      else if (line.replace(/\*/g, '').length >= MIN_PATTERN_LITERALS) {
+        entry.patterns.push(globToRegExp(line));
+      }
+    }
+  }
+  return documented;
+}
+
+/** The names one root's `documentedServices` entry does not cover, each once, in order. */
+export function undocumentedServices(serviceNames, documented) {
+  const seen = new Set();
+  return serviceNames.filter((name) => {
+    if (seen.has(name)) return false;
+    seen.add(name);
+    return !documented.names.has(name) && !documented.patterns.some((re) => re.test(name));
+  });
+}
+
+/**
+ * The service names in a services directory listing. ArcGIS answers a wrong or
+ * locked root with HTTP 200 and an error body, so that fails rather than read
+ * as a root with no services.
+ */
+export function serviceNames(listing) {
+  if (listing?.error) {
+    throw new Error(`${listing.error.code ?? 'error'} ${listing.error.message ?? ''}`.trim());
+  }
+  if (!Array.isArray(listing?.services)) throw new Error('no services list in the response');
+  return listing.services.map((s) => s.name);
+}
+
+async function inventory() {
+  const documented = documentedServices(await readFile(DATA_DOC, 'utf8'));
+  for (const { key, label, url } of INVENTORY_ROOTS) {
+    try {
+      const names = [...new Set(serviceNames(await getJson(`${url}?f=json`)))];
+      const missing = undocumentedServices(names, documented[key]);
+      console.log(
+        `${missing.length ? 'new ' : 'ok  '} ${label}: ${names.length} services, ${missing.length} not in docs/data.md`,
+      );
+      for (const name of missing) console.log(`       ${name}`);
+    } catch (err) {
+      console.log(`fail ${label}: ${err.message}`);
+      process.exitCode = 1;
+    }
+  }
+}
 
 async function getJson(url) {
   const res = await fetch(url);
@@ -114,6 +225,9 @@ async function inspectService(service) {
 }
 
 async function main() {
+  await inventory();
+  if (process.argv.includes('--inventory')) return;
+
   await mkdir(OUT_DIR, { recursive: true });
 
   for (const service of SERVICES) {

@@ -87,7 +87,7 @@ The scripts that talk to live services are run by hand (and some by the daily da
 workflow), never in CI:
 
 ```sh
-node scripts/inspect-data.mjs         # dump the County and City layers' schemas and samples to docs/raw/
+node scripts/inspect-data.mjs         # list services docs/data.md does not mention, then dump the layers to docs/raw/
 node scripts/record-fixtures.mjs      # re-record the live responses the tests use (docs/raw/fixtures/)
 node scripts/check-config.mjs         # check the layers src/config/election.js names (Data health check)
 node scripts/check-geocoder.mjs       # check address search end to end (Address search)
@@ -172,6 +172,11 @@ may need new values too. Work on a branch and merge through the usual pull reque
    RSMo 128.346 and a few sample ballots, see `docs/data.md`, then set `congressionalField`
    and `congressionalMap`) and the sample ballot link format. The script saves only 3 sample
    rows per layer, so query the layer for the distinct `in_election` and `abs_type` values.
+   The script starts by re-checking the inventory: it lists every service in the County and
+   City orgs and the City Board's `BOE` folder on `maps6.stlouis-mo.gov`, and prints each one
+   `docs/data.md` does not mention. Add each to the Service
+   inventory there, its name in its root's `services` block (county, city or boe), with why it is used or not and the date
+   (`node scripts/inspect-data.mjs --inventory` runs only this check).
 3. **Update `src/config/election.js` and `src/config/cityResults.js`.** Every value that
    changes between elections is in one of them (the second holds what only the City's results
    cards read, see [Election config](#election-config)), including every link to that

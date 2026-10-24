@@ -2,6 +2,8 @@
 
 Inspected 2026-10-20 with `node scripts/inspect-data.mjs`. Raw schema and sample
 dumps are in `docs/raw/`. Re-run the script before each election and update this file.
+The Service inventory, at the end, lists every service in the County and City orgs and why
+each is used or not; the script prints any service it does not mention.
 
 The County precinct and polling place layers are read through `src/data/arcgis.js`, the St.
 Louis City layers through `src/data/cityArcgis.js` (St. Louis City, at the end). Their tests
@@ -1144,3 +1146,558 @@ means inside. A backup to the precinct point query, as the county boundary is fo
 The first row by `OBJECTID` is the outline the home page's dot map draws (#184; County
 boundary, above).
 
+
+## Service inventory
+
+Every service in the two ArcGIS orgs the app reads, and in the City Board's folder on the City's
+GIS server, with why the app uses it or not (#101), so the next election's inspection does not
+repeat the work and nobody adds a layer that was ruled out for a reason. The service lists were
+taken on 2026-10-24; each table row has its own check date.
+
+- County: `https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services` (223 services)
+- City: `https://services6.arcgis.com/HZXbCkpCSqbGd0vK/ArcGIS/rest/services` (159 services; the
+  whole City government's org, not only the City Board's)
+- City Board folder: `https://maps6.stlouis-mo.gov/arcgis/rest/services/BOE` (2 services)
+
+`node scripts/inspect-data.mjs` starts by listing all three and printing every service this file
+does not mention; `--inventory` does only that and writes nothing. A service counts as mentioned
+only when it is a line of a ```` ```services county ````, ```` ```services city ```` or
+```` ```services boe ```` block in this section (the blocks for its own root), one name per
+line, where `*` matches any characters. Code spans do not count, here or elsewhere in this
+file: many are field names, which would hide a new service of the same name. So a service the
+tables below give a reason for is also listed in its root's "Named in the tables above" block.
+A root that answers with an error, or with no services list, is a `fail` line, not an empty
+org. Before each election, run it and add each new service here: a reason in a table or a
+block's summary, and its name in the right block (README, Updating for a new election). Never
+use a family pattern like `polls_*`, `*_view` or `BOE/*`: the script ignores only a pattern
+with fewer than 4 characters besides `*`, so these would hide the next election's
+`polls_YYYY_MM_view` or every new service in a root.
+
+The inventory step reads only the directory listings. It never queries a listed service or reads
+its metadata: some are the Board's forms and hold voters' personal data. What each opaque
+`service_*` and `survey123_*` service is came from its public item title in the org's content
+search, not from the service.
+
+### Read by the app
+
+| Service | Org | What the app reads | Checked |
+|---|---|---|---|
+| `precincts_2026_11_view` | County | Precincts, sample ballot links, districts (Layers, above) | 2026-10-24 |
+| `polls_2026_11_view` | County | Election Day polling places and in-person absentee sites (Layers, above) | 2026-10-24 |
+| `St_Louis_County_Boundary` | County | The County outline (County boundary, above) | 2026-10-24 |
+| `November_3_2026_Polling_Places_Dashboard_view` | County | `ACTIVE_ROOM` only (Polling place rooms, above) | 2026-10-24 |
+| `Voters_in_Line_View` | `IeWM0VelvUwce9qE`, a third org | County early voting line counts (Wait times, County, above) | 2026-10-24 |
+| `ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a` | City | Layer 1 precincts, layer 2 districts (names and numbers only) and the City outline (St. Louis City, above) | 2026-10-24 |
+| `VotingLocations_currentwait_4533ffc5e0c84851a35cc97e64bb160a` | City | The 56 Election Day sites, 8 early voting sites and City line counts (St. Louis City and Wait times, City, above) | 2026-10-24 |
+| `Maps/ASR_Address_Points` on `maps.stlouisco.com`, then `Address_Points` on `services2.arcgis.com` | St. Louis County government | Address search (Geocoding, above) | 2026-10-24 |
+| `GEOCODERS/COMPOSITE_GEOCODE` on `maps6.stlouis-mo.gov` | City | City address search and the City check (Geocoding, above) | 2026-10-24 |
+
+"Checked" here means the layer answered its `?f=json` with the expected name on that day.
+
+### Reviewed and not used: County
+
+Org `wkbq75VVf2MvUvs7`.
+
+| Layer or field | What it is | Why not | Checked |
+|---|---|---|---|
+| `Polling_Places_Attachment_Gallery_view` layer 34, attachments | Photos of polling places (758 rows across years, some with 6 attachments: building photos and screenshots) | Unreviewed internal photos; some may show people or interiors. Not without the Board's say. | 2026-10-21 |
+| `PHOTO_URL` on the dashboard and gallery layers | Portal images titled `TurnIn1`, `Turnin2` (20 distinct across 221 rows) | Internal turn-in route images, not building photos. | 2026-10-21 |
+| `Muni_Poly_Jan2026_view` `URL` (and its source, `Muni_Poly_Jan2026`) | One link per municipality (88) | Links go to mayors' pages or Wikipedia: officeholder pages, not election information. | 2026-10-21 |
+| `commercial_addresses_view`, `usps_ups_view` | 65 commercial mailbox addresses (`Postal Box Address`, UPS Store) and buffers | For registration checks at the Board, not for finding where to vote. | 2026-10-21 |
+| `Table_Voter_Curbside_CheckIn` | Curbside check-in table with voter name, address and vehicle fields | Voter personal data. Never query it. | 2026-10-21 |
+| `11_3_2026_Precincts`, `11_3_26_PollingPlaces` | Source layers behind the two views the app reads | Same data. `notes` and `countywide` are blank. | 2026-10-21 |
+| `Municipality_Wards_Jan2026_view` (and its source, `Municipality_Wards_Jan2026`), `Zip_Codes_StLouis_County` | Ward and ZIP polygons | The precinct already carries its ward; ZIPs are from 2023. | 2026-10-21 |
+| `November_3_2026_Precincts_Dashboard_view` (and its source, `November_3_2026_Precincts_Dashboard`), `Party_Ballot_By_Precincts_view`, the `Absentee_Turnout_*` and `November_2020_Gubernatorial_Turnout_*` services | Turnout and primary ballot counts | Turnout is out of scope (`November_3_2026_Precincts_Dashboard_view`, above). | 2026-10-21 |
+| `sat_name_export_2026_11`, `2026_11_abs_ballot_app_precincts_view` | Internal absentee site codes; the absentee application map's precincts | Already covered by the layers the app reads (their sections, above). | 2026-10-20 |
+| `lookup_view_abs`, `lookup_view_polls`, `lookup_view_precincts`, `lookup_view_sample_ballot` | Names that look current | They point at 2024 data (Legacy `lookup_view_*` services, above). | 2026-10-20 |
+| `Polling_Places_Lookup_View` | "The shared polling place layer for the BOEC Mapping Department" (its item description) | A working layer, not an election's published view; the app reads `polls_2026_11_view`, which the Board's own lookup app uses. | 2026-10-24 |
+| `US_Congress_2025_view` | The 2025 congressional map (H.B. 1) | The precinct carries its congressional district, and which map is in effect is `congressionalMap` in the config (Precincts, above): the 2022 map for November 3, 2026 (#150). | 2026-10-24 |
+| Older dated services (`11_4_2025_*`, `precincts_2025_*`, `lookup_view_*_2024_11` and the rest) | Past elections | Stale. Listed by name in the first block below. | 2026-10-21 |
+
+The rest of the County org, listed 2026-10-24:
+
+<details>
+<summary>Named in the tables above (26)</summary>
+
+The County services the "Read by the app" and "Reviewed and not used: County" tables give a reason for.
+
+```services county
+11_3_2026_Precincts
+11_3_26_PollingPlaces
+2026_11_abs_ballot_app_precincts_view
+commercial_addresses_view
+lookup_view_abs
+lookup_view_polls
+lookup_view_precincts
+lookup_view_sample_ballot
+Muni_Poly_Jan2026
+Muni_Poly_Jan2026_view
+Municipality_Wards_Jan2026
+Municipality_Wards_Jan2026_view
+November_3_2026_Polling_Places_Dashboard_view
+November_3_2026_Precincts_Dashboard
+November_3_2026_Precincts_Dashboard_view
+Party_Ballot_By_Precincts_view
+Polling_Places_Attachment_Gallery_view
+Polling_Places_Lookup_View
+polls_2026_11_view
+precincts_2026_11_view
+sat_name_export_2026_11
+St_Louis_County_Boundary
+Table_Voter_Curbside_CheckIn
+US_Congress_2025_view
+usps_ups_view
+Zip_Codes_StLouis_County
+```
+
+</details>
+
+<details>
+<summary>Past elections' precincts, polling places, dashboards and lookup views (89)</summary>
+
+Every one is for an election before November 3, 2026, so it is stale for this one: its name or
+item title names that election, or (`ad7f60`, `PrecinctsDemo`, `survey_view_precincts`,
+`lookup_view_polling_places`) its item was last changed in 2024 or earlier.
+
+```services county
+11_3_2020_Polling_Places
+11_3_2020_Precincts
+11_4_2025_Polling_Places
+11_4_2025_Precincts
+11_5_2024_Polling_Places
+11_5_2024_Precincts
+11_7_2023_Polling_Places
+11_7_2023_Precincts
+11_8_2022_Polling_Places
+11_8_2022_Precincts
+4_2_2024_Polling_Places
+4_2_2024_Precincts
+4_4_2023_Polling_Places
+4_4_2023_Precincts
+4_5_2022_Polling_Places
+4_5_2022_Precincts
+4_6_2021_Polling_Places
+4_6_2021_Precincts
+4_7_2026_Polling_Places
+4_7_2026_Precincts
+4_8_2025_Polling_Places
+4_8_2025_Precincts
+8_2_2022_Polling_Places
+8_2_2022_Precincts
+8_5_2025_Polling_Places
+8_5_2025_Precincts
+8_6_2024_Polling_Places
+8_6_2024_Precincts
+Absentee_Turnout_240806_BY_LOCATION
+Absentee_Turnout_240806_BY_LOCATION_view
+Absentee_Turnout_241105_BY_LOCATION_view
+Absentee_Turnout_250408_By_Location_view
+ad7f60
+April_2023_Voter_Precincts
+April_7_2026_Polling_Places_Dashboard_view
+April_7_2026_Precincts_Dashboard_view
+April_8__2025_Polling_Place_Proposal_WFL1
+April_8_2025_Polling_Places_view
+April_Precincts_View
+April2024_PollingPlaces_view
+April2025_Dashboard_Precincts_view
+August_2024_Precincts_view
+August_2025_Contests_view
+August_2026_Precincts
+August_4_2026_Polling_Places_Dashboard_view
+August_4_2026_Precincts_Dashboard_view
+August_4_2026_Primary_Election_Polling_Places
+August_6_2024_Absentee_Satellites
+August_6_2024_PollingPlace_UnderConstruction
+August_6_2024_PollingPlace_UnderConstruction_view
+August2024_PollingPlaces_view
+lookup_view_polling_places
+lookup_view_polling_places_2024_11
+lookup_view_polling_places_2025_04
+lookup_view_sample_ballot_2024_11
+lookup_view_sample_ballot_2025_04
+November_2020_Gubernatorial_Turnout_by_Precinct
+November_2020_Gubernatorial_Turnout_Precinct_Layer
+November_4__2025_Dashboard_Polling_Places_view
+November_4__2025_Dashboard_Precincts_view
+November2024_Dashboard_Polls_view
+November2024_Dashboard_Precincts_Gubernatorial
+November2024_Dashboard_Precincts_view
+Polling_Places_2024_view_for_august_preview
+polls_2023_11_view
+polls_2025_08_view
+polls_2025_11_view
+polls_2026_04_view
+polls_2026_08_view
+Precincts_2022_0201
+precincts_2023_06_lookup_view
+precincts_2023_08_view
+precincts_2023_11_view
+precincts_2024_04_12_view
+precincts_2024_08_abs_app_view
+precincts_2025_04_view
+precincts_2025_06_view
+precincts_2025_08_view
+precincts_2025_11_abs_app_view
+precincts_2025_11_view
+precincts_2026_04_ballot_app_view
+precincts_2026_04_view
+precincts_2026_08_view
+Precincts20210319
+PrecinctsDemo
+St__Louis_County_Polling_Places_by_District_WFL1
+survey_view_precincts
+under_construction_polls_Nov2024_view
+Voter_Precincts
+```
+
+</details>
+
+<details>
+<summary>District, municipality, census and redistricting layers (44)</summary>
+
+The app takes a voter's districts from the precinct's own fields (Precincts, above), not from a
+separate district layer, and these are either older lines or a working copy for redistricting.
+
+```services county
+census_2020_stlco_blocks
+Census_Block_Data_on_Wards_WFL1
+Census_Population_Change
+Compromise_Map
+Compromise_Map_in_ESRI_Redistricting
+Council_Districts_2010_view
+Districts
+Junior_College_Districts
+Muni_poly_May2025_2_view
+Muni_poly_May2025_view
+Muni_Poly_Sept2025_view
+Muni_Wards_April2024
+Muni_Wards_February2023
+Muni_Wards_Nov2024_view
+Municipal_Wards_September_2022
+Municipalities_2025_V1_view
+Municipalities_Feb_2023
+Municipalities_Nov_2023
+Municipalities_Nov2024
+Municipality_Wards
+Municipality_Wards_May2025
+Municipality_Wards_May2025_2_view
+Municipality_Wards_May2025_view
+Municipality_Wards_Sept2025_view
+Muny_Wards_May_2022
+NewHouse
+Old_Townships
+Old_US_Congressional_Lines
+Proposed_Townships
+Saint_Louis_County_Council_District_Plan_view
+Senate_Districts_2022
+Sewer_District
+St_Louis_County_Council_Districts
+St_Louis_County_Jurisdictions_v3_WFL1_View_view
+State_Representative_2012
+State_Representative_2022
+State_Representative_Districts_2022
+State_Senate_2010
+STL_County_Council_District_Plan
+STL_County_Council_Districts
+Townships2020_WFL1
+US_Congress_2022_Lines
+US_Congress_Comparison_Map
+US_Congressional_Districts_Aug_2022
+```
+
+</details>
+
+<details>
+<summary>The Board's forms and their results (64)</summary>
+
+Survey123 and form services, by item title: absentee ballot applications, poll confirmations,
+election judge applications, post election surveys, incident reports and the like. They hold
+voters' or election workers' personal data. Never query them; they are listed here by name only.
+
+```services county
+service_0000cc9a8b85436788ad0be755ae96e7
+service_1dddb16da7604864bf6d8329ee88f9e7
+service_2204306f444e46b38278d63863cb4c92
+service_3006a574eb3c4b50a2253a9c0b08820e
+service_3451029f08c544778ae7d82e8789891c
+service_34e01cea63c94a9f9c1ab4cf9cf36daa
+service_3a1d4acc1d684b3a913a451588164996_form
+service_416e8e48484d47ffa027bec8bf8a4daf
+service_41eb61b46b5d4e269ec831cb5848bb9d_form
+service_42ba76aaa23048d89522bf80d7afba63_form
+service_48087d1c4f524993befd52ae7afc5664
+service_573c64ee589c4fb99b7484ab3745c7dd
+service_5955c6d48a504d84809b0a01441d8ead
+service_63b222ef948c4177920b6dd14bcd5e0f
+service_67baf1b769ec402c98090a963ed839b3
+service_7b0adac41f3544508bb049d9c81a97b3
+service_809025c794ad419681d17282ce335390
+service_8370971febaf4c32afb97097fb0c00ef_form
+service_83928e5534384a5c84efa473a0014936
+service_85e35dfd8a9f454388d5661bf59a5755_form
+service_8b3dca02e0ee4275953d13f4403b552e
+service_957ce5f154fc4971b9497af99ea1ae63
+service_9975626e799e4194a98c020515327a97
+service_9e63168137c24633a90c2573e4926a97
+service_b40004b293bf4f3caced851c22b5082c
+service_b5d9ee3919f840dabadfed9dc1819b24
+service_b62c2bd0add14ff99ed57c37aed15507
+service_bf8effae0b0b4e45aa7067ed1a4ffe61
+service_c3e4acfd6fd44ed0b612d251252c9abc
+service_c75c01fa1b93431595db5ed5fb860f11_form
+service_c8b221a2957148009d43b9b0b277c020
+service_cd3f0c4e247f479aa321a8378986ab27_form
+service_cf6f3fb7a24d432f886fcf68460354d7_form
+service_cf843d2be0b44a8eb2ef208aacfbdb99
+service_d4965c3a6a77469da58cacbbee404010_form
+service_d4eb35bba53c4213a84bc59158f799a5
+service_d8bc516d3f1c42dbaddc9f94f800405c
+service_da6bce7a0ee5421aaf0f5fcec4f7b14c
+service_dd7667242f4a4fc588c622a28b8c6797_form
+service_e27983fc3ed1423596553852232aa921_form
+service_ead1d0e292ee40f28f23a440b06dbeb7
+service_ec825ac6de1440e3bed89c4123497204_form
+service_f25e008224cd48078c041b143cae2feb
+service_f4b10636538742768e85494f350671d6
+service_f63f8a0d560549af8402ecc2d1833d97
+service_fb4a073920204d15827801810a6c2853
+service_fd927d3bfc574941b85487faffcf1aa9
+survey123_0aa559bd85e544b9a8da5bcb7ce3058d
+survey123_329548c31b814410b706bb2e2f530c82_form
+survey123_3889d09d551e40d2b0689ea595e012dd
+survey123_3f53aa1ee0da4efd83b9e37f8d4ab101_form
+survey123_48bf956ef40844de9ff7f05639e1ed66_form
+survey123_52005b4d1d9f4ba2b5f27cc4c0c1f3ab_fieldworker
+survey123_5394cb2dc1dc4647b98b2fb1a503bbe3_form
+survey123_870a0cc2a2604de2b7e2b2344d19d4b1_form
+survey123_8dd95b7a0a1d4a1d8d4e9e931d864b25_form
+survey123_96ddc38ce6744da897c0af56f7e778b8
+survey123_ac0b6de6eda843cabb32e21fd1e4c075_form
+survey123_c465f16e878543ebbc0d0ada13698d06
+survey123_c7d63db2a28a495ca22145a1535a4646_form
+survey123_d3b53e19db6e41c483ab2f9d6c0e1bbe
+survey123_da592dad09784ad8a2a640b5febbe96f_form
+survey123_e03696cd860f4b2f94add7f656b6390e
+survey123_f16c078af64841e9b206bc85ea7e3d90_form
+```
+
+</details>
+
+### Reviewed and not used: St. Louis City
+
+Org `HZXbCkpCSqbGd0vK` and the City Board's folder on `maps6.stlouis-mo.gov`. The fuller findings
+are in the St. Louis City section above and in #57's comments: the
+[closing comment](https://github.com/GeoBradDev/MapTheVoteSTLCounty/issues/57#issuecomment-6363869071)
+answers each of its questions, and the
+[`maps6` BOE comment](https://github.com/GeoBradDev/MapTheVoteSTLCounty/issues/57#issuecomment-6329041308)
+covers the City Board's own GIS server. #57 was closed without new code.
+
+| Layer | What it is | Why not (or where tracked) | Checked |
+|---|---|---|---|
+| `ElectionResults_dashboard_2eceda94387c4bad95bf4ef0294ec490`, `ElectionResults_join_2eceda94387c4bad95bf4ef0294ec490`, `november_2024_precinct_totals_for_reporting`, `detailed_vote_extract_2024_november`, `Nov24_Detailed_Vote_Totals_Test` | Election results and turnout | Results, out of scope. | 2026-10-21 |
+| `VoterSatisfactionSurvey_submit_4533ffc5e0c84851a35cc97e64bb160a`, `service_584d4105c2d24336b1674bbc8ad5da0a_form` | The Voter Satisfaction Survey's intake and its form | Survey intake. Never query it. | 2026-10-21 |
+| `ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a` layer 2 officeholder fields | Representative names, photos, party and contacts | Never shown or requested (#87, #90; Districts, above). | 2026-10-21 |
+| `ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a` layer 0, `Polling_Centers_WFL1` | Other polling place lists (57 and 152 rows) | Not the Election Day list (Voting locations, above). | 2026-10-22 |
+| `BOE/Polling_Place_Precincts`, `BOE/PRECINCTS_2023` | The City Board's own GIS server: 55 polling places, past Polling Centers, and precincts with district fields | Candidates for #87; not the Election Day list, and `PRECINCTS_2023` failed every query (the `maps6` BOE comment on #57). | 2026-10-21 |
+| `Live_Election_Wait_Time_View` | A wait time survey view | Not the City wait source (Wait times, City, above). | 2026-10-22 |
+| `Census_2020_Citywide`, `Census_2010_Citywide` | Census outlines | Census layers, not the City Board's (City boundary, above). | 2026-10-22 |
+| `Machacek_Library`, `Our_Lady_of_Sorrows_Church`, `Wohl_Center` | One building each, item description "Election", last changed 2024-10-24 | Single-site layers from 2024; the sites come from the voting locations layer. | 2026-10-24 |
+| `Precincts_2024_Standard`, `Polls_for_Turnout`, `July_1_2025_Ward_8_Aldermanic_Vacancy_Election`, `July_1_2025_Ward_8_Aldermanic_Vacancy_Election_view`, `July_1_2025_Ward_8_Aldermanic_Vacancy_Election_2_view` | Past election precincts, a July 2025 turnout parameter, a 2025 ward vacancy election | Past elections, stale. | 2026-10-24 |
+| `registration_chart_fields`, `Registration_Charts_Project_Summary_Table` | Registration chart tables | Registration statistics, not where or how to vote. | 2026-10-24 |
+| `Wards` | The City's ward polygons, owned outside the City Board | The districts layer has the wards from the City Board's own org (Districts, above). | 2026-10-24 |
+
+The rest of the City org, listed 2026-10-24:
+
+<details>
+<summary>Named in the tables above (24)</summary>
+
+The City services the "Read by the app" and "Reviewed and not used: St. Louis City" tables give a reason for.
+
+```services city
+Census_2010_Citywide
+Census_2020_Citywide
+detailed_vote_extract_2024_november
+ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a
+ElectionResults_dashboard_2eceda94387c4bad95bf4ef0294ec490
+ElectionResults_join_2eceda94387c4bad95bf4ef0294ec490
+July_1_2025_Ward_8_Aldermanic_Vacancy_Election
+July_1_2025_Ward_8_Aldermanic_Vacancy_Election_2_view
+July_1_2025_Ward_8_Aldermanic_Vacancy_Election_view
+Live_Election_Wait_Time_View
+Machacek_Library
+Nov24_Detailed_Vote_Totals_Test
+november_2024_precinct_totals_for_reporting
+Our_Lady_of_Sorrows_Church
+Polling_Centers_WFL1
+Polls_for_Turnout
+Precincts_2024_Standard
+registration_chart_fields
+Registration_Charts_Project_Summary_Table
+service_584d4105c2d24336b1674bbc8ad5da0a_form
+VoterSatisfactionSurvey_submit_4533ffc5e0c84851a35cc97e64bb160a
+VotingLocations_currentwait_4533ffc5e0c84851a35cc97e64bb160a
+Wards
+Wohl_Center
+```
+
+</details>
+
+<details>
+<summary>The City Board's folder on `maps6.stlouis-mo.gov` (2)</summary>
+
+Both are in the "Reviewed and not used: St. Louis City" table.
+
+```services boe
+BOE/Polling_Place_Precincts
+BOE/PRECINCTS_2023
+```
+
+</details>
+
+<details>
+<summary>Other City departments' services (135)</summary>
+
+Planning, community development, land reuse, water, fire, forestry, tornado response, census and
+neighborhood layers, and those departments' Survey123 forms, by item title and owner. None is
+election data.
+
+```services city
+2010_Census_in_2011_Wards
+2010_Census_Neighborhoods
+2020_Census_in_2011_Wards
+2020_Census_Neighborhoods
+2020_Census_Tracts
+2023_CDA_Assisted_Home_Repairs
+2023_CDA_NOFA_Award_Amounts_by_Neighborhood
+2023_Home_Repair_Project_Sites
+2024_Market_Value_Analysis
+Active_and_Completed_Housing_Projects
+Active_ARPA_Projects
+Active_HUD_Housing_Projects
+AHC_Recovery_Lookup_v2
+Airport_Parcels
+Biking_Infrastructure_Map
+Biking_Infrastructure_Map_WFL1
+Business_License_2024
+Capacity_Building_Applications_DRAFT
+CDA_Awards_Basemap
+CDA_Beautification_Awards
+CDA_Capacity_Building_Awards
+CDA_NOFA_Awards_by_Neighborhood_Final
+CDA_Proactive_Development_Awards
+CelebrateSTL_Ops_2026_WFL1
+Census_2000_Citywide
+Census_2000_Neighborhoods
+Census_2010_in_2021_Wards
+Census_2020___2021_Wards_v2
+Current_Newspaper_Stands_12292025
+Current_Planning_Area_Initiatives_
+Debris_Clearing
+Demolitions
+Disaster_Pantry_Program
+Economic_Justice_Index_above_average_Composite_EJI_score_or_within_QCT
+EJI_Quintile_Map_DRAFT
+Employment_Districts
+Flood_Controls_WFL1
+Greater_Ville
+Grocery_Stores
+HealthZip
+HOME_ARP_Applications_DRAFT
+Housing_NOFA_Applications_DRAFT
+Hub Events (public)
+HUD_Tour_2023_Reference_Map
+Kingsway_East
+LIHTC_QCTs_2021
+Lot_Maintenance_DRAFT_2
+Majority_LRA_Owned_Blocks_With_Private_Vacancy
+Majority_LRA_Owned_Blocks_Without_Private_Vacancy_1
+Map_NS_SS_Corridor_Investments_DRAFT
+Metrolink_Proposed_Northside_Southside_Alignment
+MOSAFE_Inspection_Heat_Map
+Neighborhood_Areas_Map
+Neighborhood_Beautification_Applications_DRAFT
+Neighborhood_Organizations
+Neighborhood_Plan_Areas_Up_and_Coming
+Neighborhood_Transformation_Grant_Project_Sites
+Neighborhoods
+neighborhoods_(1)
+NEW_Active_Water_Division_Accounts_May_2025
+NOFA Apps Buffer
+NS_Tornado_Map_WFL1
+Parcels
+PCI2025
+Plan_Area_7_WFL1
+Plan_Areas_Draft_7_1_2024
+PlanArea7_StudyArea
+PlanSTL_PLANET
+Police_Districts
+Private_Vacant_Lots
+Prop_NS_Private_Building_Stabilization
+PublicDemos_2018thru2023_forweb_pts
+Quick_path
+Round_1_Blocks_10_14_26_Final_view
+Round_1_Neighborhoods
+Scene2_WFL1
+Scene2_WSL1
+ServiceLine_viewing_ee81886ebaa34371b0c53ad8e9b852d6
+SLDC_DemonstrationAreas
+SLDC_SLDC_Tol_Def_Vac_NP
+St__Louis_Neighborhoods_WFL1
+STL_Parks
+STLAirfield
+STLFD_PrideFestOps_2026_WFL1
+STLWD_LSLI__Read_Only_View
+Storm Path Buffer
+Strategic_Land_Use_Plan
+StudyArea
+survey123_00185cceccf34ada8bc1d3d6199dcd63
+survey123_00185cceccf34ada8bc1d3d6199dcd63_fieldworker
+survey123_00185cceccf34ada8bc1d3d6199dcd63_stakeholder
+survey123_0e580d218e024579b6914f0d5ea937c9_form
+survey123_25198059cd654286b153efff3c5a3c25_form
+survey123_2fc3c26f37fe4343b3e31a182e9da431_form
+survey123_307835287de84152be83a9e6d33ff365_form
+survey123_3b9d6c8f19184a99863c7eb649fafcf0
+survey123_3b9d6c8f19184a99863c7eb649fafcf0_form
+survey123_3b9d6c8f19184a99863c7eb649fafcf0_results
+survey123_446d08e3c7e544e1b355ab82299337fe_form
+survey123_714b10196d1945f8b5bd1566eb1ca2b4_form
+survey123_7278846bc6da4402997a3b3fb5e5e22e
+survey123_7278846bc6da4402997a3b3fb5e5e22e_form
+survey123_7278846bc6da4402997a3b3fb5e5e22e_results
+survey123_776899614dab4973a81f1250b1a7a4af_form
+survey123_7b50300d636d4d528d29f2fc378b9bcd
+survey123_8030532babd74068a55eacfea249d5aa_form
+survey123_8030532babd74068a55eacfea249d5aa_results
+survey123_8ba395d1c8a248778cd812816a61da59_form
+survey123_956469812b5140b78feaf12a50a6417f_form
+survey123_9e92800a71ec413fba8eef5d9beee874_form
+survey123_a389e9773af5440ead4df972e26076cb
+survey123_a389e9773af5440ead4df972e26076cb_form
+survey123_a389e9773af5440ead4df972e26076cb_results
+survey123_b47d43dc3b0a466aa55f2432b8a64ff9_form
+survey123_c192ee4698474f72906c0d5d6fb27065_form
+survey123_c818ba1c4f804ad39174470addc4930e_form
+survey123_c818ba1c4f804ad39174470addc4930e_results
+survey123_c90dcf21f48f4bea88e8baee443f27cd_form
+survey123_caee8e866ffa41038b005e091b1b6042_form
+survey123_d5dbbd46b2294a7e9a1092a7c000e1b8_form
+survey123_d99eb955be334bea81c10d89ae117e61_form
+survey123_dff4bedd420c4da790a8ab8ba30d0106_form
+survey123_e43ecaf58a2547ed8eee6bde4ffa068c
+survey123_e43ecaf58a2547ed8eee6bde4ffa068c_form
+survey123_e43ecaf58a2547ed8eee6bde4ffa068c_results
+survey123_f77d9857cc7b4d109dee7d6f7fc05faf
+survey123_f77d9857cc7b4d109dee7d6f7fc05faf_form
+survey123_f77d9857cc7b4d109dee7d6f7fc05faf_results
+survey123_fc72601c36094a7f9c0b2a811945b968_form
+The_Ville_shp
+ThreeNeighborhoods_shp
+Tornado_Path
+Tornado_Response_Zones
+Tornado_Zone_Street_Tree_Replanting__Round_1___DRAFT_2_WFL1
+Union_Delmar_NaturalBridge_Van
+```
+
+</details>
