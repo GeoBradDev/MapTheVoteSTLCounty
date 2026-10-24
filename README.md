@@ -856,7 +856,8 @@ voter who typed the City's ZIP gets the City precinct and one who typed no ZIP i
 jurisdiction its label names), when both list it in one ZIP the answer is no match, and when the City geocoder fails or is slow, the app says address search is not working,
 never a county precinct (#58, #18). `src/data/geocoder.js` builds that chain, `src/data/countyAddress.js`,
 `src/data/photon.js` and `src/data/cityAddress.js` implement the sources and
-`src/data/addressMatch.js` holds the strict matching rules they share; a test fails if any
+`src/data/addressMatch.js` holds the strict matching rules they share (a town typed with a
+county address may be its mailing city or its municipality, #143); a test fails if any
 other app file names a provider. docs/data.md (Geocoding, County address points, City check)
 explains every rule. `src/features/lookup/locate.js` asks the City's precinct layer for a
 place the geocoder names as the City, and for a point near the City that the county's

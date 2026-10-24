@@ -86,7 +86,8 @@ layer; besides real towns it holds `ST LOUIS COUNTY` (unincorporated), `ST LOUIS
   still applies, so the riskiest step is the `matchesTyped` change; criterion 3 tests it.
 - `MSAG_COMMUNITY_NAME` is the emergency-services community, which can differ from `MUNI` (for
   example `LADUE` with `MUNI` `CLY`). Chosen not to map `MUNI` codes to names: a 90-entry table
-  costs first-load bytes the 120 KB budget lacks, and the readable field already names the town
+  costs first-load bytes the budget (120 KB when planned, 121 KB since the owner's
+  decision below) lacks, and the readable field already names the town
   voters use for these records. Noted in the PR.
 - Bundle: a few bytes in the geocoder; checked with the build's budget.
 
@@ -114,6 +115,11 @@ layer; besides real towns it holds `ST LOUIS COUNTY` (unincorporated), `ST LOUIS
   (`src/test/build.test.js`), its README line and the `src/cityChunk.js` comment now say
   121 KB. The resumed run then reviews finder 4's fix with one more finder, the gate and a
   fresh verifier.
+- Finder 5: no defect in finder 4's fix; criterion 7's docs were missing and are now in
+  `docs/data.md` (strict rules, Typed municipality) and the README's Address search. Also
+  recorded there: two houses at one number and street, one mailed in the typed town and one
+  whose community is that town, are now no match where main took the mailed one; both are in
+  that town, so no match is the safer answer.
 - Main's `node scripts/check-geocoder.mjs` cannot resolve City precincts under Node since #147
   (issue #198), so the live check exits 1 on its City lines on main and here; its #143 lines pass.
 - Budget: the first-load JavaScript sat 15 bytes over 120 KB gzipped after finder 1's fix, so
