@@ -19,7 +19,7 @@ is deferred; #160 stays open for it, and the PR says `Refs #160`.
    layer checks, that asks the City districts layer for its distinct `electedoffice` values
    (`returnDistinctValues`, `outFields` the office field only, no geometry).
 2. It passes when every row of `districts.rows` in `src/config/cityResults.js` has at least
-   one of its `offices` among those values, matched exactly as the card matches (case
+   one of its `offices` among those values, matched as the card matches (trimmed, then exact and case
    sensitive), and its detail says how many rows were found.
 3. It fails when any row has none of its offices on the layer, naming the row key and the
    offices it looked for, and naming a value on the layer that differs only by case or
@@ -37,6 +37,7 @@ is deferred; #160 stays open for it, and the PR says `Refs #160`.
   new tests for pass, a renamed office (fail with the row and case hint), an alternate office
   alone (pass), and the skip.
 - `README.md`: one clause in Data health check.
+- `src/config/cityResults.js`: a comment above `districts.rows` naming the new check.
 
 ## Order of work
 

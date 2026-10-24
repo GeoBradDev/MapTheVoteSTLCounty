@@ -805,7 +805,7 @@ not the config's `pollsListed`, the count the City Board's page gives), and that
 in a City precinct, a ward and the City outline while a County point lands in neither a City
 precinct nor the outline, that every districts card row (`districts.rows` in
 `src/config/cityResults.js`, #90) finds at least one of its office names on the districts layer,
-matched exactly as the card matches them, so a renamed office fails instead of silently dropping
+trimmed and matched exactly as the card matches them, so a renamed office fails instead of silently dropping
 its row (#160), and that the City's sample ballot (`sampleBallot` in
 `src/config/cityResults.js`, #92) answers HEAD with a PDF. The City publishes one ballot for
 all precincts, so the County's rule that a ballot names its precinct does not apply to it. A

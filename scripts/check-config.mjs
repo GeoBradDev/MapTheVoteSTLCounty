@@ -1117,7 +1117,10 @@ export async function runHealthCheck(
           returnDistinctValues: 'true',
           returnGeometry: 'false',
         });
-        const have = new Set(rows.map((r) => r[field]).filter((v) => typeof v === 'string'));
+        // Trimmed, as the card reads them (normalize in src/data/arcgis.js).
+        const have = new Set(
+          rows.map((r) => normalize(r)[field]).filter((v) => typeof v === 'string'),
+        );
         const loose = (v) => v.replace(/\s+/g, ' ').trim().toLowerCase();
         const bad = [];
         for (const { key, offices } of cityDistricts.rows) {

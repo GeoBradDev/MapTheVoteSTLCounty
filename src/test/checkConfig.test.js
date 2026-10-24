@@ -256,7 +256,7 @@ function cityAnswer(world, url) {
     if (where === cityConfig.earlyVotingWhere) return features(world.city.earlyVoting);
     return json({ error: { code: 400, message: 'Unable to complete operation.' } });
   }
-  if (params.get('returnDistinctValues') === 'true') {
+  if (layerPath === cityConfig.layers.districts && params.get('returnDistinctValues') === 'true') {
     const field = cityConfig.districtLayerFields.office;
     return features(world.city.offices.map((office) => ({ [field]: office })));
   }
@@ -1781,10 +1781,29 @@ describe('the City layers (#87)', () => {
     const results = await run(world, election, {
       fetch: (url, init) =>
         new URL(url).searchParams.get('returnDistinctValues') === 'true'
-          ? Promise.resolve(json({ error: { code: 400, message: 'Invalid query' } }))
+          ? Promise.resolve(json({}))
           : fetch(url, init),
     });
-    expect(results['city district offices'].status).toBe('fail');
+    expect(results['city district offices']).toMatchObject({
+      status: 'fail',
+      detail: 'the response has no features list',
+    });
+  });
+
+  it('trims the office names as the card does (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices = world.city.offices.map((o) =>
+      o === 'State Senate' ? ' State Senate ' : o,
+    );
+    expect((await run(world))['city district offices'].status).toBe('pass');
+  });
+
+  it('asks the districts layer for every row, not a point or a filter (#160)', async () => {
+    const world = healthyWorld();
+    await run(world);
+    const query = world.cityQueries.find((q) => q.get('returnDistinctValues') === 'true');
+    expect(query.get('where')).toBe('1=1');
+    expect(query.get('geometry')).toBeNull();
   });
 
   it('asks the City layers only for the fields the app reads, never *', async () => {
