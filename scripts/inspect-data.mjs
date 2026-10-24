@@ -39,11 +39,15 @@ const SERVICES = [
 
 const DATA_DOC = path.resolve('docs/data.md');
 
-/** The service directories the inventory lists (docs/data.md, Service inventory). */
+/**
+ * The service directories the inventory lists (docs/data.md, Service inventory).
+ * `key` names each one's ```services blocks there.
+ */
 export const INVENTORY_ROOTS = [
-  { label: 'St. Louis County Board of Elections org', url: election.serviceRoot },
-  { label: 'St. Louis City org', url: election.jurisdictions.city.serviceRoot },
+  { key: 'county', label: 'St. Louis County Board of Elections org', url: election.serviceRoot },
+  { key: 'city', label: 'St. Louis City org', url: election.jurisdictions.city.serviceRoot },
   {
+    key: 'boe',
     label: 'City Board folder on the City GIS server',
     url: 'https://maps6.stlouis-mo.gov/arcgis/rest/services/BOE',
   },
@@ -52,21 +56,6 @@ export const INVENTORY_ROOTS = [
 // A services block line needs this many characters besides `*`, so a stray
 // `*` cannot mark every service as documented.
 const MIN_PATTERN_LITERALS = 4;
-
-/** The service name a code span names, or null: a bare name, a layer path or a service URL. */
-function serviceFromSpan(span) {
-  if (/\s|\*/.test(span)) return null;
-  const name = span
-    .replace(/^.*\/rest\/services\//i, '')
-    .replace(/[?#].*$/, '')
-    .replace(/\/(FeatureServer|MapServer|GeocodeServer|SceneServer|ImageServer)(\/.*)?$/, '');
-  return /^[\w.()-]+(\/[\w.()-]+)?$/.test(name) ? name : null;
-}
-
-function globToRegExp(pattern) {
-  const body = pattern.split('*').map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-  return new RegExp(`^${body.join('.*')}$`);
-}
 
 const INVENTORY_HEADING = '## Service inventory';
 
@@ -79,40 +68,40 @@ function inventorySection(markdown) {
   return lines.slice(start, end === -1 ? undefined : end).join('\n');
 }
 
-/**
- * What the Service inventory section of docs/data.md documents: the exact names
- * in its code spans, and each line of its ```services blocks (one name per line;
- * `*` matches any characters). Globs count only inside a services block, never
- * in a code span. The rest of the file is ignored: its code spans are mostly
- * field names, which would hide a new service of the same name.
- */
-export function documentedServices(markdown) {
-  const names = new Set();
-  const patterns = [];
-  const rest = inventorySection(markdown).replace(
-    /^```services[^\n]*\n([\s\S]*?)^```/gm,
-    (_, block) => {
-      for (const raw of block.split('\n')) {
-        const line = raw.trim();
-        if (!line) continue;
-        if (!line.includes('*')) names.add(line);
-        else if (line.replace(/\*/g, '').length >= MIN_PATTERN_LITERALS) {
-          patterns.push(globToRegExp(line));
-        }
-      }
-      return '';
-    },
-  );
-  // Other fenced blocks are code, not mentions.
-  const prose = rest.replace(/^```[^\n]*\n[\s\S]*?^```/gm, '');
-  for (const [, span] of prose.matchAll(/`([^`\n]+)`/g)) {
-    const name = serviceFromSpan(span);
-    if (name) names.add(name);
-  }
-  return { names, patterns };
+function globToRegExp(pattern) {
+  const body = pattern.split('*').map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  return new RegExp(`^${body.join('.*')}$`);
 }
 
-/** The names `documentedServices` does not cover, each once, in order. */
+/**
+ * What the Service inventory section of docs/data.md documents, per root: each
+ * line of its ```services <key> blocks, one service name per line, where `*`
+ * matches any characters. Only those blocks count, never a code span: the
+ * tables' code spans also hold field names, which would hide a new service of
+ * the same name, and a block belongs to one root, so a name in one org cannot
+ * hide the same name in another.
+ */
+export function documentedServices(markdown) {
+  const documented = Object.fromEntries(
+    INVENTORY_ROOTS.map(({ key }) => [key, { names: new Set(), patterns: [] }]),
+  );
+  const section = inventorySection(markdown);
+  for (const [, key, block] of section.matchAll(/^```services (\w+)[ \t]*\n([\s\S]*?)^```/gm)) {
+    const entry = documented[key];
+    if (!entry) continue;
+    for (const raw of block.split('\n')) {
+      const line = raw.trim();
+      if (!line) continue;
+      if (!line.includes('*')) entry.names.add(line);
+      else if (line.replace(/\*/g, '').length >= MIN_PATTERN_LITERALS) {
+        entry.patterns.push(globToRegExp(line));
+      }
+    }
+  }
+  return documented;
+}
+
+/** The names one root's `documentedServices` entry does not cover, each once, in order. */
 export function undocumentedServices(serviceNames, documented) {
   const seen = new Set();
   return serviceNames.filter((name) => {
@@ -137,10 +126,10 @@ export function serviceNames(listing) {
 
 async function inventory() {
   const documented = documentedServices(await readFile(DATA_DOC, 'utf8'));
-  for (const { label, url } of INVENTORY_ROOTS) {
+  for (const { key, label, url } of INVENTORY_ROOTS) {
     try {
       const names = [...new Set(serviceNames(await getJson(`${url}?f=json`)))];
-      const missing = undocumentedServices(names, documented);
+      const missing = undocumentedServices(names, documented[key]);
       console.log(
         `${missing.length ? 'new ' : 'ok  '} ${label}: ${names.length} services, ${missing.length} not in docs/data.md`,
       );

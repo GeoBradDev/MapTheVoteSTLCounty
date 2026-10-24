@@ -15,19 +15,18 @@ because the doc prose follows the repo's existing data.md voice.
    tables from the issue, each entry with a reason and its check date.
 2. Every service in the County org (`wkbq75VVf2MvUvs7`), the City org (`HZXbCkpCSqbGd0vK`) and
    the City Board's `maps6.stlouis-mo.gov` `BOE` folder is mentioned in `docs/data.md` with a
-   reason, as an exact name or as a line of a `services` block (which may use `*`), with the
-   date the list was checked.
+   reason, as a line of its own root's `services county|city|boe` block (which may use `*`),
+   with the date the list was checked.
 3. `node scripts/inspect-data.mjs` prints each service in those service lists that the doc does
    not mention, per org. `node scripts/inspect-data.mjs --inventory` does only that (no
    `docs/raw/` writes). With today's lists and doc, it prints none.
 4. The inventory reads only the service directories (`?f=json` on the services root or folder).
    It never queries, or reads the metadata of, any service it lists, so
    `Table_Voter_Curbside_CheckIn` and the Board's forms are never touched.
-5. A name the doc mentions only inside prose or a glob in a code span (like `party*`) does not
-   count; only exact names in code spans (a bare name, a `name/FeatureServer/n` path or a
-   `.../rest/services/name/...` URL) and the lines of `services` blocks count, and only inside
-   the "Service inventory" section (revised after review: elsewhere most code spans are field
-   names like `precincts`, which would hide a new service of that name). A root that answers
+5. Only the lines of a root's own ```` ```services <key> ```` blocks inside the "Service
+   inventory" section count; code spans never do (revised after two review rounds: code spans
+   include field names like `precincts` and `URL`, and one shared set let a name in one org
+   hide the same name in another). A root that answers
    with an ArcGIS error body (HTTP 200) or no services list prints `fail`, not an empty org. A `*` alone, or a
    pattern with fewer than 4 literal characters, is ignored, so a stray pattern cannot hide
    every service.
@@ -60,7 +59,7 @@ Not touched: `src/i18n/en.json` and the geocoder credits (#120 is open on them),
 ## Risks
 
 - A glob that is too broad hides a future service (the issue's `polls_2027_*` case). Mitigation:
-  past elections are listed by year-bounded patterns (`*_2024_*`) or exact names; nothing is a
+  past elections are listed by exact name (no `*` line ships); nothing is a
   bare family glob like `polls_*`. A test pins that `polls_2027_11_view` is reported against
   the shipped doc.
 - The Board's forms (absentee applications, curbside check-in) hold voter personal data. The

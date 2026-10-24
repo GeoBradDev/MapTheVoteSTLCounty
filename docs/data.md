@@ -1161,14 +1161,16 @@ taken on 2026-10-24; each table row has its own check date.
 
 `node scripts/inspect-data.mjs` starts by listing all three and printing every service this file
 does not mention; `--inventory` does only that and writes nothing. A service counts as mentioned
-when its exact name is in a code span in this section (a bare name, a `name/FeatureServer/0`
-path or a full service URL), or is a line of a `services` block below, where `*` matches any
-characters. A `*` in a code span does not count, and neither does a mention elsewhere in this
-file: most code spans there are field names. A root that answers with an error, or with no
-services list, is a `fail` line, not an empty org. Before each election, run
-it and add each new service here with a reason, in a table below or in one of the blocks
-(README, Updating for a new election). Never use a bare family pattern like `polls_*`: that
-would hide the next election's `polls_YYYY_MM_view`.
+only when it is a line of a ```` ```services county ````, ```` ```services city ```` or
+```` ```services boe ```` block in this section (the blocks for its own root), one name per
+line, where `*` matches any characters. Code spans do not count, here or elsewhere in this
+file: many are field names, which would hide a new service of the same name. So a service the
+tables below give a reason for is also listed in its root's "Named in the tables above" block.
+A root that answers with an error, or with no services list, is a `fail` line, not an empty
+org. Before each election, run it and add each new service here: a reason in a table or a
+block's summary, and its name in the right block (README, Updating for a new election). Never
+use a bare family pattern like `polls_*`: that would hide the next election's
+`polls_YYYY_MM_view`.
 
 The inventory step reads only the directory listings. It never queries a listed service or reads
 its metadata: some are the Board's forms and hold voters' personal data. What each opaque
@@ -1214,13 +1216,49 @@ Org `wkbq75VVf2MvUvs7`.
 The rest of the County org, listed 2026-10-24:
 
 <details>
+<summary>Named in the tables above (26)</summary>
+
+The County services the "Read by the app" and "Reviewed and not used: County" tables give a reason for.
+
+```services county
+11_3_2026_Precincts
+11_3_26_PollingPlaces
+2026_11_abs_ballot_app_precincts_view
+commercial_addresses_view
+lookup_view_abs
+lookup_view_polls
+lookup_view_precincts
+lookup_view_sample_ballot
+Muni_Poly_Jan2026
+Muni_Poly_Jan2026_view
+Municipality_Wards_Jan2026
+Municipality_Wards_Jan2026_view
+November_3_2026_Polling_Places_Dashboard_view
+November_3_2026_Precincts_Dashboard
+November_3_2026_Precincts_Dashboard_view
+Party_Ballot_By_Precincts_view
+Polling_Places_Attachment_Gallery_view
+Polling_Places_Lookup_View
+polls_2026_11_view
+precincts_2026_11_view
+sat_name_export_2026_11
+St_Louis_County_Boundary
+Table_Voter_Curbside_CheckIn
+US_Congress_2025_view
+usps_ups_view
+Zip_Codes_StLouis_County
+```
+
+</details>
+
+<details>
 <summary>Past elections' precincts, polling places, dashboards and lookup views (89)</summary>
 
 Every one is for an election before November 3, 2026, so it is stale for this one: its name or
 item title names that election, or (`ad7f60`, `PrecinctsDemo`, `survey_view_precincts`,
 `lookup_view_polling_places`) its item was last changed in 2024 or earlier.
 
-```services
+```services county
 11_3_2020_Polling_Places
 11_3_2020_Precincts
 11_4_2025_Polling_Places
@@ -1320,7 +1358,7 @@ Voter_Precincts
 The app takes a voter's districts from the precinct's own fields (Precincts, above), not from a
 separate district layer, and these are either older lines or a working copy for redistricting.
 
-```services
+```services county
 census_2020_stlco_blocks
 Census_Block_Data_on_Wards_WFL1
 Census_Population_Change
@@ -1376,7 +1414,7 @@ Survey123 and form services, by item title: absentee ballot applications, poll c
 election judge applications, post election surveys, incident reports and the like. They hold
 voters' or election workers' personal data. Never query them; they are listed here by name only.
 
-```services
+```services county
 service_0000cc9a8b85436788ad0be755ae96e7
 service_1dddb16da7604864bf6d8329ee88f9e7
 service_2204306f444e46b38278d63863cb4c92
@@ -1471,13 +1509,59 @@ covers the City Board's own GIS server. #57 was closed without new code.
 The rest of the City org, listed 2026-10-24:
 
 <details>
+<summary>Named in the tables above (24)</summary>
+
+The City services the "Read by the app" and "Reviewed and not used: St. Louis City" tables give a reason for.
+
+```services city
+Census_2010_Citywide
+Census_2020_Citywide
+detailed_vote_extract_2024_november
+ElectionGeography_public_4533ffc5e0c84851a35cc97e64bb160a
+ElectionResults_dashboard_2eceda94387c4bad95bf4ef0294ec490
+ElectionResults_join_2eceda94387c4bad95bf4ef0294ec490
+July_1_2025_Ward_8_Aldermanic_Vacancy_Election
+July_1_2025_Ward_8_Aldermanic_Vacancy_Election_2_view
+July_1_2025_Ward_8_Aldermanic_Vacancy_Election_view
+Live_Election_Wait_Time_View
+Machacek_Library
+Nov24_Detailed_Vote_Totals_Test
+november_2024_precinct_totals_for_reporting
+Our_Lady_of_Sorrows_Church
+Polling_Centers_WFL1
+Polls_for_Turnout
+Precincts_2024_Standard
+registration_chart_fields
+Registration_Charts_Project_Summary_Table
+service_584d4105c2d24336b1674bbc8ad5da0a_form
+VoterSatisfactionSurvey_submit_4533ffc5e0c84851a35cc97e64bb160a
+VotingLocations_currentwait_4533ffc5e0c84851a35cc97e64bb160a
+Wards
+Wohl_Center
+```
+
+</details>
+
+<details>
+<summary>The City Board's folder on `maps6.stlouis-mo.gov` (2)</summary>
+
+Both are in the "Reviewed and not used: St. Louis City" table.
+
+```services boe
+BOE/Polling_Place_Precincts
+BOE/PRECINCTS_2023
+```
+
+</details>
+
+<details>
 <summary>Other City departments' services (135)</summary>
 
 Planning, community development, land reuse, water, fire, forestry, tornado response, census and
 neighborhood layers, and those departments' Survey123 forms, by item title and owner. None is
 election data.
 
-```services
+```services city
 2010_Census_in_2011_Wards
 2010_Census_Neighborhoods
 2020_Census_in_2011_Wards

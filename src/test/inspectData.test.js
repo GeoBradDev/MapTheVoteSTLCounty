@@ -65,113 +65,105 @@ describe('cityLayerRequests', () => {
   });
 });
 
+// A doc with the Service inventory heading and the given lines after it.
+const inventoryDoc = (...lines) => ['## Service inventory', '', ...lines].join('\n');
+
 describe('documentedServices', () => {
-  it('reads exact names from code spans: bare, layer paths and service URLs', () => {
-    // Made-up names: the real ones live only in the election config.
-    const doc = [
-      '## Service inventory',
-      'The `precincts_1999_01_view` layer, `polls_1999_01_view/FeatureServer/1`,',
-      '`BOE/Some_Board_Layer/MapServer/2` and',
-      '`https://example.org/ArcGIS/rest/services/Line_View/FeatureServer/0?f=json`,',
-      'and `https://example.org/arcgis/rest/services/GEOCODERS/A_GEOCODE/GeocodeServer`.',
-    ].join('\n');
-    const documented = documentedServices(doc);
-    const names = [
-      'precincts_1999_01_view',
-      'polls_1999_01_view',
-      'BOE/Some_Board_Layer',
-      'Line_View',
-      'GEOCODERS/A_GEOCODE',
-    ];
-    expect(undocumentedServices(names, documented)).toEqual([]);
-  });
-
-  it('ignores prose, code spans with spaces and globs in code spans', () => {
-    const doc =
-      '## Service inventory\n\nPrecincts_Old are old. `status = 1` and `party*` and `Districts_*`.';
-    const documented = documentedServices(doc);
-    expect(
-      undocumentedServices(
-        ['Precincts_Old', 'status', 'Party_Ballot', 'party_x', 'Districts_1'],
-        documented,
-      ),
-    ).toEqual(['Precincts_Old', 'status', 'Party_Ballot', 'party_x', 'Districts_1']);
-  });
-
-  it('reads each line of a services block, with globs and names with spaces', () => {
-    const doc = [
-      '## Service inventory',
-      'Past elections:',
-      '',
-      '```services',
-      '*_2024_*',
+  it('reads each line of a services block into its root, with globs and spaces', () => {
+    const doc = inventoryDoc(
+      '```services county',
+      '*_1999_*',
       'Hub Events (public)',
       '  survey123_abc_form  ',
       '```',
       '',
-      '```js',
-      'not_a_service',
+      '```services city',
+      'City_Layer',
       '```',
-    ].join('\n');
+    );
     const documented = documentedServices(doc);
     expect(
       undocumentedServices(
         [
-          '11_5_2024_Polling_Places',
-          'precincts_2024_04_12_view',
+          '11_5_1999_Polling_Places',
           'Hub Events (public)',
           'survey123_abc_form',
           'polls_2027_11_view',
-          'not_a_service',
         ],
-        documented,
+        documented.county,
       ),
-    ).toEqual(['polls_2027_11_view', 'not_a_service']);
+    ).toEqual(['polls_2027_11_view']);
+    expect(undocumentedServices(['City_Layer', 'Hub Events (public)'], documented.city)).toEqual([
+      'Hub Events (public)',
+    ]);
+  });
+
+  it('keeps each root apart, so a name in one org does not hide the same name in another', () => {
+    const doc = inventoryDoc('```services city', 'Parcels', '```');
+    const documented = documentedServices(doc);
+    expect(undocumentedServices(['Parcels'], documented.city)).toEqual([]);
+    expect(undocumentedServices(['Parcels'], documented.county)).toEqual(['Parcels']);
+  });
+
+  it('ignores code spans and other fenced blocks: field names and prose are not services', () => {
+    const doc = inventoryDoc(
+      'The `precincts` field, `URL`, `Line_View/FeatureServer/0` and `party*`.',
+      '```js',
+      'not_a_service',
+      '```',
+    );
+    const documented = documentedServices(doc);
+    expect(
+      undocumentedServices(
+        ['precincts', 'URL', 'Line_View', 'Party_x', 'not_a_service'],
+        documented.county,
+      ),
+    ).toEqual(['precincts', 'URL', 'Line_View', 'Party_x', 'not_a_service']);
   });
 
   it('ignores a services line that is too broad to mean anything', () => {
-    const doc = '## Service inventory\n```services\n*\n*_a*\n```\n';
-    expect(undocumentedServices(['anything', 'x_a_y'], documentedServices(doc))).toEqual([
+    const doc = inventoryDoc('```services county', '*', '*_a*', '```');
+    expect(undocumentedServices(['anything', 'x_a_y'], documentedServices(doc).county)).toEqual([
       'anything',
       'x_a_y',
     ]);
   });
 
-  it('reads only the Service inventory section, so a field name elsewhere does not count', () => {
+  it('reads only the Service inventory section', () => {
     const doc = [
       '## Layers',
-      'Fields `precincts` and `Old_Layer`.',
-      '```services',
-      'Elsewhere_Block',
+      '```services county',
+      'Before_Block',
       '```',
       '## Service inventory',
-      '`Inventory_Layer`',
       '### Read by the app',
-      '`Sub_Layer`',
+      '```services county',
+      'Inventory_Block',
+      '```',
       '## Next section',
-      '`After_Layer`',
+      '```services county',
+      'After_Block',
+      '```',
     ].join('\n');
     expect(
       undocumentedServices(
-        [
-          'precincts',
-          'Old_Layer',
-          'Elsewhere_Block',
-          'Inventory_Layer',
-          'Sub_Layer',
-          'After_Layer',
-        ],
-        documentedServices(doc),
+        ['Before_Block', 'Inventory_Block', 'After_Block'],
+        documentedServices(doc).county,
       ),
-    ).toEqual(['precincts', 'Old_Layer', 'Elsewhere_Block', 'After_Layer']);
+    ).toEqual(['Before_Block', 'After_Block']);
   });
 
-  it('documents nothing when the doc has no Service inventory section', () => {
-    expect(documentedServices('`Some_Layer`\n').names.size).toBe(0);
+  it('documents nothing for a root with no block, or with no Service inventory section', () => {
+    expect(undocumentedServices(['A'], documentedServices(inventoryDoc()).boe)).toEqual(['A']);
+    const noSection = '```services county\nA\n```\n';
+    expect(undocumentedServices(['A'], documentedServices(noSection).county)).toEqual(['A']);
   });
 
   it('lists each undocumented name once, in order', () => {
-    expect(undocumentedServices(['b', 'a', 'b'], documentedServices(''))).toEqual(['b', 'a']);
+    expect(undocumentedServices(['b', 'a', 'b'], documentedServices('').county)).toEqual([
+      'b',
+      'a',
+    ]);
   });
 });
 
@@ -179,23 +171,20 @@ describe('the inventory against docs/data.md', () => {
   const documented = documentedServices(readFileSync('docs/data.md', 'utf8'));
 
   it('lists the County org, the City org and the City Board folder on maps6', () => {
-    expect(INVENTORY_ROOTS.map((r) => r.url)).toEqual([
-      election.serviceRoot,
-      city.serviceRoot,
-      'https://maps6.stlouis-mo.gov/arcgis/rest/services/BOE',
+    expect(INVENTORY_ROOTS.map((r) => [r.key, r.url])).toEqual([
+      ['county', election.serviceRoot],
+      ['city', city.serviceRoot],
+      ['boe', 'https://maps6.stlouis-mo.gov/arcgis/rest/services/BOE'],
     ]);
   });
 
-  it('mentions every layer the app reads', () => {
-    const city = election.jurisdictions.city;
-    const paths = [
-      ...Object.values(election.layers),
-      ...Object.values(city.layers),
-      election.waitTimes.county.layer,
-      election.waitTimes.city.layer,
-    ];
-    const names = [...new Set(paths.map((p) => p.split('/')[0]))];
-    expect(undocumentedServices(names, documented)).toEqual([]);
+  it('lists every layer the app reads under its own org', () => {
+    const names = (paths) => [...new Set(paths.map((p) => p.split('/')[0]))];
+    expect(undocumentedServices(names(Object.values(election.layers)), documented.county)).toEqual(
+      [],
+    );
+    const cityPaths = [...Object.values(city.layers), election.waitTimes.city.layer];
+    expect(undocumentedServices(names(cityPaths), documented.city)).toEqual([]);
   });
 
   it('still notices a new election service in either org', () => {
@@ -209,7 +198,9 @@ describe('the inventory against docs/data.md', () => {
       'service_0123456789abcdef0123456789abcdef_form',
       'BOE/PRECINCTS_2027',
     ];
-    expect(undocumentedServices(fresh, documented)).toEqual(fresh);
+    for (const key of ['county', 'city', 'boe']) {
+      expect(undocumentedServices(fresh, documented[key])).toEqual(fresh);
+    }
   });
 });
 
