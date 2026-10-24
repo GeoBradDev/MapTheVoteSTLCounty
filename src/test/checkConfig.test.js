@@ -27,6 +27,7 @@ import election from '../config/election.js';
 import {
   BALLOT_SAMPLE_SIZE,
   CITY_KNOWN_POINT,
+  CITY_OFFICES_LEFT_OUT,
   CITY_PRECINCT_RANGE,
   KNOWN_POINTS,
   OUTSIDE_POINT,
@@ -213,6 +214,9 @@ function healthyCity() {
           ]
         : [],
     inBoundary: (lng, lat) => lng === CITY_KNOWN_POINT.lng && lat === CITY_KNOWN_POINT.lat,
+    // The districts layer's distinct office names (#160): every row's first
+    // office, the other ward title and a citywide office the card leaves out.
+    offices: [...cityResults.districts.rows.map((row) => row.offices[0]), 'Alderwoman', 'Mayor'],
   };
 }
 
@@ -252,6 +256,10 @@ function cityAnswer(world, url) {
     if (where === cityConfig.pollsWhere) return features(world.city.polls);
     if (where === cityConfig.earlyVotingWhere) return features(world.city.earlyVoting);
     return json({ error: { code: 400, message: 'Unable to complete operation.' } });
+  }
+  if (layerPath === cityConfig.layers.districts && where === '1=1' && !geometry) {
+    const field = cityConfig.districtLayerFields.office;
+    return features(world.city.offices.map((office) => ({ [field]: office })));
   }
   if (where === cityConfig.boundaryWhere) {
     return features(world.city.inBoundary(lng, lat) ? [{ OBJECTID: 1 }] : []);
@@ -395,6 +403,7 @@ describe('runHealthCheck', () => {
       'city voting locations',
       'city early voting sites',
       'city known points',
+      'city district offices',
       'city sample ballot',
     ]);
     expect(results['city precincts'].detail).toBe('207 precincts, wards 1 to 14');
@@ -1712,6 +1721,168 @@ describe('the City layers (#87)', () => {
         `${KNOWN_POINTS[0].name}: in City precinct W 1 P 1; ` +
         `${KNOWN_POINTS[0].name}: inside the City outline`,
     );
+  });
+
+  it('passes when every districts card row finds an office on the layer (#160)', async () => {
+    const world = healthyWorld();
+    const results = await run(world);
+    const rows = cityResults.districts.rows.length;
+    expect(results['city district offices']).toEqual({
+      name: 'city district offices',
+      status: 'pass',
+      detail: `${rows} districts card rows (districts.rows) each match an office on the layer`,
+    });
+    const query = world.cityQueries.find(
+      (q) => q.get('outFields') === cityConfig.districtLayerFields.office,
+    );
+    expect(query.get('returnGeometry')).toBe('false');
+    // Not distinct values: the hosted layer folds case there.
+    expect(query.get('returnDistinctValues')).toBeNull();
+  });
+
+  it('passes a row that finds only one of its offices, like Alderwoman alone (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices = world.city.offices.filter((o) => o !== 'Alderman');
+    expect((await run(world))['city district offices'].status).toBe('pass');
+  });
+
+  it('fails when the City renames an office, naming the row and any near match (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices = world.city.offices
+      .filter((o) => o !== 'State Senate' && o !== 'Board of Education of the City of St. Louis')
+      .concat('State senate', 'School Board');
+    const { status, detail } = (await run(world))['city district offices'];
+    expect(status).toBe('fail');
+    expect(detail).toBe(
+      'stateSenate: no office "State Senate" on the layer (it has "State senate"); ' +
+        'school: no office "Board of Education of the City of St. Louis" on the layer. ' +
+        'The card would drop these rows: check districts.rows in src/config/cityResults.js.',
+    );
+  });
+
+  it('names every office a row looks for when none is on the layer (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices = world.city.offices.filter((o) => !/^Alder/.test(o));
+    const { detail } = (await run(world))['city district offices'];
+    expect(detail).toMatch(/^cityWard: no office "Alderman" or "Alderwoman" on the layer\. /);
+  });
+
+  it('skips the district offices when the districts layer check failed (#160)', async () => {
+    const world = healthyWorld();
+    const info = world.city.layers[cityConfig.layers.districts];
+    info.fields = info.fields.filter((f) => f.name !== cityConfig.districtLayerFields.office);
+    const results = await run(world);
+    expect(results['city layer districts'].status).toBe('fail');
+    expect(results['city district offices']).toMatchObject({
+      status: 'skip',
+      detail: 'the city layer districts check failed',
+    });
+  });
+
+  it('fails the district offices on an answer with no features list (#160)', async () => {
+    const world = healthyWorld();
+    const fetch = stubFetch(world);
+    const results = await run(world, election, {
+      fetch: (url, init) =>
+        new URL(url).searchParams.get('outFields') === cityConfig.districtLayerFields.office
+          ? Promise.resolve(json({}))
+          : fetch(url, init),
+    });
+    expect(results['city district offices']).toMatchObject({
+      status: 'fail',
+      detail: 'the response has no features list',
+    });
+  });
+
+  it('warns on an office no row names and the card does not leave out (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices.push('Alderperson', ...CITY_OFFICES_LEFT_OUT);
+    const { status, detail } = (await run(world))['city district offices'];
+    expect(status).toBe('warn');
+    expect(detail).toContain('but the layer also has "Alderperson", which no row names.');
+    expect(detail).not.toContain('Mayor');
+  });
+
+  it('warns when a few districts restyle an office by case only (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices.push('State senate', 'State Senate');
+    const { status, detail } = (await run(world))['city district offices'];
+    expect(status).toBe('warn');
+    expect(detail).toContain('but the layer also has "State senate", which no row names.');
+  });
+
+  it('never warns on a party committee post, which the card never shows (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices.push('Committeeman (R)', 'Committeewoman (D)');
+    expect((await run(world))['city district offices'].status).toBe('pass');
+  });
+
+  it('fails when the districts layer returns no offices (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices = [];
+    expect((await run(world))['city district offices']).toMatchObject({
+      status: 'fail',
+      detail: 'the districts layer returned no offices',
+    });
+  });
+
+  it('checks the rows it is given, with a hint for a value that differs in spacing (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices.push('StateSenate');
+    const cityDistricts = { rows: [{ key: 'senate', offices: ['State  Senator'] }] };
+    const { status, detail } = (await run(world, election, { cityDistricts }))[
+      'city district offices'
+    ];
+    expect(status).toBe('fail');
+    expect(detail).toMatch(/^senate: no office "State {2}Senator" on the layer\. /);
+    const spaced = { rows: [{ key: 'senate', offices: ['State Sen ate'] }] };
+    expect(
+      (await run(world, election, { cityDistricts: spaced }))['city district offices'].detail,
+    ).toContain('(it has "State Senate", "StateSenate")');
+  });
+
+  it('warns when some districts have no office, since the card drops their row (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices.push('', '  ', null);
+    const { status, detail } = (await run(world))['city district offices'];
+    expect(status).toBe('warn');
+    expect(detail).toContain('but 3 districts on the layer have no office.');
+  });
+
+  it('fails a districts answer cut off at the layer limit (#160)', async () => {
+    const world = healthyWorld();
+    const fetch = stubFetch(world);
+    const results = await run(world, election, {
+      fetch: async (url, init) => {
+        const res = await fetch(url, init);
+        if (new URL(url).searchParams.get('outFields') !== cityConfig.districtLayerFields.office) {
+          return res;
+        }
+        return json({ ...(await res.json()), exceededTransferLimit: true });
+      },
+    });
+    expect(results['city district offices']).toMatchObject({
+      status: 'fail',
+      detail: 'too many districts for one request: page the query',
+    });
+  });
+
+  it('trims the office names as the card does (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices = world.city.offices.map((o) =>
+      o === 'State Senate' ? ' State Senate ' : o,
+    );
+    expect((await run(world))['city district offices'].status).toBe('pass');
+  });
+
+  it('asks the districts layer for every row, not a point or a filter (#160)', async () => {
+    const world = healthyWorld();
+    await run(world);
+    const query = world.cityQueries.find(
+      (q) => q.get('outFields') === cityConfig.districtLayerFields.office,
+    );
+    expect(query.get('where')).toBe('1=1');
+    expect(query.get('geometry')).toBeNull();
   });
 
   it('asks the City layers only for the fields the app reads, never *', async () => {
