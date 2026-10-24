@@ -247,14 +247,6 @@ function titleCase(value) {
 
 const text = (value) => (typeof value === 'string' ? value.trim() : '');
 
-// MSAG_COMMUNITY_NAME as a town, or undefined for ST LOUIS COUNTY (no
-// municipality), ST LOUIS CITY and another county's name.
-function municipalityOf(value) {
-  const name = text(value).toUpperCase();
-  if (!name || / COUNTY$/.test(name) || name === 'ST LOUIS CITY') return undefined;
-  return titleCase(name);
-}
-
 // A usable county record: current, an integer house number, a street and a
 // point. `props` has the fields addressMatch.js reads.
 function recordOf(feature) {
@@ -265,16 +257,18 @@ function recordOf(feature) {
   if (NOT_AN_ADDRESS.has(text(a.UNITDESC).toUpperCase())) return null;
   if (!Number.isInteger(a.ADRNO) || a.ADRNO < 0 || !text(a.ADRSTR)) return null;
   const direction = text(a.ADRDIR).toUpperCase();
+  // The town the record is in, which a voter may type in place of its
+  // mailing city (41 S Central Ave is in Clayton, mailed as Saint Louis,
+  // #143), with TOWN & COUNTRY as Town and Country. Not ST LOUIS COUNTY (no
+  // town), ST LOUIS CITY or another county.
+  const msag = text(a.MSAG_COMMUNITY_NAME).replace('&', 'AND');
   const street = [direction, titleCase(a.ADRSTR), titleCase(a.ADRSUF)].filter(Boolean).join(' ');
   const props = {
     housenumber: String(a.ADRNO),
     street,
     postcode: text(a.ZIPCODE) || undefined,
     city: titleCase(a.MAILINGCITY) || undefined,
-    // The town the record is in, which a voter may type in place of its
-    // mailing city (41 S Central Ave is in Clayton, mailed as Saint Louis,
-    // #143). Not a county or the City: those name no town.
-    municipality: municipalityOf(a.MSAG_COMMUNITY_NAME),
+    municipality: /^ST LOUIS|COUNTY$/i.test(msag) ? '' : msag,
     state: 'Missouri',
     // The layer holds a few St. Louis City addresses (MUNI STL); they are City
     // places (their City precinct, #88), never a county precinct.
@@ -468,8 +462,7 @@ export function createCountyAddressSource({
         // address can name different municipalities (1950 Walton Rd 63114:
         // the house in Overland, Unit R in Vinita Park, #143), so every record
         // of each matching address stays for the unit and precinct checks.
-        const sites = new Set(matches.map(siteKey));
-        pool = sameStreet.filter((r) => sites.has(siteKey(r)));
+        pool = sameStreet.filter((r) => matches.some((m) => siteKey(m) === siteKey(r)));
       }
       if (!pool.length) return { status: 'none' };
       // A house the text could mean, but not by the strict rules (its town or

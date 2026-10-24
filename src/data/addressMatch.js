@@ -4,7 +4,7 @@
 // street (direction, name and type), and a typed ZIP or town must agree.
 // An address here is plain fields: housenumber, street, postcode, city or
 // district, county and state, as the source gives them, and for a county
-// record its municipality when that is not its mailing city (#143).
+// record its municipality (#143).
 
 const STATE_ABBR = { Missouri: 'MO', Illinois: 'IL' };
 
@@ -197,16 +197,8 @@ export function matchesStreet(text, props) {
 
 // Whether the typed town is the address's municipality (a county record's
 // MSAG community, like Clayton for an address mailed as Saint Louis, #143).
-// St. Louis confirms nothing, and "and" is left out, since the county writes
-// TOWN & COUNTRY.
-function isMunicipality(typedPlace, props) {
-  const name = words(props.municipality).join(' ');
-  return (
-    Boolean(name) &&
-    !ST_LOUIS_NAMES.has(typedPlace) &&
-    typedPlace.replace(/\band /g, '') === name.replace(/\band /g, '')
-  );
-}
+const isMunicipality = (typedPlace, props) =>
+  Boolean(typedPlace) && typedPlace === words(props.municipality).join(' ');
 
 // Typed text names a feature when:
 // - its street part (before the first comma) starts with the feature's house
@@ -249,7 +241,7 @@ export function matchesTyped(text, props) {
     return false;
   }
   const confirmed =
-    (zip && zip === postcode) || (typedPlace && (typedPlace === town || inMunicipality));
+    (zip && zip === postcode) || (typedPlace && typedPlace === town) || inMunicipality;
   return !town || town === ST_LOUIS || Boolean(confirmed);
 }
 
@@ -266,8 +258,10 @@ export function isConfirmed(text, props) {
   const town = words(props.city ?? props.district).join(' ');
   const street = words(props.street);
   const typedPlace = typedTown(words(text).slice(1 + street.length));
-  if (isMunicipality(typedPlace, props)) return true;
-  return Boolean(typedPlace && town && town !== ST_LOUIS && typedPlace === town);
+  return (
+    isMunicipality(typedPlace, props) ||
+    Boolean(typedPlace && town && town !== ST_LOUIS && typedPlace === town)
+  );
 }
 
 const UNIT_PATTERN = new RegExp(
