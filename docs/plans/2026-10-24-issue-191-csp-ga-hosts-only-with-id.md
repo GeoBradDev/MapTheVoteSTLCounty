@@ -55,6 +55,12 @@ Review revision (finder 2): with the ID empty, a source that allows any host (`*
 `http:`) also counts as allowing Google, and `googletagservices.com` is in the host pattern;
 the stale comment in `src/features/privacy/privacyCopy.js` is corrected.
 
+Review revision (finder 3): any-host sources also cover `https://*`, `*:*` and a top-level
+domain wildcard (`*.com`), not `data:` or `blob:`; with the ID set, each GA request is checked
+against the directive a browser applies (`script-src-elem` over `script-src`, `default-src`
+when one is left out), and the message names that directive; the README's pre-election check
+also confirms no outbound `click` hit for a directions link.
+
 ## Order of work
 
 1. Red: write `src/analytics/csp.test.js` (helper does not exist) and confirm it fails.

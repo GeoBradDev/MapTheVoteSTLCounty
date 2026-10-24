@@ -103,6 +103,25 @@ describe('analyticsCspProblems', () => {
     ]);
   });
 
+  // A browser takes script-src-elem over script-src for a script tag, and
+  // falls back to default-src for a directive the policy leaves out.
+  it('checks the directive a browser applies to each request', () => {
+    const elem = `${WITH_GA}; script-src-elem 'self'`;
+    expect(analyticsCspProblems(elem, TEST_ID)).toEqual([
+      expect.stringContaining('add https://www.googletagmanager.com to script-src-elem'),
+    ]);
+    const fallback =
+      "default-src 'self' https://www.googletagmanager.com https://*.google-analytics.com";
+    expect(analyticsCspProblems(fallback, TEST_ID)).toEqual([]);
+    expect(analyticsCspProblems("default-src 'self'", TEST_ID)).toEqual([
+      expect.stringContaining('add https://www.googletagmanager.com to default-src'),
+      expect.stringContaining(
+        'add https://www.googletagmanager.com https://*.google-analytics.com to default-src',
+      ),
+      expect.stringContaining('add https://*.google-analytics.com to default-src'),
+    ]);
+  });
+
   // Not only the two hosts GA uses: any Google host, in any directive.
   it('finds any other Google host while the ID is empty', () => {
     for (const source of [
@@ -125,10 +144,25 @@ describe('analyticsCspProblems', () => {
 
   // A source that allows every host allows Google's too.
   it('finds a scheme or wildcard source that would allow Google while the ID is empty', () => {
-    for (const source of ['*', 'https:', 'http:', 'HTTPS:']) {
+    for (const source of [
+      '*',
+      'https:',
+      'http:',
+      'HTTPS:',
+      'https://*',
+      '*:*',
+      '*.com',
+      'https://*.net',
+    ]) {
       expect(analyticsCspProblems(`${BASE}; script-src-elem ${source}`, ''), source).toEqual([
         expect.stringContaining(`remove ${source} from script-src-elem`),
       ]);
+    }
+  });
+
+  it('does not take a source that allows no network host for Google', () => {
+    for (const source of ['data:', 'blob:', "'self'", "'none'", 'https://photon.komoot.io']) {
+      expect(analyticsCspProblems(`${BASE}; img-src ${source}`, ''), source).toEqual([]);
     }
   });
 

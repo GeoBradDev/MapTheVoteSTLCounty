@@ -1038,7 +1038,8 @@ Storage for the site; each `collect` request in Network has `dl=https://mapthevo
 pattern, not the first page's. Open a precinct's sample ballot link and confirm no `click` hit
 goes to Google (enhanced measurement's outbound clicks are off: its `link_url` would name the
 precinct), and that the `sample_ballot_open` hit (`en=sample_ballot_open`) carries no link or code;
-press a directions link and Share, and check their hits carry only the labels in the table above. In GA's Realtime report, the page views show under the redacted paths. With Global Privacy
+press a directions link and Share, and check their hits carry only the labels in the table above
+and that no `click` hit goes to Google for the directions link (its URL holds the polling place's coordinates). In GA's Realtime report, the page views show under the redacted paths. With Global Privacy
 Control on (Brave, or Firefox's setting), no request goes to Google.
 
 ## Share links

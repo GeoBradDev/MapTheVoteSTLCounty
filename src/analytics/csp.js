@@ -29,8 +29,20 @@ export const ANALYTICS_CSP = Object.freeze({
 const GOOGLE_HOST =
   /^(?:[a-z][a-z0-9+.-]*:\/\/)?(?:[*a-z0-9-]+\.)*(?:google(?:\.com?)?\.[a-z]{2,}|(?:googletagmanager|google-analytics|googleadservices|googlesyndication|googletagservices|doubleclick|gstatic)\.(?:com|net))\.?(?::\d+|:\*)?(?:\/.*)?$/i;
 
-// A source that allows any host, Google's among them.
-const ANY_HOST = /^(?:\*|https?:)$/i;
+// A source that allows any host, Google's among them: a network scheme alone
+// (https:, wss:), *, or a wildcard over a whole top-level domain (*.com),
+// with or without a scheme and port.
+const ANY_HOST =
+  /^(?:(?:https?|wss?):|(?:[a-z][a-z0-9+.-]*:\/\/)?\*(?:\.[a-z]+)?(?::\d+|:\*)?\/?)$/i;
+
+// The directives a browser applies to each of GA's requests, most specific
+// first: script-src-elem governs a script tag over script-src, and
+// default-src stands in for any the policy leaves out.
+const APPLIED = Object.freeze({
+  'script-src': ['script-src-elem', 'script-src', 'default-src'],
+  'connect-src': ['connect-src', 'default-src'],
+  'img-src': ['img-src', 'default-src'],
+});
 
 function directives(policy) {
   return policy
@@ -53,8 +65,11 @@ export function analyticsCspProblems(policy, measurementId) {
   if (analyticsEnabled(measurementId)) {
     // The first copy of each directive: a browser ignores later ones.
     const csp = new Map(parsed.toReversed());
-    return Object.entries(ANALYTICS_CSP).flatMap(([name, sources]) => {
-      const missing = sources.filter((source) => !(csp.get(name) ?? []).includes(source));
+    return Object.entries(ANALYTICS_CSP).flatMap(([directive, sources]) => {
+      const name = APPLIED[directive].find((candidate) => csp.has(candidate));
+      // No directive applies: the policy does not restrict these requests.
+      if (!name) return [];
+      const missing = sources.filter((source) => !csp.get(name).includes(source));
       return missing.length
         ? [
             `gaMeasurementId is set (${measurementId}), so Google Analytics needs render.yaml's ` +
