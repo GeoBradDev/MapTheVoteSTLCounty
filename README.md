@@ -173,7 +173,8 @@ may need new values too. Work on a branch and merge through the usual pull reque
    and `congressionalMap`) and the sample ballot link format. The script saves only 3 sample
    rows per layer, so query the layer for the distinct `in_election` and `abs_type` values.
    The script starts by re-checking the inventory: it lists every service in the County and
-   City orgs and prints each one `docs/data.md` does not mention. Add each to the Service
+   City orgs and the City Board's `BOE` folder on `maps6.stlouis-mo.gov`, and prints each one
+   `docs/data.md` does not mention. Add each to the Service
    inventory there with why it is used or not, and the date
    (`node scripts/inspect-data.mjs --inventory` runs only this check).
 3. **Update `src/config/election.js` and `src/config/cityResults.js`.** Every value that

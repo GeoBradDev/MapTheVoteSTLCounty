@@ -1155,21 +1155,23 @@ repeat the work and nobody adds a layer that was ruled out for a reason. The ser
 taken on 2026-10-24; each table row has its own check date.
 
 - County: `https://services6.arcgis.com/wkbq75VVf2MvUvs7/ArcGIS/rest/services` (223 services)
-- City: `https://services6.arcgis.com/HZXbCkpCSqbGd0vK/ArcGIS/rest/services` (160 services; the
+- City: `https://services6.arcgis.com/HZXbCkpCSqbGd0vK/ArcGIS/rest/services` (159 services; the
   whole City government's org, not only the City Board's)
-- City Board folder: `https://maps6.stlouis-mo.gov/arcgis/rest/services/BOE` (3 services)
+- City Board folder: `https://maps6.stlouis-mo.gov/arcgis/rest/services/BOE` (2 services)
 
 `node scripts/inspect-data.mjs` starts by listing all three and printing every service this file
 does not mention; `--inventory` does only that and writes nothing. A service counts as mentioned
-when its exact name is in a code span anywhere in this file (a bare name, a
-`name/FeatureServer/0` path or a full service URL), or is a line of a `services` block below,
-where `*` matches any characters. A `*` in a code span does not count. Before each election, run
+when its exact name is in a code span in this section (a bare name, a `name/FeatureServer/0`
+path or a full service URL), or is a line of a `services` block below, where `*` matches any
+characters. A `*` in a code span does not count, and neither does a mention elsewhere in this
+file: most code spans there are field names. A root that answers with an error, or with no
+services list, is a `fail` line, not an empty org. Before each election, run
 it and add each new service here with a reason, in a table below or in one of the blocks
 (README, Updating for a new election). Never use a bare family pattern like `polls_*`: that
 would hide the next election's `polls_YYYY_MM_view`.
 
-The script reads only the directory listings. It never queries a listed service or reads its
-metadata: some are the Board's forms and hold voters' personal data. What each opaque
+The inventory step reads only the directory listings. It never queries a listed service or reads
+its metadata: some are the Board's forms and hold voters' personal data. What each opaque
 `service_*` and `survey123_*` service is came from its public item title in the org's content
 search, not from the service.
 
@@ -1214,8 +1216,9 @@ The rest of the County org, listed 2026-10-24:
 <details>
 <summary>Past elections' precincts, polling places, dashboards and lookup views (89)</summary>
 
-Every one is for an election before November 3, 2026 (its name or item title says which), so it
-is stale for this one.
+Every one is for an election before November 3, 2026, so it is stale for this one: its name or
+item title names that election, or (`ad7f60`, `PrecinctsDemo`, `survey_view_precincts`,
+`lookup_view_polling_places`) its item was last changed in 2024 or earlier.
 
 ```services
 11_3_2020_Polling_Places

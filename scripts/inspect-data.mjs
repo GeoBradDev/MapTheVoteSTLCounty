@@ -68,25 +68,41 @@ function globToRegExp(pattern) {
   return new RegExp(`^${body.join('.*')}$`);
 }
 
+const INVENTORY_HEADING = '## Service inventory';
+
+/** The Service inventory section of docs/data.md: its heading up to the next `## ` heading. */
+function inventorySection(markdown) {
+  const lines = markdown.split('\n');
+  const start = lines.findIndex((l) => l.trim() === INVENTORY_HEADING);
+  if (start === -1) return '';
+  const end = lines.findIndex((l, i) => i > start && /^## /.test(l));
+  return lines.slice(start, end === -1 ? undefined : end).join('\n');
+}
+
 /**
- * What docs/data.md documents: the exact names in its code spans, and each line
- * of its ```services blocks (one name per line; `*` matches any characters).
- * Globs count only inside a services block, never in a code span.
+ * What the Service inventory section of docs/data.md documents: the exact names
+ * in its code spans, and each line of its ```services blocks (one name per line;
+ * `*` matches any characters). Globs count only inside a services block, never
+ * in a code span. The rest of the file is ignored: its code spans are mostly
+ * field names, which would hide a new service of the same name.
  */
 export function documentedServices(markdown) {
   const names = new Set();
   const patterns = [];
-  const rest = markdown.replace(/^```services[^\n]*\n([\s\S]*?)^```/gm, (_, block) => {
-    for (const raw of block.split('\n')) {
-      const line = raw.trim();
-      if (!line) continue;
-      if (!line.includes('*')) names.add(line);
-      else if (line.replace(/\*/g, '').length >= MIN_PATTERN_LITERALS) {
-        patterns.push(globToRegExp(line));
+  const rest = inventorySection(markdown).replace(
+    /^```services[^\n]*\n([\s\S]*?)^```/gm,
+    (_, block) => {
+      for (const raw of block.split('\n')) {
+        const line = raw.trim();
+        if (!line) continue;
+        if (!line.includes('*')) names.add(line);
+        else if (line.replace(/\*/g, '').length >= MIN_PATTERN_LITERALS) {
+          patterns.push(globToRegExp(line));
+        }
       }
-    }
-    return '';
-  });
+      return '';
+    },
+  );
   // Other fenced blocks are code, not mentions.
   const prose = rest.replace(/^```[^\n]*\n[\s\S]*?^```/gm, '');
   for (const [, span] of prose.matchAll(/`([^`\n]+)`/g)) {
@@ -106,21 +122,32 @@ export function undocumentedServices(serviceNames, documented) {
   });
 }
 
+/**
+ * The service names in a services directory listing. ArcGIS answers a wrong or
+ * locked root with HTTP 200 and an error body, so that fails rather than read
+ * as a root with no services.
+ */
+export function serviceNames(listing) {
+  if (listing?.error) {
+    throw new Error(`${listing.error.code ?? 'error'} ${listing.error.message ?? ''}`.trim());
+  }
+  if (!Array.isArray(listing?.services)) throw new Error('no services list in the response');
+  return listing.services.map((s) => s.name);
+}
+
 async function inventory() {
   const documented = documentedServices(await readFile(DATA_DOC, 'utf8'));
   for (const { label, url } of INVENTORY_ROOTS) {
     try {
-      const { services = [] } = await getJson(`${url}?f=json`);
-      const missing = undocumentedServices(
-        services.map((s) => s.name),
-        documented,
-      );
+      const names = [...new Set(serviceNames(await getJson(`${url}?f=json`)))];
+      const missing = undocumentedServices(names, documented);
       console.log(
-        `${missing.length ? 'new ' : 'ok  '} ${label}: ${services.length} services, ${missing.length} not in docs/data.md`,
+        `${missing.length ? 'new ' : 'ok  '} ${label}: ${names.length} services, ${missing.length} not in docs/data.md`,
       );
       for (const name of missing) console.log(`       ${name}`);
     } catch (err) {
       console.log(`fail ${label}: ${err.message}`);
+      process.exitCode = 1;
     }
   }
 }

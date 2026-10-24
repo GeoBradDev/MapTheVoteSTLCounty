@@ -25,7 +25,10 @@ because the doc prose follows the repo's existing data.md voice.
    `Table_Voter_Curbside_CheckIn` and the Board's forms are never touched.
 5. A name the doc mentions only inside prose or a glob in a code span (like `party*`) does not
    count; only exact names in code spans (a bare name, a `name/FeatureServer/n` path or a
-   `.../rest/services/name/...` URL) and the lines of `services` blocks count. A `*` alone, or a
+   `.../rest/services/name/...` URL) and the lines of `services` blocks count, and only inside
+   the "Service inventory" section (revised after review: elsewhere most code spans are field
+   names like `precincts`, which would hide a new service of that name). A root that answers
+   with an ArcGIS error body (HTTP 200) or no services list prints `fail`, not an empty org. A `*` alone, or a
    pattern with fewer than 4 literal characters, is ignored, so a stray pattern cannot hide
    every service.
 6. The St. Louis City part points at #57's comments (its closing comment and the `maps6` BOE

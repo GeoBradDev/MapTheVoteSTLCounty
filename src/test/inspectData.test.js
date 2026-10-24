@@ -10,6 +10,7 @@ import {
   cityLayerRequests,
   documentedServices,
   INVENTORY_ROOTS,
+  serviceNames,
   undocumentedServices,
 } from '../../scripts/inspect-data.mjs';
 
@@ -68,6 +69,7 @@ describe('documentedServices', () => {
   it('reads exact names from code spans: bare, layer paths and service URLs', () => {
     // Made-up names: the real ones live only in the election config.
     const doc = [
+      '## Service inventory',
       'The `precincts_1999_01_view` layer, `polls_1999_01_view/FeatureServer/1`,',
       '`BOE/Some_Board_Layer/MapServer/2` and',
       '`https://example.org/ArcGIS/rest/services/Line_View/FeatureServer/0?f=json`,',
@@ -85,7 +87,8 @@ describe('documentedServices', () => {
   });
 
   it('ignores prose, code spans with spaces and globs in code spans', () => {
-    const doc = 'Precincts_Old are old. `status = 1` and `party*` and `Districts_*`.';
+    const doc =
+      '## Service inventory\n\nPrecincts_Old are old. `status = 1` and `party*` and `Districts_*`.';
     const documented = documentedServices(doc);
     expect(
       undocumentedServices(
@@ -97,6 +100,7 @@ describe('documentedServices', () => {
 
   it('reads each line of a services block, with globs and names with spaces', () => {
     const doc = [
+      '## Service inventory',
       'Past elections:',
       '',
       '```services',
@@ -126,11 +130,44 @@ describe('documentedServices', () => {
   });
 
   it('ignores a services line that is too broad to mean anything', () => {
-    const doc = '```services\n*\n*_a*\n```\n';
+    const doc = '## Service inventory\n```services\n*\n*_a*\n```\n';
     expect(undocumentedServices(['anything', 'x_a_y'], documentedServices(doc))).toEqual([
       'anything',
       'x_a_y',
     ]);
+  });
+
+  it('reads only the Service inventory section, so a field name elsewhere does not count', () => {
+    const doc = [
+      '## Layers',
+      'Fields `precincts` and `Old_Layer`.',
+      '```services',
+      'Elsewhere_Block',
+      '```',
+      '## Service inventory',
+      '`Inventory_Layer`',
+      '### Read by the app',
+      '`Sub_Layer`',
+      '## Next section',
+      '`After_Layer`',
+    ].join('\n');
+    expect(
+      undocumentedServices(
+        [
+          'precincts',
+          'Old_Layer',
+          'Elsewhere_Block',
+          'Inventory_Layer',
+          'Sub_Layer',
+          'After_Layer',
+        ],
+        documentedServices(doc),
+      ),
+    ).toEqual(['precincts', 'Old_Layer', 'Elsewhere_Block', 'After_Layer']);
+  });
+
+  it('documents nothing when the doc has no Service inventory section', () => {
+    expect(documentedServices('`Some_Layer`\n').names.size).toBe(0);
   });
 
   it('lists each undocumented name once, in order', () => {
@@ -163,6 +200,7 @@ describe('the inventory against docs/data.md', () => {
 
   it('still notices a new election service in either org', () => {
     const fresh = [
+      'polls_2027_11_view',
       'polls_2027_04_view',
       'precincts_2027_04_view',
       'April_6_2027_Polling_Places_Dashboard_view',
@@ -172,5 +210,30 @@ describe('the inventory against docs/data.md', () => {
       'BOE/PRECINCTS_2027',
     ];
     expect(undocumentedServices(fresh, documented)).toEqual(fresh);
+  });
+});
+
+describe('serviceNames', () => {
+  it('reads the names from a services directory listing', () => {
+    const listing = {
+      services: [
+        { name: 'A', type: 'FeatureServer' },
+        { name: 'B', type: 'MapServer' },
+      ],
+    };
+    expect(serviceNames(listing)).toEqual(['A', 'B']);
+  });
+
+  it('fails on an ArcGIS error body, which comes with HTTP 200', () => {
+    expect(() => serviceNames({ error: { code: 499, message: 'Token Required' } })).toThrow(
+      /Token Required/,
+    );
+    expect(() => serviceNames({ error: { code: 400, message: 'Invalid URL' } })).toThrow(
+      /Invalid URL/,
+    );
+  });
+
+  it('fails when the listing has no services list', () => {
+    expect(() => serviceNames({ folders: [] })).toThrow(/no services list/);
   });
 });
