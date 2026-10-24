@@ -50,7 +50,8 @@ layer; besides real towns it holds `ST LOUIS COUNTY` (unincorporated), `ST LOUIS
   `props.municipality` (the raw value, `&` read as `AND`, compared through `words()`), empty when
   the value starts with ST LOUIS or ends in COUNTY; export the out fields so the fixture recorder
   asks for exactly what the app asks for. In `find()`, a typed town (no ZIP) keeps every record of
-  each matching address on the same side of the City line, not only the records it matched.
+  each matching address, not only the records it matched, and a typed unit is taken only on the
+  side of the City line (a county of some matched record) the text matched.
 - `src/data/addressMatch.js`: `matchesTyped` and `isConfirmed` accept a typed town equal to
   `props.municipality` as well as `props.city`/`props.district`; header comment updated.
 - `scripts/record-fixtures.mjs`: record `county-address-central-ave.json` (the live layer's find
@@ -60,6 +61,7 @@ layer; besides real towns it holds `ST LOUIS COUNTY` (unincorporated), `ST LOUIS
 - `src/data/countyAddress.test.js`: review finding 1 cases (1950 Walton Rd, 9300 Lewis and Clark
   Blvd, Town and Country).
 - `src/data/countyAddress.cityunit143.test.js`: new, review finding 2 (6200 Enright Ave).
+- `src/data/countyAddress.citysite143.test.js`: new, review finding 3 (6200 Enright Ave).
 - `scripts/check-geocoder.mjs`: the #143 typed and picked cases.
 - `docs/data.md`, `README.md`: the rule text.
 
@@ -92,17 +94,24 @@ layer; besides real towns it holds `ST LOUIS COUNTY` (unincorporated), `ST LOUIS
   Fixed by keeping every record of each matching address (same `siteKey`). Also: "and" for
   TOWN & COUNTRY, and no ST LOUIS name as a municipality.
 - Finder 2: with every record kept, `6200 Enright Ave Apt 111, University City` picked the City
-  unit at a shared City and County address. Fixed by keeping only records on the matching
+  unit at a shared City and County address. First fixed by keeping only records on the matching
   record's side of the City line.
+- Finder 3: that fix let a City resident's text there (`6200 Enright Ave Apt 111, University
+  City`, or no unit) open the County place, which main answered as no match. Fixed by keeping
+  every record of the address again and taking a typed unit only on the matched side, so both
+  are no match while a County unit typed with the town still opens.
+- Main's `node scripts/check-geocoder.mjs` cannot resolve City precincts under Node since #147
+  (issue #198), so the live check exits 1 on its City lines on main and here; its #143 lines pass.
 - Budget: the first-load JavaScript sat 15 bytes over 120 KB gzipped after finder 1's fix, so
   the code was made smaller with the same behavior. Main had 172 bytes of headroom; this change
-  leaves about 2.
+  leaves 4.
 
 ## Proof
 
 - Criteria 1 to 4: `src/data/countyAddress.municipality143.test.js` (red before the fix, green
   after), plus the existing countyAddress, addressMatch and geocoder suites unchanged and green.
 - Criterion 5: existing suites (labels, suggest, Photon, City tests) unchanged and green.
-- Criterion 6: `node scripts/check-geocoder.mjs` run live, exit 0, with the #143 lines.
+- Criterion 6: `node scripts/check-geocoder.mjs` run live, every #143 line a county precinct
+  (the run exits 1 on the City lines only, issue #198, unrelated).
 - Live drive: the built app in a browser, typing `41 S Central Ave, Clayton, MO 63105` opens the
   county precinct page; `41 S Central Ave, Ladue, MO 63105` shows no match.
