@@ -1122,8 +1122,8 @@ desktop in each state): every County and City site (on Election Day, every polli
 place) on an inline SVG of the County and City outlines, with no map library and no tiles. It
 uses the wait times page's sites and counts, Jenks classes and ramp; each dot also grows with
 its class, and a closed site or one with no current count is a hollow gray ring. Under it is
-the legend; the line above the map says when the counts were checked or when sites open
-again. The whole map is one link to `/early-voting`, and under the box a button-styled link
+the legend; the line above the map says when the counts were checked, when sites open
+again, that early voting has ended, or that counts could not be loaded. The whole map is one link to `/early-voting`, and under the box a button-styled link
 (`Button` with `to`, #78) leads there too ("Detailed early voting wait times map", or on
 Election Day "Detailed Election Day line counts map"); the drawing is hidden from screen
 readers and the text carries the data. Its code loads on demand with the wait times page's

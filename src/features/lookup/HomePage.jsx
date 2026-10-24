@@ -107,7 +107,7 @@ export default function HomePage() {
 
       {/* The wait times page, drawn as a button (#209): no address needed. */}
       <p className="mt-4">
-        <Button to="/early-voting" variant="secondary" className="w-full text-center">
+        <Button to="/early-voting" variant="secondary" className="w-full text-center sm:w-auto">
           {electionDay ? copy.waitTimesElectionDay : copy.waitTimes}
         </Button>
       </p>

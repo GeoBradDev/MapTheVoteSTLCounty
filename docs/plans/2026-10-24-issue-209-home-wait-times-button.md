@@ -24,7 +24,8 @@ Domain skills:
    visible focus ring), labeled "Detailed early voting wait times map", and on Election Day
    "Detailed Election Day line counts map". Sentence case, as every other control on the site
    ("Find my precinct", "Use my location"); the issue asks for a label "like" its title-case
-   wording. Full width with centered text, as the "Use my location" button above it.
+   wording. Full width with centered text on a phone and as wide as its label from 640 px, as the
+   "Use my location" button above it.
 3. The address box (combobox), "Find my precinct" and "Use my location" are fully in the
    viewport without scrolling at 360 x 640, 375 x 667, 390 x 844 and 1280 x 800, in every
    calendar state: outside the map window, early voting open, every site closed, the evening
@@ -62,6 +63,12 @@ Domain skills:
 5. README.
 
 ## Risks
+
+- With the lookup above the box, the lookup's slow notice and an outcome notice push the box
+  and the button down when they appear. Both come only after the voter starts a lookup (the
+  slow notice while it is still out, before the page moves to the results); the comment in
+  `AddressLookup.jsx` says so. No space is reserved for them, which would add a gap under the
+  search in every state.
 
 - #104 kept the wait times link on the first screen of a 360 x 640 phone, above the search.
   With the search first (#209) the button follows the dot map, or outside the map window the
