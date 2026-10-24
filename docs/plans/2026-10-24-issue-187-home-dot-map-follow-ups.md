@@ -32,7 +32,8 @@ first-load JS budget nine days before the election. It goes to a new issue.
    in-flight slot clears).
 4. The wait times page's visible status line shows no "checked at" time while a resumed
    request is out, so a phone woken the next morning never shows the day before's. Its
-   screen reader live region keeps its text through a resume. (Revised during review: the
+   screen reader live region keeps its text through a resume, and the visible line keeps its
+   height (a no-break space), so nothing below it moves. (Revised during review: the
    first version also emptied the live region, which made a screen reader hear an old time
    again on every return after more than 1.5 intervals, breaking the 5 minute throttle.)
 5. `dotMap` drops counts with `stillShowable` (age and closing time), not closing time alone.

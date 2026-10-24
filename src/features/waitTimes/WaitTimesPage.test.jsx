@@ -313,7 +313,8 @@ describe('WaitTimesPage', () => {
     expect(shownStatus()).toHaveTextContent(copy.status.checked('17:00'));
     vi.setSystemTime(START);
     act(() => set(part({ askedAt: START, resuming: true })));
-    expect(shownStatus().textContent).toBe('');
+    // A no-break space keeps the line's height, so nothing below it moves.
+    expect(shownStatus().textContent).toBe('\u00a0');
     expect(statusLine()).toHaveTextContent(copy.status.checked('17:00'));
     act(() => set(part({ askedAt: START, answeredAt: START, checkedAt: START })));
     expect(shownStatus()).toHaveTextContent(copy.status.checked('09:00'));
