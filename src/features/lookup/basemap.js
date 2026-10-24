@@ -28,10 +28,12 @@ export const BASEMAP_DARK_STYLE_URL = 'https://tiles.openfreemap.org/styles/dark
 
 /**
  * Credits the tiles require (the style's TileJSON attribution) and
- * OpenStreetMap's license asks for, shown as text links under the map.
+ * OpenStreetMap's license asks for, shown as text links under the map. A
+ * `contributors` entry is credited as that name's contributors, a message in
+ * src/i18n (#120), through `copy.map.credits` in resultsCopy.js.
  */
 export const BASEMAP_ATTRIBUTION = [
   { label: 'OpenFreeMap', href: 'https://openfreemap.org/' },
   { label: '© OpenMapTiles', href: 'https://www.openmaptiles.org/' },
-  { label: '© OpenStreetMap contributors', href: 'https://www.openstreetmap.org/copyright' },
+  { contributors: 'OpenStreetMap', href: 'https://www.openstreetmap.org/copyright' },
 ];

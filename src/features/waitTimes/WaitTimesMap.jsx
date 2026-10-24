@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import TextLink from '../../components/TextLink.jsx';
-import { BASEMAP_ATTRIBUTION } from '../lookup/basemap.js';
 import { copy as resultsCopy } from '../lookup/resultsCopy.js';
 import WaitLegend from './WaitLegend.jsx';
 import { copy } from './waitTimesCopy.js';
@@ -166,7 +165,7 @@ export default function WaitTimesMap({ sites, classes, onFail, label = copy.map.
       {classes.length > 0 && <WaitLegend classes={classes} />}
       <p className="mt-1 text-xs text-muted">
         {resultsCopy.map.basemap}{' '}
-        {BASEMAP_ATTRIBUTION.map(({ label, href }, i) => (
+        {resultsCopy.map.credits.map(({ label, href }, i) => (
           <span key={href}>
             {i > 0 && ', '}
             <TextLink href={href} rel="noreferrer">

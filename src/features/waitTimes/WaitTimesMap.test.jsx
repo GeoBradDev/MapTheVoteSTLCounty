@@ -2,7 +2,7 @@
 // loaded once in view (#172), with a legend that names the unit and the
 // current classes and hides when no site has a count.
 import { act, render, screen, waitFor, within } from '@testing-library/react';
-import { BASEMAP_ATTRIBUTION } from '../lookup/basemap.js';
+import { copy as resultsCopy } from '../lookup/resultsCopy.js';
 import WaitTimesMap from './WaitTimesMap.jsx';
 import { createWaitTimesMap } from './waitTimesMapView.js';
 import { copy } from './waitTimesCopy.js';
@@ -73,7 +73,7 @@ describe('WaitTimesMap', () => {
 
   it('credits the basemap', () => {
     render(<WaitTimesMap sites={SITES} classes={CLASSES} />);
-    for (const { label, href } of BASEMAP_ATTRIBUTION) {
+    for (const { label, href } of resultsCopy.map.credits) {
       expect(within(region()).getByRole('link', { name: label })).toHaveAttribute('href', href);
     }
   });

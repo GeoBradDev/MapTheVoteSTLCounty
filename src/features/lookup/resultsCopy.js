@@ -1,6 +1,7 @@
 // All the results screen text. The text is in src/i18n/en.json (#19). Facts
 // about the voter's precinct come from the county's data, never from here.
-import { t as currentT, formatNumber, translated } from '../../i18n/index.js';
+import { t as currentT, intlLocale, translated } from '../../i18n/index.js';
+import { BASEMAP_ATTRIBUTION } from './basemap.js';
 import { formatLongDate } from './earlyVoting.js';
 
 /**
@@ -140,7 +141,7 @@ export const copy = translated((t) => ({
       const rounded = Number(miles.toFixed(1));
       // The plural follows the number as shown: "1.0 mile", "0.9 miles".
       return t('results.polls.distance', {
-        miles: formatNumber(rounded, { minimumFractionDigits: 1 }),
+        miles: rounded.toLocaleString(intlLocale(), { minimumFractionDigits: 1 }),
         count: rounded,
       });
     },
@@ -306,6 +307,11 @@ export const copy = translated((t) => ({
     legend: (code) => t('results.map.legend', { code }),
     origin: t('results.map.origin'),
     basemap: t('results.map.basemap'),
+    // The basemap's credit links, OpenStreetMap's worded as its contributors.
+    credits: BASEMAP_ATTRIBUTION.map(({ label, contributors, href }) => ({
+      label: contributors ? `© ${t('credits.contributors', { name: contributors })}` : label,
+      href,
+    })),
     data: t('results.map.data'),
     county: t('results.map.county'),
     city: t('results.polls.sourceNames.cityBoard'),

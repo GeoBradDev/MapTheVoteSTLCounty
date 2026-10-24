@@ -35,31 +35,34 @@ almost no first-load bytes.
 ## Files that change
 
 - `src/i18n/en.json`: `lookup.attribution.countyData`, `cityService`, `contributors`.
-- `src/i18n/index.js`: `formatNumber()`, cached like `formatDate()`.
 - `src/data/countyAddress.js`, `src/data/cityAddress.js`, `src/data/photon.js`: drop the
   common-word fields, keep names and links (Photon's `data` becomes `OpenStreetMap`).
 - `src/features/lookup/lookupCopy.js`, `GeocoderAttribution.jsx`: build the credit from them.
-- `src/features/lookup/basemap.js`, `PrecinctMap.jsx`, `src/features/waitTimes/WaitTimesMap.jsx`:
-  the OpenStreetMap entry is credited through the same `contributors` message.
+- `src/features/lookup/basemap.js` names OpenStreetMap as a `contributors` entry, and
+  `resultsCopy.js` words it (`copy.map.credits`), which `PrecinctMap.jsx` and
+  `src/features/waitTimes/WaitTimesMap.jsx` render. basemap.js stays free of imports: importing
+  `src/i18n` there split it into its own first-load chunk (+1.2 KB gzipped).
 - `src/features/lookup/resultsCopy.js`: the distance.
 - Tests next to each, and README's Languages section.
 
 ## Order of work
 
-1. Tests for `formatNumber` and the distance rounding edge, red, then the code.
+1. Tests for the distance in another locale and its rounding edge, red, then the code
+   (`Number.prototype.toLocaleString` with the locale's `intl` tag: a cached `formatNumber()`
+   helper cost 50 more first-load bytes, so it was dropped).
 2. Tests for the credit text and link names, then the moves.
 3. README, then the full gate and the first-load measurement.
 
 ## Risks
 
 - The first-load budget: measure after the build; drop the riskiest part if it goes over.
+  Measured: 122,708 bytes on main, 122,828 with this change (120 more, 52 left under 122,880).
 - Link names in tests (`OpenStreetMap contributors`) must still match.
 - The privacy notice reads `attribution.fallback.service` and `serviceBy` only, unchanged.
 
 ## Proof
 
-- `src/i18n/format.test.js` or `i18n.test.jsx`: `formatNumber` in en and a test locale.
-- `resultsCopy` tests: 0.95 gives "0.9 miles", 1.0 gives "1.0 mile".
+- `PollsCard.test.jsx`: the distance in a stand-in locale (`fr`) reads "2,9"; 0.95 gives "0.9 miles", 1.0 gives "1.0 mile".
 - `GeocoderAttribution.test.jsx`, `PrecinctMap.test.jsx`, `WaitTimesMap.test.jsx`: unchanged
   English text, and the text follows a test locale's messages.
 - `src/test/build.test.js`: the first-load budget.

@@ -1,11 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import { attribution } from '../../data/geocoder.js';
+import { LOCALES } from '../../i18n/config.js';
+import { addMessages, setLocale } from '../../i18n/index.js';
 import GeocoderAttribution from './GeocoderAttribution.jsx';
 
 describe('GeocoderAttribution', () => {
   it('credits St. Louis County for the address points, with a link to the data', () => {
     render(<GeocoderAttribution />);
-    const link = screen.getByRole('link', { name: attribution.county.data });
+    const link = screen.getByRole('link', { name: 'address points' });
     expect(link).toHaveAttribute('href', attribution.county.url);
     expect(link.closest('p')).toHaveTextContent(
       'Address search: St. Louis County address points (GIS Service Center), or, when needed,',
@@ -40,5 +42,32 @@ describe('GeocoderAttribution', () => {
     expect(screen.getByText(/sent only to these services/)).toHaveTextContent(
       'This site does not save it.',
     );
+  });
+
+  // #120: the words come from the language's messages; the names stay.
+  it('words the credit in the current language, keeping the names', async () => {
+    LOCALES.xx = { label: 'Stand-in', intl: 'fr' };
+    addMessages('xx', {
+      credits: { contributors: 'XX {name}' },
+      lookup: { attribution: { countyData: 'XX points', cityService: 'XX search' } },
+    });
+    try {
+      await setLocale('xx');
+      render(<GeocoderAttribution />);
+      expect(screen.getByRole('link', { name: 'XX points' })).toHaveAttribute(
+        'href',
+        attribution.county.url,
+      );
+      expect(screen.getByRole('link', { name: 'XX OpenStreetMap' })).toHaveAttribute(
+        'href',
+        attribution.fallback.dataUrl,
+      );
+      expect(screen.getByText(/sent only to these services/)).toHaveTextContent(
+        'City of St. Louis XX search.',
+      );
+    } finally {
+      await setLocale('en');
+      delete LOCALES.xx;
+    }
   });
 });
