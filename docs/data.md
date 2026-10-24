@@ -570,7 +570,7 @@ town other than St. Louis needs that town (for a county record, its mailing city
 community) or its ZIP typed, because the same address
 can exist in two towns ("St. Louis" is the mailing city for much of the county, so it
 confirms nothing). A typed ZIP needs a result postcode, unless the result's own
-town (not St. Louis) is typed too, and when matching results are not one address (same
+town (its mailing city, not its community, and not St. Louis) is typed too, and when matching results are not one address (same
 county, and the same postcode or within about 50 m), the answer is no match rather than
 Photon's first pick.
 Typing a suggestion's own label back always matches. So the Galleria (Photon's answer is 1155, the mall, not 1417)
