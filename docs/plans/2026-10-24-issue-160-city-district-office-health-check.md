@@ -17,7 +17,9 @@ is deferred; #160 stays open for it, and the PR says `Refs #160`.
 
 1. `node scripts/check-config.mjs` runs a new check, `city district offices`, after the City
    layer checks, that asks the City districts layer for its distinct `electedoffice` values
-   (`returnDistinctValues`, `outFields` the office field only, no geometry).
+   (every row, `outFields` the office field only, no geometry; not `returnDistinctValues`,
+   because the hosted layer folds case there, found in the third review), and takes the
+   distinct values in the script.
 2. It passes when every row of `districts.rows` in `src/config/cityResults.js` has at least
    one of its `offices` among those values, matched as the card matches (trimmed, then exact and case
    sensitive), and its detail says how many rows were found.
@@ -32,7 +34,9 @@ is deferred; #160 stays open for it, and the PR says `Refs #160`.
    that no row names and that is not on `CITY_OFFICES_LEFT_OUT` (the citywide and statewide
    offices and the two placeholders, at the top of the script), so an office renamed on only
    some districts is seen. An answer with no offices at all fails with its own message. The
-   case or spacing hint ignores whitespace entirely.
+   case or spacing hint ignores whitespace entirely. A value that names a party (the card's
+   `PARTY` pattern, now exported from `src/features/lookup/cityDistricts.js`) is never a WARN:
+   it is never a card row and never belongs on the list.
 
 ## Files that change
 
@@ -42,6 +46,8 @@ is deferred; #160 stays open for it, and the PR says `Refs #160`.
   new tests for pass, a renamed office (fail with the row and case hint), an alternate office
   alone (pass), and the skip.
 - `README.md`: one clause in Data health check.
+- `src/features/lookup/cityDistricts.js`: export `PARTY` (no behavior change) so the check
+  skips party committee posts the same way the card does.
 - `src/config/cityResults.js`: a comment above `districts.rows` naming the new check.
 
 ## Order of work
@@ -57,13 +63,14 @@ Revision after the second review: criterion 7 and its tests, and `CITY_OFFICES_L
 ## Risks
 
 - The stub world's districts answer is keyed on point queries; the distinct query has no
-  geometry, so the stub must recognize `returnDistinctValues` before its point fallback.
+  geometry, so the stub must recognize it (districts layer, `where` 1=1, no geometry) before
+  its point fallback.
 - An office that is legitimately absent between elections (a seat not up) would not remove its
   polygon: the layer holds districts, not races, so a missing office really is a rename or a
   removal worth a person's look. FAIL is right.
 
 ## Proof
 
-- Unit tests in `src/test/checkConfig.test.js` cover criteria 1 to 5.
+- Unit tests in `src/test/checkConfig.test.js` cover criteria 1 to 5 and 7.
 - Live run of `node scripts/check-config.mjs` shows `PASS city district offices` against the
   real layer (official City service only).

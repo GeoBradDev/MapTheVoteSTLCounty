@@ -257,7 +257,7 @@ function cityAnswer(world, url) {
     if (where === cityConfig.earlyVotingWhere) return features(world.city.earlyVoting);
     return json({ error: { code: 400, message: 'Unable to complete operation.' } });
   }
-  if (layerPath === cityConfig.layers.districts && params.get('returnDistinctValues') === 'true') {
+  if (layerPath === cityConfig.layers.districts && where === '1=1' && !geometry) {
     const field = cityConfig.districtLayerFields.office;
     return features(world.city.offices.map((office) => ({ [field]: office })));
   }
@@ -1732,9 +1732,12 @@ describe('the City layers (#87)', () => {
       status: 'pass',
       detail: `${rows} districts card rows (districts.rows) each match an office on the layer`,
     });
-    const query = world.cityQueries.find((q) => q.get('returnDistinctValues') === 'true');
-    expect(query.get('outFields')).toBe(cityConfig.districtLayerFields.office);
+    const query = world.cityQueries.find(
+      (q) => q.get('outFields') === cityConfig.districtLayerFields.office,
+    );
     expect(query.get('returnGeometry')).toBe('false');
+    // Not distinct values: the hosted layer folds case there.
+    expect(query.get('returnDistinctValues')).toBeNull();
   });
 
   it('passes a row that finds only one of its offices, like Alderwoman alone (#160)', async () => {
@@ -1781,7 +1784,7 @@ describe('the City layers (#87)', () => {
     const fetch = stubFetch(world);
     const results = await run(world, election, {
       fetch: (url, init) =>
-        new URL(url).searchParams.get('returnDistinctValues') === 'true'
+        new URL(url).searchParams.get('outFields') === cityConfig.districtLayerFields.office
           ? Promise.resolve(json({}))
           : fetch(url, init),
     });
@@ -1798,6 +1801,20 @@ describe('the City layers (#87)', () => {
     expect(status).toBe('warn');
     expect(detail).toContain('but the layer also has "Alderperson", which no row names.');
     expect(detail).not.toContain('Mayor');
+  });
+
+  it('warns when a few districts restyle an office by case only (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices.push('State senate', 'State Senate');
+    const { status, detail } = (await run(world))['city district offices'];
+    expect(status).toBe('warn');
+    expect(detail).toContain('but the layer also has "State senate", which no row names.');
+  });
+
+  it('never warns on a party committee post, which the card never shows (#160)', async () => {
+    const world = healthyWorld();
+    world.city.offices.push('Committeeman (R)', 'Committeewoman (D)');
+    expect((await run(world))['city district offices'].status).toBe('pass');
   });
 
   it('fails when the districts layer returns no offices (#160)', async () => {
@@ -1835,7 +1852,9 @@ describe('the City layers (#87)', () => {
   it('asks the districts layer for every row, not a point or a filter (#160)', async () => {
     const world = healthyWorld();
     await run(world);
-    const query = world.cityQueries.find((q) => q.get('returnDistinctValues') === 'true');
+    const query = world.cityQueries.find(
+      (q) => q.get('outFields') === cityConfig.districtLayerFields.office,
+    );
     expect(query.get('where')).toBe('1=1');
     expect(query.get('geometry')).toBeNull();
   });

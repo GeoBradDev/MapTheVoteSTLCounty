@@ -23,6 +23,7 @@ import { PRECINCT_CODE, normalize } from '../src/data/arcgis.js';
 import { cityPrecinctCode } from '../src/data/cityPrecinctCode.js';
 import { fileNameMatchesPrecinct, parseSampleBallot } from '../src/data/sampleBallot.js';
 import { parseCityHours, selectCityWaits, selectCountyWaits } from '../src/data/waitTimes.js';
+import { PARTY } from '../src/features/lookup/cityDistricts.js';
 import { earlyVotingStatus, zonedNow } from '../src/features/lookup/earlyVoting.js';
 import { roomIndex } from '../src/features/lookup/pollRooms.js';
 import { isPastElection } from './electionWindow.mjs';
@@ -1143,10 +1144,13 @@ export async function runHealthCheck(
     if (ok.districts) {
       await check('city district offices', async () => {
         const field = city.districtLayerFields.office;
+        // Every row's office, not returnDistinctValues: the hosted layer
+        // compares text without case, so its distinct values would fold
+        // "State senate" into "State Senate" while the card tells them apart.
+        // About 50 rows.
         const rows = await cityQuery('districts', {
           where: '1=1',
           outFields: field,
-          returnDistinctValues: 'true',
           returnGeometry: 'false',
         });
         // Trimmed, as the card reads them (normalize in src/data/arcgis.js).
@@ -1173,7 +1177,9 @@ export async function runHealthCheck(
           );
         }
         const known = new Set([...cityDistricts.rows.flatMap((r) => r.offices), ...leftOut]);
-        const unknown = [...have].filter((v) => !known.has(v)).sort();
+        // A party committee post is never a card row and never on the list:
+        // the card drops any value that names a party.
+        const unknown = [...have].filter((v) => !known.has(v) && !PARTY.test(v)).sort();
         const detail = `${cityDistricts.rows.length} districts card rows (districts.rows) each match an office on the layer`;
         if (unknown.length) {
           return {

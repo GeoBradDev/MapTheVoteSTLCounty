@@ -7,7 +7,7 @@ import { copy } from './resultsCopy.js';
 
 // A party's name or initial in brackets. No row the card reads holds one, but a
 // value that does is dropped rather than shown: the card never names a party.
-const PARTY =
+export const PARTY =
   /\((?:R|D|L|C|G)\)|\b(?:republicans?|democrat(?:s|ic)?|libertarians?|green party|constitution party)\b/i;
 
 /**
