@@ -229,21 +229,22 @@
   }
 
   /*
-    The tallest map state (#209: Election Day, or sites open with no current
-    count) measured 454 px at 320 px wide, 408 at 360 and 436 from 640 up,
-    plus room for a legend that wraps one more line. The closed states are
-    about 30 px shorter.
+    The tallest map state (#209) is a busy day: sites open or Election Day,
+    with five classes of counts in three-digit ranges, so the legend wraps to
+    four rows at 360 px. It measured 448 px at 360 to 390 px wide and 428
+    from 640 up; the reserve adds room for one more legend row. The closed
+    states are shorter (376 px at 360, 404 from 640 up).
   */
   :root[data-home-map] [data-home-map-box]:not([data-closed]),
   [data-home-map-box][data-open] {
     display: block;
-    min-height: 30rem;
+    min-height: 33rem;
   }
 
   @media (width >= 22.5rem) {
     :root[data-home-map] [data-home-map-box]:not([data-closed]),
     [data-home-map-box][data-open] {
-      min-height: 27rem;
+      min-height: 30rem;
     }
   }
 
