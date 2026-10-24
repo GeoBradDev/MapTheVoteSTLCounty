@@ -3,7 +3,8 @@
 // stretched into a guess: typed text must name the house number and the whole
 // street (direction, name and type), and a typed ZIP or town must agree.
 // An address here is plain fields: housenumber, street, postcode, city or
-// district, county and state, as the source gives them.
+// district, county and state, as the source gives them, and for a county
+// record its municipality (#143).
 
 const STATE_ABBR = { Missouri: 'MO', Illinois: 'IL' };
 
@@ -194,6 +195,11 @@ export function matchesStreet(text, props) {
   return !(street.at(-1) === 'st' && next === 'louis');
 }
 
+// Whether the typed town is the address's municipality (a county record's
+// MSAG community, like Clayton for an address mailed as Saint Louis, #143).
+const isMunicipality = (typedPlace, props) =>
+  typedPlace && typedPlace === words(props.municipality).join(' ');
+
 // Typed text names a feature when:
 // - its street part (before the first comma) starts with the feature's house
 //   number and then the feature's whole street, word for word, with no
@@ -202,7 +208,8 @@ export function matchesStreet(text, props) {
 // - a typed ZIP is the feature's postcode (a feature with no postcode cannot
 //   confirm one unless its own town, not St. Louis, is typed), and a town
 //   typed after the street, with or
-//   without a comma, is the feature's town unless it is St. Louis;
+//   without a comma, is the feature's town or municipality unless it is
+//   St. Louis;
 // - a feature in a named town other than St. Louis has that town or its ZIP
 //   typed, since the same address can exist in two towns. St. Louis is the
 //   mailing city for much of the county, so it confirms nothing.
@@ -223,14 +230,15 @@ export function matchesTyped(text, props) {
   const typedPlace = typedTown(words(text).slice(1 + street.length));
   // "St. Louis City" says the City, so a county result is not it.
   if (typedPlace === `${ST_LOUIS} city` && countyOf(props) !== CITY_COUNTY) return false;
-  if (typedPlace && town && typedPlace !== town && !ST_LOUIS_NAMES.has(typedPlace)) return false;
-  const confirmed = (zip && zip === postcode) || (typedPlace && typedPlace === town);
+  const isTown = typedPlace === town || isMunicipality(typedPlace, props);
+  if (typedPlace && town && !isTown && !ST_LOUIS_NAMES.has(typedPlace)) return false;
+  const confirmed = (zip && zip === postcode) || (typedPlace && isTown);
   return !town || town === ST_LOUIS || Boolean(confirmed);
 }
 
 /**
  * Whether typed text that matches an address (matchesTyped) also pins it
- * down: its ZIP is typed, or its town is typed and is not St. Louis. St. Louis
+ * down: its ZIP is typed, or its town (not St. Louis) or municipality is typed. St. Louis
  * is the mailing city of much of the county and of St. Louis City, so it
  * confirms nothing.
  */
@@ -241,7 +249,10 @@ export function isConfirmed(text, props) {
   const town = words(props.city ?? props.district).join(' ');
   const street = words(props.street);
   const typedPlace = typedTown(words(text).slice(1 + street.length));
-  return Boolean(typedPlace && town && town !== ST_LOUIS && typedPlace === town);
+  return (
+    isMunicipality(typedPlace, props) ||
+    Boolean(typedPlace && town && town !== ST_LOUIS && typedPlace === town)
+  );
 }
 
 const UNIT_PATTERN = new RegExp(

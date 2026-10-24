@@ -475,8 +475,9 @@ arrived before the first paint made Lighthouse count the layers' connections tow
 for text that needs no data (#156). It needs `openssl` for the local server's throwaway certificate, and
 Playwright's Chromium (`npx playwright install chromium`).
 
-`src/test/build.test.js` keeps the JavaScript the first load fetches under 120 KB gzipped and
-fails on any web font: the app uses the system font stack. Rules the scores rely on:
+`src/test/build.test.js` keeps the JavaScript the first load fetches under 121 KB gzipped
+(raised from 120 KB by the owner's decision on #143) and fails on any web font: the app uses
+the system font stack. Rules the scores rely on:
 
 - Load anything large or slow to start only when it is needed, as the map is (see Map).
 - Give a loading placeholder at least the size of what replaces it, so the page does not jump.
@@ -862,7 +863,8 @@ voter who typed the City's ZIP gets the City precinct and one who typed no ZIP i
 jurisdiction its label names), when both list it in one ZIP the answer is no match, and when the City geocoder fails or is slow, the app says address search is not working,
 never a county precinct (#58, #18). `src/data/geocoder.js` builds that chain, `src/data/countyAddress.js`,
 `src/data/photon.js` and `src/data/cityAddress.js` implement the sources and
-`src/data/addressMatch.js` holds the strict matching rules they share; a test fails if any
+`src/data/addressMatch.js` holds the strict matching rules they share (a town typed with a
+county address may be its mailing city or the community the county record names, #143); a test fails if any
 other app file names a provider. docs/data.md (Geocoding, County address points, City check)
 explains every rule. `src/features/lookup/locate.js` asks the City's precinct layer for a
 place the geocoder names as the City, and for a point near the City that the county's
@@ -886,10 +888,13 @@ and other City addresses (5010 Nottingham Ave 63109, addresses near the City lin
 precinct, typed and picked from the suggestions, that those #58 addresses typed with no ZIP are
 no match and picked from the county's suggestion open the county precinct, that addresses outside both (St. Charles, out of state) get no
 precinct, and that addresses the county and the City both list in one ZIP (6135 Horton Pl
-63133, 1 Brookings Dr 63130) are no match. It exits 1 if the chain puts any address in the
+63133, 1 Brookings Dr 63130) are no match, and that a county address typed with its community
+rather than its mailing city (41 S Central Ave, Clayton) opens the same county precinct as the
+address typed with only its ZIP (#143). It exits 1 if the chain puts any address in the
 wrong precinct, a City address does not open a City precinct, an address outside both gets a
 precinct, a pick does not open its label's jurisdiction, a shared address or a twin typed with
-no ZIP is not no match, or one of those gets a precinct with the City geocoder blocked. "No match" is
+no ZIP is not no match, a county address typed with its community does not open its county
+precinct, or one of those gets a precinct with the City geocoder blocked. "No match" is
 allowed: the app then points the voter to "Use my location" and both boards' official
 lookups. Results are recorded in `docs/data.md` under Geocoding.
 

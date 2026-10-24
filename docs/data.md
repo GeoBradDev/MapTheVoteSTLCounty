@@ -561,14 +561,17 @@ than the raw result on purpose: typed text (the part before the first comma) mus
 start with the result's house number and then its whole street, word for word, with
 the same direction and street type ("100 S Lindbergh Blvd" is not "100 Lindbergh
 Blvd", and "8025 Maryland Ave Clayton" is not "8025 Clayton Rd"); a typed ZIP must be
-its postcode and a town typed after the street (with or without a comma) its town,
+its postcode and a town typed after the street (with or without a comma) its town (for a
+county address record, its mailing city or its community, `MSAG_COMMUNITY_NAME`),
 unless it is St. Louis (units such as "Apt 2", the state, the country and numbers are
 not part of the town, a direction is ("East St. Louis" is not St. Louis), and "St. Louis
 City" must be a City result); and a result in a named
-town other than St. Louis needs that town or its ZIP typed, because the same address
+town other than St. Louis needs that town (for a county record, its mailing city or
+community) or its ZIP typed, because the same address
 can exist in two towns ("St. Louis" is the mailing city for much of the county, so it
-confirms nothing). A typed ZIP needs a result postcode, unless the result's own
-town (not St. Louis) is typed too, and when matching results are not one address (same
+confirms nothing). A typed ZIP needs a result postcode, unless the result's mailing
+city is a named town other than St. Louis and that town (or, for a county record, its
+community) is typed too, and when matching results are not one address (same
 county, and the same postcode or within about 50 m), the answer is no match rather than
 Photon's first pick.
 Typing a suggestion's own label back always matches. So the Galleria (Photon's answer is 1155, the mall, not 1417)
@@ -638,6 +641,19 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
   St. Louis needs its town or ZIP) then decide in the browser
   (`src/data/addressMatch.js`, shared by both providers). County street types
   (`PLZ`, `XING`, `CV` and others) compare equal to their full words.
+- **Typed community:** a typed town also agrees with a record's community,
+  `MSAG_COMMUNITY_NAME`, both where a typed town must agree and where a named town needs
+  its town or ZIP typed (41 S Central Ave 63105 is mailed Saint Louis, community Clayton,
+  so "41 S Central Ave, Clayton" finds it, #143; a record's `&` reads as AND, so a typed
+  "Town and Country" matches TOWN & COUNTRY, while a typed `&` is dropped like other
+  punctuation and does not). It is the emergency-services community and can differ from the
+  record's `MUNI` code (a `LADUE` community with `MUNI` `CLY`); only the community name is
+  compared. A value that starts with ST LOUIS or ends in COUNTY (`ST LOUIS COUNTY`,
+  `ST LOUIS CITY`, `JEFFERSON COUNTY`) is not a town. The community can differ between the
+  records of one address, so with a town typed and no ZIP every record of each matching
+  address stays in the pool for the unit pick and the one-precinct check below; when that
+  town is St. Louis City, only the City records it matched stay, as before. A typed unit is
+  taken only on the side of the City line the text matched, with or without a ZIP.
 - **One address, several records:** the county has one number, street and ZIP as two
   houses in two towns (50 Country Club Ln 63033: Black Jack, SPL021, and Florissant,
   SPL026), a unit across a town line from its house (1950 Walton Rd 63114: the house in

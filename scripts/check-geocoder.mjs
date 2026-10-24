@@ -10,7 +10,8 @@
 // street the county also has in another ZIP, must open the City precinct with
 // the City's ZIP and be no match with none, and a pick must open the
 // jurisdiction its label names (owner decision, 2026-10-22); an address both
-// list in one ZIP must be no match. The chain asks the City's own geocoder
+// list in one ZIP must be no match. A County address typed with its
+// municipality, not its mailing city, must open its county precinct (#143). The chain asks the City's own geocoder
 // (src/data/cityAddress.js) before it trusts a county match, and as a source
 // when the county has no match. "no match" is safe (the voter is sent to "Use my
 // location" and both boards' official lookups); a wrong precinct is not.
@@ -19,7 +20,8 @@
 // or the blocked chain, a City address does not open its City precinct, an
 // address outside both is put in a precinct, a pick does not open its label's
 // jurisdiction, or an address both list in one ZIP or a twin typed with no
-// ZIP is not no match, or gets a precinct while the City geocoder is down.
+// ZIP is not no match, or gets a precinct while the City geocoder is down, or a
+// County address typed with its municipality does not open its county precinct.
 
 import { readFile } from 'node:fs/promises';
 import { getPrecinctAtPoint } from '../src/data/arcgis.js';
@@ -75,6 +77,15 @@ const SHARED = [
   '1 Brookings Dr, St. Louis, MO 63130',
   '1 Brookings Dr, St. Louis City',
 ];
+// County addresses typed with their municipality, which is not their mailing
+// city (41 S Central Ave is in Clayton, mailed as Saint Louis), and the label
+// of Photon's suggestion for one: the county precinct the address opens with
+// no town typed (#143).
+const MUNICIPALITY = {
+  '41 S Central Ave, Clayton, MO 63105': '41 S Central Ave, MO 63105',
+  '41 South Central Avenue, Clayton, MO 63105': '41 S Central Ave, MO 63105',
+  '41 S Central Ave, Clayton': '41 S Central Ave, MO 63105',
+};
 // Precincts pinned by owner reports and the #58 twins, checked exactly.
 const PINNED = {
   '5010 Nottingham Ave, St. Louis, MO 63109': 'city W05P05',
@@ -201,6 +212,15 @@ for (const [name, geocoder] of [
     const kind = await kindOf(place);
     console.log(`${name}: ${text}: ${kind} (${place?.label ?? ''})`);
     if (kind !== 'no match') wrong.push(`${name}: ${text}: ${kind}, want no match`);
+  }
+  for (const [text, plain] of Object.entries(MUNICIPALITY)) {
+    const want = await kindOf(await withRetry(() => geocoder.geocode(plain)));
+    const place = await withRetry(() => geocoder.geocode(text));
+    const kind = await kindOf(place);
+    console.log(`${name}: ${text}: ${kind} (${place?.label ?? ''})`);
+    if (!want.startsWith('county ') || kind !== want) {
+      wrong.push(`${name}: ${text}: ${kind}, want ${want} as for ${plain}`);
+    }
   }
   // A voter who types the start of the address and picks a suggestion: the
   // first, the county's (labeled with its own town and ZIP), or the City's own
