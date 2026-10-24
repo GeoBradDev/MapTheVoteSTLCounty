@@ -119,7 +119,7 @@ function MapDrawing({ dots }) {
       aria-hidden="true"
       focusable="false"
       viewBox={`0 0 ${VIEW.width} ${VIEW.height}`}
-      className="mx-auto block h-60 w-full sm:h-72"
+      className="block min-h-60 w-full grow basis-0 sm:min-h-72"
     >
       <g className="fill-muted text-[9px] tabular-nums">
         {LAT_TICKS.map(({ lat, y, label }) => (
@@ -290,7 +290,7 @@ export default function WaitDotMap({
   const ready = Boolean(model && (settled || shownOnce));
 
   return (
-    <section aria-labelledby="home-map-heading">
+    <section aria-labelledby="home-map-heading" className="flex grow flex-col">
       <h2 id="home-map-heading" className="text-heading font-semibold">
         {heading}
       </h2>
@@ -300,13 +300,17 @@ export default function WaitDotMap({
       {/* The whole map is one link to the wait times page (single dots are
           too small to tap). The link lies over the drawing and is named by
           its own text, so the drawing's labels are not part of its name. */}
-      <div className="relative mt-1 rounded-card border border-border bg-surface px-2 py-1">
+      {/* The card takes the box's spare height (#216): the drawing scales into
+          it, so the legend's last line ends at the box's reserved bottom
+          and the wait times button follows with no gap, however many legend
+          rows the counts need. */}
+      <div className="relative mt-1 flex grow basis-0 flex-col rounded-card border border-border bg-surface px-2 py-1">
         {model ? (
           <MapDrawing dots={model.dots} />
         ) : (
           <div
             data-testid="home-map-skeleton"
-            className="mx-auto h-60 w-full rounded-card bg-surface-sunken motion-safe:animate-pulse sm:h-72"
+            className="min-h-60 w-full grow basis-0 rounded-card bg-surface-sunken motion-safe:animate-pulse sm:min-h-72"
           />
         )}
         <Link to="/early-voting" className="absolute inset-0 rounded-card">

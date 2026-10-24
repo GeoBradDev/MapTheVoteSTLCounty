@@ -53,11 +53,19 @@ describe('UseMyLocation', () => {
     expect(getCurrentPosition).not.toHaveBeenCalled();
   });
 
-  it('explains how the location is used and warns it may not be home', () => {
+  it('says in one line how the location is used and that it is not saved', () => {
     render(<Harness />);
     expect(screen.getByText(copy.privacy)).toBeInTheDocument();
-    expect(screen.getByText(copy.notHome)).toBeInTheDocument();
+    expect(button()).toHaveAccessibleDescription(copy.privacy);
     expect(copy.privacy).toMatch(/only to find your precinct/);
+    expect(copy.privacy).toMatch(/does not save/);
+  });
+
+  // #216: the "may not be your home" note waits for a result (AddressLookup
+  // and the precinct page show it then).
+  it('does not show the home address note before a result', () => {
+    render(<Harness />);
+    expect(screen.queryByText(copy.notHome)).not.toBeInTheDocument();
     expect(copy.notHome).toMatch(/home address/);
   });
 

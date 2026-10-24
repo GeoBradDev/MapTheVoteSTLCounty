@@ -19,6 +19,7 @@ import OutOfCountyNotice from './OutOfCountyNotice.jsx';
 import RetryButton from './RetryButton.jsx';
 import { useSlowNotice } from './slowNotice.js';
 import UseMyLocation from './UseMyLocation.jsx';
+import { copy as locationCopy } from './useMyLocationCopy.js';
 
 // Which message a failed lookup gets (#18): offline first, since then every
 // service fails; then an address search that could not finish; anything else
@@ -118,7 +119,7 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
     // Only how it ended, never the address, the point or the code (#70).
     trackLookup(source, code ? 'precinct' : (next.error ?? next.kind));
     if (code) {
-      rememberLookupPoint(code, point);
+      rememberLookupPoint(code, point, { device: source === 'location' });
       navigate(`/p/${code}`);
     } else if (next.error) {
       const canRetry = next.error !== 'noMatch';
@@ -126,7 +127,7 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
       // The focused "Try again" goes away with a no match: the address box,
       // where the voter fixes the address, takes focus instead.
       if (retry && !canRetry) inputRef.current?.focus();
-    } else setOutcome(next);
+    } else setOutcome({ ...next, device: source === 'location' });
   }
 
   function handleAddress(query) {
@@ -200,6 +201,8 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
       {outcome?.kind && (
         <div ref={outcomeRef} tabIndex={-1} className="mt-6">
           <OutOfCountyNotice kind={outcome.kind} headingLevel={noticeHeadingLevel} />
+          {/* A Use my location result (#216): the device may not be at home. */}
+          {outcome.device && <Notice className="mt-4">{locationCopy.notHome}</Notice>}
         </div>
       )}
     </div>

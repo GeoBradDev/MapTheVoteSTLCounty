@@ -15,7 +15,7 @@ import {
 import AddressLookup from './AddressLookup.jsx';
 import { copy as errorCopy, isOffline } from './errorCopy.js';
 import { JurisdictionContext } from './jurisdictionContext.js';
-import { lookupPointFor } from './lookupPoint.js';
+import { lookupFromDevice, lookupPointFor } from './lookupPoint.js';
 import { precinctStatus } from './precinctStatus.js';
 import PrecinctStatusBanner from './PrecinctStatusBanner.jsx';
 import ResultsCards, { ResultsSkeleton } from './ResultsCards.jsx';
@@ -23,6 +23,7 @@ import { copy } from './resultsCopy.js';
 import RetryButton from './RetryButton.jsx';
 import ShareLink, { ShareLinkPlaceholder } from './ShareLink.jsx';
 import { useSlowNotice } from './slowNotice.js';
+import { copy as locationCopy } from './useMyLocationCopy.js';
 
 const ignore = () => {};
 
@@ -61,6 +62,8 @@ function PrecinctResults({ code }) {
   // The point of the lookup that opened this page, if any. Memory only: a
   // reload or a shared link has none.
   const [origin] = useState(() => lookupPointFor(code));
+  // Whether that lookup was Use my location (#216), read once like the point.
+  const [fromDevice] = useState(() => lookupFromDevice(code));
   const headingRef = useRef(null);
   // The code's shape picks the jurisdiction (#86). Anything else goes to the
   // County, whose lookup says "not found" without a request, as it always has.
@@ -194,6 +197,10 @@ function PrecinctResults({ code }) {
           </ShareLinkPlaceholder>
         )}
       </header>
+
+      {/* After a Use my location lookup only (#216), from the first render, so
+          nothing moves when it shows. */}
+      {fromDevice && <Notice className="mt-4">{locationCopy.notHome}</Notice>}
 
       <p aria-live="polite" className="sr-only">
         {precinct ? copy.ready(code) : ''}

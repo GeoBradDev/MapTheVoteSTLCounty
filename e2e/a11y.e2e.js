@@ -91,7 +91,15 @@ const homeMapReady = (line) => async (page) => {
 };
 
 const ROUTES = [
-  { path: '/', ready: (page) => expect(page.getByRole('combobox')).toBeVisible() },
+  {
+    path: '/',
+    ready: async (page) => {
+      await expect(page.getByRole('combobox')).toBeVisible();
+      // The address search credits, folded under one line (#216), so the axe
+      // run covers them.
+      await openDisclosure(page, 'Address search sources');
+    },
+  },
   {
     name: '/ with the dot map, early voting sites open',
     path: '/',
@@ -913,6 +921,27 @@ test.describe('the nonpartisan, unofficial statement', () => {
     });
   }
 
+  // #216: one line under the search; the credits the data license asks for
+  // are folded under it, one tap away.
+  test('folds the address search credits under one line, one tap away', async ({ page }) => {
+    await answerFromFixtures(page);
+    await page.goto('/');
+    await expect(
+      page.getByText('Your address and location are used only to find your precinct.'),
+    ).toBeVisible();
+    await expect(page.getByText(/may not be your home address/)).toHaveCount(0);
+    const osm = page.getByRole('link', { name: 'OpenStreetMap contributors' });
+    await expect(osm).toBeHidden();
+    await openDisclosure(page, 'Address search sources');
+    await expect(osm).toBeVisible();
+    await expect(osm).toHaveAttribute('href', 'https://www.openstreetmap.org/copyright');
+    await expect(page.getByText(/This site does not save it\./)).toBeVisible();
+    await expect(page.getByRole('link', { name: 'privacy notice' })).toHaveAttribute(
+      'href',
+      '/privacy',
+    );
+  });
+
   test('prints on a results page, without the Privacy link', async ({ page }) => {
     await answerFromFixtures(page);
     await page.goto(`/p/${CODE}`);
@@ -981,6 +1010,28 @@ test.describe('home page dot map', () => {
       await expect(page.locator('[data-home-map-box]').getByText(line)).toBeVisible();
       const after = await button.boundingBox();
       expect(Math.abs(after.y - before.y)).toBeLessThan(1);
+    });
+
+    // The box keeps its reserved height, and the map takes what the legend
+    // does not use (#216), so the button follows the map's last line with
+    // only its own margin, whatever the legend holds.
+    test(`leaves no gap between the map and the wait times button (${name})`, async ({ page }) => {
+      await page.clock.setFixedTime(at);
+      await answerFromFixtures(page, { waits });
+      for (const width of [360, 390, 640, 1280]) {
+        await page.setViewportSize({ width, height: 800 });
+        await page.goto('/');
+        const box = page.locator('[data-home-map-box]');
+        await expect(box.getByText(line)).toBeVisible();
+        const gap = await page.evaluate(() => {
+          const section = document.querySelector('[data-home-map-box] section');
+          const last = section.lastElementChild.getBoundingClientRect().bottom;
+          const button = [...document.querySelectorAll('main a[href="/early-voting"]')].at(-1);
+          return button.getBoundingClientRect().top - last;
+        });
+        expect(gap, `${width} px`).toBeGreaterThanOrEqual(0);
+        expect(gap, `${width} px`).toBeLessThan(24);
+      }
     });
 
     test(`paints its largest text before the data answers (${name})`, async ({ page }) => {

@@ -206,6 +206,26 @@ describe('PrecinctPage', () => {
     expect(precinctCalls().filter((url) => url.searchParams.get('f') === 'geojson')).toEqual([]);
   });
 
+  // #216: the note waits for a Use my location result.
+  it('says the device may not be at home after a Use my location lookup', async () => {
+    const { copy: locationCopy } = await import('./useMyLocationCopy.js');
+    fetchMock.mockImplementation(() => new Promise(() => {}));
+    rememberLookupPoint('CC007', { lat: 38.66, lng: -90.45 }, { device: true });
+    renderAt('CC007');
+    expect(screen.getByText(locationCopy.notHome)).toBeInTheDocument();
+  });
+
+  it('shows no device note after a typed address or on a direct load', async () => {
+    const { copy: locationCopy } = await import('./useMyLocationCopy.js');
+    fetchMock.mockImplementation(() => new Promise(() => {}));
+    rememberLookupPoint('CC007', { lat: 38.66, lng: -90.45 });
+    renderAt('CC007');
+    expect(screen.queryByText(locationCopy.notHome)).not.toBeInTheDocument();
+    cleanup();
+    renderAt('OAK019');
+    expect(screen.queryByText(locationCopy.notHome)).not.toBeInTheDocument();
+  });
+
   it('starts no other request for URL text that is not a precinct code', async () => {
     renderAt('Polls%20moved');
     await screen.findByRole('region', { name: copy.searchInstead });

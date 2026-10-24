@@ -11,9 +11,10 @@ import AddressLookup from './AddressLookup.jsx';
 import { copy as searchCopy } from './addressSearchCopy.js';
 import { GeocoderContext } from './geocoderContext.js';
 import { locate } from './locate.js';
-import { lookupPointFor } from './lookupPoint.js';
+import { lookupFromDevice, lookupPointFor } from './lookupPoint.js';
 import { copy } from './lookupCopy.js';
 import { copy as noticeCopy } from './outOfCountyCopy.js';
+import { copy as locationCopy } from './useMyLocationCopy.js';
 
 vi.mock('./locate.js', () => ({ locate: vi.fn() }));
 
@@ -60,7 +61,7 @@ async function search(text = ADDRESS) {
 
 describe('AddressLookup', () => {
   // #80: the two ways in come first, one under the other; the fine print
-  // (the location notes and the address search credits) follows both.
+  // (the privacy line and the folded address search credits, #216) follows both.
   it('puts "Use my location" right after "Find my precinct" and the credits after both', () => {
     renderLookup();
     const find = screen.getByRole('button', { name: searchCopy.submit });
@@ -70,6 +71,10 @@ describe('AddressLookup', () => {
       Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
     expect(follows(find, locate)).toBe(true);
     expect(follows(locate, credits)).toBe(true);
+    // The one privacy line comes before the folded credits (#216).
+    const line = screen.getByText(/used only to find your precinct\. This site does not save/);
+    expect(follows(locate, line)).toBe(true);
+    expect(follows(line, screen.getByText(copy.attribution.summary))).toBe(true);
     const buttons = screen.getAllByRole('button');
     expect(buttons.indexOf(locate)).toBe(buttons.indexOf(find) + 1);
   });
@@ -364,6 +369,38 @@ describe('AddressLookup', () => {
         .ok({ coords: { latitude: 38.66, longitude: -90.45, accuracy: 10 }, timestamp: 1 });
     });
     expect(lookupPointFor('CC007')).toEqual({ lat: 38.66, lng: -90.45 });
+    // So the precinct page can say the device may not be at home (#216).
+    expect(lookupFromDevice('CC007')).toBe(true);
+  });
+
+  it('does not mark a typed address as the device location', async () => {
+    locate.mockResolvedValue({ kind: 'precinct', precinct: { precinct: 'OAK019' } });
+    renderLookup();
+    await search();
+    expect(lookupFromDevice('OAK019')).toBe(false);
+  });
+
+  // #216: shown after a Use my location result, not before.
+  it('says the device may not be at home with an out-of-area location result', async () => {
+    locate.mockResolvedValue({ kind: 'missouri' });
+    renderLookup();
+    expect(screen.queryByText(locationCopy.notHome)).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /use my location/i }));
+    await act(async () => {
+      pending
+        .shift()
+        .ok({ coords: { latitude: 38.8, longitude: -90.5, accuracy: 10 }, timestamp: 1 });
+    });
+    await screen.findByRole('heading', { name: noticeCopy.missouri.heading });
+    expect(screen.getByText(locationCopy.notHome)).toBeInTheDocument();
+  });
+
+  it('does not add the device note to an out-of-area address result', async () => {
+    locate.mockResolvedValue({ kind: 'missouri' });
+    renderLookup();
+    await search();
+    await screen.findByRole('heading', { name: noticeCopy.missouri.heading });
+    expect(screen.queryByText(locationCopy.notHome)).not.toBeInTheDocument();
   });
 
   it('credits OpenStreetMap contributors after the two ways in', () => {
