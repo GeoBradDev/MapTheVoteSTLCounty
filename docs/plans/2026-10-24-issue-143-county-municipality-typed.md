@@ -58,6 +58,8 @@ layer; besides real towns it holds `ST LOUIS COUNTY` (unincorporated), `ST LOUIS
   answer for the typed text, the app's own where clause and fields).
 - `docs/raw/fixtures/county-address-central-ave.json`: new recorded fixture.
 - `src/data/countyAddress.municipality143.test.js`: new, the red test (criteria 1 to 4).
+- `src/test/build.test.js`, `README.md` (Performance), `src/cityChunk.js` (comment): the
+  first-load budget raised from 120 KB to 121 KB, the owner's decision on #143.
 - `src/data/countyAddress.test.js`: review finding 1 cases (1950 Walton Rd, 9300 Lewis and Clark
   Blvd, Town and Country).
 - `src/data/countyAddress.cityunit143.test.js`: new, review finding 2 (6200 Enright Ave).
@@ -105,6 +107,11 @@ layer; besides real towns it holds `ST LOUIS COUNTY` (unincorporated), `ST LOUIS
   typed town is St. Louis City (`countyAddress.stlcity143.test.js`). This fix puts the first-load
   JavaScript 3 bytes over 120 KB gzipped (122883 of 122880), and it is the second extra review
   round in a row that led to a fix, so the run stopped here for an owner decision on the budget.
+- Owner decision (2026-10-24, option 1): raise the first-load budget to 121 KB (123904 bytes)
+  and ship every fix, including the St. Louis City case. The budget test
+  (`src/test/build.test.js`), its README line and the `src/cityChunk.js` comment now say
+  121 KB. The resumed run then reviews finder 4's fix with one more finder, the gate and a
+  fresh verifier.
 - Main's `node scripts/check-geocoder.mjs` cannot resolve City precincts under Node since #147
   (issue #198), so the live check exits 1 on its City lines on main and here; its #143 lines pass.
 - Budget: the first-load JavaScript sat 15 bytes over 120 KB gzipped after finder 1's fix, so

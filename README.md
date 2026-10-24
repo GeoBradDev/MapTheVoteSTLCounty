@@ -474,8 +474,9 @@ arrived before the first paint made Lighthouse count the layers' connections tow
 for text that needs no data (#156). It needs `openssl` for the local server's throwaway certificate, and
 Playwright's Chromium (`npx playwright install chromium`).
 
-`src/test/build.test.js` keeps the JavaScript the first load fetches under 120 KB gzipped and
-fails on any web font: the app uses the system font stack. Rules the scores rely on:
+`src/test/build.test.js` keeps the JavaScript the first load fetches under 121 KB gzipped
+(raised from 120 KB by the owner's decision on #143) and fails on any web font: the app uses
+the system font stack. Rules the scores rely on:
 
 - Load anything large or slow to start only when it is needed, as the map is (see Map).
 - Give a loading placeholder at least the size of what replaces it, so the page does not jump.
