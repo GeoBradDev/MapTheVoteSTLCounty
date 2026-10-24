@@ -11,6 +11,7 @@ import election from '../config/election.js';
 import { CITY_GEOCODER_URL } from '../data/cityAddress.js';
 import { HOSTED_URL, LIVE_URL } from '../data/countyAddress.js';
 import { DEFAULT_BASE_URL as PHOTON } from '../data/photon.js';
+import { ANALYTICS_HOSTS } from '../analytics/index.js';
 import { BASEMAP_DARK_STYLE_URL, BASEMAP_STYLE_URL } from '../features/lookup/basemap.js';
 import { ASSET_HEADERS, PRECINCT_HEADERS, SHELL_HEADERS } from '../../scripts/smoke.mjs';
 import { PRECINCT_PRECONNECT, previewHeaders, SHELL_FILE } from '../prerender/plugin.js';
@@ -21,6 +22,9 @@ import { readSitemapTopics } from '../features/learn/content/searchEngines.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 const BASEMAP = new URL(BASEMAP_STYLE_URL).origin;
+// Google Analytics (#69): its loader, and the hosts it sends page views to.
+const GA_LOADER = `https://${ANALYTICS_HOSTS.loader}`;
+const GA_COLLECTOR = `https://${ANALYTICS_HOSTS.collector}`;
 const SHELL_PATHS = [
   '/',
   '/index.html',
@@ -312,9 +316,9 @@ describe('Content-Security-Policy', () => {
   it('is exactly the reviewed policy', () => {
     expect(Object.fromEntries(csp)).toEqual({
       'default-src': ["'self'"],
-      'script-src': ["'self'"],
+      'script-src': ["'self'", GA_LOADER],
       'style-src': ["'self'"],
-      'img-src': ["'self'"],
+      'img-src': ["'self'", GA_COLLECTOR],
       'font-src': ["'self'"],
       'connect-src': [
         "'self'",
@@ -324,6 +328,8 @@ describe('Content-Security-Policy', () => {
         new URL(CITY_GEOCODER_URL).origin,
         PHOTON,
         BASEMAP,
+        GA_LOADER,
+        GA_COLLECTOR,
       ],
       'manifest-src': ["'self'"],
       'object-src': ["'none'"],
@@ -347,6 +353,13 @@ describe('Content-Security-Policy', () => {
     for (const unsafe of ["'unsafe-inline'", "'unsafe-eval'", '*', 'https:', 'data:', 'blob:']) {
       expect(sources).not.toContain(unsafe);
     }
+  });
+
+  // The one host wildcard is Google Analytics' collector (#69): GA4 sends
+  // page views to region hosts under it.
+  it('has no host wildcard but the analytics collector', () => {
+    const sources = directives.flatMap(([, values]) => values);
+    expect([...new Set(sources.filter((source) => source.includes('*')))]).toEqual([GA_COLLECTOR]);
   });
 
   it('is the same policy on every shell path', () => {

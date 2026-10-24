@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Route, Switch, useLocation } from 'wouter';
+import { pageView } from './analytics/index.js';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { jurisdictionOnPath } from './data/jurisdictions.js';
 import NotFoundPage from './components/NotFoundPage.jsx';
@@ -129,6 +130,12 @@ function PageHead({ location }) {
 export default function App() {
   usePageArrival();
   const [location] = useLocation();
+  // A page view per navigation (#69), redacted in src/analytics/: nothing
+  // while analytics is off. The same path twice (StrictMode's second effect)
+  // counts once.
+  useEffect(() => {
+    pageView(location);
+  }, [location]);
   // A new language re-renders every page in it (#19). The page is not
   // remounted, so focus stays on the language switcher and nothing reloads.
   useLocale();

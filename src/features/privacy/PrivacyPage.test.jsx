@@ -1,26 +1,16 @@
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 import { render, screen, within } from '@testing-library/react';
-import { parse } from 'yaml';
+import { ANALYTICS_HOSTS } from '../../analytics/index.js';
 import election from '../../config/election.js';
 import PrivacyPage from './PrivacyPage.jsx';
 import { copy, hosts } from './privacyCopy.js';
+import { connectOrigins, namedHosts } from '../../test/privacyNotice.js';
 
-const ROOT = path.resolve(import.meta.dirname, '../../..');
-
-// The connect-src origins render.yaml allows, other than 'self': every
-// third party the browser may send a request to.
-async function connectOrigins() {
-  const blueprint = parse(await readFile(path.join(ROOT, 'render.yaml'), 'utf8'));
-  const csp = blueprint.services[0].headers.find(
-    (rule) => rule.path === '/*' && rule.name === 'Content-Security-Policy',
-  ).value;
-  const directive = csp
-    .split(';')
-    .map((d) => d.trim().split(/\s+/))
-    .find(([name]) => name === 'connect-src');
-  return directive.slice(1).filter((source) => source !== "'self'");
-}
+// The notice with Google Analytics off, as it ships (owner decision on #69),
+// whatever the config holds: PrivacyPage.analytics.test.jsx checks it on.
+vi.mock('../../config/site.js', async (importOriginal) => ({
+  ...(await importOriginal()),
+  gaMeasurementId: '',
+}));
 
 function section(name) {
   return screen.getByRole('region', { name });
@@ -45,17 +35,28 @@ describe('PrivacyPage', () => {
   });
 
   // A new third party in the policy means a new place data goes: the notice
-  // must say so in the same change.
-  it('names every third-party origin the Content-Security-Policy allows', async () => {
+  // must say so in the same change. Google Analytics' hosts (#69) are named
+  // once its measurement ID is set (PrivacyPage.analytics.test.jsx); while it
+  // is empty nothing goes there, and the notice says the site has no analytics.
+  it('names every third-party origin the Content-Security-Policy allows but analytics', async () => {
     render(<PrivacyPage />);
-    const text = section(copy.sent.heading).textContent;
-    // Whole host names in parentheses, so a new origin like arcgis.com is not
-    // passed by a longer name such as services6.arcgis.com that contains it.
-    const named = new Set([...text.matchAll(/\(([a-z0-9.-]+\.[a-z]+)\)/g)].map((m) => m[1]));
-    const origins = await connectOrigins();
+    const named = namedHosts(section(copy.sent.heading).textContent);
+    const analytics = Object.values(ANALYTICS_HOSTS);
+    const origins = (await connectOrigins()).map((origin) => new URL(origin).host);
 
     expect(origins.length).toBeGreaterThan(0);
-    for (const origin of origins) expect(named).toContain(new URL(origin).host);
+    expect(origins).toEqual(expect.arrayContaining(analytics));
+    for (const host of origins.filter((h) => !analytics.includes(h))) {
+      expect(named).toContain(host);
+    }
+  });
+
+  // The measurement ID is empty as shipped (owner decision on #69).
+  it('says the site has no analytics while the measurement ID is empty', () => {
+    render(<PrivacyPage />);
+    expect(screen.getByText(copy.intro)).toHaveTextContent('no analytics');
+    expect(section(copy.never.heading)).toHaveTextContent('no analytics, ads or tracking');
+    expect(document.body).not.toHaveTextContent(/Google|googletagmanager|google-analytics/);
   });
 
   it('names the election maps host from the election config', () => {

@@ -110,20 +110,27 @@ services:
       # (#13, src/features/lookup/basemap.js), whose style, tiles, sprites and
       # glyphs share one origin. MapLibre fetches all of those, images too
       # (decoded with createImageBitmap, which img-src does not govern), so
-      # img-src stays 'self'. Its worker is a same-origin file under /assets/
+      # img-src needs no map host. Its worker is a same-origin file under /assets/
       # (script-src 'self'), so no blob: source is needed, and the app ships
       # its own map CSS instead of maplibre-gl.css, so no data: icons either.
       # Links to other official sites are navigation, which connect-src does
       # not govern.
+      # Google Analytics (#69, src/analytics/): script-src and connect-src allow
+      # its loader (www.googletagmanager.com), connect-src and img-src (its
+      # image fallback) the hosts it sends page views to (*.google-analytics.com,
+      # GA4's region hosts). Nothing is sent there while the measurement ID in
+      # src/config/site.js is empty, and never off the production origin or with
+      # Global Privacy Control on. The privacy notice names both hosts once the
+      # ID is set.
       - path: /*
         name: Content-Security-Policy
         value: >-
           default-src 'self';
-          script-src 'self';
+          script-src 'self' https://www.googletagmanager.com;
           style-src 'self';
-          img-src 'self';
+          img-src 'self' https://*.google-analytics.com;
           font-src 'self';
-          connect-src 'self' https://services6.arcgis.com https://maps.stlouisco.com https://services2.arcgis.com https://maps6.stlouis-mo.gov https://photon.komoot.io https://tiles.openfreemap.org;
+          connect-src 'self' https://services6.arcgis.com https://maps.stlouisco.com https://services2.arcgis.com https://maps6.stlouis-mo.gov https://photon.komoot.io https://tiles.openfreemap.org https://www.googletagmanager.com https://*.google-analytics.com;
           manifest-src 'self';
           object-src 'none';
           base-uri 'self';

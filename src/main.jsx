@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 import { Router } from 'wouter';
+import { startAnalytics } from './analytics/index.js';
 import App from './App.jsx';
 import { loadForHydration, shouldHydrate, startHydration } from './hydrate.js';
 import { linkManifest } from './linkManifest.js';
@@ -21,6 +22,11 @@ const app = (
 // could hold what the page had, and the app logs nothing (#20).
 const options = { onCaughtError: () => {} };
 const root = document.getElementById('root');
+
+// Google Analytics (#69), before the first render so its first page view is
+// queued: off unless the measurement ID is set, on the production origin, with
+// no Global Privacy Control. Google's script loads after the load event.
+startAnalytics(window);
 
 // A public page arrives pre-rendered (#99) and is hydrated in place. Every
 // other page (a precinct, an unknown path) arrives as the empty shell, and
