@@ -220,7 +220,8 @@
   is open: before the app runs, the head script (src/prerender/homeMapScript.js)
   marks <html> with data-home-map; after hydration the box's own data-open or
   data-closed decides. Open, it holds its height before the map arrives, so
-  the address search below it never moves (e2e/a11y.e2e.js checks it).
+  the wait times button and the links below it never move (e2e/a11y.e2e.js
+  checks it). The address search sits above it (#209).
 */
 @layer components {
   [data-home-map-box] {
@@ -228,27 +229,28 @@
   }
 
   /*
-    The tallest map state (sites open, three named, the board rule) measured
-    592 px at 360 px wide, 686 at 320 and 556 from 640 up (#184), plus room
-    for longer site names.
+    The tallest map state (#209: Election Day, or sites open with no current
+    count) measured 454 px at 320 px wide, 408 at 360 and 436 from 640 up,
+    plus room for a legend that wraps one more line. The closed states are
+    about 30 px shorter.
   */
   :root[data-home-map] [data-home-map-box]:not([data-closed]),
   [data-home-map-box][data-open] {
     display: block;
-    min-height: 44rem;
+    min-height: 30rem;
   }
 
   @media (width >= 22.5rem) {
     :root[data-home-map] [data-home-map-box]:not([data-closed]),
     [data-home-map-box][data-open] {
-      min-height: 40rem;
+      min-height: 27rem;
     }
   }
 
   @media (width >= 40rem) {
     :root[data-home-map] [data-home-map-box]:not([data-closed]),
     [data-home-map-box][data-open] {
-      min-height: 37.5rem;
+      min-height: 29rem;
     }
   }
 }
