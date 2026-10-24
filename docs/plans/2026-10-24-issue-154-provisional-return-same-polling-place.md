@@ -1,6 +1,6 @@
 # Plan: Learn topics, "come back to your polling place" for a provisional ballot without ID (issue #154)
 
-Risk tier: Low. A copy change to four learn topic Markdown files plus one content test; no
+Risk tier: Low. A copy change to three learn topic Markdown files (a fourth checked) plus one content test; no
 code, no behavior a unit test cannot cover.
 
 Domain skills: humanizer, not applicable because the edits are a few words in existing plain
