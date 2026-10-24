@@ -198,7 +198,7 @@ export function matchesStreet(text, props) {
 // Whether the typed town is the address's municipality (a county record's
 // MSAG community, like Clayton for an address mailed as Saint Louis, #143).
 const isMunicipality = (typedPlace, props) =>
-  Boolean(typedPlace) && typedPlace === words(props.municipality).join(' ');
+  typedPlace && typedPlace === words(props.municipality).join(' ');
 
 // Typed text names a feature when:
 // - its street part (before the first comma) starts with the feature's house

@@ -462,7 +462,11 @@ export function createCountyAddressSource({
         // address can name different municipalities (1950 Walton Rd 63114:
         // the house in Overland, Unit R in Vinita Park, #143), so every record
         // of each matching address stays for the unit and precinct checks.
-        pool = sameStreet.filter((r) => matches.some((m) => siteKey(m) === siteKey(r)));
+        // Only on the same side of the City line: a County town never picks a
+        // City unit at the same address (6200 Enright Ave 63130).
+        pool = sameStreet.filter((r) =>
+          matches.some((m) => siteKey(m) === siteKey(r) && m.props.county === r.props.county),
+        );
       }
       if (!pool.length) return { status: 'none' };
       // A house the text could mean, but not by the strict rules (its town or
