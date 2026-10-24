@@ -101,10 +101,11 @@ export default function UseMyLocation({ onLocate, onStart, addressInputRef }) {
       >
         {busy ? copy.busy : copy.button}
       </Button>
-      <div id={notesId} className="mt-2 text-sm text-muted">
-        <p>{copy.privacy}</p>
-        <p className="mt-1">{copy.notHome}</p>
-      </div>
+      {/* One line (#216); the "may not be your home" note waits for a
+          result (AddressLookup and the precinct page). */}
+      <p id={notesId} className="mt-2 text-sm text-muted">
+        {copy.privacy}
+      </p>
       <p role="status" className="sr-only">
         {busy ? copy.busy : ''}
       </p>

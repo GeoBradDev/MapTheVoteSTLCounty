@@ -986,9 +986,7 @@ test.describe('home page dot map', () => {
     // The box keeps its reserved height, and the map takes what the legend
     // does not use (#216), so the button follows the map's last line with
     // only its own margin, whatever the legend holds.
-    test(`leaves no gap between the map and the wait times button (${name})`, async ({
-      page,
-    }) => {
+    test(`leaves no gap between the map and the wait times button (${name})`, async ({ page }) => {
       await page.clock.setFixedTime(at);
       await answerFromFixtures(page, { waits });
       for (const width of [360, 390, 640, 1280]) {

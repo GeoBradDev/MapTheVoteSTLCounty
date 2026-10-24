@@ -90,7 +90,7 @@
   "useMyLocation": {
     "button": "Use my location",
     "busy": "Finding your location...",
-    "privacy": "Your location is used only to find your precinct. This site does not save it.",
+    "privacy": "Your address and location are used only to find your precinct and are not saved.",
     "notHome": "Results are for where your device is now, which may not be your home address. Your ballot is based on the address where you are registered to vote.",
     "errors": {
       "denied": "Location access was not allowed. Type your address instead.",
@@ -115,7 +115,10 @@
       "by": "by",
       "data": "data ©",
       "cityCheck": "St. Louis City addresses are found, and an address found outside the City may be checked, with the",
-      "privacy": "Your address is sent only to these services, to find your precinct. This site does not save it."
+      "privacy": "Your address is sent only to these services, to find your precinct. This site does not save it.",
+      "summary": "Address search sources",
+      "privacyBefore": "More in the",
+      "privacyLink": "privacy notice"
     }
   },
   "outOfCounty": {

@@ -4,7 +4,7 @@
 // a reload or a shared link has no point and the card measures from the
 // precinct's center instead.
 
-/** @type {{ code: string, point: { lat: number, lng: number } } | null} */
+/** @type {{ code: string, point: { lat: number, lng: number }, device: boolean } | null} */
 let latest = null;
 
 /**
@@ -12,9 +12,22 @@ let latest = null;
  * earlier one. A point without numeric coordinates clears it.
  * @param {string} code
  * @param {{ lat: number, lng: number }} point
+ * @param {{ device?: boolean }} [options] `device`: the point is the device's
+ *   location (Use my location), not a typed address (#216).
  */
-export function rememberLookupPoint(code, { lat, lng } = {}) {
-  latest = Number.isFinite(lat) && Number.isFinite(lng) ? { code, point: { lat, lng } } : null;
+export function rememberLookupPoint(code, { lat, lng } = {}, { device = false } = {}) {
+  latest =
+    Number.isFinite(lat) && Number.isFinite(lng)
+      ? { code, point: { lat, lng }, device: Boolean(device) }
+      : null;
+}
+
+/**
+ * Whether the latest lookup found this precinct from the device's location.
+ * @param {string} code
+ */
+export function lookupFromDevice(code) {
+  return Boolean(latest && latest.code === code && latest.device);
 }
 
 /**
