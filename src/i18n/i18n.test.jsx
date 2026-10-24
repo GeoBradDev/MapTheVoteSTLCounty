@@ -8,6 +8,7 @@ import {
   addMessages,
   formatCalendarDate,
   formatDate,
+  formatNumber,
   getLocale,
   setLocale,
   t,
@@ -91,6 +92,16 @@ describe('dates', () => {
     addStandIn();
     await setLocale('xx');
     expect(formatCalendarDate('2027-03-02', { month: 'long' })).toBe('mars');
+  });
+});
+
+describe('numbers', () => {
+  it('formats a number for the current language', async () => {
+    expect(formatNumber(1.5, { minimumFractionDigits: 1 })).toBe('1.5');
+    addStandIn();
+    await setLocale('xx');
+    expect(formatNumber(1.5, { minimumFractionDigits: 1 })).toBe('1,5');
+    expect(formatNumber(1.5, { minimumFractionDigits: 1 }, 'en')).toBe('1.5');
   });
 });
 

@@ -169,3 +169,19 @@ export function formatDate(date, options, locale = current) {
 export function formatCalendarDate(isoDate, options, locale = current) {
   return formatDate(new Date(`${isoDate}T12:00:00Z`), options, locale);
 }
+
+const numberFormats = new Map();
+
+/**
+ * A number as `Intl.NumberFormat` formats it in the current locale (or
+ * `locale`), such as a distance.
+ * @param {number} n
+ * @param {Intl.NumberFormatOptions} [options]
+ * @param {string} [locale]
+ */
+export function formatNumber(n, options, locale = current) {
+  const key = `${intlLocale(locale)}|${JSON.stringify(options)}`;
+  if (!numberFormats.has(key))
+    numberFormats.set(key, new Intl.NumberFormat(intlLocale(locale), options));
+  return numberFormats.get(key).format(n);
+}

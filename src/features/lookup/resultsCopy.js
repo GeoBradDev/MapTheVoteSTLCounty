@@ -1,6 +1,6 @@
 // All the results screen text. The text is in src/i18n/en.json (#19). Facts
 // about the voter's precinct come from the county's data, never from here.
-import { t as currentT, translated } from '../../i18n/index.js';
+import { t as currentT, formatNumber, translated } from '../../i18n/index.js';
 import { formatLongDate } from './earlyVoting.js';
 
 /**
@@ -137,9 +137,12 @@ export const copy = translated((t) => ({
     /** @param {number} miles */
     distance: (miles) => {
       if (miles < 0.05) return t('results.polls.lessThanTenth');
-      const rounded = miles.toFixed(1);
+      const rounded = Number(miles.toFixed(1));
       // The plural follows the number as shown: "1.0 mile", "0.9 miles".
-      return t('results.polls.distance', { miles: rounded, count: Number(rounded) });
+      return t('results.polls.distance', {
+        miles: formatNumber(rounded, { minimumFractionDigits: 1 }),
+        count: rounded,
+      });
     },
     /** @param {string | null} address @param {string | null} zip */
     address: (address, zip) => [address, zip && `MO ${zip}`].filter(Boolean).join(', '),
