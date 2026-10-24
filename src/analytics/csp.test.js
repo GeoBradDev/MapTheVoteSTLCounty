@@ -7,6 +7,7 @@ import path from 'node:path';
 import { parse } from 'yaml';
 import { gaMeasurementId } from '../config/site.js';
 import { ANALYTICS_CSP, analyticsCspProblems } from './csp.js';
+import { analyticsEnabled } from './index.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 const TEST_ID = 'G-TEST123';
@@ -82,6 +83,26 @@ describe('analyticsCspProblems', () => {
     }
   });
 
+  // GA loads only with a GA4 ID (analyticsEnabled), so anything else is off
+  // and must not open the policy to Google.
+  it('takes an ID that is not a GA4 measurement ID as off', () => {
+    for (const id of ['UA-123', 'g-abc123', ' ']) {
+      expect(analyticsCspProblems(BASE, id), id).toEqual([]);
+      expect(analyticsCspProblems(WITH_GA, id), id).toHaveLength(3);
+    }
+  });
+
+  // A browser enforces the first copy of a repeated directive and ignores the rest.
+  it('checks the first copy of a repeated directive', () => {
+    const repeated = WITH_GA.replace(
+      "script-src 'self' https://www.googletagmanager.com",
+      "script-src 'self'; script-src 'self' https://www.googletagmanager.com",
+    );
+    expect(analyticsCspProblems(repeated, TEST_ID)).toEqual([
+      expect.stringContaining('add https://www.googletagmanager.com to script-src'),
+    ]);
+  });
+
   // Not only the two hosts GA uses: any Google host, in any directive.
   it('finds any other Google host while the ID is empty', () => {
     for (const source of [
@@ -89,6 +110,11 @@ describe('analyticsCspProblems', () => {
       'https://*.analytics.google.com',
       'https://www.google.com',
       'googletagmanager.com',
+      'https://www.googletagmanager.com.',
+      'https://www.google.co.uk',
+      'https://ssl.gstatic.com',
+      'https://*.doubleclick.net',
+      'https://www.googleadservices.com',
     ]) {
       expect(analyticsCspProblems(`${BASE}; frame-src ${source}`, ''), source).toEqual([
         expect.stringContaining(`remove ${source} from frame-src`),
@@ -110,7 +136,10 @@ describe('render.yaml', () => {
   });
 
   // As it ships (owner decision on #69).
-  it.runIf(!gaMeasurementId)('names no Google host while the measurement ID is empty', async () => {
-    expect(await shippedPolicy()).not.toMatch(/google/i);
-  });
+  it.runIf(!analyticsEnabled())(
+    'names no Google host while the measurement ID is empty',
+    async () => {
+      expect(await shippedPolicy()).not.toMatch(/google/i);
+    },
+  );
 });

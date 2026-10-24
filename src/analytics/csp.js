@@ -5,7 +5,7 @@
 // below once it is set. src/analytics/csp.test.js runs the check on
 // render.yaml, and scripts/smoke.mjs on a deploy's header. Not imported by
 // the app.
-import { ANALYTICS_HOSTS } from './index.js';
+import { ANALYTICS_HOSTS, analyticsEnabled } from './index.js';
 
 const LOADER = `https://${ANALYTICS_HOSTS.loader}`;
 const COLLECTOR = `https://${ANALYTICS_HOSTS.collector}`;
@@ -22,10 +22,12 @@ export const ANALYTICS_CSP = Object.freeze({
   'img-src': [COLLECTOR],
 });
 
-// A source naming a Google host or a wildcard under one: google.com,
-// googletagmanager.com, google-analytics.com and their subdomains.
+// A source naming a Google host or a wildcard under one: google.com (and
+// country domains like google.co.uk), the tag, analytics, ad and static
+// domains GA and Tag Manager use, and their subdomains, with or without a
+// trailing dot.
 const GOOGLE_HOST =
-  /^(?:[a-z][a-z0-9+.-]*:\/\/)?(?:[*a-z0-9-]+\.)*(?:google|googletagmanager|google-analytics)\.com(?::\d+|:\*)?(?:\/.*)?$/i;
+  /^(?:[a-z][a-z0-9+.-]*:\/\/)?(?:[*a-z0-9-]+\.)*(?:google(?:\.com?)?\.[a-z]{2,}|(?:googletagmanager|google-analytics|googleadservices|googlesyndication|doubleclick|gstatic)\.(?:com|net))\.?(?::\d+|:\*)?(?:\/.*)?$/i;
 
 function directives(policy) {
   return policy
@@ -37,15 +39,17 @@ function directives(policy) {
 
 /**
  * The ways `policy` and `measurementId` disagree, each telling the owner what
- * to change in render.yaml; empty when they agree.
+ * to change in render.yaml; empty when they agree. The ID counts as set only
+ * when GA would load with it (analyticsEnabled: a GA4 ID like G-ABC123DEF4).
  * @param {string} policy A Content-Security-Policy header value.
  * @param {string} measurementId gaMeasurementId from src/config/site.js.
  * @returns {string[]}
  */
 export function analyticsCspProblems(policy, measurementId) {
   const parsed = directives(policy);
-  if (measurementId) {
-    const csp = new Map(parsed);
+  if (analyticsEnabled(measurementId)) {
+    // The first copy of each directive: a browser ignores later ones.
+    const csp = new Map(parsed.toReversed());
     return Object.entries(ANALYTICS_CSP).flatMap(([name, sources]) => {
       const missing = sources.filter((source) => !(csp.get(name) ?? []).includes(source));
       return missing.length
@@ -60,7 +64,7 @@ export function analyticsCspProblems(policy, measurementId) {
     const google = values.filter((source) => GOOGLE_HOST.test(source));
     return google.length
       ? [
-          `gaMeasurementId is empty, so render.yaml's Content-Security-Policy must name no ` +
+          `gaMeasurementId is empty (or not a GA4 ID), so render.yaml's Content-Security-Policy must name no ` +
             `Google host: remove ${google.join(' ')} from ${name}`,
         ]
       : [];

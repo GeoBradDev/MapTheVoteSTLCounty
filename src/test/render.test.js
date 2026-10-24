@@ -12,7 +12,7 @@ import { CITY_GEOCODER_URL } from '../data/cityAddress.js';
 import { HOSTED_URL, LIVE_URL } from '../data/countyAddress.js';
 import { DEFAULT_BASE_URL as PHOTON } from '../data/photon.js';
 import { ANALYTICS_CSP } from '../analytics/csp.js';
-import { gaMeasurementId } from '../config/site.js';
+import { analyticsEnabled } from '../analytics/index.js';
 import { BASEMAP_DARK_STYLE_URL, BASEMAP_STYLE_URL } from '../features/lookup/basemap.js';
 import { ASSET_HEADERS, PRECINCT_HEADERS, SHELL_HEADERS } from '../../scripts/smoke.mjs';
 import { PRECINCT_PRECONNECT, previewHeaders, SHELL_FILE } from '../prerender/plugin.js';
@@ -25,7 +25,7 @@ const ROOT = path.resolve(import.meta.dirname, '../..');
 const BASEMAP = new URL(BASEMAP_STYLE_URL).origin;
 // Google Analytics' sources (#69), by directive, only once its measurement
 // ID is set (#191): the ID ships empty and the policy then names no Google host.
-const GA_CSP = gaMeasurementId ? ANALYTICS_CSP : {};
+const GA_CSP = analyticsEnabled() ? ANALYTICS_CSP : {};
 const withGa = (name, sources) => [...sources, ...(GA_CSP[name] ?? [])];
 const GA_WILDCARDS = [...new Set(Object.values(GA_CSP).flat())].filter((s) => s.includes('*'));
 const SHELL_PATHS = [

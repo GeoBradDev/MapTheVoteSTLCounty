@@ -11,7 +11,7 @@ import { promisify } from 'node:util';
 import { build, preview } from 'vite';
 import { runSmoke } from '../../scripts/smoke.mjs';
 import { ANALYTICS_CSP } from '../analytics/csp.js';
-import { gaMeasurementId } from '../config/site.js';
+import { analyticsEnabled } from '../analytics/index.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 const SCRIPT = path.join(ROOT, 'scripts/smoke.mjs');
@@ -46,8 +46,10 @@ const MANIFEST = JSON.stringify({ name: 'St. Louis Voter Guide', start_url: '/',
 const GA_POLICY = Object.entries(ANALYTICS_CSP)
   .map(([name, sources]) => `${name} 'self' ${sources.join(' ')}`)
   .join('; ');
-const AGREEING_CSP = gaMeasurementId ? `default-src 'self'; ${GA_POLICY}` : "default-src 'self'";
-const MISMATCHED_CSP = gaMeasurementId ? "default-src 'self'" : `default-src 'self'; ${GA_POLICY}`;
+const AGREEING_CSP = analyticsEnabled() ? `default-src 'self'; ${GA_POLICY}` : "default-src 'self'";
+const MISMATCHED_CSP = analyticsEnabled()
+  ? "default-src 'self'"
+  : `default-src 'self'; ${GA_POLICY}`;
 
 const GOOD_HEADERS = {
   'referrer-policy': 'no-referrer',

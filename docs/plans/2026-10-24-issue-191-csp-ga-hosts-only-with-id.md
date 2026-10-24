@@ -45,6 +45,12 @@ imported by the app, so first-load JS is unchanged).
 - `src/analytics/index.js`: comment about script-src.
 - `README.md`: Privacy paragraph, GA checklist steps 2 and 5.
 
+Review revision (finder 1): the ID counts as set only when GA would load with it
+(`analyticsEnabled`, a GA4 `G-` ID), so a malformed ID never forces the Google hosts into the
+policy; with the ID set, the first copy of a repeated directive is the one checked (the one a
+browser enforces); and the Google host pattern also covers country domains, the ad and static
+domains and a trailing dot, for the live smoke check.
+
 ## Order of work
 
 1. Red: write `src/analytics/csp.test.js` (helper does not exist) and confirm it fails.
