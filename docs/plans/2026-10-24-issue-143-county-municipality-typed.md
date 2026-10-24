@@ -100,6 +100,11 @@ layer; besides real towns it holds `ST LOUIS COUNTY` (unincorporated), `ST LOUIS
   City`, or no unit) open the County place, which main answered as no match. Fixed by keeping
   every record of the address again and taking a typed unit only on the matched side, so both
   are no match while a County unit typed with the town still opens.
+- Finder 4: keeping every record of the address made `6200 Enright Ave, St. Louis City` no match,
+  where main answered the City place. Fixed by keeping main's pool (the matched records) when the
+  typed town is St. Louis City (`countyAddress.stlcity143.test.js`). This fix puts the first-load
+  JavaScript 3 bytes over 120 KB gzipped (122883 of 122880), and it is the second extra review
+  round in a row that led to a fix, so the run stopped here for an owner decision on the budget.
 - Main's `node scripts/check-geocoder.mjs` cannot resolve City precincts under Node since #147
   (issue #198), so the live check exits 1 on its City lines on main and here; its #143 lines pass.
 - Budget: the first-load JavaScript sat 15 bytes over 120 KB gzipped after finder 1's fix, so
