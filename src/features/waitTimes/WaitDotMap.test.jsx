@@ -179,6 +179,7 @@ describe('WaitDotMap with no current counts', () => {
     const { container, onClose } = renderMap({ waits: { county: none, city: none } });
     expect(await screen.findByText(homeCopy.waitMap.noCounts)).toBeInTheDocument();
     for (const dot of dots(container)) expect(dot).toHaveAttribute('data-dot', 'hollow');
+    expect(screen.queryByText(copy.city)).toBeNull();
     expect(onClose).not.toHaveBeenCalled();
   });
 
@@ -261,6 +262,7 @@ describe('WaitDotMap with every site closed', () => {
     ).toBeNull();
     expect(screen.queryByText(homeCopy.waitMap.noCounts)).toBeNull();
     expect(screen.getByRole('list', { name: copy.map.legend })).toBeInTheDocument();
+    expect(screen.queryByText(copy.electionDay.city)).toBeNull();
   });
 
   // A page left open across a closing: the shared loop still holds the
@@ -439,6 +441,7 @@ describe('WaitDotMap with every site closed', () => {
     const { onClose } = renderMap({ waits: { county: none, city: none } });
     const { open, close } = election.electionDayHours;
     expect(await screen.findByText(homeCopy.waitMap.ended(open, close))).toBeInTheDocument();
+    expect(screen.queryByText(copy.city)).toBeNull();
     expect(onClose).not.toHaveBeenCalled();
   });
 

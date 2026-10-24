@@ -63,6 +63,13 @@ Domain skills:
 
 ## Risks
 
+- #104 kept the wait times link on the first screen of a 360 x 640 phone, above the search.
+  With the search first (#209) the button follows the dot map, or outside the map window the
+  address lookup's notes, so it is below the fold on a phone. The owner's criterion is the
+  search; putting the button above it would push the search down and, as the Election Day
+  label can wrap differently, move it after hydration. The e2e no longer asserts the button
+  above the fold.
+
 - Moving the search above the map reverses #184's "map first" order; it is the only way to
   hold criterion 3 at 360 x 640 (the map alone is about 600 px). The map stays on the first
   screen's scroll path right under the search.

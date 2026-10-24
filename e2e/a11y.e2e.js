@@ -1088,7 +1088,7 @@ test.describe('home page dot map', () => {
   });
 
   // Stale counts keep the box, already on screen at its height, so nothing
-  // moves: every site is a hollow ring and the summary says so.
+  // moves: every site is a hollow ring and a line says so.
   test('keeps the box, with hollow rings, when the counts are stale', async ({ page }) => {
     await page.clock.setFixedTime(WAITS_RECORDED_AT);
     await answerFromFixtures(page, { waits: { county: 'stale', city: 'stale' } });

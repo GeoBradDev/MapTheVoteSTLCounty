@@ -2,9 +2,10 @@
 // Election Day, every County and City site on one small inline SVG map,
 // colored and sized by how many people are in line, with its legend. No
 // map library and no tiles: the outlines are committed (outline.js) and this
-// module loads on demand, after the home page's text has painted. The map is one link to the
-// wait times page, which lists everything it shows; the SVG itself is hidden
-// from screen readers, and the status line and legend carry the data.
+// module loads on demand, after the home page's text has painted. The map is
+// one link to the wait times page, which lists everything it shows; the SVG
+// itself is hidden from screen readers, and the status line and legend carry
+// the data.
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'wouter';
 import election, { jurisdictions } from '../../config/election.js';
