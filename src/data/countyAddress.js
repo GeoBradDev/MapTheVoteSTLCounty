@@ -257,18 +257,19 @@ function recordOf(feature) {
   if (NOT_AN_ADDRESS.has(text(a.UNITDESC).toUpperCase())) return null;
   if (!Number.isInteger(a.ADRNO) || a.ADRNO < 0 || !text(a.ADRSTR)) return null;
   const direction = text(a.ADRDIR).toUpperCase();
-  // The town the record is in, which a voter may type in place of its
-  // mailing city (41 S Central Ave is in Clayton, mailed as Saint Louis,
-  // #143), with TOWN & COUNTRY as Town and Country. Not ST LOUIS COUNTY (no
-  // town), ST LOUIS CITY or another county.
-  const msag = text(a.MSAG_COMMUNITY_NAME).replace('&', 'AND');
   const street = [direction, titleCase(a.ADRSTR), titleCase(a.ADRSUF)].filter(Boolean).join(' ');
   const props = {
     housenumber: String(a.ADRNO),
     street,
     postcode: text(a.ZIPCODE) || undefined,
     city: titleCase(a.MAILINGCITY) || undefined,
-    municipality: /^ST LOUIS|COUNTY$/i.test(msag) ? '' : msag,
+    // The town the record is in, which a voter may type in place of its
+    // mailing city (41 S Central Ave is in Clayton, mailed as Saint Louis,
+    // #143), with TOWN & COUNTRY as Town and Country. Not ST LOUIS COUNTY (no
+    // town), ST LOUIS CITY or another county.
+    municipality: text(a.MSAG_COMMUNITY_NAME)
+      .replace('&', 'AND')
+      .replace(/^ST LOUIS.*|.*COUNTY$/, ''),
     state: 'Missouri',
     // The layer holds a few St. Louis City addresses (MUNI STL); they are City
     // places (their City precinct, #88), never a county precinct.
@@ -462,11 +463,7 @@ export function createCountyAddressSource({
         // address can name different municipalities (1950 Walton Rd 63114:
         // the house in Overland, Unit R in Vinita Park, #143), so every record
         // of each matching address stays for the unit and precinct checks.
-        // Only on the same side of the City line: a County town never picks a
-        // City unit at the same address (6200 Enright Ave 63130).
-        pool = sameStreet.filter((r) =>
-          matches.some((m) => siteKey(m) === siteKey(r) && m.props.county === r.props.county),
-        );
+        pool = sameStreet.filter((r) => matches.some((m) => siteKey(m) === siteKey(r)));
       }
       if (!pool.length) return { status: 'none' };
       // A house the text could mean, but not by the strict rules (its town or
@@ -476,9 +473,15 @@ export function createCountyAddressSource({
       // guessing.
       const [first] = pool;
       if (!pool.every((m) => siteKey(m) === siteKey(first))) return { status: 'ambiguous' };
-      // A typed unit that exactly one record has is that record's point.
+      // A typed unit that exactly one record has is that record's point, on
+      // the side of the City line the text matched: a County town typed with
+      // a City unit at 6200 Enright Ave 63130 is no match, never either place.
       const unit = typedUnit(typed);
-      const units = unit ? pool.filter((m) => m.unitKey === unit) : [];
+      const units = unit
+        ? pool.filter(
+            (m) => m.unitKey === unit && matches.some((x) => x.props.county === m.props.county),
+          )
+        : [];
       if (units.length === 1) {
         return {
           status: 'match',

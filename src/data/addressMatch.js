@@ -230,18 +230,9 @@ export function matchesTyped(text, props) {
   const typedPlace = typedTown(words(text).slice(1 + street.length));
   // "St. Louis City" says the City, so a county result is not it.
   if (typedPlace === `${ST_LOUIS} city` && countyOf(props) !== CITY_COUNTY) return false;
-  const inMunicipality = isMunicipality(typedPlace, props);
-  if (
-    typedPlace &&
-    town &&
-    typedPlace !== town &&
-    !inMunicipality &&
-    !ST_LOUIS_NAMES.has(typedPlace)
-  ) {
-    return false;
-  }
-  const confirmed =
-    (zip && zip === postcode) || (typedPlace && typedPlace === town) || inMunicipality;
+  const isTown = typedPlace === town || isMunicipality(typedPlace, props);
+  if (typedPlace && town && !isTown && !ST_LOUIS_NAMES.has(typedPlace)) return false;
+  const confirmed = (zip && zip === postcode) || (typedPlace && isTown);
   return !town || town === ST_LOUIS || Boolean(confirmed);
 }
 
