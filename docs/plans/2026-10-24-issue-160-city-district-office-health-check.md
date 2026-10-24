@@ -37,6 +37,10 @@ is deferred; #160 stays open for it, and the PR says `Refs #160`.
    case or spacing hint ignores whitespace entirely. A value that names a party (the card's
    `PARTY` pattern, now exported from `src/features/lookup/cityDistricts.js`) is never a WARN:
    it is never a card row and never belongs on the list.
+8. (Added after the fourth review.) A district row with no office (blank or missing after
+   trimming) is a WARN, since the card drops its row there, and an answer with
+   `exceededTransferLimit` fails (`too many districts for one request: page the query`) rather
+   than checking part of the layer.
 
 ## Files that change
 
@@ -60,6 +64,10 @@ is deferred; #160 stays open for it, and the PR says `Refs #160`.
 Revision after the second review: criterion 7 and its tests, and `CITY_OFFICES_LEFT_OUT` in
 `scripts/check-config.mjs`; the README sentence describes both outcomes.
 
+Revision after the fourth review: criterion 8 and its tests; `cityQuery` in
+`scripts/check-config.mjs` takes a `whole` option for the cut-off check; the README and the
+`districts` comment in `src/config/cityResults.js` name the WARNs.
+
 ## Risks
 
 - The stub world's districts answer is keyed on point queries; the distinct query has no
@@ -71,6 +79,6 @@ Revision after the second review: criterion 7 and its tests, and `CITY_OFFICES_L
 
 ## Proof
 
-- Unit tests in `src/test/checkConfig.test.js` cover criteria 1 to 5 and 7.
+- Unit tests in `src/test/checkConfig.test.js` cover criteria 1 to 5, 7 and 8.
 - Live run of `node scripts/check-config.mjs` shows `PASS city district offices` against the
   real layer (official City service only).

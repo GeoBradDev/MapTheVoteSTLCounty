@@ -964,12 +964,17 @@ export async function runHealthCheck(
 
   async function checkCity(city) {
     const cityLayerUrl = (key) => `${city.serviceRoot}/${city.layers[key]}`;
-    const cityQuery = async (key, params) => {
+    // `whole`: the caller needs every row, so an answer cut off at the
+    // layer's record limit fails rather than passing on part of the layer.
+    const cityQuery = async (key, params, { whole = false } = {}) => {
       const body = await request(
         `${cityLayerUrl(key)}/query?${new URLSearchParams({ f: 'json', ...params })}`,
       );
       if (!Array.isArray(body?.features)) {
         throw new CheckError('the response has no features list');
+      }
+      if (whole && body.exceededTransferLimit) {
+        throw new CheckError(`too many ${key} for one request: page the query`);
       }
       return (body.features ?? []).map((f) => f?.attributes ?? {});
     };
@@ -1148,15 +1153,18 @@ export async function runHealthCheck(
         // compares text without case, so its distinct values would fold
         // "State senate" into "State Senate" while the card tells them apart.
         // About 50 rows.
-        const rows = await cityQuery('districts', {
-          where: '1=1',
-          outFields: field,
-          returnGeometry: 'false',
-        });
-        // Trimmed, as the card reads them (normalize in src/data/arcgis.js).
-        const have = new Set(
-          rows.map((r) => normalize(r)[field]).filter((v) => typeof v === 'string'),
+        const rows = await cityQuery(
+          'districts',
+          { where: '1=1', outFields: field, returnGeometry: 'false' },
+          { whole: true },
         );
+        // Trimmed, as the card reads them (normalize in src/data/arcgis.js),
+        // which turns a blank office into null.
+        const values = rows.map((r) => normalize(r)[field]);
+        const have = new Set(values.filter((v) => typeof v === 'string'));
+        // A district with no office matches no row, so the card drops that
+        // row for the voters in it, as it does for a renamed office.
+        const blank = values.filter((v) => typeof v !== 'string').length;
         if (have.size === 0) throw new CheckError('the districts layer returned no offices');
         const loose = (v) => v.replace(/\s+/g, '').toLowerCase();
         const bad = [];
@@ -1177,20 +1185,26 @@ export async function runHealthCheck(
           );
         }
         const known = new Set([...cityDistricts.rows.flatMap((r) => r.offices), ...leftOut]);
-        // A party committee post is never a card row and never on the list:
-        // the card drops any value that names a party.
+        // A party committee post (the card's PARTY pattern) is never a card
+        // row, so it needs no place on the list either.
         const unknown = [...have].filter((v) => !known.has(v) && !PARTY.test(v)).sort();
         const detail = `${cityDistricts.rows.length} districts card rows (districts.rows) each match an office on the layer`;
+        const warnings = [];
         if (unknown.length) {
-          return {
-            warn:
-              `${detail}, but the layer also has ${unknown.map((v) => JSON.stringify(v)).join(', ')}, ` +
+          warnings.push(
+            `the layer also has ${unknown.map((v) => JSON.stringify(v)).join(', ')}, ` +
               "which no row names. If it is a row's office renamed on some districts, the card " +
               'drops that row there: add it to districts.rows in src/config/cityResults.js, or to ' +
               'CITY_OFFICES_LEFT_OUT in scripts/check-config.mjs if the card leaves it out.',
-          };
+          );
         }
-        return detail;
+        if (blank) {
+          warnings.push(
+            `${blank} district${blank === 1 ? '' : 's'} on the layer ${blank === 1 ? 'has' : 'have'} ` +
+              'no office. The card drops its row there: ask the City Board.',
+          );
+        }
+        return warnings.length ? { warn: `${detail}, but ${warnings.join(' Also, ')}` } : detail;
       });
     } else {
       record('city district offices', 'skip', 'the city layer districts check failed');

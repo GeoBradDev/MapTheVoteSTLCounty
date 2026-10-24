@@ -193,7 +193,8 @@ may need new values too. Work on a branch and merge through the usual pull reque
    layer's site id: the health check fails while a City early voting site has none. Its
    `sources` also name the City Board's Apply to Vote Absentee page, which the City card links
    for voting by mail. And it includes the City districts card's rows (`districts` in
-   `cityResults.js`, #90): check each row's `electedoffice` names against the districts layer,
+   `cityResults.js`, #90): check each row's `electedoffice` names against the districts layer
+(the data health check's `city district offices` check does this),
    and recheck which congressional map is in effect and that the whole City is still in one
    district under it (its `sources`). And it includes the City's sample ballot
    (`sampleBallot` in `cityResults.js`, #92): the City Board's one PDF for all precincts, linked
@@ -808,7 +809,8 @@ precinct nor the outline, that every districts card row (`districts.rows` in
 trimmed and matched exactly as the card matches them, so an office renamed everywhere fails
 instead of silently dropping its row, and that an office on the layer that no row names and the card
 does not leave out (`CITY_OFFICES_LEFT_OUT`) is a WARN, since it may be a row's office renamed on
-some districts only (#160), and that the City's sample ballot (`sampleBallot` in
+some districts only, and so is a district with no office (a party committee post is never a WARN;
+an answer cut off at the layer's record limit fails, #160), and that the City's sample ballot (`sampleBallot` in
 `src/config/cityResults.js`, #92) answers HEAD with a PDF. The City publishes one ballot for
 all precincts, so the County's rule that a ballot names its precinct does not apply to it. A
 site filter that finds no site fails. For each
