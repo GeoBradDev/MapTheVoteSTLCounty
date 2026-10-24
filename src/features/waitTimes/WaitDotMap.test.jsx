@@ -402,7 +402,7 @@ describe('WaitDotMap with every site closed', () => {
 
   // A slow answer (#187): the loop skips a tick while it is out, and the next
   // request on the usual interval is not a resume, so nothing blanks.
-  it('keeps the status line and shortest lines through a refresh after a slow answer', async () => {
+  it('keeps the status line through a refresh after a slow answer', async () => {
     vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
     // 10:00 a.m. Central on 2026-10-22.
     const t0 = Date.UTC(2026, 9, 22, 15, 0);
@@ -427,15 +427,13 @@ describe('WaitDotMap with every site closed', () => {
       await tickAt(t0 + refresh * 1.2);
       expect(county).toHaveBeenCalledTimes(1);
       await act(async () => resolveSlow([countyEntry(3, Date.UTC(2026, 9, 22, 21, 30))]));
-      await screen.findByRole('list', { name: homeCopy.waitMap.shortest });
-      expect(screen.getByText(copy.status.checked('10:00'))).toBeInTheDocument();
+      expect(await screen.findByText(copy.status.checked('10:00'))).toBeInTheDocument();
       // The next tick, one interval on, asks again; its answer is not in yet.
       answer = () => new Promise(() => {});
       await tickAt(t0 + refresh * 2.2);
       expect(county).toHaveBeenCalledTimes(2);
       // The City's answer to this tick is in; the County's is not.
       expect(screen.getByText(/^Line counts checked at /)).toBeInTheDocument();
-      expect(screen.getByRole('list', { name: homeCopy.waitMap.shortest })).toBeInTheDocument();
     } finally {
       setVisibility('visible');
       delete document.visibilityState;

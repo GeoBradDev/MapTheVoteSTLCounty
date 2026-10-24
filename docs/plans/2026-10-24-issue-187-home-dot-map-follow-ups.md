@@ -25,14 +25,16 @@ first-load JS budget nine days before the election. It goes to a new issue.
    after a stop (the 1.5-interval gap) until that request answers, false otherwise. The gap is
    defined once, in `useWaitTimes.js`; `WaitDotMap.jsx` no longer computes its own.
 2. A slow answer (over one interval) followed by a normal refresh is not treated as a resume:
-   the home map keeps its status line and shortest-lines list through it.
+   the home map keeps its status line through it. (The shortest-lines list and the board
+   note go in #209, owner decision 2026-10-24, so no #187 test asserts on them.)
 3. Store tests cover `askedAt`, `resuming`, a replaced request's late answer being dropped
    (success and failure), and a new request going out after the replacement answers (the
    in-flight slot clears).
 4. The wait times page shows no "checked at" time, visible or in its live region, while a
    resumed request is out, so a phone woken the next morning never shows the day before's.
 5. `dotMap` drops counts with `stillShowable` (age and closing time), not closing time alone.
-6. The first-load JS budget is not raised; the full gate passes.
+6. The first-load JS budget is not raised; the full gate passes. (`useWaitTimes.js` is in the
+   first load: the `resuming` field adds about 51 bytes gzipped, leaving about 131 of headroom.)
 
 ## Files that change
 
