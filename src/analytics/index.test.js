@@ -65,7 +65,7 @@ function start(options, id = ID, load = undefined) {
   return fake;
 }
 
-// GA started and ga.js loaded, with its first page view sent.
+// GA started and ga.js loaded: the consent default, set and config sent.
 async function started(options) {
   const fake = start(options);
   await fake.runIdle();
@@ -319,6 +319,18 @@ describe('pageView', () => {
       `${siteUrl}/p/:precinct`,
       `${siteUrl}/learn/${TOPIC}`,
       `${siteUrl}/`,
+    ]);
+  });
+
+  // Only precinct links are canonicalized by the app: another path in a new
+  // letter case is a new page (a topic id is case-sensitive).
+  it('counts another path in a new letter case as a new page', async () => {
+    const fake = await started();
+    pageView(`/learn/${TOPIC}`);
+    pageView(`/learn/${TOPIC.toUpperCase()}`);
+    expect(pageViews(fake).map(([, , hit]) => hit.page_location)).toEqual([
+      `${siteUrl}/learn/${TOPIC}`,
+      `${siteUrl}/not-found`,
     ]);
   });
 

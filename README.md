@@ -924,7 +924,9 @@ when app code under `src` uses browser storage, cookies or the console, and
 `src/test/addressPrivacy.test.jsx` runs a lookup and checks storage, cookies, Cache Storage
 entries, IndexedDB database names, the URL, the title, the head tags (#98) and the console for the address (jsdom has no
 Cache Storage or IndexedDB, so those two run only where they exist). A test also fails when the
-Content-Security-Policy allows an origin the notice does not name.
+Content-Security-Policy allows an origin the notice does not name, with one exception while the
+Google Analytics measurement ID is empty: its hosts, which get nothing then and which the notice
+names once the ID is set (`PrivacyPage.analytics.test.jsx` checks that state).
 
 The tests run in jsdom, so check a real browser by hand before each election: look up an
 address and use Use my location, then in the browser's devtools confirm that Application shows
@@ -943,7 +945,8 @@ set to 100 m or less. If it says the location is only a rough estimate, press it
 ### Google Analytics
 
 Page view counts with Google Analytics 4 (#69), in `src/analytics/`, the only app code that
-names Google, `gtag` or the `dataLayer` (`src/test/analyticsOnly.test.js` fails on any other).
+calls `gtag`, reads the `dataLayer` or names Google's analytics hosts (`src/test/analyticsOnly.test.js`
+fails on any other; the notice's text and `render.yaml` name them too).
 It is off while `gaMeasurementId` in `src/config/site.js` is empty, as it ships (owner decision
 on #69), and the privacy notice then says the site has no analytics; once the ID is set, the
 notice drops that and adds a "Page counts" section naming Google's hosts and what they get. The

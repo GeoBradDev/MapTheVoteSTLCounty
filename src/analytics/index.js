@@ -1,6 +1,6 @@
 // Google Analytics 4 page views, cookieless, with the precinct redacted (#69).
-// src/analytics/ is the only app code that names Google, gtag or the
-// dataLayer (src/test/analyticsOnly.test.js fails on any other). This file is
+// src/analytics/ is the only app code that calls gtag, reads the dataLayer or
+// names Google's analytics hosts (src/test/analyticsOnly.test.js fails on any other). This file is
 // in the first load and stays small; GA itself is ga.js, loaded on demand.
 //
 // - Off unless the measurement ID (src/config/site.js) is set, the page is on
@@ -15,8 +15,9 @@
 //   referrer. The same values are set for every later event, so GA's own
 //   events never carry the real URL either.
 // - ga.js and Google's script load after the load event, in idle time, so
-//   they cost the first load nothing (#27). No inline script: the CSP has
-//   script-src 'self'. Page views until then wait here, as paths.
+//   they cost the first load nothing (#27). No inline script: the CSP's
+//   script-src allows only 'self' and Google's loader. Page views until then
+//   wait here, as paths.
 import { gaMeasurementId, siteUrl } from '../config/site.js';
 
 /** The hosts GA uses, as the privacy notice and render.yaml's CSP name them. */
@@ -91,9 +92,13 @@ export function startAnalytics(win, id = gaMeasurementId, load = () => import('.
  */
 export function pageView(path) {
   if (!active) return;
-  // As the app canonicalizes a precinct link (letter case, spaces, a
-  // trailing slash), so its replace of the URL is not a second page view.
-  const key = String(path).replace(/\s+/g, '').replace(/\/$/, '').toLowerCase();
+  // A precinct link compared as the app canonicalizes it (letter case,
+  // spaces, a trailing slash), so its replace of the URL is not a second
+  // page view. Any other path as it is.
+  const text = String(path);
+  const key = /^\/p\//i.test(text)
+    ? text.replace(/\s+/g, '').replace(/\/$/, '').toLowerCase()
+    : text;
   if (key === active.last) return;
   active.last = key;
   if (active.send) active.send(path);

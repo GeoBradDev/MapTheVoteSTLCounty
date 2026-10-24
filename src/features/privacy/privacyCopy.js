@@ -1,7 +1,8 @@
 // The privacy notice (issue #20). The text is in src/i18n/en.json (#19). It
 // must stay true of the code: when the app starts calling a new service, or
 // changes what it sends or keeps, change this notice in the same change. PrivacyPage.test.jsx fails when
-// render.yaml's connect-src allows an origin this notice does not name.
+// render.yaml's connect-src allows an origin this notice does not name, but
+// Google Analytics' hosts while its ID is empty (they get nothing then).
 //
 // Google Analytics (#69) follows its config: while the measurement ID in
 // src/config/site.js is empty, nothing loads and the notice says the site has

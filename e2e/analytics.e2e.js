@@ -1,7 +1,10 @@
 // Google Analytics (#69) in a real browser. The measurement ID ships empty
 // (owner decision on #69), so this spec builds its own copy of the app with a
 // test ID: a Vite plugin in this file rewrites src/config/site.js for that
-// build only, so production code has no test hook. Both builds are served at
+// build only, so production code has no test hook. Only the client bundle:
+// the pre-render step starts its own Vite server from vite.config.js, so this
+// build's pre-rendered pages (/privacy among them) keep the shipped notice, and
+// the spec opens none of them. Both builds are served at
 // the production origin (Playwright answers https://mapthevotestl.com from the
 // local preview server), so the origin check passes as it would live.
 // Google's hosts are answered by a stub (the real gtag.js is never fetched:
@@ -122,10 +125,10 @@ const dataLayer = (page) =>
 const pageViews = (layer) =>
   layer.filter(([command, name]) => command === 'event' && name === 'page_view');
 
-// Past the load event and the analytics module's longest idle wait (2 s).
+// Well past the load event and the analytics module's longest idle wait (2 s).
 async function settle(page) {
   await page.waitForLoadState('load');
-  await page.waitForTimeout(3_000);
+  await page.waitForTimeout(5_000);
 }
 
 test('with an ID: redacted page views, no voter data to Google, no cookies', async ({
