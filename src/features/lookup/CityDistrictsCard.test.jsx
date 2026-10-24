@@ -312,4 +312,18 @@ describe('CityDistrictsCard analytics (#70)', () => {
       tracked.stop();
     }
   });
+  it('counts the City lookup link when the districts are missing', async () => {
+    const { trackEvents, pressLink } = await import('../../test/trackedEvents.js');
+    const tracked = trackEvents();
+    try {
+      routeFetch({ districts: { features: [] } });
+      renderCard();
+      await screen.findByText(copy.districts.missing, { exact: false });
+      const link = screen.getByRole('link', { name: copy.officialLookupFor('city') });
+      expect(await pressLink(userEvent.click, link)).toBe(false);
+      expect(await tracked.events()).toEqual([['official_lookup_open', { card: 'districts' }]]);
+    } finally {
+      tracked.stop();
+    }
+  });
 });

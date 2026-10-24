@@ -90,6 +90,14 @@ describe.each(cases)('%s', (_, Card, load, data, card, listLabel) => {
     await expectOnlyLabels();
   });
 
+  it('counts its official lookup link when it has no places to list', async () => {
+    load().mockResolvedValue({ ...data, features: [] });
+    render(<Card code="CC007" origin={ORIGIN} />);
+    const lookup = await screen.findByRole('link', { name: copy.officialLookup });
+    expect(await pressLink(userEvent.click, lookup)).toBe(false);
+    expect(await tracked.events()).toEqual([['official_lookup_open', { card }]]);
+  });
+
   it('counts its official lookup link and Try again after a failure', async () => {
     load().mockRejectedValueOnce(new Error('HTTP 503')).mockResolvedValueOnce(data);
     render(<Card code="CC007" origin={ORIGIN} />);

@@ -982,13 +982,13 @@ Voter actions (#70) are counted with `track(name, params)` from `src/analytics/i
 components call nothing else. `EVENTS` in `src/analytics/ga.js` is the allowlist: each event's
 parameter names and the fixed values each may take. An unknown event is not sent, and an unknown
 parameter or value is dropped. It is in the lazily loaded `ga.js`, so the first load carries only
-`track()`'s queue, and `track()` does nothing while GA is off. A press is counted from its click
+`track()`, its queue and the call sites, and `track()` does nothing while GA is off. A press is counted from its click
 handler, never waiting on it and never preventing the link's default. The County and City cards
 send the same events, with no jurisdiction.
 
 | Event | When | Parameters |
 | --- | --- | --- |
-| `lookup_result` | an address search or Use my location finishes | `source`: `address`, `location`; `outcome`: `precinct` (County or City), `no_precinct` (in the County, no precinct), `city_referral` (the City's precinct not found, #88), `out_of_area`, `no_match`, `unavailable`, `failed`, `offline`, and for the device `denied`, `timeout`, `coarse` |
+| `lookup_result` | an address search or Use my location finishes | `source`: `address`, `location`; `outcome`: `precinct` (County or City), `no_precinct` (taken to be in the County, no precinct found), `city_referral` (sent to the City Board: its precinct not found, or the City's layer not answering, #88), `out_of_area`, `no_match`, `unavailable`, `failed`, `offline`, and for the device `denied`, `timeout`, `coarse` |
 | `sample_ballot_open` | the County or City sample ballot link is pressed | none |
 | `directions_open` | a directions link is pressed | `card`: `polls`, `early_voting` (the results summary's buttons count as their card's), `wait_times`; `provider`: `google`, `apple` |
 | `official_lookup_open` | a link to a board's official lookup is pressed | `card`: `polls`, `early_voting`, `sample_ballot`, `districts`, `lookup_error`, `precinct_error`, `wait_times`, `error_screen`, `referral` (the out-of-area and City referral notices), `status` (the precinct status banner) |
