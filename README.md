@@ -1160,7 +1160,7 @@ green; run it locally first.
 The code is released under the [MIT License](LICENSE) (#118): anyone, including another county,
 may reuse, change and redistribute it, keeping the copyright and license notice.
 
-The license covers the code only.
+The license covers this repository's own code and text, but not the data the site shows:
 
 - **Map data** is © OpenStreetMap contributors, under the
   [Open Database License (ODbL)](https://www.openstreetmap.org/copyright), served as

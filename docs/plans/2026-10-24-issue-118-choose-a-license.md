@@ -29,6 +29,7 @@ or bundle code changes.
 - `package.json`, `package-lock.json`
 - `README.md` (License section only)
 - `src/test/license.test.js` (new)
+- this plan (new)
 
 ## Order of work
 
