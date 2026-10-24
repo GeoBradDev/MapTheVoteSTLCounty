@@ -983,6 +983,30 @@ test.describe('home page dot map', () => {
       expect(Math.abs(after.y - before.y)).toBeLessThan(1);
     });
 
+    // The box keeps its reserved height, and the map takes what the legend
+    // does not use (#216), so the button follows the map's last line with
+    // only its own margin, whatever the legend holds.
+    test(`leaves no gap between the map and the wait times button (${name})`, async ({
+      page,
+    }) => {
+      await page.clock.setFixedTime(at);
+      await answerFromFixtures(page, { waits });
+      for (const width of [360, 390, 640, 1280]) {
+        await page.setViewportSize({ width, height: 800 });
+        await page.goto('/');
+        const box = page.locator('[data-home-map-box]');
+        await expect(box.getByText(line)).toBeVisible();
+        const gap = await page.evaluate(() => {
+          const section = document.querySelector('[data-home-map-box] section');
+          const last = section.lastElementChild.getBoundingClientRect().bottom;
+          const button = [...document.querySelectorAll('main a[href="/early-voting"]')].at(-1);
+          return button.getBoundingClientRect().top - last;
+        });
+        expect(gap, `${width} px`).toBeGreaterThanOrEqual(0);
+        expect(gap, `${width} px`).toBeLessThan(24);
+      }
+    });
+
     test(`paints its largest text before the data answers (${name})`, async ({ page }) => {
       await page.clock.setFixedTime(at);
       await page.setViewportSize({ width: 360, height: 640 });
