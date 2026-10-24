@@ -1,7 +1,7 @@
 // The home page's line count dot map (#184): during early voting and on
 // Election Day, every County and City site on one small inline SVG map,
-// colored and sized by how many people are in line, with the legend, the
-// three shortest open lines and each board's rule. No map library and no
+// colored and sized by how many people are in line, with its legend. No
+// map library and no
 // tiles: the outlines are committed (outline.js) and this module loads on
 // demand, after the home page's text has painted. The map is one link to the
 // wait times page, which lists everything it shows; the SVG itself is hidden
@@ -12,7 +12,6 @@ import election, { jurisdictions } from '../../config/election.js';
 import { getAbsenteeSites, getPolls } from '../../data/arcgis.js';
 import { earlyVotingStatus, zonedNow } from '../lookup/earlyVoting.js';
 import { copy as homeCopy } from '../lookup/homeCopy.js';
-import { copy as resultsCopy } from '../lookup/resultsCopy.js';
 import { useNow } from '../lookup/useNow.js';
 import { dotMap, HOLLOW_RADIUS, project } from './dotMapModel.js';
 import { homeMapMode } from './homeMapMode.js';
@@ -317,31 +316,7 @@ export default function WaitDotMap({
       {ready && (
         <>
           <Legend legend={model.legend} />
-          {model.anyOpen &&
-            settled &&
-            (model.shortest.length ? (
-              <div className="mt-3 text-sm">
-                <p id="home-map-shortest" className="font-semibold">
-                  {text.shortest}
-                </p>
-                <ul aria-labelledby="home-map-shortest" className="mt-1 space-y-0.5">
-                  {model.shortest.map((site) => (
-                    <li key={site.key}>
-                      {text.site({
-                        name: site.name ?? resultsCopy.polls.unnamed(site.loc),
-                        board: jurisdictions[site.jurisdiction].name,
-                        count: site.value,
-                      })}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <p className="mt-3 text-sm">{text.noCounts}</p>
-            ))}
-          <p className="mt-3 text-sm text-muted">
-            {electionDay ? copy.electionDay.city : copy.city}
-          </p>
+          {model.stale && settled && <p className="mt-3 text-sm">{text.noCounts}</p>}
         </>
       )}
     </section>

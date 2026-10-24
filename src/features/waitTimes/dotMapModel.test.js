@@ -137,20 +137,6 @@ describe('dotMap, early voting with sites open', () => {
     expect(tower.r).toBe(HOLLOW_RADIUS);
   });
 
-  it('lists the three open sites with the fewest people in line, with their board', () => {
-    expect(map.shortest).toHaveLength(3);
-    const values = map.shortest.map((site) => site.value);
-    expect(values).toEqual([...values].sort((a, b) => a - b));
-    expect(values[0]).toBe(0);
-    for (const site of map.shortest) {
-      expect(['county', 'city']).toContain(site.jurisdiction);
-      expect(site.name).toEqual(expect.any(String));
-    }
-    // Ties by name.
-    const zeros = map.shortest.filter((site) => site.value === 0).map((site) => site.name);
-    expect(zeros).toEqual([...zeros].sort((a, b) => a.localeCompare(b)));
-  });
-
   it('is not stale, has a site open and no next opening', () => {
     expect(map.stale).toBe(false);
     expect(map.anyOpen).toBe(true);
@@ -163,7 +149,6 @@ describe('dotMap, open sites but no fresh count from either board', () => {
   it('is stale', () => {
     const map = dotMap({ rows: [...countyRows, ...cityRows], waits: [], now: OPEN_AT });
     expect(map.stale).toBe(true);
-    expect(map.shortest).toEqual([]);
     expect(map.classes).toEqual([]);
   });
 });
@@ -182,7 +167,6 @@ describe('dotMap, early voting with every site closed', () => {
     expect(map.anyOpen).toBe(false);
     expect(map.stale).toBe(false);
     expect(map.nextOpen).toEqual({ date: '2026-10-23', time: '08:00' });
-    expect(map.shortest).toEqual([]);
   });
 });
 
