@@ -193,6 +193,19 @@ const FIXTURES = {
     cityLayer('boundary'),
     cityPointQuery(COUNTY_POINT, 'OBJECTID', cityConfig.boundaryWhere),
   ],
+  // The City's outline, every citywide office's polygon (they differ by a few
+  // vertices), for the river edge test in locate.test.js (#144).
+  'city-outline.json': [
+    cityLayer('boundary'),
+    {
+      where: cityConfig.boundaryWhere,
+      outFields: 'OBJECTID',
+      returnGeometry: 'true',
+      outSR: '4326',
+      geometryPrecision: '6',
+      f: 'json',
+    },
+  ],
   // The county's live address layer, asked as find() asks for a Clayton address
   // whose mailing city is Saint Louis (#143): every 41 ...CENTRAL... record.
   'county-address-central-ave.json': [
