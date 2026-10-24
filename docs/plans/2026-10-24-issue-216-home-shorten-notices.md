@@ -46,7 +46,7 @@ Domain skills:
 - `src/i18n/en.json`: `useMyLocation.privacy` becomes the one line; add
   `lookup.attribution.summary`, `lookup.attribution.privacyBefore`,
   `lookup.attribution.privacyLink`.
-- `src/features/lookup/lookupCopy.js`: the new keys.
+- `src/features/lookup/lookupCopy.js`: the new keys; `useMyLocationCopy.js`: its comment.
 - `src/features/lookup/GeocoderAttribution.jsx`: the credits paragraph inside `Disclosure`
   (closed by default, opened for print), plus the privacy link.
 - `src/features/lookup/UseMyLocation.jsx`: the notes are the one line only (still the button's
