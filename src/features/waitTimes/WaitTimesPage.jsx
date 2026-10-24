@@ -347,9 +347,12 @@ export default function WaitTimesPage({
   );
   // The live region gets the throttled time; the visible line, hidden from
   // screen readers so they do not hear it twice, has the latest.
+  // No time while the loop asks again after a stop (a phone woken the next
+  // morning, #187): until that answer, the last check is from before it.
+  const resuming = waits.county.resuming || waits.city.resuming;
   const statusFor = (at) => {
     if (unavailable) return copy.status.unavailable;
-    return at === null ? '' : copy.status.checked(clockTime(at));
+    return at === null || resuming ? '' : copy.status.checked(clockTime(at));
   };
   const statusText = statusFor(checkedAt);
   const shownStatusText = statusFor(lastSuccess);

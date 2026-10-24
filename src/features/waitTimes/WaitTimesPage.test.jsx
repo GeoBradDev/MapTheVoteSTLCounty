@@ -276,6 +276,48 @@ describe('WaitTimesPage', () => {
     expect(statusLine()).not.toHaveTextContent(copy.status.unavailable);
   });
 
+  // A phone woken the next morning (#187): until the loop's first request
+  // since it woke answers, the evening before's check time is not shown.
+  it('shows no check time while the loop asks again after a stop', async () => {
+    let state;
+    const listeners = new Set();
+    const evening = START - 16 * 60 * MINUTE;
+    const part = (change) => ({
+      status: 'ok',
+      refreshFailed: false,
+      checkedAt: evening,
+      answeredAt: evening,
+      askedAt: evening,
+      resuming: false,
+      waits: [],
+      ...change,
+    });
+    const set = (county) => {
+      state = { waits: [], county, city: part({ status: 'off', checkedAt: null }) };
+      listeners.forEach((l) => l());
+    };
+    set(part());
+    const source = {
+      subscribe: (l) => {
+        listeners.add(l);
+        return () => listeners.delete(l);
+      },
+      getSnapshot: () => state,
+      getServerSnapshot: () => state,
+    };
+    vi.setSystemTime(evening);
+    renderPage({ waitSource: source });
+    await screen.findByRole('list', { name: copy.listLabel });
+    expect(shownStatus()).toHaveTextContent(copy.status.checked('17:00'));
+    vi.setSystemTime(START);
+    act(() => set(part({ askedAt: START, resuming: true })));
+    expect(shownStatus().textContent).toBe('');
+    expect(statusLine().textContent).toBe('');
+    act(() => set(part({ askedAt: START, answeredAt: START, checkedAt: START })));
+    expect(shownStatus()).toHaveTextContent(copy.status.checked('09:00'));
+    expect(statusLine()).toHaveTextContent(copy.status.checked('09:00'));
+  });
+
   it('leaves focus on a list link when the map fails', async () => {
     vi.stubGlobal('WebGL2RenderingContext', function WebGL2RenderingContext() {});
     createWaitTimesMap.mockReturnValue({ setSites: vi.fn(), remove: vi.fn() });
