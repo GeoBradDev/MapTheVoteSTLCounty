@@ -23,7 +23,9 @@ run); the coordinator's privacy limits below are the approved scope.
 - First-load JS stays under 120 KB gzipped, about 1 KB headroom: the allowlist lives in the
   lazily loaded `ga.js`; `index.js` only queues `[name, params]` until ga.js is in, and does
   nothing while GA is off. No budget changes. No CSP change. No `docs/progress.md` edit.
-- `jurisdiction` is left out of every event: not needed for these questions.
+- No `jurisdiction` parameter on any event: not needed for these questions. The
+  `no_precinct` and `city_referral` outcomes still tell County or City for a lookup that found
+  no precinct, so the notice says so (final review finder).
 - No "wait map opened" event: not clearly needed for the issue's questions (noted in the PR).
 
 ## Events (the allowlist, `EVENTS` in `src/analytics/ga.js`)

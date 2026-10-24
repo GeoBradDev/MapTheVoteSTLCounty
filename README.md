@@ -984,7 +984,8 @@ parameter names and the fixed values each may take. An unknown event is not sent
 parameter or value is dropped. It is in the lazily loaded `ga.js`, so the first load carries only
 `track()`, its queue, the call sites and the lookup's outcome map, and `track()` does nothing while GA is off. A press is counted from its click
 handler, never waiting on it and never preventing the link's default. The County and City cards
-send the same events, with no jurisdiction.
+send the same events, with no jurisdiction parameter, though `no_precinct` and `city_referral`
+tell County or City for a search that found no precinct (the notice says so).
 
 | Event | When | Parameters |
 | --- | --- | --- |
