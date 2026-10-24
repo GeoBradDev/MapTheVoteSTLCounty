@@ -12,6 +12,7 @@ import election, { jurisdictions } from '../../config/election.js';
 import { selectCountyWaits } from '../../data/waitTimes.js';
 import { cityScheduleFor, citySchedules } from '../lookup/cityEarlyVoting.js';
 import { copy as homeCopy } from '../lookup/homeCopy.js';
+import { createWaitTimesStore } from './useWaitTimes.js';
 import WaitDotMap from './WaitDotMap.jsx';
 import { copy } from './waitTimesCopy.js';
 
@@ -54,6 +55,8 @@ function renderMap({
   loadPolls = async () => polls,
   loadCityPolls = async () => ({ features: [] }),
   onClose = vi.fn(),
+  // One loop shared across renders, as the app's is.
+  source = createWaitTimesStore(waits),
 } = {}) {
   const { hook } = memoryLocation({ path: '/' });
   const view = render(
@@ -64,14 +67,19 @@ function renderMap({
           loadCity={city}
           loadPolls={loadPolls}
           loadCityPolls={loadCityPolls}
-          waitFetchers={waits}
+          waitSource={source}
           onClose={onClose}
         />
       </Router>
     </StrictMode>,
   );
-  return { ...view, onClose };
+  return { ...view, onClose, source };
 }
+
+const setVisibility = (state) => {
+  Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => state });
+  document.dispatchEvent(new Event('visibilitychange'));
+};
 
 const dots = (container) => container.querySelectorAll('svg circle[data-dot]');
 
@@ -130,6 +138,28 @@ describe('WaitDotMap during early voting, sites open', () => {
   it('states each board’s rule: its sites are for its own voters', async () => {
     renderMap();
     expect(await screen.findByText(copy.city)).toBeInTheDocument();
+  });
+});
+
+describe('WaitDotMap and the shared line count loop', () => {
+  beforeEach(() => vi.setSystemTime(OPEN_AT));
+
+  // Coming back to the home page within the loop's interval asks nothing new
+  // and shows the answer already in hand.
+  it('asks nothing outside the shared interval when the home page is shown again', async () => {
+    const county = vi.fn(countyFresh);
+    const city = vi.fn(none);
+    const source = createWaitTimesStore({ county, city });
+    const first = renderMap({ source });
+    await screen.findByRole('list', { name: homeCopy.waitMap.shortest });
+    const asked = county.mock.calls.length;
+    const askedCity = city.mock.calls.length;
+    first.unmount();
+    vi.setSystemTime(OPEN_AT + 10_000);
+    renderMap({ source });
+    expect(await screen.findByRole('list', { name: homeCopy.waitMap.shortest })).toBeVisible();
+    expect(county).toHaveBeenCalledTimes(asked);
+    expect(city).toHaveBeenCalledTimes(askedCity);
   });
 });
 
@@ -227,8 +257,8 @@ describe('WaitDotMap with every site closed', () => {
     expect(screen.getByText(copy.electionDay.city)).toBeInTheDocument();
   });
 
-  // A page left open across a closing: the next opening starts its own
-  // loop, so nothing from the evening before reads as now.
+  // A page left open across a closing: the shared loop still holds the
+  // evening before's answer, which is not read as now.
   it('starts fresh when sites open again with the page left open', async () => {
     vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
     // 4:25 p.m. Central on 2026-10-22: County sites open, with counts.
@@ -263,6 +293,43 @@ describe('WaitDotMap with every site closed', () => {
     expect(screen.queryByText(homeCopy.waitMap.noCounts)).toBeNull();
     expect(screen.queryByText(/^Line counts checked at /)).toBeNull();
     expect(screen.queryByRole('list', { name: homeCopy.waitMap.shortest })).toBeNull();
+  });
+
+  // A phone asleep (or a tab frozen) from one afternoon to the next morning:
+  // when it wakes, neither the old check time nor the old count shows.
+  it('shows nothing from the day before when a phone wakes the next morning', async () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+    vi.setSystemTime(Date.UTC(2026, 9, 22, 21, 25));
+    let answer = async () => [
+      {
+        siteId: 'abs602boec',
+        jurisdiction: 'county',
+        unit: 'people',
+        value: 3,
+        reportedAt: new Date(Date.now() - 60_000),
+        source: election.waitTimes.county.source,
+        openUntil: new Date(Date.UTC(2026, 9, 22, 21, 30)),
+      },
+    ];
+    const county = vi.fn(() => answer());
+    const noCitySites = async () => ({ ...(await loadCity()), layer: { features: [] } });
+    try {
+      renderMap({ waits: { county, city: none }, city: noCitySites });
+      await screen.findByRole('list', { name: homeCopy.waitMap.shortest });
+      expect(screen.getByText(copy.status.checked('16:25'))).toBeInTheDocument();
+      answer = () => new Promise(() => {});
+      // Asleep: no timer runs while the clock moves to 8:00:30 the next day.
+      act(() => setVisibility('hidden'));
+      vi.setSystemTime(Date.UTC(2026, 9, 23, 13, 0, 30));
+      await act(async () => setVisibility('visible'));
+      expect(screen.queryByText(copy.status.checked('16:25'))).toBeNull();
+      expect(screen.queryByText(/^Line counts checked at /)).toBeNull();
+      expect(screen.queryByText(homeCopy.waitMap.noCounts)).toBeNull();
+      expect(screen.queryByRole('list', { name: homeCopy.waitMap.shortest })).toBeNull();
+    } finally {
+      setVisibility('visible');
+      delete document.visibilityState;
+    }
   });
 
   it('on the evening of November 2, says Election Day is tomorrow', async () => {

@@ -84,8 +84,8 @@ Domain skills:
 - Data: the same sites and counts as `/early-voting`: the County absentee sites
   (or polls on Election Day) and the City's early voting sites (or polls), via
   the site loading code moved from `WaitTimesPage.jsx` into `waitSites.js`, and
-  the same 30 s loop rules (`createWaitTimesStore`, fresh only), a loop of
-  its own started each time a site opens (review round 5).
+  the same shared 30 s loop (`useWaitTimes`, fresh only), read only while a
+  site is open (review round 6).
 
 ## Files that change
 
@@ -210,4 +210,16 @@ centering on the voter (privacy).
   nothing from an earlier opening (the evening before) reads as now, and the
   5 minute filter on the check time is gone: the last check shows, as on the
   wait times page, including while refreshes fail.
-
+- Review round 6: a loop of its own per opening still let a frozen tab or a
+  phone asleep overnight reuse the previous day's loop for a moment after
+  waking, and each return to `/` asked both boards outside the shared 30 s
+  interval. The map reads the shared loop again (`useWaitTimes`, a
+  `waitSource` prop for tests). The loop records when each board last
+  answered, with counts or a failure (`answeredAt`); the model gives the
+  current opening's start (`openedAt`), and the map counts its line counts as
+  loaded, and shows a "checked at" time, only for an answer since then. The
+  model drops any count past its `openUntil`. `useNow` reads the clock again
+  when the page comes back (visibility, `resume`, `pageshow`, focus), so a
+  woken page never works from the time it went away. `WAIT_FETCHERS` is gone,
+  and the comment at the top of `useWaitTimes.js` says the map reads the
+  shared loop.

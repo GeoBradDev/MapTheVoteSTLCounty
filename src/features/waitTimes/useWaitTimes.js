@@ -2,12 +2,11 @@
 // refresh loop: one request per jurisdiction per `refreshSeconds`, however
 // many components read it. (The City early voting card, #91, runs its own
 // loop on the same rules, built with createWaitTimesStore, that asks only the
-// City's layer. The home page's dot map, #184, starts a loop of its own from
-// WAIT_FETCHERS each time a site opens.) The loop runs only while some component reads it
-// and the tab is visible, and refreshes at once when the tab comes back. A
-// failed refresh keeps the last values while each is still fresh and its site
-// open, then reports the jurisdiction unavailable. A failure never throws
-// into the page.
+// City's layer. The home page's dot map, #184, reads this shared loop.) The
+// loop runs only while some component reads it and the tab is visible, and
+// refreshes at once when the tab comes back. A failed refresh keeps the last
+// values while each is still fresh and its site open, then reports the
+// jurisdiction unavailable. A failure never throws into the page.
 import { useSyncExternalStore } from 'react';
 import election from '../../config/election.js';
 import { getCityWaits, getCountyWaits } from '../../data/arcgis.js';
@@ -22,6 +21,8 @@ import { stillShowable } from '../../data/waitTimes.js';
  * @property {boolean} refreshFailed Whether the latest request failed.
  * @property {number | null} checkedAt When a request last succeeded (ms), or
  *   null before the first; a failure leaves it as it was.
+ * @property {number | null} answeredAt When the latest request answered,
+ *   with counts or a failure (ms), or null before the first.
  * @property {import('../../data/waitTimes.js').WaitEntry[]} waits
  */
 
@@ -40,6 +41,7 @@ function initialState(fetchers) {
     status: fetchers[key] ? 'loading' : 'off',
     refreshFailed: false,
     checkedAt: null,
+    answeredAt: null,
     waits: [],
   });
   return withWaits({ county: part('county'), city: part('city') });
@@ -90,9 +92,10 @@ export function createWaitTimesStore(
     inFlight.add(key);
     try {
       const waits = await fetchers[key]();
-      update(key, { status: 'ok', refreshFailed: false, checkedAt: Date.now(), waits });
+      const at = Date.now();
+      update(key, { status: 'ok', refreshFailed: false, checkedAt: at, answeredAt: at, waits });
     } catch {
-      update(key, { refreshFailed: true });
+      update(key, { refreshFailed: true, answeredAt: Date.now() });
       prune(key, true);
     } finally {
       inFlight.delete(key);
@@ -161,15 +164,10 @@ export function createWaitTimesStore(
 }
 
 const { enabled, county, city } = election.waitTimes;
-/**
- * Each board's fetcher as the config turns it on, null when off. The home
- * page's dot map (#184) starts its own loop with them each time a site opens.
- */
-export const WAIT_FETCHERS = Object.freeze({
+const store = createWaitTimesStore({
   county: enabled && county.enabled ? getCountyWaits : null,
   city: enabled && city.enabled ? getCityWaits : null,
 });
-const store = createWaitTimesStore(WAIT_FETCHERS);
 
 /**
  * One board's loop each, for the polling places card on Election Day (#107):

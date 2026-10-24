@@ -4,7 +4,7 @@
 // with its class, so color is never the only cue, and a closed site or one
 // with no current count is a hollow ring, never a short line.
 import election from '../../config/election.js';
-import { earlyVotingStatus, zonedNow } from '../lookup/earlyVoting.js';
+import { earlyVotingStatus, hoursOn, zonedNow } from '../lookup/earlyVoting.js';
 import { waitClasses, waitColor } from './jenks.js';
 import { PROJECTION } from './outline.js';
 
@@ -28,6 +28,9 @@ export function project(lng, lat) {
   return [x0 + (lng - lng0) * kx * scale, y0 + (lat0 - lat) * scale];
 }
 
+const MINUTE_MS = 60_000;
+const toMinutes = (time) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5));
+
 const byName = (a, b) => (a.name ?? '').localeCompare(b.name ?? '') || a.key.localeCompare(b.key);
 
 /**
@@ -47,7 +50,13 @@ const byName = (a, b) => (a.name ?? '').localeCompare(b.name ?? '') || a.key.loc
  *   now: number }} input `waits` are the fresh counts of both boards.
  */
 export function dotMap({ rows, waits, now }) {
-  const byKey = new Map(waits.map((entry) => [`${entry.jurisdiction}:${entry.siteId}`, entry]));
+  // A count kept past its site's closing time is never shown, whatever the
+  // loop still holds (a tab woken the next morning).
+  const byKey = new Map(
+    waits
+      .filter((entry) => Number(now) < Number(entry.openUntil))
+      .map((entry) => [`${entry.jurisdiction}:${entry.siteId}`, entry]),
+  );
   const sites = rows.map((row) => {
     const status = earlyVotingStatus(row.schedule, now, election.timeZone);
     const open = status.kind === 'openNow';
@@ -96,6 +105,20 @@ export function dotMap({ rows, waits, now }) {
     .slice(0, SHORTEST_COUNT);
 
   const anyOpen = sites.some((site) => site.open);
+  // When the current opening began: the earliest opening time today among the
+  // sites open now, or null when none is. A check from before it (the evening
+  // before) is not a check of these sites' lines.
+  let openedAt = null;
+  if (anyOpen) {
+    const { date, minutes } = zonedNow(now, election.timeZone);
+    const minuteStart = Number(now) - (Number(now) % MINUTE_MS);
+    for (const site of sites) {
+      const hours = site.open ? hoursOn(site.row.schedule, date) : null;
+      if (!hours) continue;
+      const at = minuteStart + (toMinutes(hours.open) - minutes) * MINUTE_MS;
+      if (openedAt === null || at < openedAt) openedAt = at;
+    }
+  }
   // The earliest opening still to come, when none is open now.
   let nextOpen = null;
   if (!anyOpen) {
@@ -118,6 +141,7 @@ export function dotMap({ rows, waits, now }) {
     legend,
     shortest,
     anyOpen,
+    openedAt,
     nextOpen,
     // Every site closed for good: the evening before Election Day.
     ended: sites.length > 0 && sites.every((site) => site.status.kind === 'ended'),

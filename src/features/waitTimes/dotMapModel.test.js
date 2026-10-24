@@ -230,3 +230,28 @@ describe('project', () => {
     expect(COUNTY_RING.length).toBeGreaterThan(0);
   });
 });
+
+describe('dotMap and the current opening', () => {
+  const carnahan = (model) => model.dots.find((dot) => dot.key === 'city:c1');
+
+  it('drops a count kept past its site’s closing time', () => {
+    const closed = { ...cityWait('Carnahan High School', 4), openUntil: new Date(OPEN_AT - 1) };
+    expect(carnahan(earlyVotingMap(OPEN_AT, [closed])).token).toBeNull();
+    expect(
+      carnahan(earlyVotingMap(OPEN_AT, [cityWait('Carnahan High School', 4)])).token,
+    ).not.toBeNull();
+  });
+
+  it('says when the current opening began: the earliest open site’s opening today', () => {
+    // The all-day City site opened at midnight Central on 2026-10-22.
+    expect(earlyVotingMap(OPEN_AT).openedAt).toBe(Date.UTC(2026, 9, 22, 5, 0));
+    // County sites open at 8 a.m. Central.
+    expect(dotMap({ rows: countyRows, waits: [], now: OPEN_AT }).openedAt).toBe(
+      Date.UTC(2026, 9, 22, 13, 0),
+    );
+  });
+
+  it('has no opening while every site is closed', () => {
+    expect(dotMap({ rows: countyRows, waits: [], now: CLOSED_AT }).openedAt).toBeNull();
+  });
+});

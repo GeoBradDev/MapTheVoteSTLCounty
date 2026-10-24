@@ -17,7 +17,7 @@ import { useNow } from '../lookup/useNow.js';
 import { dotMap, HOLLOW_RADIUS, project } from './dotMapModel.js';
 import { homeMapMode } from './homeMapMode.js';
 import { CITY_RING, COUNTY_RING, VIEW } from './outline.js';
-import { createWaitTimesStore, OFF_WAITS, useWaitTimes, WAIT_FETCHERS } from './useWaitTimes.js';
+import { OFF_WAITS, useWaitTimes } from './useWaitTimes.js';
 import { clockTime, loadCityPolls, loadCitySites, useSites } from './waitSites.js';
 import { copy } from './waitTimesCopy.js';
 
@@ -199,7 +199,10 @@ function statusLine(model, waits, electionDay, now, settled) {
     // One board's counts failing is said, so its sites' rings are not read
     // as closed.
     if (failed.length) return text.boardUnavailable(jurisdictions[failed[0]].name);
-    const times = KEYS.map((key) => waits[key].checkedAt).filter((at) => at !== null);
+    // Only a check made since the sites opened is "now".
+    const times = KEYS.map((key) => waits[key].checkedAt).filter(
+      (at) => at !== null && at >= model.openedAt,
+    );
     return times.length ? copy.status.checked(clockTime(Math.max(...times))) : '';
   }
   const { open, close } = election.electionDayHours;
@@ -215,7 +218,8 @@ function statusLine(model, waits, electionDay, now, settled) {
  * @param {{ onClose: () => void, loadSites?: () => Promise<object>,
  *   loadCity?: typeof loadCitySites, loadPolls?: () => Promise<object>,
  *   loadCityPolls?: () => Promise<object>,
- *   waitFetchers?: typeof WAIT_FETCHERS }} props The loaders and fetchers, for tests.
+ *   waitSource?: Parameters<typeof useWaitTimes>[0] }} props The loaders and
+ *   the line count loop, for tests; the app reads the shared loop.
  */
 export default function WaitDotMap({
   onClose,
@@ -223,7 +227,7 @@ export default function WaitDotMap({
   loadCity = loadCitySites,
   loadPolls = getPolls,
   loadCityPolls: loadCityDay = loadCityPolls,
-  waitFetchers = WAIT_FETCHERS,
+  waitSource,
 }) {
   const now = useNow();
   const mode = homeMapMode(now);
@@ -244,19 +248,23 @@ export default function WaitDotMap({
       ),
     [rows, now],
   );
-  // Its own loop, started afresh each time a site opens: a loop kept from an
-  // earlier opening (the evening before) would show its old check time and
-  // its empty counts as now until the first answer.
-  const source = useMemo(
-    () => (anyOpen ? createWaitTimesStore(waitFetchers) : OFF_WAITS),
-    [anyOpen, waitFetchers],
-  );
-  const waits = useWaitTimes(source);
+  // The shared loop the wait times page reads, so coming back to the home
+  // page asks nothing outside its interval.
+  const waits = useWaitTimes(anyOpen ? waitSource : OFF_WAITS);
   const model = useMemo(
     () => (rows ? dotMap({ rows, waits: waits.waits, now }) : null),
     [rows, waits.waits, now],
   );
-  const settled = KEYS.every((key) => waits[key].status !== 'loading');
+  // Settled once each board asked has answered since the sites opened: the
+  // shared loop may still hold an answer from the evening before (a page left
+  // open, or a phone woken the next morning), which is not these lines.
+  const settled =
+    !model?.anyOpen ||
+    KEYS.every(
+      (key) =>
+        waits[key].status === 'off' ||
+        (waits[key].answeredAt !== null && waits[key].answeredAt >= model.openedAt),
+    );
 
   // Closes when the window ends or a board's sites cannot be loaded: with no
   // map to draw, the home page is as it was, with its wait times link. Counts
