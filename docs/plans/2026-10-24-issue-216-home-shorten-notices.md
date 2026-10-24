@@ -11,7 +11,8 @@ Domain skills:
 - frontend-design: not applicable because the change stays inside the existing design system
   (#78 components and tokens); no new visual direction.
 - chrome-devtools-mcp:a11y-debugging: not applicable because `e2e/a11y.e2e.js` (axe, 44 px
-  targets, focus) runs on every route in the gate; the live drive uses Playwright.
+  targets, focus) runs on every route in the gate, with the home route opening the new
+  disclosure so axe covers the folded credits; the live drive uses Playwright.
 - dataviz: not applicable because the dot map's marks, colors and legend content do not change,
   only where the space goes.
 

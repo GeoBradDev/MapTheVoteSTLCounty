@@ -91,7 +91,15 @@ const homeMapReady = (line) => async (page) => {
 };
 
 const ROUTES = [
-  { path: '/', ready: (page) => expect(page.getByRole('combobox')).toBeVisible() },
+  {
+    path: '/',
+    ready: async (page) => {
+      await expect(page.getByRole('combobox')).toBeVisible();
+      // The address search credits, folded under one line (#216), so the axe
+      // run covers them.
+      await openDisclosure(page, 'Address search sources');
+    },
+  },
   {
     name: '/ with the dot map, early voting sites open',
     path: '/',

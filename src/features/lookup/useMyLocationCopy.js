@@ -1,4 +1,6 @@
 // All the "Use my location" text. The text is in src/i18n/en.json (#19).
+// `privacy` is the one line under the search for the address too, and
+// `notHome` shows only after a Use my location result (#216).
 import { translated } from '../../i18n/index.js';
 
 export const copy = translated((t) => ({
