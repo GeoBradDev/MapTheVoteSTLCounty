@@ -95,10 +95,13 @@ it("counts the summary's directions button as the polls card's, without the plac
   routeFetch(() => respond(byId));
   renderAt('CC007');
   await screen.findByText(copy.ready('CC007'));
-  const [first] = await screen.findAllByRole('link', {
+  // The Election Day part's: while early voting runs, the early voting
+  // part's button may render first.
+  const day = await screen.findByRole('region', { name: copy.summary.electionDay });
+  const button = await within(day).findByRole('link', {
     name: new RegExp(`^${copy.polls.directions}`),
   });
-  expect(await pressLink(userEvent.click, first)).toBe(false);
+  expect(await pressLink(userEvent.click, button)).toBe(false);
   expect(await tracked.events()).toEqual([
     ['directions_open', { card: 'polls', provider: 'google' }],
   ]);
