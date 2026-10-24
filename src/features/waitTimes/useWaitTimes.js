@@ -85,6 +85,9 @@ export function createWaitTimesStore(
   // left waits out the interval instead of asking again.
   let lastTickAt = null;
 
+  // Whether the loop has not ticked for more than RESUME_GAP intervals.
+  const stopped = () => lastTickAt !== null && Date.now() - lastTickAt > RESUME_GAP * refreshMs;
+
   function update(key, change) {
     state = withWaits({ ...state, [key]: { ...state[key], ...change } });
     for (const listener of listeners) listener();
@@ -135,7 +138,7 @@ export function createWaitTimesStore(
     timer = null;
     if (listeners.size === 0 || isHidden()) return;
     timer = setTimeout(tick, refreshMs);
-    const resumed = lastTickAt !== null && Date.now() - lastTickAt > RESUME_GAP * refreshMs;
+    const resumed = stopped();
     lastTickAt = Date.now();
     for (const key of KEYS) {
       if (!fetchers[key]) continue;
@@ -179,11 +182,17 @@ export function createWaitTimesStore(
      * While no component reads it, the loop is stopped and nothing prunes, so a
      * component mounting later would first render values that aged out. Drop
      * them here, before that render; with no listeners there is no one to tell.
+     * After a long stop, that render also already says it is resuming, as the
+     * first tick will (#187), so it shows no check time from before the stop.
      * @returns {WaitTimesState}
      */
     getSnapshot() {
       if (listeners.size === 0) {
-        for (const key of KEYS) if (fetchers[key]) prune(key, state[key].refreshFailed);
+        for (const key of KEYS) {
+          if (!fetchers[key]) continue;
+          prune(key, state[key].refreshFailed);
+          if (stopped() && !state[key].resuming) update(key, { resuming: true });
+        }
       }
       return state;
     },

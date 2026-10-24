@@ -38,7 +38,7 @@ first-load JS budget nine days before the election. It goes to a new issue.
    again on every return after more than 1.5 intervals, breaking the 5 minute throttle.)
 5. `dotMap` drops counts with `stillShowable` (age and closing time), not closing time alone.
 6. The first-load JS budget is not raised; the full gate passes. (`useWaitTimes.js` is in the
-   first load: the `resuming` field adds about 51 bytes gzipped, leaving about 131 of headroom.)
+   first load: the `resuming` field adds about 63 bytes gzipped, leaving about 119 of headroom.)
 
 ## Files that change
 

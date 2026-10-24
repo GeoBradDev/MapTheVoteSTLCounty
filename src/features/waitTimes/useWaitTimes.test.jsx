@@ -348,6 +348,25 @@ describe('useWaitTimes', () => {
       unsubscribe();
     });
 
+    // A reader mounting after the loop stopped with none (#187): its first
+    // render, before it subscribes, already knows the values are from before.
+    it('is resuming in the snapshot a reader first renders after a long stop', async () => {
+      const { fetcher, pending } = manual();
+      const store = createWaitTimesStore({ county: fetcher, city: null });
+      const unsubscribe = store.subscribe(() => {});
+      await act(async () => pending[0].resolve([]));
+      unsubscribe();
+      vi.setSystemTime(START + REFRESH * 1.2);
+      expect(part(store).resuming).toBe(false);
+      vi.setSystemTime(START + REFRESH * 10);
+      expect(part(store).resuming).toBe(true);
+      const again = store.subscribe(() => {});
+      expect(fetcher).toHaveBeenCalledTimes(2);
+      await act(async () => pending[1].resolve([]));
+      expect(part(store).resuming).toBe(false);
+      again();
+    });
+
     // A request still out when the tab stopped is replaced on return.
     async function replaced() {
       const { fetcher, pending } = manual();
