@@ -116,10 +116,14 @@ layer; besides real towns it holds `ST LOUIS COUNTY` (unincorporated), `ST LOUIS
   121 KB. The resumed run then reviews finder 4's fix with one more finder, the gate and a
   fresh verifier.
 - Finder 5: no defect in finder 4's fix; criterion 7's docs were missing and are now in
-  `docs/data.md` (strict rules, Typed municipality) and the README's Address search. Also
-  recorded there: two houses at one number and street, one mailed in the typed town and one
-  whose community is that town, are now no match where main took the mailed one; both are in
-  that town, so no match is the safer answer.
+  `docs/data.md` (strict rules, Typed community) and the README's Address search. Noted for
+  the PR: two houses at one number and street in different ZIPs, one mailed in the typed town
+  and one whose community is that town, are now no match with no ZIP typed where main took the
+  mailed one; both are in that town, so no match is the safer answer.
+- Docs finder: the rule docs name the field the community (`MSAG_COMMUNITY_NAME`, which can
+  differ from `MUNI`), state the ST LOUIS / COUNTY rule rather than a list, and scope the
+  St. Louis City pool rule to the no-ZIP case and the unit rule to every case, as the code
+  does.
 - Main's `node scripts/check-geocoder.mjs` cannot resolve City precincts under Node since #147
   (issue #198), so the live check exits 1 on its City lines on main and here; its #143 lines pass.
 - Budget: the first-load JavaScript sat 15 bytes over 120 KB gzipped after finder 1's fix, so
