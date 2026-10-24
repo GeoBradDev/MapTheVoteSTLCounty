@@ -47,7 +47,7 @@ describe('robotsTxt', () => {
     );
   });
 
-  // The precinct page indexing choice belongs to #98: noindex there, not Disallow.
+  // Precinct pages are kept out of search with noindex (#98), not Disallow.
   it('does not disallow precinct pages', () => {
     expect(robotsTxt({ preview: false })).not.toMatch(/Disallow/);
   });

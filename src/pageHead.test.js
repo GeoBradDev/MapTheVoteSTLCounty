@@ -11,6 +11,7 @@ import {
   describe as describeText,
   headTags,
   normalizePath,
+  SHARE_IMAGE,
   pageHead,
   prerenderPaths,
   shellHead,
@@ -197,6 +198,18 @@ describe('shellHead', () => {
     const description = html.match(/<meta\s+name="description"\s+content="([^"]*)"/)[1];
     expect(shellHead()).toEqual({ title, description });
   });
+
+  // A precinct link's preview comes from the shell (#98): the bots read it
+  // without running the app, so its tags are written out in index.html.
+  it('has the Open Graph and card tags of the shell head in index.html', async () => {
+    const html = await readFile(path.join(ROOT, 'index.html'), 'utf8');
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const tags = [...doc.head.querySelectorAll(MANAGED)].map((el) => ({
+      tag: el.localName,
+      attrs: Object.fromEntries([...el.attributes].map((a) => [a.name, a.value])),
+    }));
+    expect(tags).toEqual(headTags(shellHead()));
+  });
 });
 
 describe('prerenderPaths', () => {
@@ -211,24 +224,53 @@ describe('prerenderPaths', () => {
   });
 });
 
+const MANAGED =
+  'meta[name="description"], link[rel="canonical"], meta[property^="og:"], meta[name^="twitter:"]';
+
+const og = (property, content) => ({ tag: 'meta', attrs: { property, content } });
+// One site-wide share image (owner decision on #98), on every head.
+const IMAGE_TAGS = [
+  og('og:image', `${siteUrl}/share-image.png`),
+  og('og:image:width', '1200'),
+  og('og:image:height', '630'),
+  og('og:image:alt', 'St. Louis Voter Guide: Find where to vote'),
+  { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
+];
+
 describe('headTags', () => {
-  it('lists the description, canonical and Open Graph tags of a page', () => {
+  it('lists the description, canonical, Open Graph and card tags of a page', () => {
     const head = pageHead('/learn/voter-id');
     expect(headTags(head)).toEqual([
       { tag: 'meta', attrs: { name: 'description', content: head.description } },
       { tag: 'link', attrs: { rel: 'canonical', href: head.canonical } },
-      { tag: 'meta', attrs: { property: 'og:type', content: 'website' } },
-      { tag: 'meta', attrs: { property: 'og:site_name', content: 'St. Louis Voter Guide' } },
-      { tag: 'meta', attrs: { property: 'og:title', content: head.title } },
-      { tag: 'meta', attrs: { property: 'og:description', content: head.description } },
-      { tag: 'meta', attrs: { property: 'og:url', content: head.canonical } },
+      og('og:type', 'website'),
+      og('og:site_name', 'St. Louis Voter Guide'),
+      og('og:title', head.title),
+      og('og:description', head.description),
+      og('og:url', head.canonical),
+      ...IMAGE_TAGS,
     ]);
   });
 
-  it('lists only the description for the shell', () => {
+  // The shell is served for many paths (a precinct, the wait times page, any
+  // unknown path), so it names none of them: no canonical, no og:url.
+  it('lists the site name, description and image for the shell, with no URL', () => {
     expect(headTags(shellHead())).toEqual([
       { tag: 'meta', attrs: { name: 'description', content: shellHead().description } },
+      og('og:type', 'website'),
+      og('og:site_name', 'St. Louis Voter Guide'),
+      og('og:title', 'St. Louis Voter Guide'),
+      og('og:description', shellHead().description),
+      ...IMAGE_TAGS,
     ]);
+  });
+
+  it('points at the share image by its absolute production URL', () => {
+    expect(SHARE_IMAGE).toEqual({
+      url: 'https://mapthevotestl.com/share-image.png',
+      width: 1200,
+      height: 630,
+    });
   });
 });
 
@@ -239,11 +281,10 @@ describe('applyHead', () => {
   });
 
   const managed = () =>
-    [
-      ...document.head.querySelectorAll(
-        'meta[name="description"], link[rel="canonical"], meta[property^="og:"]',
-      ),
-    ].map((el) => el.outerHTML);
+    [...document.head.querySelectorAll(MANAGED)].map((el) => ({
+      tag: el.localName,
+      attrs: Object.fromEntries([...el.attributes].map((a) => [a.name, a.value])),
+    }));
 
   it('writes a page head and replaces the old description', () => {
     applyHead(document, pageHead('/privacy'));
@@ -257,7 +298,13 @@ describe('applyHead', () => {
   it('puts the shell head back for a page with no entry', () => {
     applyHead(document, pageHead('/privacy'));
     applyHead(document, null);
-    expect(managed()).toEqual([`<meta name="description" content="${shellHead().description}">`]);
+    expect(managed()).toEqual(headTags(shellHead()));
+  });
+
+  it('writes each tag once, however often it runs', () => {
+    applyHead(document, pageHead('/learn'));
+    applyHead(document, pageHead('/privacy'));
+    expect(managed()).toEqual(headTags(pageHead('/privacy')));
   });
 
   it('leaves tags it does not manage alone', () => {

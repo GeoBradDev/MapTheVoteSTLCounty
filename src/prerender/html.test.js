@@ -10,6 +10,14 @@ const TEMPLATE = `<!doctype html>
       content="The shell description."
     />
     <title>Shell title</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Shell title" />
+    <meta
+      property="og:description"
+      content="The shell description."
+    />
+    <meta property="og:image" content="https://mapthevotestl.com/share-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
     <script type="module" crossorigin src="/assets/index-abc.js"></script>
   </head>
   <body>
@@ -53,6 +61,22 @@ describe('renderPage', () => {
     expect(html).toContain(
       '<meta property="og:url" content="https://mapthevotestl.com/learn/voter-id">',
     );
+  });
+
+  // The template's own Open Graph and card tags are the shell's (#98): the
+  // page writes its own instead, so each tag is there once.
+  it("drops the template's Open Graph and card tags for the page's own", () => {
+    const html = page();
+    expect(html).not.toContain('content="Shell title"');
+    for (const tag of [
+      'property="og:type"',
+      'property="og:title"',
+      'property="og:description"',
+      'property="og:image"',
+      'name="twitter:card"',
+    ]) {
+      expect(html.split(tag), tag).toHaveLength(2);
+    }
   });
 
   it('keeps everything else in the template', () => {

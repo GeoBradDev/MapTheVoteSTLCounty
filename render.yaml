@@ -139,6 +139,14 @@ services:
       - path: /p/*
         name: Link
         value: <https://services6.arcgis.com>; rel=preconnect; crossorigin
+      # Precinct pages stay out of search (owner decision on #98), for crawlers
+      # that do not run the app too (the app also adds a robots meta tag). A
+      # header, not a tag in shell.html, since the wait times page gets the same
+      # shell and stays indexable. Link previews ignore it. vite preview sends it
+      # as well (src/prerender/plugin.js previewHeaders).
+      - path: /p/*
+        name: X-Robots-Tag
+        value: noindex
       # Cache-Control: no two rules may match the same path. Render does not
       # document how same-name rules combine, and a joined or wrong value could
       # keep voters on an old build. The shell and the pre-rendered pages
@@ -192,6 +200,12 @@ services:
         name: Cache-Control
         value: public, max-age=3600
       - path: /sitemap.xml
+        name: Cache-Control
+        value: public, max-age=3600
+      # The link preview image (#98), fetched by preview bots, not the page.
+      # Not hashed, so an hour, like robots.txt: a redrawn image reaches new
+      # previews soon (bots keep their own copies longer).
+      - path: /share-image.png
         name: Cache-Control
         value: public, max-age=3600
       - path: /assets/*

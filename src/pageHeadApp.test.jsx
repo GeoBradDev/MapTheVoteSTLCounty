@@ -170,4 +170,62 @@ describe('head on navigation', () => {
       errors.mockRestore();
     }
   });
+
+  // Owner decision on #98: precinct pages stay out of search, as do the
+  // not-found page (the host answers every unknown path with 200 and the
+  // shell) and the error screen. Link previews are not affected.
+  const noindex = () =>
+    [...document.head.querySelectorAll('meta[name="robots"]')].map((el) => el.content);
+
+  it.each(['/p/CC007', '/p/W01P12', '/p/nope', '/nope', '/learn/nope'])(
+    'marks %s noindex, and takes it away on the way home',
+    (route) => {
+      const location = arriveAt('/learn');
+      expect(noindex()).toEqual([]);
+      act(() => location.navigate(route));
+      expect(noindex()).toEqual(['noindex']);
+      act(() => location.navigate('/'));
+      expect(noindex()).toEqual([]);
+    },
+  );
+
+  it.each(['/', '/learn', '/learn/voter-id', '/privacy', '/early-voting'])(
+    'leaves %s indexable',
+    (route) => {
+      const location = arriveAt('/learn');
+      act(() => location.navigate('/p/CC007'));
+      act(() => location.navigate(route));
+      expect(noindex()).toEqual([]);
+    },
+  );
+
+  it('marks the error screen noindex, and takes it away on the way home', () => {
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const location = arriveAt('/learn');
+      privacyThrows = true;
+      act(() => location.navigate('/privacy'));
+      expect(document.querySelector('h1')).toHaveTextContent(errorCopy.heading);
+      expect(noindex()).toEqual(['noindex']);
+      privacyThrows = false;
+      act(() => location.navigate('/'));
+      expect(noindex()).toEqual([]);
+    } finally {
+      errors.mockRestore();
+    }
+  });
+
+  // A PR preview build has its own noindex in every page (#97); the app must
+  // never take that one away.
+  it("keeps a preview build's own noindex tag", () => {
+    const location = arriveAt('/learn');
+    const own = document.createElement('meta');
+    own.name = 'robots';
+    own.content = 'noindex';
+    document.head.append(own);
+    act(() => location.navigate('/p/CC007'));
+    act(() => location.navigate('/'));
+    expect(noindex()).toEqual(['noindex']);
+    expect(own.isConnected).toBe(true);
+  });
 });

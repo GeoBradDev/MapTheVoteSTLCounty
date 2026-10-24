@@ -1,6 +1,7 @@
 import AddressLookup from '../features/lookup/AddressLookup.jsx';
 import { t } from '../i18n/index.js';
 import TextLink from './TextLink.jsx';
+import { useNoindex } from './useNoindex.js';
 import { usePageTitle } from './usePageTitle.js';
 
 // The host rewrites every path with no file to the app shell (shell.html),
@@ -9,6 +10,7 @@ import { usePageTitle } from './usePageTitle.js';
 export default function NotFoundPage() {
   const heading = t('notFound.heading');
   usePageTitle(heading);
+  useNoindex();
   return (
     <>
       {/* Focusable from script: the app moves focus here after an in-app link. */}

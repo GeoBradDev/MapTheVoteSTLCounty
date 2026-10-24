@@ -37,6 +37,10 @@ export const SHELL_HEADERS = [
   },
   { name: 'cache-control', test: (v) => v?.includes('no-cache') ?? false },
 ];
+// A precinct page (#98): out of search, as the owner decided.
+export const PRECINCT_HEADERS = [
+  { name: 'x-robots-tag', test: (v) => v?.includes('noindex') ?? false },
+];
 export const ASSET_HEADERS = [
   { name: 'cache-control', test: (v) => v?.includes('immutable') ?? false },
 ];
@@ -116,6 +120,7 @@ export async function runSmoke(baseUrl, { checkHeaders = true, preview = false }
   let root;
   let rootHtml;
   let deepLinkHtml;
+  let deepLink;
   let script;
   let asset;
 
@@ -127,7 +132,8 @@ export async function runSmoke(baseUrl, { checkHeaders = true, preview = false }
       return script;
     }),
     await check(`hard load of ${DEEP_LINK} returns the app shell`, async () => {
-      const { src, body } = await shellScript(await get(baseUrl, DEEP_LINK), DEEP_LINK);
+      deepLink = await get(baseUrl, DEEP_LINK);
+      const { src, body } = await shellScript(deepLink, DEEP_LINK);
       deepLinkHtml = body;
       if (script && src !== script) throw new Error(`script ${src}, but / has ${script}`);
       // Precinct pages are client-rendered from the empty shell, never a
@@ -215,6 +221,7 @@ export async function runSmoke(baseUrl, { checkHeaders = true, preview = false }
     for (const [name, res, expected] of [
       ['headers on /', () => root, SHELL_HEADERS],
       ['headers on the hashed asset', () => asset, ASSET_HEADERS],
+      [`headers on ${DEEP_LINK}`, () => deepLink, PRECINCT_HEADERS],
     ]) {
       results.push(
         await check(name, async () => {

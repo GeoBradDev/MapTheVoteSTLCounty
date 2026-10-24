@@ -72,6 +72,19 @@ describe('built CSS helpers', () => {
   });
 });
 
+// The link preview tags every page has once (#98).
+const PREVIEW_TAGS = [
+  'property="og:type"',
+  'property="og:site_name"',
+  'property="og:title"',
+  'property="og:description"',
+  'property="og:image"',
+  'property="og:image:width"',
+  'property="og:image:height"',
+  'property="og:image:alt"',
+  'name="twitter:card"',
+];
+
 describe('production build', () => {
   let outDir;
   let css = '';
@@ -372,7 +385,44 @@ describe('production build', () => {
         expect(doc.match(/<h1\b/g), file).toHaveLength(1);
         expect(doc, file).toMatch(/<meta property="og:title" content="[^"]+">/);
         expect(doc.match(/<meta name="description"/g), file).toHaveLength(1);
+        // Each preview tag once (#98): the page's own, not the shell's as well.
+        for (const tag of PREVIEW_TAGS) expect(doc.split(tag), `${file} ${tag}`).toHaveLength(2);
+        expect(doc, file).toContain(
+          `<meta property="og:url" content="https://mapthevotestl.com${route}">`,
+        );
       }
+    });
+
+    // What a link preview of the home page shows (#98), with absolute URLs.
+    it('gives the home page its site name, description, image and card', () => {
+      expect(html).toContain('<meta property="og:site_name" content="St. Louis Voter Guide">');
+      expect(html).toContain('<meta property="og:title" content="St. Louis Voter Guide">');
+      expect(html).toMatch(/<meta property="og:description" content="[^"]*nonpartisan[^"]*">/i);
+      expect(html).toContain(
+        '<meta property="og:image" content="https://mapthevotestl.com/share-image.png">',
+      );
+      expect(html).toContain('<meta property="og:image:width" content="1200">');
+      expect(html).toContain('<meta property="og:image:height" content="630">');
+      expect(html).toMatch(/<meta property="og:image:alt" content="[^"]+">/);
+      expect(html).toContain('<meta name="twitter:card" content="summary_large_image">');
+      const head = html.split('</head>')[0];
+      const urls = [...head.matchAll(/(?:content|href)="(https?:\/\/[^"]*)"/g)].map((m) => m[1]);
+      expect(urls.length).toBeGreaterThan(1);
+      for (const url of urls) expect(url).toMatch(/^https:\/\/mapthevotestl\.com\//);
+    });
+
+    // A shared precinct link previews from the shell (#98): the site name, the
+    // description and the image, naming no path, and no noindex in the file
+    // (the wait times page, served from it too, stays indexable).
+    it('gives the shell the site preview tags, with no canonical or og:url', async () => {
+      const shell = await page('shell.html');
+      for (const tag of PREVIEW_TAGS) expect(shell.split(tag), tag).toHaveLength(2);
+      expect(shell).toContain('<meta property="og:title" content="St. Louis Voter Guide" />');
+      expect(shell).toContain(
+        '<meta property="og:image" content="https://mapthevotestl.com/share-image.png" />',
+      );
+      expect(shell).not.toContain('og:url');
+      expect(shell).not.toMatch(/name="robots"/);
     });
 
     it('writes a topic with its heading, text, title and description', async () => {
@@ -421,7 +471,6 @@ describe('production build', () => {
       expect(rootOf(shell)).toBe('');
       expect(shell).toContain('<div id="root"></div>');
       expect(canonicalOf(shell)).toBeNull();
-      expect(shell).not.toMatch(/property="og:/);
       expect(shell).toContain('<title>St. Louis Voter Guide</title>');
       const scripts = (doc) =>
         [...doc.matchAll(/(?:src|href)="(\/assets\/[^"]+)"/g)].map((m) => m[1]);

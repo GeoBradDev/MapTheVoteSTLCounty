@@ -55,8 +55,10 @@ const GOOD_HEADERS = {
 // 'indexable' with a production shell (no noindex). `cityDeepLink` does the
 // same for the City precinct link (#95): 'shell', '404' or 'home'. `manifest`
 // set to 'missing' leaves the web app manifest out (#25), so the shell answers
-// it, and 'nameless' serves JSON with no name.
+// it, and 'nameless' serves JSON with no name. `precinctNoindex` set to false
+// leaves out the precinct pages' X-Robots-Tag header (#98).
 function stubHost({
+  precinctNoindex = true,
   manifest = 'json',
   deepLink = 'shell',
   cityDeepLink = 'shell',
@@ -70,7 +72,10 @@ function stubHost({
 } = {}) {
   const shell = preview ? PREVIEW_SHELL : SHELL;
   return createServer((req, res) => {
-    const common = headers ? GOOD_HEADERS : {};
+    const common = {
+      ...(headers ? GOOD_HEADERS : {}),
+      ...(headers && precinctNoindex && req.url.startsWith('/p/') && { 'x-robots-tag': 'noindex' }),
+    };
     if (req.url === '/robots.txt' && robots !== 'missing') {
       res.writeHead(200, { ...common, 'content-type': 'text/plain; charset=utf-8' });
       return res.end(robots === 'preview' ? PREVIEW_ROBOTS : ROBOTS);
@@ -189,7 +194,16 @@ describe('smoke test against stub hosts', () => {
       '/manifest.webmanifest is the web app manifest, not the app shell',
       'headers on /',
       'headers on the hashed asset',
+      'headers on /p/CC007',
     ]);
+  });
+
+  it('fails when a precinct page is not served with noindex', async () => {
+    server = stubHost({ precinctNoindex: false });
+    const results = await runSmoke(await listen(server));
+
+    expect(failedChecks(results)).toEqual(['headers on /p/CC007']);
+    expect(results.find((r) => !r.ok).detail).toContain('x-robots-tag');
   });
 
   it('fails when robots.txt is missing and the shell answers it', async () => {
@@ -249,6 +263,7 @@ describe('smoke test against stub hosts', () => {
       '/manifest.webmanifest is the web app manifest, not the app shell',
       'headers on /',
       'headers on the hashed asset',
+      'headers on /p/CC007',
     ]);
   });
 
@@ -273,14 +288,22 @@ describe('smoke test against stub hosts', () => {
     server = stubHost({ deepLink: '404' });
     const results = await runSmoke(await listen(server));
 
-    expect(failedChecks(results)).toEqual(['hard load of /p/CC007 returns the app shell']);
+    // The page that came back is not the precinct page, so its headers fail too.
+    expect(failedChecks(results)).toEqual([
+      'hard load of /p/CC007 returns the app shell',
+      'headers on /p/CC007',
+    ]);
   });
 
   it('fails when a deep link redirects to the shell instead of being rewritten', async () => {
     server = stubHost({ deepLink: 'redirect' });
     const results = await runSmoke(await listen(server));
 
-    expect(failedChecks(results)).toEqual(['hard load of /p/CC007 returns the app shell']);
+    // The page that came back is not the precinct page, so its headers fail too.
+    expect(failedChecks(results)).toEqual([
+      'hard load of /p/CC007 returns the app shell',
+      'headers on /p/CC007',
+    ]);
   });
 
   it('fails when a City precinct link is not rewritten to the app shell', async () => {
@@ -340,7 +363,11 @@ describe('smoke test against stub hosts', () => {
     server = stubHost({ headers: false });
     const results = await runSmoke(await listen(server));
 
-    expect(failedChecks(results)).toEqual(['headers on /', 'headers on the hashed asset']);
+    expect(failedChecks(results)).toEqual([
+      'headers on /',
+      'headers on the hashed asset',
+      'headers on /p/CC007',
+    ]);
     const detail = results.map((r) => r.detail).join('\n');
     for (const name of [
       'referrer-policy',
@@ -386,7 +413,7 @@ describe('smoke test CLI', () => {
     server = stubHost();
     const { stdout } = await promisify(execFile)('node', [SCRIPT, await listen(server)]);
 
-    expect(stdout).toContain('13 of 13 checks passed');
+    expect(stdout).toContain('14 of 14 checks passed');
   });
 
   it('runs the preview checks with --preview', async () => {
@@ -398,7 +425,7 @@ describe('smoke test CLI', () => {
     ]);
 
     expect(stdout).toContain('PASS /robots.txt keeps every crawler out');
-    expect(stdout).toContain('13 of 13 checks passed');
+    expect(stdout).toContain('14 of 14 checks passed');
   });
 
   it('exits 1 and prints the failure when a check fails', async () => {

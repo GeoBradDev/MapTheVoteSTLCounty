@@ -5,8 +5,9 @@
 // keeps every crawler out: a disallow-all robots.txt, a noindex meta tag in
 // index.html and no sitemap. A local build and CI build as production.
 //
-// Precinct pages (/p/<code>) are never in the sitemap. Whether they carry
-// noindex is decided in #98; robots.txt does not disallow them, because a
+// Precinct pages (/p/<code>) are never in the sitemap. They are noindex
+// instead (#98: src/components/useNoindex.js and render.yaml's X-Robots-Tag);
+// robots.txt does not disallow them, because a
 // disallowed URL can still be indexed from links, and a crawler cannot see a
 // noindex on a page it may not fetch.
 
