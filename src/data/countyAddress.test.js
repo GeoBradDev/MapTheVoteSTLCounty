@@ -865,3 +865,94 @@ describe('suggest', () => {
     expect(await source(answering(...many)).suggest('131')).toHaveLength(5);
   });
 });
+
+describe('a typed municipality (#143, review finding)', () => {
+  // Live data: one address's records can name different municipalities
+  // (MSAG_COMMUNITY_NAME), all mailed as Saint Louis. 1950 Walton Rd 63114:
+  // the house in Overland (MID002), Unit R in Vinita Park (UNV031). 9300
+  // Lewis and Clark Blvd 63137: the house in Bellefontaine Neighbors (NRW002),
+  // Unit A named Jennings (NRW031).
+  const walton = [
+    point(
+      {
+        OBJECTID: 126423,
+        ADRNO: 1950,
+        ADRSTR: 'WALTON',
+        ADRSUF: 'RD',
+        ZIPCODE: '63114',
+        MSAG_COMMUNITY_NAME: 'OVERLAND',
+      },
+      [-90.3469, 38.6913],
+    ),
+    point(
+      {
+        OBJECTID: 76574,
+        ADRNO: 1950,
+        ADRSTR: 'WALTON',
+        ADRSUF: 'RD',
+        ZIPCODE: '63114',
+        UNITDESC: 'UNIT',
+        UNITNO: 'R',
+        MSAG_COMMUNITY_NAME: 'VINITA PARK',
+      },
+      [-90.3463, 38.6916],
+    ),
+  ];
+  const lewis = [
+    point(
+      {
+        OBJECTID: 61975,
+        ADRNO: 9300,
+        ADRSTR: 'LEWIS AND CLARK',
+        ADRSUF: 'BLVD',
+        ZIPCODE: '63137',
+        MSAG_COMMUNITY_NAME: 'BELLEFONTAINE NEIGHBORS',
+      },
+      [-90.2396, 38.7297],
+    ),
+    point(
+      {
+        OBJECTID: 105915,
+        ADRNO: 9300,
+        ADRSTR: 'LEWIS AND CLARK',
+        ADRSUF: 'BLVD',
+        ZIPCODE: '63137',
+        UNITDESC: 'UNIT',
+        UNITNO: 'A',
+        MSAG_COMMUNITY_NAME: 'JENNINGS',
+      },
+      [-90.24, 38.7298],
+    ),
+  ];
+  const find = (records, text) =>
+    source(answering(...records), { precinctsAt: twoPrecincts }).find(text);
+
+  it('picks the address, never one of its records, so its precincts are still checked', async () => {
+    for (const text of ['1950 Walton Rd, Overland', '1950 Walton Rd, Vinita Park']) {
+      await expect(find(walton, text)).resolves.toEqual({ status: 'ambiguous' });
+    }
+    for (const text of [
+      '9300 Lewis and Clark Blvd, Bellefontaine Neighbors',
+      '9300 Lewis and Clark Blvd, Jennings',
+    ]) {
+      await expect(find(lewis, text)).resolves.toEqual({ status: 'ambiguous' });
+    }
+  });
+
+  it('answers a typed unit with that unit, whichever record the town names', async () => {
+    await expect(find(walton, '1950 Walton Rd Unit R, Overland')).resolves.toMatchObject({
+      status: 'match',
+      place: { lng: -90.3463 },
+    });
+    await expect(
+      find(lewis, '9300 Lewis and Clark Blvd Unit A, Bellefontaine Neighbors'),
+    ).resolves.toMatchObject({ status: 'match', place: { lng: -90.24 } });
+  });
+
+  it('reads Town and Country, which the county writes TOWN & COUNTRY', async () => {
+    const tac = point({ MSAG_COMMUNITY_NAME: 'TOWN & COUNTRY' });
+    await expect(
+      source(answering(tac)).find('1318 Ross Ave, Town and Country'),
+    ).resolves.toMatchObject({ status: 'match' });
+  });
+});
