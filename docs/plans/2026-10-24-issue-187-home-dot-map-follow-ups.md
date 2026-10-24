@@ -17,12 +17,15 @@ never reopens on its own" (a page left open across midnight into the first early
 and "Sites open again on the first day". The "Reserved height in the closed states" item is
 also dropped: the head script would need every site's schedule (the City's is not in the
 first load) to know the closed state before paint, which risks the CLS budget and the
-first-load JS budget nine days before the election. It goes to a new issue.
+first-load JS budget nine days before the election. It goes to #209 (commented there), which
+changes the box's reserved heights anyway.
 
 ## Acceptance criteria
 
-1. The shared loop marks each board's part with `resuming`: true from when a request goes out
-   after a stop (the 1.5-interval gap) until that request answers, false otherwise. The gap is
+1. The shared loop marks each board's part with `resuming`: true once the loop has been
+   stopped (the 1.5-interval gap), from the first snapshot after the stop (`getSnapshot`
+   with no readers, or the first tick) until the first request sent after it answers, false
+   otherwise. The gap is
    defined once, in `useWaitTimes.js`; `WaitDotMap.jsx` no longer computes its own.
 2. A slow answer (over one interval) followed by a normal refresh is not treated as a resume:
    the home map keeps its status line through it. (The shortest-lines list and the board
@@ -36,26 +39,26 @@ first-load JS budget nine days before the election. It goes to a new issue.
    height (a no-break space), so nothing below it moves. (Revised during review: the
    first version also emptied the live region, which made a screen reader hear an old time
    again on every return after more than 1.5 intervals, breaking the 5 minute throttle.)
-5. `dotMap` drops counts with `stillShowable` (age and closing time), not closing time alone.
+5. Dropped (owner decision, 2026-10-24): `dotMap` keeps its closing-time filter. Judged
+   with the map's minute-tick `now`, `stillShowable` could drop a brand-new count for up to
+   a minute on a device clock running 4 to 5 minutes slow, and the loop already prunes by age.
 6. The first-load JS budget is not raised; the full gate passes. (`useWaitTimes.js` is in the
    first load: the `resuming` field adds about 63 bytes gzipped, leaving about 119 of headroom.)
 
 ## Files that change
 
-- `src/features/waitTimes/useWaitTimes.js`: `resuming` in each part; `RESUME_GAP` constant.
+- `src/features/waitTimes/useWaitTimes.js`: `resuming` in each part, set by `tick` and by
+  `getSnapshot` with no readers; `RESUME_GAP` constant.
 - `src/features/waitTimes/WaitDotMap.jsx`: `answeredSince` reads `resuming`; drop `GAP_MS`.
 - `src/features/waitTimes/WaitTimesPage.jsx`: hide the check time while either board resumes.
-- `src/features/waitTimes/dotMapModel.js`: filter with `stillShowable`.
-- Tests: `useWaitTimes.test.jsx`, `WaitDotMap.test.jsx`, `WaitTimesPage.test.jsx`,
-  `dotMapModel.test.js`.
+- Tests: `useWaitTimes.test.jsx`, `WaitDotMap.test.jsx`, `WaitTimesPage.test.jsx`.
 
 ## Order of work
 
 1. Store: red tests for criteria 1 and 3, then the store change.
 2. Home map: red test for criterion 2 (slow answer then a refresh), then `answeredSince`.
 3. Wait times page: red test for criterion 4, then the page change.
-4. Model: red test for criterion 5 (a count past max age but before `openUntil`), then the
-   filter.
+4. (Criterion 5 dropped.)
 5. Full gate, live drive of the home map and wait times page.
 
 ## Risks
@@ -71,7 +74,6 @@ first-load JS budget nine days before the election. It goes to a new issue.
 - Criteria 1 and 3: new `useWaitTimes.test.jsx` cases.
 - Criterion 2: new `WaitDotMap.test.jsx` case, red on main.
 - Criterion 4: new `WaitTimesPage.test.jsx` case, red on main.
-- Criterion 5: new `dotMapModel.test.js` case, red on main.
 - Criterion 6: `npm run build` and `npm run test:perf` output.
 - Live drive: home page and `/early-voting` render with counts (sites are open on 2026-10-24
   during hours, or closed-state copy otherwise), no console errors.

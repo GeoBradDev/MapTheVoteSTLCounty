@@ -25,10 +25,11 @@ import { stillShowable } from '../../data/waitTimes.js';
  *   with counts or a failure, was sent (ms), or null before the first.
  * @property {number | null} askedAt When the latest request was sent (ms), or
  *   null before the first. Later than `answeredAt` while it is unanswered.
- * @property {boolean} resuming Whether the latest request went out after the
- *   loop was stopped (a tab hidden or frozen, a phone asleep, or no component
- *   reading it: more than RESUME_GAP intervals since its last tick) and is
- *   unanswered. Until it answers, what the loop holds is from before the stop.
+ * @property {boolean} resuming Whether the loop was stopped (a tab hidden or
+ *   frozen, a phone asleep, or no component reading it: more than RESUME_GAP
+ *   intervals since its last tick) and no request since has answered: from
+ *   the first snapshot after the stop until the first request sent after it
+ *   answers. Until then, what the loop holds is from before the stop.
  * @property {import('../../data/waitTimes.js').WaitEntry[]} waits
  */
 

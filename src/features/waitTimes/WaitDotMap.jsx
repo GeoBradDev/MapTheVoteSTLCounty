@@ -267,7 +267,7 @@ export default function WaitDotMap({
   // Settled once each board asked has answered since the sites opened: the
   // shared loop may still hold an answer from the evening before (a page left
   // open, or a phone woken the next morning), which is not these lines. Nor
-  // while a request is out after a long gap (a phone woken later the same
+  // while the loop resumes after a long gap (a phone woken later the same
   // day): the counts the loop dropped as too old are not "no count".
   const settled = !model?.anyOpen || KEYS.every((key) => answeredSince(waits[key], model.openedAt));
 
