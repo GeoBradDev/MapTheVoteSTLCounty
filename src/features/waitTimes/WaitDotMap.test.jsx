@@ -12,7 +12,6 @@ import election, { jurisdictions } from '../../config/election.js';
 import { selectCountyWaits } from '../../data/waitTimes.js';
 import { cityScheduleFor, citySchedules } from '../lookup/cityEarlyVoting.js';
 import { copy as homeCopy } from '../lookup/homeCopy.js';
-import { createWaitTimesStore } from './useWaitTimes.js';
 import WaitDotMap from './WaitDotMap.jsx';
 import { copy } from './waitTimesCopy.js';
 
@@ -65,7 +64,7 @@ function renderMap({
           loadCity={city}
           loadPolls={loadPolls}
           loadCityPolls={loadCityPolls}
-          waitSource={createWaitTimesStore(waits)}
+          waitFetchers={waits}
           onClose={onClose}
         />
       </Router>
@@ -226,6 +225,44 @@ describe('WaitDotMap with every site closed', () => {
     expect(screen.queryByText(homeCopy.waitMap.noCounts)).toBeNull();
     expect(screen.queryByRole('list', { name: homeCopy.waitMap.shortest })).toBeNull();
     expect(screen.getByText(copy.electionDay.city)).toBeInTheDocument();
+  });
+
+  // A page left open across a closing: the next opening starts its own
+  // loop, so nothing from the evening before reads as now.
+  it('starts fresh when sites open again with the page left open', async () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+    // 4:25 p.m. Central on 2026-10-22: County sites open, with counts.
+    vi.setSystemTime(Date.UTC(2026, 9, 22, 21, 25));
+    let answer = async () => [
+      {
+        siteId: 'abs602boec',
+        jurisdiction: 'county',
+        unit: 'people',
+        value: 3,
+        reportedAt: new Date(Date.now() - 60_000),
+        source: election.waitTimes.county.source,
+        openUntil: new Date(Date.UTC(2026, 9, 22, 21, 30)),
+      },
+    ];
+    const county = vi.fn(() => answer());
+    // County sites only: some City sites stay open until 7 p.m. on Thursdays.
+    const noCitySites = async () => ({ ...(await loadCity()), layer: { features: [] } });
+    renderMap({ waits: { county, city: none }, city: noCitySites });
+    await screen.findByRole('list', { name: homeCopy.waitMap.shortest });
+    // Every site closes at 4:30; the next morning at 8:00:30 they open again
+    // and the counts have not answered yet.
+    answer = () => new Promise(() => {});
+    await act(async () => {
+      vi.setSystemTime(Date.UTC(2026, 9, 22, 21, 31));
+      vi.advanceTimersByTime(60_000);
+    });
+    await act(async () => {
+      vi.setSystemTime(Date.UTC(2026, 9, 23, 13, 0, 30));
+      vi.advanceTimersByTime(60_000);
+    });
+    expect(screen.queryByText(homeCopy.waitMap.noCounts)).toBeNull();
+    expect(screen.queryByText(/^Line counts checked at /)).toBeNull();
+    expect(screen.queryByRole('list', { name: homeCopy.waitMap.shortest })).toBeNull();
   });
 
   it('on the evening of November 2, says Election Day is tomorrow', async () => {

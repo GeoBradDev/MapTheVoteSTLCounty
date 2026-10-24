@@ -17,7 +17,7 @@ import { useNow } from '../lookup/useNow.js';
 import { dotMap, HOLLOW_RADIUS, project } from './dotMapModel.js';
 import { homeMapMode } from './homeMapMode.js';
 import { CITY_RING, COUNTY_RING, VIEW } from './outline.js';
-import { OFF_WAITS, useWaitTimes } from './useWaitTimes.js';
+import { createWaitTimesStore, OFF_WAITS, useWaitTimes, WAIT_FETCHERS } from './useWaitTimes.js';
 import { clockTime, loadCityPolls, loadCitySites, useSites } from './waitSites.js';
 import { copy } from './waitTimesCopy.js';
 
@@ -62,9 +62,6 @@ const LAT_TICKS = [38.5, 38.6, 38.7, 38.8].map((lat) => ({
 const LNG_TICKS = [-90.6, -90.4, -90.2].map((lng) => ({ lng, x: project(lng, 38.6)[0] }));
 
 const KEYS = ['county', 'city'];
-
-/** How old a check may be and still be shown as when the counts were checked. */
-const RECENT_CHECK_MS = 5 * 60_000;
 
 function Swatch({ step, r }) {
   const size = 2 * 9 + 2;
@@ -202,10 +199,7 @@ function statusLine(model, waits, electionDay, now, settled) {
     // One board's counts failing is said, so its sites' rings are not read
     // as closed.
     if (failed.length) return text.boardUnavailable(jurisdictions[failed[0]].name);
-    // A check from an earlier session (the evening before) is not "now".
-    const times = KEYS.map((key) => waits[key].checkedAt).filter(
-      (at) => at !== null && now - at < RECENT_CHECK_MS,
-    );
+    const times = KEYS.map((key) => waits[key].checkedAt).filter((at) => at !== null);
     return times.length ? copy.status.checked(clockTime(Math.max(...times))) : '';
   }
   const { open, close } = election.electionDayHours;
@@ -221,7 +215,7 @@ function statusLine(model, waits, electionDay, now, settled) {
  * @param {{ onClose: () => void, loadSites?: () => Promise<object>,
  *   loadCity?: typeof loadCitySites, loadPolls?: () => Promise<object>,
  *   loadCityPolls?: () => Promise<object>,
- *   waitSource?: Parameters<typeof useWaitTimes>[0] }} props The loaders for tests.
+ *   waitFetchers?: typeof WAIT_FETCHERS }} props The loaders and fetchers, for tests.
  */
 export default function WaitDotMap({
   onClose,
@@ -229,7 +223,7 @@ export default function WaitDotMap({
   loadCity = loadCitySites,
   loadPolls = getPolls,
   loadCityPolls: loadCityDay = loadCityPolls,
-  waitSource,
+  waitFetchers = WAIT_FETCHERS,
 }) {
   const now = useNow();
   const mode = homeMapMode(now);
@@ -250,7 +244,14 @@ export default function WaitDotMap({
       ),
     [rows, now],
   );
-  const waits = useWaitTimes(anyOpen ? waitSource : OFF_WAITS);
+  // Its own loop, started afresh each time a site opens: a loop kept from an
+  // earlier opening (the evening before) would show its old check time and
+  // its empty counts as now until the first answer.
+  const source = useMemo(
+    () => (anyOpen ? createWaitTimesStore(waitFetchers) : OFF_WAITS),
+    [anyOpen, waitFetchers],
+  );
+  const waits = useWaitTimes(source);
   const model = useMemo(
     () => (rows ? dotMap({ rows, waits: waits.waits, now }) : null),
     [rows, waits.waits, now],

@@ -84,7 +84,8 @@ Domain skills:
 - Data: the same sites and counts as `/early-voting`: the County absentee sites
   (or polls on Election Day) and the City's early voting sites (or polls), via
   the site loading code moved from `WaitTimesPage.jsx` into `waitSites.js`, and
-  `useWaitTimes()` (the shared 30 s loop, fresh only).
+  the same 30 s loop rules (`createWaitTimesStore`, fresh only), a loop of
+  its own started each time a site opens (review round 5).
 
 ## Files that change
 
@@ -203,4 +204,10 @@ centering on the voter (privacy).
   has a count, and a check older than 5 minutes is not shown as "checked at".
   `src/features/lookup/useNow.js`'s comment now names the home map among its
   readers.
+- Review round 5: the round 4 fix held only for a loop that had never
+  answered. The map now starts a loop of its own (`createWaitTimesStore` with
+  `WAIT_FETCHERS`, exported from `useWaitTimes.js`) each time a site opens, so
+  nothing from an earlier opening (the evening before) reads as now, and the
+  5 minute filter on the check time is gone: the last check shows, as on the
+  wait times page, including while refreshes fail.
 

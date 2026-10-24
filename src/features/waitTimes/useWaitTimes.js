@@ -2,7 +2,8 @@
 // refresh loop: one request per jurisdiction per `refreshSeconds`, however
 // many components read it. (The City early voting card, #91, runs its own
 // loop on the same rules, built with createWaitTimesStore, that asks only the
-// City's layer.) The loop runs only while some component reads it
+// City's layer. The home page's dot map, #184, starts a loop of its own from
+// WAIT_FETCHERS each time a site opens.) The loop runs only while some component reads it
 // and the tab is visible, and refreshes at once when the tab comes back. A
 // failed refresh keeps the last values while each is still fresh and its site
 // open, then reports the jurisdiction unavailable. A failure never throws
@@ -160,10 +161,15 @@ export function createWaitTimesStore(
 }
 
 const { enabled, county, city } = election.waitTimes;
-const store = createWaitTimesStore({
+/**
+ * Each board's fetcher as the config turns it on, null when off. The home
+ * page's dot map (#184) starts its own loop with them each time a site opens.
+ */
+export const WAIT_FETCHERS = Object.freeze({
   county: enabled && county.enabled ? getCountyWaits : null,
   city: enabled && city.enabled ? getCityWaits : null,
 });
+const store = createWaitTimesStore(WAIT_FETCHERS);
 
 /**
  * One board's loop each, for the polling places card on Election Day (#107):
