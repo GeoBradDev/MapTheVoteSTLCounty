@@ -5,6 +5,13 @@ import PrivacyPage from './PrivacyPage.jsx';
 import { copy, hosts } from './privacyCopy.js';
 import { connectOrigins, namedHosts } from '../../test/privacyNotice.js';
 
+// The notice with Google Analytics off, as it ships (owner decision on #69),
+// whatever the config holds: PrivacyPage.analytics.test.jsx checks it on.
+vi.mock('../../config/site.js', async (importOriginal) => ({
+  ...(await importOriginal()),
+  gaMeasurementId: '',
+}));
+
 function section(name) {
   return screen.getByRole('region', { name });
 }

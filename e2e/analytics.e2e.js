@@ -18,7 +18,7 @@ import path from 'node:path';
 import { expect, test } from '@playwright/test';
 import { build, preview } from 'vite';
 import election from '../src/config/election.js';
-import { siteUrl } from '../src/config/site.js';
+import { gaMeasurementId, siteUrl } from '../src/config/site.js';
 import { CODE, fixtureBody } from './fixtures.js';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -43,8 +43,8 @@ function testMeasurementId() {
     enforce: 'pre',
     transform(code, id) {
       if (!id.endsWith(`${path.sep}src${path.sep}config${path.sep}site.js`)) return null;
-      const next = code.replace("gaMeasurementId = ''", `gaMeasurementId = '${TEST_ID}'`);
-      if (next === code) throw new Error('site.js has no empty gaMeasurementId to replace');
+      const next = code.replace(/gaMeasurementId = '[^']*'/, `gaMeasurementId = '${TEST_ID}'`);
+      if (!next.includes(TEST_ID)) throw new Error('site.js has no gaMeasurementId to replace');
       return next;
     },
   };
@@ -199,6 +199,7 @@ test('with an ID and Global Privacy Control: nothing goes to Google', async ({ p
 });
 
 test('as shipped, with the ID empty: nothing goes to Google', async ({ page }) => {
+  test.skip(gaMeasurementId !== '', 'the shipped ID is set: the test ID cases cover it');
   const google = await serve(page, SHIPPED_PREVIEW);
   await page.goto(`${siteUrl}/p/${CODE}`);
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();

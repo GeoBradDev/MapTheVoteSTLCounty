@@ -438,7 +438,7 @@
       "heading": "What this site never does",
       "noSaving": "It never saves your address or your location: they are not put in the page address (URL), in browser storage, in cookies or in your browser's cache. Your browser history and cache do keep the precinct pages you open, like /p/CC007.",
       "noTracking": "It has no analytics, ads or tracking, and sets no cookies.",
-      "noTrackingAnalytics": "It shows no ads and sets no cookies. Its page counts (see Page counts below) never include your address, your location or your precinct.",
+      "noTrackingAnalytics": "It shows no ads and sets no cookies. Its page counts (see Page counts below) never include your address, your device's location or your precinct.",
       "sharedLink": "A shared link holds only your precinct code, like /p/CC007, never your address."
     },
     "sent": {
@@ -466,7 +466,7 @@
       },
       "analytics": {
         "heading": "Page counts",
-        "text": "This site counts its visits with Google Analytics. Its script loads from Google ({loader}) after the page has loaded, and sends its counts to Google ({collector}). It gets which kind of page you open: the home page, a precinct's results, the early voting wait times page, the How to vote list, a How to vote topic (and which topic), this notice, or a page that was not found. It never gets your address, your location or your precinct: every precinct's results are counted as one page, under a fixed name rather than the page's title, and it is not told which site you came from. Like every service here, it sees your IP address and your browser, and Google works out a rough location from your IP address. This site tells it to set no cookies and keep nothing in your browser, and turns off its advertising features. It is not loaded at all when your browser sends Global Privacy Control."
+        "text": "This site counts its visits with Google Analytics. Its script loads from Google ({loader}) after the page has loaded, and sends its counts to Google ({collector}). It gets which kind of page you open: the home page, a precinct's results, the early voting wait times page, the How to vote list, a How to vote topic (and which topic), this notice, or a page that was not found. It never gets your address, your device's location or your precinct: every precinct's results are counted as one page, under a fixed name rather than the page's title, and it is not told which site you came from. Like every service here, it sees your IP address and your browser, and Google works out a rough location from your IP address. This site tells it to set no cookies and keep nothing in your browser, and turns off its advertising features. It is not loaded at all when your browser sends Global Privacy Control."
       },
       "website": {
         "heading": "This website",

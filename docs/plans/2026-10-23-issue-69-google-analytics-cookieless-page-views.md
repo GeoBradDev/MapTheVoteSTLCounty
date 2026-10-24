@@ -45,8 +45,8 @@ off; the owner adds the `G-` ID in `src/config/site.js` and applies the GA prope
    adds `https://*.google-analytics.com`. The comment and `src/test/render.test.js` follow.
 9. Privacy notice is driven by the config, so it is true in both states: with the ID empty it
    says what it says today (no analytics); with the ID set it drops "no analytics", keeps
-   "sets no cookies", and adds a section naming both Google hosts, what is sent (page type
-   only) and what is not (address, location, precinct), the IP and rough location caveat, and
+   "sets no cookies", and adds a section naming both Google hosts, what is sent (page type,
+   and which topic) and what is not (address, location, precinct), the IP and rough location caveat, and
    the GPC skip. `PrivacyPage.test.jsx` checks both states, and that every CSP origin is
    named by the notice in its analytics-on form.
 10. `src/test/no-storage.test.js` passes unchanged. The app still logs nothing and touches no

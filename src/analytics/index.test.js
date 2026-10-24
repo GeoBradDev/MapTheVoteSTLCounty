@@ -151,9 +151,12 @@ describe('analyticsAllowed', () => {
   });
 
   // The owner adds the ID later (owner decision on #69).
-  it('is off as shipped: the measurement ID is empty', () => {
-    expect(gaMeasurementId).toBe('');
-    expect(analyticsEnabled()).toBe(false);
+  // It ships empty (owner decision on #69); the owner sets it later, and
+  // this holds either way: an ID that is set must be a GA4 one.
+  it('follows the measurement ID in the config, empty or a G- ID', () => {
+    expect(gaMeasurementId === '' || analyticsEnabled(gaMeasurementId)).toBe(true);
+    expect(analyticsEnabled()).toBe(gaMeasurementId !== '');
+    expect(analyticsEnabled('')).toBe(false);
     expect(analyticsEnabled(ID)).toBe(true);
   });
 });

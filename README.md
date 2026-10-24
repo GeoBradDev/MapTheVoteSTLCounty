@@ -49,7 +49,7 @@ ask only its own board's; the home page's map asks only while a site is open, #1
 never saves a
 typed address or a device location, in the URL, browser storage, cookies or the browser's
 cache, and a share link holds only the precinct code, like `/p/CC007`. Once the ID is set,
-Google Analytics counts page views by page type only (every precinct page is `/p/:precinct`),
+Google Analytics counts page views by page type, and which topic (every precinct page is `/p/:precinct`),
 sets no cookies and is skipped with Global Privacy Control. The plain-language
 notice at [`/privacy`](https://mapthevotestl.com/privacy) says what each service gets; the
 [Privacy](#privacy) section below has the rules and the tests that hold the code to them.
@@ -910,7 +910,8 @@ service in turn (network refusal, a request that never answers, 5xx) in a real b
 
 Addresses are sensitive. The app itself never puts a typed address or its coordinates in the
 URL, `localStorage`, `sessionStorage`, IndexedDB, cookies, logs or analytics. Its only analytics
-are the cookieless, redacted page views below, off until the measurement ID is set. Every request that carries a typed address or coordinates uses `cache: 'no-store'`,
+are the cookieless, redacted page views below (and GA's own events, with the same redacted page
+fields), off until the measurement ID is set. Every request that carries a typed address or coordinates uses `cache: 'no-store'`,
 no cookies and no referrer, and sends them in a POST body, never the URL, where the service
 accepts one (#38): the county's address layers, the City geocoder and the County and City
 precinct and boundary point queries. Photon has no POST endpoint, so it gets the typed text in a GET query string;
@@ -982,17 +983,21 @@ Before setting the ID, apply these settings in GA, since they live there, not in
    form interactions: each sends real URLs (a sample ballot PDF link names the precinct). Turn
    scrolls and video engagement off too; the app does not use them.
 3. Turn Google signals off, set data retention to the shortest option (2 months), and leave every
-   Google Ads and other product link off.
+   Google Ads and other product link off. In the property's data collection settings, turn off
+   granular location and device data collection.
 4. Put the `G-` ID in `src/config/site.js`. The CSP in `render.yaml` already allows the loader
-   (`www.googletagmanager.com`) and the collection hosts (`*.google-analytics.com`).
+   (`www.googletagmanager.com`) and the collection hosts (`*.google-analytics.com`), and the
+   tests pass with the ID empty or set: the unit tests of the notice pin each state themselves,
+   and `e2e/analytics.e2e.js` replaces whatever ID is there with its own.
 
 Manual check before each election, once the ID is set: on the live site, open `/`, run a lookup
 and open a topic. In devtools, Application shows no cookies (`_ga*`), Local Storage or Session
 Storage for the site; each `collect` request in Network has `dl=https://mapthevotestl.com/p/:precinct`
 (never a real code) or another route pattern, a fixed `dt`, no `dr` (or an empty one) and
 `gcs=G100` (all storage denied), and GA's own events (`user_engagement`) carry the current page's
-pattern, not the first page's.
-In GA's Realtime report, the page views show under the redacted paths. With Global Privacy
+pattern, not the first page's. Open a precinct's sample ballot link and confirm no `click` hit
+goes to Google (enhanced measurement's outbound clicks are off: its `link_url` would name the
+precinct). In GA's Realtime report, the page views show under the redacted paths. With Global Privacy
 Control on (Brave, or Firefox's setting), no request goes to Google.
 
 ## Share links
