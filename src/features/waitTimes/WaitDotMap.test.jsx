@@ -76,6 +76,16 @@ function renderMap({
   return { ...view, onClose, source };
 }
 
+const countyEntry = (value, openUntil) => ({
+  siteId: 'abs602boec',
+  jurisdiction: 'county',
+  unit: 'people',
+  value,
+  reportedAt: new Date(Date.now() - 60_000),
+  source: election.waitTimes.county.source,
+  openUntil: new Date(openUntil),
+});
+
 const setVisibility = (state) => {
   Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => state });
   document.dispatchEvent(new Event('visibilitychange'));
@@ -326,6 +336,64 @@ describe('WaitDotMap with every site closed', () => {
       expect(screen.queryByText(/^Line counts checked at /)).toBeNull();
       expect(screen.queryByText(homeCopy.waitMap.noCounts)).toBeNull();
       expect(screen.queryByRole('list', { name: homeCopy.waitMap.shortest })).toBeNull();
+    } finally {
+      setVisibility('visible');
+      delete document.visibilityState;
+    }
+  });
+
+  // A request still out when the phone slept answers after it wakes: that
+  // answer is not a check of the next morning, and a new request goes out.
+  it('does not take a request left out overnight as this morning’s check', async () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+    vi.setSystemTime(Date.UTC(2026, 9, 22, 21, 25));
+    let resolveOld;
+    let answer = async () => [countyEntry(3, Date.UTC(2026, 9, 22, 21, 30))];
+    const county = vi.fn(() => answer());
+    const noCitySites = async () => ({ ...(await loadCity()), layer: { features: [] } });
+    try {
+      renderMap({ waits: { county, city: none }, city: noCitySites });
+      await screen.findByRole('list', { name: homeCopy.waitMap.shortest });
+      // A refresh goes out (the page is shown again) and the phone sleeps
+      // before it answers.
+      answer = () => new Promise((r) => (resolveOld = r));
+      act(() => setVisibility('hidden'));
+      await act(async () => setVisibility('visible'));
+      const before = county.mock.calls.length;
+      act(() => setVisibility('hidden'));
+      answer = () => new Promise(() => {});
+      vi.setSystemTime(Date.UTC(2026, 9, 23, 13, 0, 30));
+      await act(async () => setVisibility('visible'));
+      expect(county.mock.calls.length).toBeGreaterThan(before);
+      // The old request answers now, with nothing current.
+      await act(async () => resolveOld([]));
+      expect(screen.queryByText(/^Line counts checked at /)).toBeNull();
+      expect(screen.queryByText(homeCopy.waitMap.noCounts)).toBeNull();
+    } finally {
+      setVisibility('visible');
+      delete document.visibilityState;
+    }
+  });
+
+  // Woken later the same day: the counts the loop dropped as too old are not
+  // read as "no count" while the new request is out.
+  it('says nothing false while it asks again after waking later the same day', async () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
+    // 10:00 a.m. Central on 2026-10-22.
+    vi.setSystemTime(Date.UTC(2026, 9, 22, 15, 0));
+    let answer = async () => [countyEntry(3, Date.UTC(2026, 9, 22, 21, 30))];
+    const county = vi.fn(() => answer());
+    const noCitySites = async () => ({ ...(await loadCity()), layer: { features: [] } });
+    try {
+      renderMap({ waits: { county, city: none }, city: noCitySites });
+      await screen.findByRole('list', { name: homeCopy.waitMap.shortest });
+      act(() => setVisibility('hidden'));
+      answer = () => new Promise(() => {});
+      // 12:30 p.m.: the 10:00 count is past the max age.
+      vi.setSystemTime(Date.UTC(2026, 9, 22, 17, 30));
+      await act(async () => setVisibility('visible'));
+      expect(screen.queryByText(homeCopy.waitMap.noCounts)).toBeNull();
+      expect(screen.queryByText(copy.status.checked('10:00'))).toBeNull();
     } finally {
       setVisibility('visible');
       delete document.visibilityState;

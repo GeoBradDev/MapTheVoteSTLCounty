@@ -223,3 +223,11 @@ centering on the voter (privacy).
   woken page never works from the time it went away. `WAIT_FETCHERS` is gone,
   and the comment at the top of `useWaitTimes.js` says the map reads the
   shared loop.
+- Review round 7: a request still out when a phone slept could answer after
+  it woke and read as that morning's check, and a phone woken later the same
+  day read the counts the loop dropped as too old as "no current count" while
+  it asked again. The loop now stamps each answer with when its request was
+  sent (`checkedAt`, `answeredAt`) and records when the latest went out
+  (`askedAt`); when it resumes after a stop (a gap over 1.5 intervals), a new
+  request replaces one still out and that one's late answer is dropped. The
+  map waits for an answer while a request is out after such a gap.

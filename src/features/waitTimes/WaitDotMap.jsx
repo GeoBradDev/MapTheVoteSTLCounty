@@ -63,6 +63,17 @@ const LNG_TICKS = [-90.6, -90.4, -90.2].map((lng) => ({ lng, x: project(lng, 38.
 
 const KEYS = ['county', 'city'];
 
+// A gap between answers longer than this means the loop was stopped (a tab
+// hidden or frozen), not a refresh on its usual interval.
+const GAP_MS = 1.5 * election.waitTimes.refreshSeconds * 1000;
+
+function answeredSince(part, openedAt) {
+  if (part.status === 'off') return true;
+  const { answeredAt, askedAt } = part;
+  if (answeredAt === null || answeredAt < openedAt) return false;
+  return !(askedAt > answeredAt && askedAt - answeredAt > GAP_MS);
+}
+
 function Swatch({ step, r }) {
   const size = 2 * 9 + 2;
   return (
@@ -257,14 +268,10 @@ export default function WaitDotMap({
   );
   // Settled once each board asked has answered since the sites opened: the
   // shared loop may still hold an answer from the evening before (a page left
-  // open, or a phone woken the next morning), which is not these lines.
-  const settled =
-    !model?.anyOpen ||
-    KEYS.every(
-      (key) =>
-        waits[key].status === 'off' ||
-        (waits[key].answeredAt !== null && waits[key].answeredAt >= model.openedAt),
-    );
+  // open, or a phone woken the next morning), which is not these lines. Nor
+  // while a request is out after a long gap (a phone woken later the same
+  // day): the counts the loop dropped as too old are not "no count".
+  const settled = !model?.anyOpen || KEYS.every((key) => answeredSince(waits[key], model.openedAt));
 
   // Closes when the window ends or a board's sites cannot be loaded: with no
   // map to draw, the home page is as it was, with its wait times link. Counts
