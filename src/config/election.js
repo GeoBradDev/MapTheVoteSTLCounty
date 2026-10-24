@@ -112,6 +112,9 @@
 /**
  * @typedef {object} WaitTimesConfig
  * @property {boolean} enabled Turns every wait time request off.
+ * @property {boolean} homeMap Shows the home page's line count dot map during
+ *   early voting and on Election Day (#184). False hides it, and the home page
+ *   is as it was before the map.
  * @property {number} refreshSeconds How often the shared loop asks each layer.
  * @property {number} maxAgeMinutes A report older than this is not shown.
  * @property {number} skewMinutes How far in the future a report time may be.
@@ -377,6 +380,8 @@ const shared = {
   // window, so the app never shows a count the official app would not.
   waitTimes: {
     enabled: true,
+    // The home page's dot map (#184). false hides it in one line.
+    homeMap: true,
     refreshSeconds: 30,
     maxAgeMinutes: 120,
     skewMinutes: 5,

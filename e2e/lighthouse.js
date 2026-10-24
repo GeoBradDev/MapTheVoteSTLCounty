@@ -142,7 +142,11 @@ const PAGES = [
  * largest text, shown while the precinct loads (#27, #156). So each
  * results page is measured at a pinned clock in each state, today, not only
  * once the date comes: during early voting, the evening after it closes and
- * Election Day morning. The other pages use the real clock.
+ * Election Day morning. The home page is measured at the same clocks: during
+ * early voting and on Election Day it shows the line count dot map (#184),
+ * whose box is reserved before the first paint, and the evening after early
+ * voting closes it shows the map with every site closed. The other pages use
+ * the real clock.
  */
 const CLOCKS = [
   { name: 'early voting', at: WAITS_RECORDED_AT },
@@ -151,7 +155,7 @@ const CLOCKS = [
 ];
 
 const ROUTES = PAGES.flatMap((route) =>
-  route.path.startsWith('/p/')
+  route.path.startsWith('/p/') || route.path === '/'
     ? CLOCKS.map((clock) => ({ ...route, clock, label: `${route.path} (${clock.name})` }))
     : [{ ...route, label: route.path }],
 );

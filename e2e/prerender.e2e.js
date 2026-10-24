@@ -4,7 +4,7 @@
 // content and head; with it on the page hydrates in place with no error, and
 // stays interactive. Precinct pages stay client-rendered from the empty shell.
 import { expect, test } from '@playwright/test';
-import { CODE, ELECTION_DAY_AT, fixtureBody } from './fixtures.js';
+import { CODE, ELECTION_DAY_AT, fixtureBody, WAITS_RECORDED_AT } from './fixtures.js';
 
 const SITE = 'https://mapthevotestl.com';
 
@@ -78,6 +78,15 @@ test.describe('with JavaScript off', () => {
     });
   }
 
+  // The home page's dot map (#184) needs the app: with JavaScript off its box
+  // takes no space, whatever the date.
+  test('/ shows no dot map box', async ({ page }) => {
+    await page.clock.setFixedTime(WAITS_RECORDED_AT);
+    await page.goto('/');
+    await expect(page.locator('[data-home-map-box]')).toBeHidden();
+    await expect(page.getByRole('link', { name: 'See early voting wait times' })).toBeVisible();
+  });
+
   test('a topic shows its text', async ({ page }) => {
     await page.goto('/learn/voter-id');
     await expect(page.getByText(/In Missouri, you must show a photo ID/)).toBeVisible();
@@ -102,13 +111,27 @@ test.describe('hydration', () => {
   }
 
   // The home page is pre-rendered with the early voting label; on Election Day
-  // the client switches it after hydration (#107), with no mismatch.
+  // the client switches it after hydration (#107), with no mismatch, and opens
+  // the dot map (#184).
   test('/ hydrates on Election Day with no error, then names the line counts', async ({ page }) => {
     const problems = collectProblems(page);
     await page.clock.setFixedTime(ELECTION_DAY_AT);
     await answerFromFixtures(page);
     await page.goto('/');
     await expect(page.getByRole('link', { name: 'See Election Day line counts' })).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    expect(problems).toEqual([]);
+  });
+
+  test('/ hydrates during early voting with no error, then opens the dot map (#184)', async ({
+    page,
+  }) => {
+    const problems = collectProblems(page);
+    await page.clock.setFixedTime(WAITS_RECORDED_AT);
+    await answerFromFixtures(page);
+    await page.goto('/');
+    await expect(page.getByText('Shortest lines now')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('St. Louis Voter Guide');
     await page.waitForLoadState('networkidle');
     expect(problems).toEqual([]);
   });

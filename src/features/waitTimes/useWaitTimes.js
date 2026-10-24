@@ -2,11 +2,11 @@
 // refresh loop: one request per jurisdiction per `refreshSeconds`, however
 // many components read it. (The City early voting card, #91, runs its own
 // loop on the same rules, built with createWaitTimesStore, that asks only the
-// City's layer.) The loop runs only while some component reads it
-// and the tab is visible, and refreshes at once when the tab comes back. A
-// failed refresh keeps the last values while each is still fresh and its site
-// open, then reports the jurisdiction unavailable. A failure never throws
-// into the page.
+// City's layer. The home page's dot map, #184, reads this shared loop.) The
+// loop runs only while some component reads it and the tab is visible, and
+// refreshes at once when the tab comes back. A failed refresh keeps the last
+// values while each is still fresh and its site open, then reports the
+// jurisdiction unavailable. A failure never throws into the page.
 import { useSyncExternalStore } from 'react';
 import election from '../../config/election.js';
 import { getCityWaits, getCountyWaits } from '../../data/arcgis.js';
@@ -19,8 +19,12 @@ import { stillShowable } from '../../data/waitTimes.js';
  *   answer arrived or values from it are still shown; `unavailable` when a
  *   request failed and nothing fresh is left.
  * @property {boolean} refreshFailed Whether the latest request failed.
- * @property {number | null} checkedAt When a request last succeeded (ms), or
- *   null before the first; a failure leaves it as it was.
+ * @property {number | null} checkedAt When the last request that succeeded
+ *   was sent (ms), or null before the first; a failure leaves it as it was.
+ * @property {number | null} answeredAt When the latest answered request,
+ *   with counts or a failure, was sent (ms), or null before the first.
+ * @property {number | null} askedAt When the latest request was sent (ms), or
+ *   null before the first. Later than `answeredAt` while it is unanswered.
  * @property {import('../../data/waitTimes.js').WaitEntry[]} waits
  */
 
@@ -39,6 +43,8 @@ function initialState(fetchers) {
     status: fetchers[key] ? 'loading' : 'off',
     refreshFailed: false,
     checkedAt: null,
+    answeredAt: null,
+    askedAt: null,
     waits: [],
   });
   return withWaits({ county: part('county'), city: part('city') });
@@ -64,7 +70,8 @@ export function createWaitTimesStore(
   const initial = initialState(fetchers);
   let state = initial;
   const listeners = new Set();
-  const inFlight = new Set();
+  // When each board's unanswered request was sent.
+  const inFlight = new Map();
   let timer = null;
   // When the loop last asked, so a reader mounting soon after the last one
   // left waits out the interval instead of asking again.
@@ -84,17 +91,33 @@ export function createWaitTimesStore(
       update(key, { waits, status });
   }
 
-  async function refresh(key) {
-    if (inFlight.has(key)) return;
-    inFlight.add(key);
+  // Each answer is stamped with when its request was sent, not when it
+  // arrived: a request left unanswered while a phone slept is not a check of
+  // the next morning. Only one request per board is out at a time, except
+  // when the loop resumes after a stop (asleep, frozen): then a new one
+  // replaces one still out from before, and that one's late answer is dropped.
+  async function refresh(key, resumed) {
+    if (inFlight.has(key) && !resumed) return;
+    const sentAt = Date.now();
+    inFlight.set(key, sentAt);
+    update(key, { askedAt: sentAt });
+    const current = () => inFlight.get(key) === sentAt;
     try {
       const waits = await fetchers[key]();
-      update(key, { status: 'ok', refreshFailed: false, checkedAt: Date.now(), waits });
+      if (!current()) return;
+      update(key, {
+        status: 'ok',
+        refreshFailed: false,
+        checkedAt: sentAt,
+        answeredAt: sentAt,
+        waits,
+      });
     } catch {
-      update(key, { refreshFailed: true });
+      if (!current()) return;
+      update(key, { refreshFailed: true, answeredAt: sentAt });
       prune(key, true);
     } finally {
-      inFlight.delete(key);
+      if (current()) inFlight.delete(key);
     }
   }
 
@@ -103,11 +126,12 @@ export function createWaitTimesStore(
     timer = null;
     if (listeners.size === 0 || isHidden()) return;
     timer = setTimeout(tick, refreshMs);
+    const resumed = lastTickAt !== null && Date.now() - lastTickAt > 1.5 * refreshMs;
     lastTickAt = Date.now();
     for (const key of KEYS) {
       if (!fetchers[key]) continue;
       prune(key, state[key].refreshFailed);
-      refresh(key);
+      refresh(key, resumed);
     }
   }
 

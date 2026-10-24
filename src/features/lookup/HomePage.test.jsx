@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import cityResults from '../../config/cityResults.js';
@@ -8,6 +8,16 @@ import { copy as searchCopy } from './addressSearchCopy.js';
 import { copy as ruleCopy } from './countyElectionDayRuleCopy.js';
 import { copy } from './homeCopy.js';
 import HomePage from './HomePage.jsx';
+
+// The dot map's own chunk (#184), stood in for: WaitDotMap.test.jsx covers it.
+const dotMap = vi.hoisted(() => ({ onClose: null, throws: false }));
+vi.mock('../waitTimes/WaitDotMap.jsx', () => ({
+  default: function WaitDotMapStub({ onClose }) {
+    dotMap.onClose = onClose;
+    if (dotMap.throws) throw new Error('chunk broke');
+    return <p data-testid="dot-map">dot map</p>;
+  },
+}));
 
 function renderHome() {
   const { hook } = memoryLocation({ path: '/' });
@@ -71,8 +81,11 @@ describe('HomePage', () => {
   });
 
   // #165: the precinct pages state each jurisdiction's own Election Day rule;
-  // the home page, which serves City and County voters alike, states none.
-  it('states no Election Day rule for either jurisdiction (#165)', () => {
+  // the home page, which serves City and County voters alike, states none of
+  // its own. The dot map (stood in for here) repeats the wait times page's
+  // line that each board's sites are for its own voters (#184,
+  // WaitDotMap.test.jsx).
+  it('states no Election Day rule of its own for either jurisdiction (#165)', () => {
     const { container } = renderHome();
     expect(container).not.toHaveTextContent(ruleCopy.rule);
     expect(container).not.toHaveTextContent(ruleCopy.cityNote);
@@ -159,5 +172,85 @@ describe('HomePage', () => {
     for (const word of ['democrat', 'republican', 'libertarian', 'green party', 'candidate']) {
       expect(text).not.toContain(word);
     }
+  });
+});
+
+// The line count dot map (#184): in its own box between the header and the
+// wait times link, only during early voting and on Election Day.
+describe('HomePage dot map', () => {
+  // 9:05 a.m. Central on 2026-10-22, during early voting; a day in August;
+  // 7:30 p.m. Central on Election Day, after the polls close.
+  const OPEN_AT = Date.UTC(2026, 9, 22, 14, 5);
+  const BEFORE_AT = Date.UTC(2026, 7, 10, 15, 0);
+  const AFTER_POLLS_AT = Date.UTC(2026, 10, 4, 1, 30);
+  const box = (container) => container.querySelector('[data-home-map-box]');
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    dotMap.onClose = null;
+    dotMap.throws = false;
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('opens the box during early voting, after the header and before the wait times link', async () => {
+    vi.setSystemTime(OPEN_AT);
+    const { container } = renderHome();
+    const map = await screen.findByTestId('dot-map');
+    expect(box(container)).toHaveAttribute('data-open');
+    expect(box(container)).not.toHaveAttribute('data-closed');
+    const header = container.querySelector('header');
+    const link = screen.getByRole('link', { name: copy.waitTimes });
+    expect(header.compareDocumentPosition(map) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(map.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it.each([
+    ['before early voting', BEFORE_AT, copy.waitTimes],
+    ['after the polls close', AFTER_POLLS_AT, copy.waitTimesElectionDay],
+  ])('keeps the box closed %s, with the page as it was', (_, at, linkName) => {
+    vi.setSystemTime(at);
+    const { container } = renderHome();
+    expect(box(container)).toHaveAttribute('data-closed');
+    expect(box(container)).toBeEmptyDOMElement();
+    expect(screen.getByRole('link', { name: linkName })).toBeInTheDocument();
+  });
+
+  it('closes the box when the map asks, keeping the wait times link', async () => {
+    vi.setSystemTime(OPEN_AT);
+    const { container } = renderHome();
+    await screen.findByTestId('dot-map');
+    act(() => dotMap.onClose());
+    expect(box(container)).toHaveAttribute('data-closed');
+    expect(screen.queryByTestId('dot-map')).toBeNull();
+    expect(screen.getByRole('link', { name: copy.waitTimes })).toBeInTheDocument();
+  });
+
+  it('closes the box when the map fails to load or render', async () => {
+    vi.setSystemTime(OPEN_AT);
+    dotMap.throws = true;
+    // React reports the caught error to the console.
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const { container } = renderHome();
+      await vi.waitFor(() => expect(box(container)).toHaveAttribute('data-closed'));
+      expect(screen.getByRole('combobox')).toBeInTheDocument();
+    } finally {
+      error.mockRestore();
+    }
+  });
+
+  it('is pre-rendered as an empty box with neither mark, so the CSS decides (#99)', async () => {
+    const { renderToString } = await import('react-dom/server');
+    vi.setSystemTime(OPEN_AT);
+    const html = renderToString(
+      <Router ssrPath="/">
+        <HomePage />
+      </Router>,
+    );
+    expect(html).toMatch(/<div data-home-map-box=""[^>]*><\/div>/);
+    expect(html).not.toMatch(/data-open|data-closed/);
   });
 });

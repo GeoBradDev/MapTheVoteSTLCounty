@@ -214,3 +214,41 @@
     overflow-wrap: anywhere;
   }
 }
+
+/*
+  The home page's line count dot map box (#184). Hidden unless the map window
+  is open: before the app runs, the head script (src/prerender/homeMapScript.js)
+  marks <html> with data-home-map; after hydration the box's own data-open or
+  data-closed decides. Open, it holds its height before the map arrives, so
+  the address search below it never moves (e2e/a11y.e2e.js checks it).
+*/
+@layer components {
+  [data-home-map-box] {
+    display: none;
+  }
+
+  /*
+    The tallest map state (sites open, three named, the board rule) measured
+    592 px at 360 px wide, 686 at 320 and 556 from 640 up (#184), plus room
+    for longer site names.
+  */
+  :root[data-home-map] [data-home-map-box]:not([data-closed]),
+  [data-home-map-box][data-open] {
+    display: block;
+    min-height: 44rem;
+  }
+
+  @media (width >= 22.5rem) {
+    :root[data-home-map] [data-home-map-box]:not([data-closed]),
+    [data-home-map-box][data-open] {
+      min-height: 40rem;
+    }
+  }
+
+  @media (width >= 40rem) {
+    :root[data-home-map] [data-home-map-box]:not([data-closed]),
+    [data-home-map-box][data-open] {
+      min-height: 37.5rem;
+    }
+  }
+}

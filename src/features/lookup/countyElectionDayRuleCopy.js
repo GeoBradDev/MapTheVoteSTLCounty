@@ -1,5 +1,7 @@
 // The County's Election Day polling place rule's text, for the County polling
-// places card (the home page states no rule, #165). The text is in
+// places card (the home page states none of its own, #165; its dot map, #184,
+// repeats only the wait times page's line that each board's sites are for its
+// own voters). The text is in
 // src/i18n/en.json (#19). St. Louis County only: the City of St. Louis has its
 // own board and its own rule (#89).
 // Owner decision on #152, reversing #72: a registered County voter may vote at

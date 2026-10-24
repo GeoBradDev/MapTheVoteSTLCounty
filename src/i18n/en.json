@@ -58,7 +58,25 @@
     "moreInfo": "More information",
     "howToVote": "How to vote",
     "countySite": "St. Louis County Board of Elections website",
-    "citySite": "St. Louis City Board of Election Commissioners website"
+    "citySite": "St. Louis City Board of Election Commissioners website",
+    "waitMap": {
+      "heading": "Lines at early voting now",
+      "headingElectionDay": "Lines at polling places now",
+      "mapLink": "Map of early voting sites by line length. See every site and line",
+      "mapLinkElectionDay": "Map of polling places by line length. See every polling place and line",
+      "county": "St. Louis County",
+      "city": "City",
+      "shortest": "Shortest lines now",
+      "site": "{name}, {board}: {count, plural, one {# person} other {# people}}",
+      "noCounts": "No site has a current line count right now.",
+      "openToday": "Sites open again today at {time}",
+      "openOn": "Sites open again {date}, at {time}",
+      "pollsOpen": "Polls open today at {time}",
+      "ended": "Early voting has ended. Election Day is tomorrow, with polls open {open} to {close}",
+      "hollow": "Closed, or no current count",
+      "unavailable": "Line counts could not be loaded right now.",
+      "boardUnavailable": "{board} line counts could not be loaded right now."
+    }
   },
   "addressSearch": {
     "label": "Enter your address",
@@ -440,7 +458,7 @@
       },
       "waitTimes": {
         "heading": "Line counts",
-        "text": "The early voting wait times page, the early voting part of a precinct's results while early voting is running, and, on Election Day, that page and the polling places part of a precinct's results while the polls are open, ask the line count layers of the {countyBoard} ({countyLayers}) and the {cityBoard} ({cityLayers}), both on Esri's ArcGIS Online, for the current counts every {seconds} seconds while they are open on your screen. On Election Day, a precinct's results ask only its own board's layer. These requests carry nothing about you: no address, location or precinct."
+        "text": "The home page's line count map while an early voting site or, on Election Day, a polling place is open, the early voting wait times page, the early voting part of a precinct's results while early voting is running, and, on Election Day, that page and the polling places part of a precinct's results while the polls are open, ask the line count layers of the {countyBoard} ({countyLayers}) and the {cityBoard} ({cityLayers}), both on Esri's ArcGIS Online, for the current counts every {seconds} seconds while they are open on your screen. On Election Day, a precinct's results ask only its own board's layer. These requests carry nothing about you: no address, location or precinct."
       },
       "website": {
         "heading": "This website",

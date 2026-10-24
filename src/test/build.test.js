@@ -10,6 +10,9 @@ import { build } from 'vite';
 import cityResults from '../config/cityResults.js';
 import election from '../config/election.js';
 import { parseTopic } from '../features/learn/content/topic.js';
+import { DOT_RADIUS } from '../features/waitTimes/dotMapModel.js';
+import { homeMapWindow, windowScript } from '../features/waitTimes/homeMapWindow.js';
+import { COUNTY_RING } from '../features/waitTimes/outline.js';
 import { topicFiles } from '../features/learn/content/vitePlugin.js';
 import {
   colorLiterals,
@@ -132,6 +135,31 @@ describe('production build', () => {
   it('loads hashed assets by root-absolute path, so a hard load of /p/CC007 finds them', () => {
     expect(html).toMatch(/<script type="module" crossorigin src="\/assets\/index-[\w-]+\.js">/);
     expect(html).toMatch(/<link rel="stylesheet" crossorigin href="\/assets\/index-[\w-]+\.css">/);
+  });
+
+  // The home page's dot map box (#184) is reserved before the first paint by
+  // a plain script from the config's dates, first in the head, never deferred.
+  it('loads the home map window script first in the head, before the stylesheet', () => {
+    const tag = html.match(/<script src="\/assets\/(home-map-[0-9a-f]{8}\.js)"><\/script>/);
+    expect(tag).not.toBeNull();
+    expect(js[tag[1]]).toBe(windowScript(homeMapWindow()));
+    expect(html.indexOf(tag[0])).toBeLessThan(html.indexOf('rel="stylesheet"'));
+    expect(html.indexOf(tag[0])).toBeLessThan(html.indexOf('type="module"'));
+  });
+
+  // The home page's dot map (#184), its outlines and its model load on demand
+  // with the wait times page's chunk, never in the first load.
+  it('keeps the home dot map out of the first load, in the wait times page chunk', () => {
+    const firstLoad = [...html.matchAll(/(?:src|href)="\/assets\/([\w-]+\.js)"/g)].map((m) => m[1]);
+    // The component, the outline (its first points as the build writes them)
+    // and the model (its dot radii).
+    const marks = ['data-outline', COUNTY_RING.slice(0, 6).join(','), DOT_RADIUS.join(',')];
+    for (const mark of marks) {
+      const chunks = Object.keys(js).filter((f) => js[f].includes(mark));
+      expect(chunks, mark).toHaveLength(1);
+      expect(chunks[0], mark).toMatch(/^WaitTimesPage-/);
+      for (const f of firstLoad) expect(js[f].includes(mark), `${f}: ${mark}`).toBe(false);
+    }
   });
 
   // render.yaml's Content-Security-Policy allows only same-origin scripts,
@@ -376,7 +404,8 @@ describe('production build', () => {
       expect(canonicalOf(html)).toBe('https://mapthevotestl.com/');
     });
 
-    // #165: the pre-rendered home page states no Election Day rule either.
+    // #165: the pre-rendered home page states no Election Day rule either (its
+    // dot map box, #184, is empty until the app runs).
     it('states no Election Day rule on the pre-rendered home page', async () => {
       const root = rootOf(html);
       expect(root).toContain('role="combobox"');
