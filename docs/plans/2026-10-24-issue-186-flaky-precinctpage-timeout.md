@@ -50,7 +50,8 @@ because nothing a voter sees changes.
    CC007 at a time early voting is open, with the wait layers answering 500, and ends once the
    page is ready. The second renders a malformed code, waits past `RETRY_DELAY_MS` and expects no
    request. Confirm the second fails with the wait layers' retry calls. Commit it alone.
-2. Fix: in the file's `afterEach`, unmount first (Testing Library's `cleanup`), then, if any of
+2. Fix: in the file's `afterEach`, unmount first (Testing Library's `cleanup`), yield one
+   macrotask (`setTimeout(0)`) so failures still being handled arm their retries, then, if any of
    this test's answers was one `query()` retries (a rejected fetch, or a status of 500 and up or
    429), wait `RETRY_DELAY_MS` on a real timer before unstubbing `fetch`. The retry's timer was
    armed before the hook ran (the failure was handled in microtasks), and Node fires timers of
@@ -59,6 +60,10 @@ because nothing a voter sees changes.
 3. Run the file, then 10+ full runs.
 
 ## Risks
+
+- Limits, stated in the hook's comment: the check cannot see an HTTP 200 ArcGIS error body without
+  a code (which `query()` also retries) or an answer still pending when the test ends, and the hook
+  needs real timers (every test here fakes only `Date`). No test in the file gives either answer.
 
 - The wait adds 500 ms to each test that had a transient answer (a handful). Acceptable.
 - Order-dependent pair of tests: Vitest runs a file's tests in order (no `sequence.shuffle` in

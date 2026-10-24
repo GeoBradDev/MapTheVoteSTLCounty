@@ -88,7 +88,9 @@ beforeEach(async () => {
 });
 
 // Whether any of this test's answers is one query() retries: a failed fetch,
-// a 5xx or a 429 (isTransient in src/data/arcgis.js).
+// a 5xx or a 429 (isTransient in src/data/arcgis.js). It cannot see an HTTP
+// 200 ArcGIS error body without a code, which query() also retries, nor an
+// answer still pending when the test ends; no test here gives either.
 const retried = (mock) =>
   mock.mock.settledResults.some(
     ({ type, value }) =>
@@ -102,6 +104,7 @@ const retried = (mock) =>
 // failures still being handled arm their retries, and, if any did, wait out
 // the delay here: Node fires timers of the same delay in the order they were
 // set, so each retry reaches this test's own stub before the next test starts.
+// Only Date may be faked here: with fake timers this hook would never finish.
 afterEach(async () => {
   cleanup();
   await new Promise((resolve) => setTimeout(resolve, 0));
