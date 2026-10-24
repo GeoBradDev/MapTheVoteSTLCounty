@@ -80,8 +80,9 @@ Domain skills:
 - Moving the search above the map reverses #184's "map first" order; it is the only way to
   hold criterion 3 at 360 x 640 (the map alone is about 600 px). The map stays on the first
   screen's scroll path right under the search.
-- Under-reserving the box would shift the button and nav (CLS); measure the stale state,
-  which is now the tallest, with a margin for wrapping.
+- Under-reserving the box would shift the button and nav (CLS); measure the tallest states
+  (a busy day's five-class legend on a phone, Election Day at 320 px, stale counts on a
+  desktop) with a margin for wrapping.
 - First-load budget: `Button` is already in the first load (AddressLookup), so no growth.
 
 ## Proof
