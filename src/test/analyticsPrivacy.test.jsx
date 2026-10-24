@@ -151,15 +151,18 @@ it('sends nothing about the device location after Use my location', async () => 
   expectNothingAboutTheVoter();
 });
 
-it('counts a shared lowercase link once, under the redacted path', async () => {
-  window.history.replaceState(null, '', '/p/cc007');
-  renderApp();
-  await screen.findByText(copy.ready('CC007'));
-  expect(window.location.pathname).toBe('/p/CC007');
-  await vi.dynamicImportSettled();
-  expect(pageViews().map((hit) => hit.page_location)).toEqual([`${siteUrl}/p/:precinct`]);
-  expectNothingAboutTheVoter();
-});
+it.each(['/p/cc007', '/p/cc007/', '/p/CC007%20', '/p/%20cc007'])(
+  'counts a shared link like %s once, under the redacted path',
+  async (link) => {
+    window.history.replaceState(null, '', link);
+    renderApp();
+    await screen.findByText(copy.ready('CC007'));
+    expect(window.location.pathname).toBe('/p/CC007');
+    await vi.dynamicImportSettled();
+    expect(pageViews().map((hit) => hit.page_location)).toEqual([`${siteUrl}/p/:precinct`]);
+    expectNothingAboutTheVoter();
+  },
+);
 
 it('checks the dataLayer for real, so a code in a page view would fail', async () => {
   await vi.dynamicImportSettled();

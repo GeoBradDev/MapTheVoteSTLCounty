@@ -200,11 +200,27 @@ describe('startAnalytics', () => {
         send_page_view: false,
         allow_google_signals: false,
         allow_ad_personalization_signals: false,
+      },
+    ]);
+  });
+
+  // gtag ranks event over config over set: a page field in config would
+  // outrank every later set, so GA's own events would keep the first page.
+  it('sets the redacted page with set, before config, and never in config', async () => {
+    const fake = await started({ path: '/p/CC007' });
+    const commands = fake.calls().map(([command]) => command);
+    expect(commands.indexOf('set')).toBeLessThan(commands.indexOf('config'));
+    expect(fake.calls().find(([command]) => command === 'set')).toEqual([
+      'set',
+      {
         page_location: `${siteUrl}/p/:precinct`,
         page_title: PAGE_TITLES['/p/:precinct'],
         page_referrer: '',
       },
     ]);
+    for (const [command, , params] of fake.calls()) {
+      if (command === 'config') expect(params).not.toHaveProperty('page_location');
+    }
   });
 
   it('never grants consent', async () => {
@@ -291,6 +307,10 @@ describe('pageView', () => {
     pageView('/');
     pageView('/p/cc007');
     // The app replaces a lowercase code with the upper case URL.
+    pageView('/p/CC007');
+    // As the app replaces a code with spaces or a trailing slash (#69 review).
+    pageView('/p/cc007/');
+    pageView('/p/ cc007 ');
     pageView('/p/CC007');
     pageView(`/learn/${TOPIC}`);
     pageView('/');
