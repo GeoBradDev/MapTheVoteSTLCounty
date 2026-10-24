@@ -242,6 +242,18 @@ describe('dotMap and the current opening', () => {
     ).not.toBeNull();
   });
 
+  // On its own, not through the loop's pruning (#187).
+  it('drops a count past the maximum age while its site is still open', () => {
+    const maxAge = election.waitTimes.maxAgeMinutes * 60_000;
+    const old = {
+      ...cityWait('Carnahan High School', 4),
+      reportedAt: new Date(OPEN_AT - maxAge - 60_000),
+    };
+    const model = earlyVotingMap(OPEN_AT, [old]);
+    expect(carnahan(model).token).toBeNull();
+    expect(model.shortest.map((site) => site.name)).not.toContain('Carnahan High School');
+  });
+
   it('says when the current opening began: the earliest open site’s opening today', () => {
     // The all-day City site opened at midnight Central on 2026-10-22.
     expect(earlyVotingMap(OPEN_AT).openedAt).toBe(Date.UTC(2026, 9, 22, 5, 0));

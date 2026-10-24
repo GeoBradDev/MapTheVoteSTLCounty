@@ -4,6 +4,7 @@
 // with its class, so color is never the only cue, and a closed site or one
 // with no current count is a hollow ring, never a short line.
 import election from '../../config/election.js';
+import { stillShowable } from '../../data/waitTimes.js';
 import { earlyVotingStatus, hoursOn, zonedNow } from '../lookup/earlyVoting.js';
 import { waitClasses, waitColor } from './jenks.js';
 import { PROJECTION } from './outline.js';
@@ -50,11 +51,11 @@ const byName = (a, b) => (a.name ?? '').localeCompare(b.name ?? '') || a.key.loc
  *   now: number }} input `waits` are the fresh counts of both boards.
  */
 export function dotMap({ rows, waits, now }) {
-  // A count kept past its site's closing time is never shown, whatever the
-  // loop still holds (a tab woken the next morning).
+  // A count past the maximum age or its site's closing time is never shown,
+  // whatever the loop still holds (a tab woken later, or the next morning).
   const byKey = new Map(
     waits
-      .filter((entry) => Number(now) < Number(entry.openUntil))
+      .filter((entry) => stillShowable(entry, now))
       .map((entry) => [`${entry.jurisdiction}:${entry.siteId}`, entry]),
   );
   const sites = rows.map((row) => {
