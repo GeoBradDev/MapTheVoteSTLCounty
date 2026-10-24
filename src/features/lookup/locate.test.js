@@ -352,7 +352,7 @@ describe('locate, on the Illinois bank while the City layer is down (#144)', () 
   });
 
   it('never puts a point of the City outline east of the City', () => {
-    // Every vertex of every citywide office's polygon, recorded 2026-10-24.
+    // Every vertex of every citywide office's polygon, as recorded for #144.
     const vertices = cityOutline.features.flatMap((f) => f.geometry.rings.flat());
     expect(vertices.length).toBeGreaterThan(1000);
     const east = vertices.filter(([lng, lat]) => eastOfCity({ lat, lng }));

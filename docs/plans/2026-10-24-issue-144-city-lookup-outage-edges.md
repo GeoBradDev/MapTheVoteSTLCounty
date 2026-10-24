@@ -70,7 +70,10 @@ Domain skills:
 - `src/features/lookup/OutOfCountyNotice.test.jsx`, `src/features/lookup/PrecinctPage.test.jsx`:
   their expected heading text.
 - `src/data/geocoder.js`: a comment on `twinFree` recording the item 3 decision.
-- `src/data/geocoder.city88.test.js` (or the nearest twin test file): the item 3 test.
+- `src/data/geocoder.twin144.test.js`: the item 3 tests, through the real county source
+  with a fake fetch (both directions of the asymmetry).
+- `scripts/record-fixtures.mjs`, `docs/raw/fixtures/city-outline.json`: the City outline
+  (all nine citywide office polygons) the river edge test reads.
 - This plan.
 
 ## Order of work
@@ -92,6 +95,12 @@ Domain skills:
   within the 1045 bytes of headroom.
 - Copy change: "address" to "location" is true in every case the notice shows; the
   Spanish branch (#120) is not merged, so no other locale to update.
+
+## Revision during implementation
+
+- `src/test/election-hardcoding.test.js` flags the date 2026-10-24 outside the config (it
+  is an election value). The frozen `locate.test.js` had it in one comment; the comment
+  now reads "as recorded for #144". No assertion changed.
 
 ## Proof
 
