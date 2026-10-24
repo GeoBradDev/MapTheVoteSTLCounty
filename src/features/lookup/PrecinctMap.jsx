@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import TextLink from '../../components/TextLink.jsx';
 import WaitLegend from '../waitTimes/WaitLegend.jsx';
-import { BASEMAP_ATTRIBUTION } from './basemap.js';
 import { useJurisdiction } from './jurisdictionContext.js';
 import { copy } from './resultsCopy.js';
 
@@ -26,7 +25,7 @@ function Attribution() {
   return (
     <p className="mt-1 text-xs text-muted">
       {copy.map.basemap}{' '}
-      {BASEMAP_ATTRIBUTION.map(({ label, href }, i) => (
+      {copy.map.credits.map(({ label, href }, i) => (
         <span key={href}>
           {i > 0 && ', '}
           <TextLink href={href} rel="noreferrer">

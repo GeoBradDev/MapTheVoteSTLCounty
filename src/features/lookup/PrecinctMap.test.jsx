@@ -4,7 +4,8 @@ import election from '../../config/election.js';
 import { getPrecinctGeometry } from '../../data/arcgis.js';
 import referrals from '../../config/referrals.js';
 import { city } from '../../data/jurisdictions.js';
-import { BASEMAP_ATTRIBUTION } from './basemap.js';
+import { LOCALES } from '../../i18n/config.js';
+import { addMessages, setLocale } from '../../i18n/index.js';
 import { JurisdictionContext } from './jurisdictionContext.js';
 import PrecinctMap from './PrecinctMap.jsx';
 import { createPrecinctMap } from './precinctMapView.js';
@@ -70,13 +71,35 @@ describe('PrecinctMap', () => {
 
   it('credits the basemap and the county data with links', () => {
     render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
-    for (const { label, href } of BASEMAP_ATTRIBUTION) {
+    for (const { label, href } of copy.map.credits) {
       expect(within(region()).getByRole('link', { name: label })).toHaveAttribute('href', href);
     }
     expect(within(region()).getByRole('link', { name: copy.map.county })).toHaveAttribute(
       'href',
       election.countySiteUrl,
     );
+  });
+
+  // #120: "contributors" is a message; the names stay as they are.
+  it('credits OpenStreetMap contributors in the current language', async () => {
+    expect(copy.map.credits.map(({ label }) => label)).toEqual([
+      'OpenFreeMap',
+      '© OpenMapTiles',
+      '© OpenStreetMap contributors',
+    ]);
+    LOCALES.xx = { label: 'Stand-in', intl: 'fr' };
+    addMessages('xx', { credits: { contributors: 'XX {name}' } });
+    try {
+      await act(() => setLocale('xx'));
+      render(<PrecinctMap code="CC007" origin={ORIGIN} polls={POLLS} />);
+      expect(within(region()).getByRole('link', { name: '© XX OpenStreetMap' })).toHaveAttribute(
+        'href',
+        'https://www.openstreetmap.org/copyright',
+      );
+    } finally {
+      await act(() => setLocale('en'));
+      delete LOCALES.xx;
+    }
   });
 
   // #89: a City precinct's map draws the City outline and credits the City Board.

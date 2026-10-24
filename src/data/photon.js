@@ -18,7 +18,8 @@ export const attribution = Object.freeze({
   service: 'Photon',
   serviceBy: 'komoot',
   serviceUrl: 'https://photon.komoot.io',
-  data: 'OpenStreetMap contributors',
+  // Credited as its contributors, a message in src/i18n (#120).
+  data: 'OpenStreetMap',
   dataUrl: 'https://www.openstreetmap.org/copyright',
 });
 

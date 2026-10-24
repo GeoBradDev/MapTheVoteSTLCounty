@@ -27,7 +27,7 @@ describe('the app geocoder', () => {
 
   it('credits OpenStreetMap with its copyright page for the Photon fallback', () => {
     expect(attribution.fallback.dataUrl).toBe('https://www.openstreetmap.org/copyright');
-    expect(attribution.fallback.data).toBe('OpenStreetMap contributors');
+    expect(attribution.fallback.data).toBe('OpenStreetMap');
   });
 
   it('asks the live county layer first, with the address in a POST body', async () => {

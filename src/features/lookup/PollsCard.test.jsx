@@ -4,6 +4,8 @@ import polls from '../../../docs/raw/fixtures/polls.json';
 import geometry from '../../../docs/raw/fixtures/precinct-geometry.json';
 import election from '../../config/election.js';
 import { getPolls, getPrecinctGeometry } from '../../data/arcgis.js';
+import { LOCALES } from '../../i18n/config.js';
+import { addMessages, setLocale } from '../../i18n/index.js';
 import { fixtureTopics } from '../../test/learnFixtures.js';
 import { copy as ruleCopy } from './countyElectionDayRuleCopy.js';
 import { nearestPolls, polygonCenter } from './nearbyPolls.js';
@@ -495,6 +497,21 @@ describe('polls copy', () => {
     expect(copy.polls.distance(0.01)).toBe('Less than 0.1 miles away');
     expect(copy.polls.distance(1.04)).toBe('1.0 mile away');
     expect(copy.polls.distance(2.944)).toBe('2.9 miles away');
+    // 0.95 is just under 0.95 as a double, so it shows as 0.9, a plural.
+    expect(copy.polls.distance(0.95)).toBe('0.9 miles away');
+  });
+
+  it('formats distances for the current language (#120)', async () => {
+    LOCALES.xx = { label: 'Stand-in', intl: 'fr' };
+    addMessages('xx', {});
+    try {
+      await setLocale('xx');
+      expect(copy.polls.distance(2.944)).toBe('2,9 miles away');
+      expect(copy.polls.distance(1.04)).toBe('1,0 mile away');
+    } finally {
+      await setLocale('en');
+      delete LOCALES.xx;
+    }
   });
 
   it('joins the street and ZIP, leaving out what is missing', () => {

@@ -17,7 +17,7 @@ export default function GeocoderAttribution() {
     <p className="mt-2 text-sm text-muted">
       {text.searchBy} {county.by}{' '}
       <TextLink href={county.url} rel="noreferrer">
-        {county.data}
+        {text.countyData}
       </TextLink>{' '}
       ({county.publisher}), {text.then}{' '}
       <TextLink href={fallback.serviceUrl} rel="noreferrer">
@@ -25,9 +25,9 @@ export default function GeocoderAttribution() {
       </TextLink>{' '}
       {text.by} {fallback.serviceBy}. {fallback.service} {text.data}{' '}
       <TextLink href={fallback.dataUrl} rel="noreferrer">
-        {fallback.data}
+        {text.contributors(fallback.data)}
       </TextLink>
-      . {text.cityCheck} {city.by} {city.service}. {text.privacy}
+      . {text.cityCheck} {city.by} {text.cityService}. {text.privacy}
     </p>
   );
 }

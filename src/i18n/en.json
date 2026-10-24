@@ -116,9 +116,14 @@
       "then": "or, when needed,",
       "by": "by",
       "data": "data ©",
+      "countyData": "address points",
+      "cityService": "address search",
       "cityCheck": "St. Louis City addresses are found, and an address found outside the City may be checked, with the",
       "privacy": "Your address is sent only to these services, to find your precinct. This site does not save it."
     }
+  },
+  "credits": {
+    "contributors": "{name} contributors"
   },
   "outOfCounty": {
     "stlCity": {

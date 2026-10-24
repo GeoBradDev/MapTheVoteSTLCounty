@@ -15,12 +15,16 @@ export const copy = translated((t) => ({
   },
   // The credit under the address search, after "Use my location" (#80). The
   // service and data names and links come from the geocoder module
-  // (attribution in src/data/geocoder.js).
+  // (attribution in src/data/geocoder.js); the words around them are here (#120).
   attribution: {
     searchBy: t('lookup.attribution.searchBy'),
     then: t('lookup.attribution.then'),
     by: t('lookup.attribution.by'),
     data: t('lookup.attribution.data'),
+    countyData: t('lookup.attribution.countyData'),
+    cityService: t('lookup.attribution.cityService'),
+    /** @param {string} name */
+    contributors: (name) => t('credits.contributors', { name }),
     cityCheck: t('lookup.attribution.cityCheck'),
     privacy: t('lookup.attribution.privacy'),
   },

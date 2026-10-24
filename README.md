@@ -760,19 +760,21 @@ Every word the app shows is in `src/i18n/en.json` and reaches the page through `
 (`src/i18n/index.js`), mostly by way of the copy module next to each feature, such as
 `src/features/lookup/resultsCopy.js`. Messages fill in `{name}` values and pick plurals with
 `{count, plural, one {...} other {...}}`. Values from the county's data, such as district
-names, election values from `src/config/election.js`, and the names of the address search
+names, election values from `src/config/election.js` (`electionName` is only the health
+check's log line, so it needs no value per language), and the names of the address search
 services and their data (from the geocoder modules, as the privacy notice requires) are shown as
 they are. So are the home page's tab title and its search and link-preview description, both
 `index.html`'s (also `site.name` and `site.description` in `en.json`, which a test keeps the
-same, for the pre-rendered pages and in-app navigation), the map's credit line and MapLibre's own built-in text (its gesture hints and
-the map's label). ESLint's `react/jsx-no-literals` fails on words typed straight into JSX.
+same, for the pre-rendered pages and in-app navigation), the map credit's names and MapLibre's own
+built-in text (its gesture hints and the map's label). The words around those names, such as
+"address points" and "contributors", are messages. ESLint's `react/jsx-no-literals` fails on words typed straight into JSX.
 
 To add a language, such as Spanish: copy `en.json` to `src/i18n/es.json`, translate the
 values (keep the keys and the `{...}` names), and add its line to `LOCALES` in
 `src/i18n/config.js`. A key it lacks falls back to English. The language switcher appears once
 there are two languages; choosing one loads its file, sets `<html lang>` and redraws the page
 in it, keeping focus and what the page has loaded. The site always starts in English. Dates are formatted for the language in the election's time zone,
-`America/Chicago`.
+`America/Chicago`, and distances for the language too.
 
 ## Data health check
 
