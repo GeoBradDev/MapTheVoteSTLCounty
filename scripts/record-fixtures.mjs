@@ -194,7 +194,8 @@ const FIXTURES = {
     cityPointQuery(COUNTY_POINT, 'OBJECTID', cityConfig.boundaryWhere),
   ],
   // The City's outline, every citywide office's polygon (they differ by a few
-  // vertices), for the river edge test in locate.test.js (#144).
+  // vertices), for the river edge test in locate.test.js (#144). If that test
+  // fails after a re-record, redraw `RIVER_EDGE` in src/features/lookup/locate.js.
   'city-outline.json': [
     cityLayer('boundary'),
     {

@@ -69,10 +69,11 @@ describe('the twin check by the City street (#144)', () => {
   });
 
   it('a county street with a direction is a twin of a City street without one', async () => {
-    const { geocoder } = setup({
+    const { geocoder, source } = setup({
       countyRecord: record({ ADRDIR: 'N', FULL_ADDRESS: '6135 N FOO ST' }),
       cityLabel: '6135 Foo St, St. Louis City, MO 63115',
     });
     await expect(geocoder.geocode('6135 Foo St, St. Louis City')).resolves.toBeNull();
+    expect(source.find).toHaveBeenLastCalledWith('6135 Foo St', { signal: undefined });
   });
 });

@@ -75,8 +75,11 @@ const nearCity = ({ lat, lng }) =>
 /**
  * The City outline's river side (its citywide district polygon, as recorded for #144),
  * as [lat, lng] from its northeast corner at Chain of Rocks to the mouth of
- * the River des Peres, simplified to within 0.001 degrees (#144). East of it
- * is the river and Illinois: never the City or the county.
+ * the River des Peres, simplified with Douglas-Peucker at 0.001 degrees
+ * (#144); no City point is more than 0.0012 degrees east of it. East of it is
+ * the river and Illinois: never the City or the county. Its ends leave about
+ * 500 m of the extent box north and south uncovered (river and floodplain). A
+ * re-recorded outline that moves east fails the test over its vertices.
  */
 const RIVER_EDGE = [
   [38.7727, -90.1664],

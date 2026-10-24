@@ -112,3 +112,11 @@ Domain skills:
 - Live drive: with the dev server, the City layer blocked in DevTools and a geolocation
   override at Venice, IL, Use my location shows "This location is outside St. Louis City
   and County".
+
+## Review revisions
+
+- Finder 1: `docs/data.md` described the outage fallback without the river edge exception;
+  it now names it. The river edge's ends leave about 500 m of the extent box north (38.7727
+  to 38.7789) and south (38.5275 to 38.532) uncovered, river and floodplain; the frozen
+  test pins "says nothing past the ends", so this stays, noted in the code comment. The
+  second twin test now also asserts the county was asked by the City street.
