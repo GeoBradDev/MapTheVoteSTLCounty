@@ -81,8 +81,8 @@ async function openDisclosure(page, summary) {
   if ((await line.locator('..').getAttribute('open')) === null) await line.click();
 }
 
-// The home page's line count dot map (#184), ready once its summary or its
-// "open again" line shows.
+// The home page's line count dot map (#184), ready once its status line (when
+// the counts were checked, or when sites open again) shows.
 const homeMapReady = (line) => async (page) => {
   await expect(page.getByRole('combobox')).toBeVisible();
   const box = page.locator('[data-home-map-box]');
@@ -938,6 +938,13 @@ test.describe('home page dot map', () => {
     ['the evening before Election Day', AFTER_EARLY_VOTING_AT, NO_WAITS, /^Early voting has ended/],
     ['Election Day before the polls open', BEFORE_POLLS_AT, NO_WAITS, /^Polls open today at /],
     ['Election Day', ELECTION_DAY_AT, ELECTION_DAY_WAITS, /^Line counts checked at /],
+    // Sites open with no current count: with Election Day, the tallest state.
+    [
+      'early voting, no current count',
+      WAITS_RECORDED_AT,
+      { county: 'stale', city: 'stale' },
+      'No site has a current line count right now.',
+    ],
   ];
 
   for (const [name, at, waits, line] of STATES) {

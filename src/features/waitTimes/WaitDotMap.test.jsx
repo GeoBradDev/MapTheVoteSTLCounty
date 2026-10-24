@@ -226,6 +226,7 @@ describe('WaitDotMap with every site closed', () => {
     ).toBeInTheDocument();
     await waitFor(() => expect(dots(container).length).toBeGreaterThan(0));
     for (const dot of dots(container)) expect(dot).toHaveAttribute('data-dot', 'hollow');
+    expect(screen.queryByText(copy.city)).toBeNull();
     expect(onClose).not.toHaveBeenCalled();
   });
 

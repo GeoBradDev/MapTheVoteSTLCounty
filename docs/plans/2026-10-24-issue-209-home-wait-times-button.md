@@ -21,8 +21,10 @@ Domain skills:
    times page keeps its own board note.
 2. The "See early voting wait times" link is an in-app `<a>` drawn as a button with the
    shared `Button` component (`to="/early-voting"`, secondary variant, at least 44 px tall,
-   visible focus ring), labeled "Detailed Early Voting Wait Times Map", and on Election Day
-   "Detailed Election Day Line Counts Map".
+   visible focus ring), labeled "Detailed early voting wait times map", and on Election Day
+   "Detailed Election Day line counts map". Sentence case, as every other control on the site
+   ("Find my precinct", "Use my location"); the issue asks for a label "like" its title-case
+   wording. Full width with centered text, as the "Use my location" button above it.
 3. The address box (combobox), "Find my precinct" and "Use my location" are fully in the
    viewport without scrolling at 360 x 640, 375 x 667, 390 x 844 and 1280 x 800, in every
    calendar state: outside the map window, early voting open, every site closed, the evening
@@ -46,6 +48,8 @@ Domain skills:
 - Tests: `WaitDotMap.test.jsx`, `dotMapModel.test.js`, `HomePage.test.jsx`, `App.test.jsx`,
   `e2e/a11y.e2e.js`, `e2e/prerender.e2e.js`, `src/waitTimesFallback.test.jsx` if it names
   the removed text.
+- `e2e/a11y.e2e.js` also: the heading focus ring test's first Tab now lands on the address
+  box (its ring is checked, then the first link's).
 - `README.md`: the dot map paragraph (order, no list, no board rule) and any link label.
 
 ## Order of work

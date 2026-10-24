@@ -88,8 +88,8 @@ describe('HomePage', () => {
 
   // #165: the precinct pages state each jurisdiction's own Election Day rule;
   // the home page, which serves City and County voters alike, states none of
-  // its own. The dot map (stood in for here) repeats the wait times page's
-  // line that each board's sites are for its own voters (#184,
+  // its own, and the dot map (stood in for here) no longer repeats the wait
+  // times page's line that each board's sites are for its own voters (#209,
   // WaitDotMap.test.jsx).
   it('states no Election Day rule of its own for either jurisdiction (#165)', () => {
     const { container } = renderHome();
@@ -184,8 +184,9 @@ describe('HomePage', () => {
   });
 });
 
-// The line count dot map (#184): in its own box between the header and the
-// wait times link, only during early voting and on Election Day.
+// The line count dot map (#184): in its own box between the address search
+// and the wait times button (#209), only during early voting and on Election
+// Day.
 describe('HomePage dot map', () => {
   // 9:05 a.m. Central on 2026-10-22, during early voting; a day in August;
   // 7:30 p.m. Central on Election Day, after the polls close.
