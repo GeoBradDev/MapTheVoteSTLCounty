@@ -80,7 +80,7 @@ export function startAnalytics(win, id = gaMeasurementId, load = () => import('.
         const ga = (session.ga = startGa(win, id));
         session.queue.splice(0).forEach(([kind, ...args]) => ga[kind](...args));
       },
-      // ga.js could not load (offline, a new deploy): no page views, as if off.
+      // ga.js could not load (offline, a new deploy): no page views or events, as if off.
       () => {},
     );
   const whenIdle = () =>

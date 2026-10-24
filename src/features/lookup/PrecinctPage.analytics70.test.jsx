@@ -2,7 +2,7 @@
 // Try again, and the summary's directions button, with fixed labels only.
 // The page and the analytics module are imported fresh for each test, as in
 // PrecinctPage.errors18.test.jsx, so GA is started on the same module copy.
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
@@ -49,6 +49,7 @@ beforeEach(async () => {
 afterEach(() => {
   tracked.stop();
   vi.unstubAllGlobals();
+  vi.useRealTimers();
 });
 
 function renderAt(code) {
@@ -102,4 +103,23 @@ it("counts the summary's directions button as the polls card's, without the plac
     ['directions_open', { card: 'polls', provider: 'google' }],
   ]);
   expect(JSON.stringify(tracked.calls())).not.toMatch(/CC007|google\.com|38\.|90\./);
+});
+
+// While early voting runs, the summary's nearest early voting site has its
+// own directions button, counted as the early voting card's.
+it("counts the summary's early voting directions as early_voting", async () => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  // Noon Central on Thursday 2026-10-22, during early voting.
+  vi.setSystemTime(Date.UTC(2026, 9, 22, 17, 0));
+  routeFetch(() => respond(byId));
+  renderAt('CC007');
+  await screen.findByText(copy.ready('CC007'));
+  const early = await screen.findByRole('region', { name: copy.summary.early });
+  const button = await within(early).findByRole('link', {
+    name: new RegExp(`^${copy.polls.directions}`),
+  });
+  expect(await pressLink(userEvent.click, button)).toBe(false);
+  expect(await tracked.events()).toEqual([
+    ['directions_open', { card: 'early_voting', provider: 'google' }],
+  ]);
 });

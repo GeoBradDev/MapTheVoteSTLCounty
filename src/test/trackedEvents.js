@@ -7,7 +7,9 @@ import { siteUrl } from '../config/site.js';
 /**
  * Starts GA on a stand-in window. `events()` waits for ga.js and returns
  * every event sent but page views, as [name, params]; `calls()` returns every
- * dataLayer entry. Call `stop()` after the test.
+ * dataLayer entry but gtag's `js` start time, a Date whose text (like
+ * `12:00:38.500Z`) would match a coordinate needle by chance. Call `stop()`
+ * after the test.
  */
 export function trackEvents() {
   const win = {
@@ -17,7 +19,8 @@ export function trackEvents() {
     addEventListener: () => {},
   };
   const stop = startAnalytics(win, 'G-TEST123');
-  const calls = () => (win.dataLayer ?? []).map((entry) => Array.from(entry));
+  const calls = () =>
+    (win.dataLayer ?? []).map((entry) => Array.from(entry)).filter(([command]) => command !== 'js');
   return {
     stop,
     calls,
