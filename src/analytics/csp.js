@@ -28,7 +28,8 @@ const GOOGLE_HOST =
   /^(?:[a-z0-9-]+\.)*(?:google(?:\.com?)?\.[a-z]{2,}|(?:googletagmanager|google-analytics|googleadservices|googlesyndication|googletagservices|googleapis|googleusercontent|doubleclick|gstatic)\.(?:com|net))$/i;
 
 // Hosts a wildcard source is tried against: one per Google domain above, as
-// a browser would request it (*.com and *.co.uk allow some of them).
+// a browser would request it (*.com and *.co.uk allow some of them). Only
+// two country domains are sampled, so *.de is not caught here.
 const GOOGLE_SAMPLES = [
   'www.googletagmanager.com',
   'region1.google-analytics.com',
