@@ -23,7 +23,6 @@
 // the build split the topics into a chunk of their own, past the budget.
 import { gaMeasurementId, siteUrl } from '../config/site.js';
 
-
 /** The hosts GA uses, as the privacy notice and render.yaml's CSP name them. */
 export const ANALYTICS_HOSTS = Object.freeze({
   loader: 'www.googletagmanager.com',
