@@ -12,8 +12,8 @@ import { CITY_GEOCODER_URL } from '../data/cityAddress.js';
 import { HOSTED_URL, LIVE_URL } from '../data/countyAddress.js';
 import { DEFAULT_BASE_URL as PHOTON } from '../data/photon.js';
 import { BASEMAP_DARK_STYLE_URL, BASEMAP_STYLE_URL } from '../features/lookup/basemap.js';
-import { ASSET_HEADERS, SHELL_HEADERS } from '../../scripts/smoke.mjs';
-import { PRECINCT_PRECONNECT, SHELL_FILE } from '../prerender/plugin.js';
+import { ASSET_HEADERS, PRECINCT_HEADERS, SHELL_HEADERS } from '../../scripts/smoke.mjs';
+import { PRECINCT_PRECONNECT, previewHeaders, SHELL_FILE } from '../prerender/plugin.js';
 import { hosts as privacyHosts } from '../features/privacy/privacyCopy.js';
 import { outputFile } from '../prerender/outputFile.js';
 import { publicPaths } from '../config/publicPages.js';
@@ -51,6 +51,7 @@ const PROBE_PATHS = [
   '/favicon.ico',
   '/favicon.svg',
   '/apple-touch-icon.png',
+  '/share-image.png',
   '/no-such-page',
 ];
 
@@ -225,14 +226,41 @@ describe('render.yaml headers', () => {
 
   // Short enough that a fix reaches crawlers within the hour; not no-cache,
   // which would send every crawler's request to Render's origin.
-  it.each(['/robots.txt', '/sitemap.xml'])('caches %s for an hour', (requestPath) => {
-    expect(headersFor(site.headers, requestPath).get('cache-control')).toBe('public, max-age=3600');
-  });
+  it.each(['/robots.txt', '/sitemap.xml', '/share-image.png'])(
+    'caches %s for an hour',
+    (requestPath) => {
+      expect(headersFor(site.headers, requestPath).get('cache-control')).toBe(
+        'public, max-age=3600',
+      );
+    },
+  );
 
   it('allows geolocation for the page itself only', () => {
     expect(headersFor(site.headers, '/').get('permissions-policy')).toBe(
       'geolocation=(self), camera=(), microphone=()',
     );
+  });
+});
+
+// Precinct pages stay out of search (owner decision on #98), for crawlers that
+// do not run the app too: a header, since the shell they get is shared with
+// the wait times page, which stays indexable. vite preview sends it as well.
+describe('the precinct page noindex header', () => {
+  it('is one /p/* rule, as vite preview sends it', () => {
+    const rules = site.headers.filter((rule) => rule.name.toLowerCase() === 'x-robots-tag');
+    expect(rules).toEqual([{ path: '/p/*', name: 'X-Robots-Tag', value: 'noindex' }]);
+    expect(previewHeaders('/p/CC007')['X-Robots-Tag']).toBe('noindex');
+  });
+
+  it('sends what the smoke test expects on a precinct page', () => {
+    const headers = headersFor(site.headers, '/p/CC007');
+    const failing = PRECINCT_HEADERS.filter(({ name, test }) => !test(headers.get(name), headers));
+    expect(failing.map((h) => h.name)).toEqual([]);
+  });
+
+  it.each(PROBE_PATHS)('is sent on %s only when it is a precinct page', (requestPath) => {
+    const tag = headersFor(site.headers, requestPath).get('x-robots-tag');
+    expect(tag).toBe(requestPath.startsWith('/p/') ? 'noindex' : null);
   });
 });
 

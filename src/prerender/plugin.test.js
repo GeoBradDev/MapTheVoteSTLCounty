@@ -99,12 +99,15 @@ describe('previewHeaders', () => {
       origins.map((origin) => `<${origin}>; rel=preconnect; crossorigin`).join(', '),
     );
     for (const pathname of ['/p/CC007', '/p/W01P12', '/p/anything']) {
-      expect(previewHeaders(pathname)).toEqual({ Link: PRECINCT_PRECONNECT });
+      expect(previewHeaders(pathname)).toEqual({
+        Link: PRECINCT_PRECONNECT,
+        'X-Robots-Tag': 'noindex',
+      });
     }
   });
 
   it.each(['/', '/p', '/p/', '/early-voting', '/learn/voter-id', '/privacy', '/assets/a.js'])(
-    'sends no Link header on %s',
+    'sends no Link or X-Robots-Tag header on %s',
     (pathname) => {
       expect(previewHeaders(pathname)).toEqual({});
     },

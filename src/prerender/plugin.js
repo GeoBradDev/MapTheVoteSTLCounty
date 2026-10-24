@@ -14,7 +14,8 @@
 // those files the way Render does: a directory's index.html for its path with
 // or without the trailing slash, and the shell for any path with no file.
 //
-// It also sends render.yaml's precinct page preconnect (`PRECINCT_PRECONNECT`).
+// It also sends render.yaml's precinct page headers: the preconnect
+// (`PRECINCT_PRECONNECT`) and `X-Robots-Tag: noindex` (#98).
 //
 // This file is loaded by vite.config.js in plain Node, so it must not import
 // app code; the app is loaded only through the Vite server below. The one
@@ -46,13 +47,14 @@ export const PRECINCT_PRECONNECT = [
 
 /**
  * The headers `vite preview` adds for a page at `pathname` (decoded, without
- * the query string), as render.yaml's rules for it do: the preconnect on a
- * precinct page. The other render.yaml headers are not mirrored.
+ * the query string), as render.yaml's rules for it do: the preconnect and the
+ * noindex (owner decision on #98) on a precinct page. The other render.yaml
+ * headers are not mirrored.
  * @param {string} pathname
  * @returns {Record<string, string>}
  */
 export function previewHeaders(pathname) {
-  return /^\/p\/./.test(pathname) ? { Link: PRECINCT_PRECONNECT } : {};
+  return /^\/p\/./.test(pathname) ? { Link: PRECINCT_PRECONNECT, 'X-Robots-Tag': 'noindex' } : {};
 }
 
 /** Runs src/prerender/worker.js with `data`; rejects with its error. */
