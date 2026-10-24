@@ -566,7 +566,8 @@ county address record, its mailing city or its community, `MSAG_COMMUNITY_NAME`)
 unless it is St. Louis (units such as "Apt 2", the state, the country and numbers are
 not part of the town, a direction is ("East St. Louis" is not St. Louis), and "St. Louis
 City" must be a City result); and a result in a named
-town other than St. Louis needs that town or its ZIP typed, because the same address
+town other than St. Louis needs that town (for a county record, its mailing city or
+community) or its ZIP typed, because the same address
 can exist in two towns ("St. Louis" is the mailing city for much of the county, so it
 confirms nothing). A typed ZIP needs a result postcode, unless the result's own
 town (not St. Louis) is typed too, and when matching results are not one address (same
@@ -640,7 +641,8 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
   (`src/data/addressMatch.js`, shared by both providers). County street types
   (`PLZ`, `XING`, `CV` and others) compare equal to their full words.
 - **Typed community:** a typed town also agrees with a record's community,
-  `MSAG_COMMUNITY_NAME` (41 S Central Ave 63105 is mailed Saint Louis, community Clayton,
+  `MSAG_COMMUNITY_NAME`, both where a typed town must agree and where a named town needs
+  its town or ZIP typed (41 S Central Ave 63105 is mailed Saint Louis, community Clayton,
   so "41 S Central Ave, Clayton" finds it, #143; `&` reads as AND, so Town and Country
   matches TOWN & COUNTRY). It is the emergency-services community and can differ from the
   record's `MUNI` code (a `LADUE` community with `MUNI` `CLY`); only the community name is
