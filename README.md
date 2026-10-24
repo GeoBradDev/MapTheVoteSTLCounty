@@ -1157,6 +1157,17 @@ green; run it locally first.
 
 ## License
 
-No license has been chosen yet (#118), so the code is not yet open for reuse. Until a
-`LICENSE` file is added, ask the owner before reusing it. Voter information and sample ballots belong to
-their official publishers.
+The code is released under the [MIT License](LICENSE) (#118): anyone, including another county,
+may reuse, change and redistribute it, keeping the copyright and license notice.
+
+The license covers this repository's own code and text, but not the data the site shows:
+
+- **Map data** is © OpenStreetMap contributors, under the
+  [Open Database License (ODbL)](https://www.openstreetmap.org/copyright), served as
+  © OpenMapTiles vector tiles by OpenFreeMap. Those credits must stay shown under the map; they
+  come from `BASEMAP_ATTRIBUTION` in `src/features/lookup/basemap.js`, and a fork that changes
+  the basemap must show its own provider's credits.
+- **Voter information**, including polling places, early voting sites and hours, wait counts,
+  precincts, districts and sample ballots, belongs to its official publishers, the
+  St. Louis County Board of Election Commissioners and the City of St. Louis Board of Election
+  Commissioners, and is not covered by this license.
