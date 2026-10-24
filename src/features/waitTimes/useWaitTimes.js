@@ -25,6 +25,10 @@ import { stillShowable } from '../../data/waitTimes.js';
  *   with counts or a failure, was sent (ms), or null before the first.
  * @property {number | null} askedAt When the latest request was sent (ms), or
  *   null before the first. Later than `answeredAt` while it is unanswered.
+ * @property {boolean} resuming Whether the latest request went out after the
+ *   loop was stopped (a tab hidden or frozen, a phone asleep: more than
+ *   RESUME_GAP intervals since the loop last asked) and is unanswered. Until
+ *   it answers, what the loop holds is from before the stop.
  * @property {import('../../data/waitTimes.js').WaitEntry[]} waits
  */
 
@@ -45,6 +49,7 @@ function initialState(fetchers) {
     checkedAt: null,
     answeredAt: null,
     askedAt: null,
+    resuming: false,
     waits: [],
   });
   return withWaits({ county: part('county'), city: part('city') });
@@ -53,6 +58,9 @@ function initialState(fetchers) {
 function withWaits(state) {
   return { ...state, waits: KEYS.flatMap((key) => state[key].waits) };
 }
+
+/** More than this many intervals since the loop last asked means it was stopped. */
+const RESUME_GAP = 1.5;
 
 const isHidden = () => typeof document !== 'undefined' && document.visibilityState === 'hidden';
 
@@ -100,7 +108,7 @@ export function createWaitTimesStore(
     if (inFlight.has(key) && !resumed) return;
     const sentAt = Date.now();
     inFlight.set(key, sentAt);
-    update(key, { askedAt: sentAt });
+    update(key, { askedAt: sentAt, resuming: Boolean(resumed) });
     const current = () => inFlight.get(key) === sentAt;
     try {
       const waits = await fetchers[key]();
@@ -110,11 +118,12 @@ export function createWaitTimesStore(
         refreshFailed: false,
         checkedAt: sentAt,
         answeredAt: sentAt,
+        resuming: false,
         waits,
       });
     } catch {
       if (!current()) return;
-      update(key, { refreshFailed: true, answeredAt: sentAt });
+      update(key, { refreshFailed: true, answeredAt: sentAt, resuming: false });
       prune(key, true);
     } finally {
       if (current()) inFlight.delete(key);
@@ -126,7 +135,7 @@ export function createWaitTimesStore(
     timer = null;
     if (listeners.size === 0 || isHidden()) return;
     timer = setTimeout(tick, refreshMs);
-    const resumed = lastTickAt !== null && Date.now() - lastTickAt > 1.5 * refreshMs;
+    const resumed = lastTickAt !== null && Date.now() - lastTickAt > RESUME_GAP * refreshMs;
     lastTickAt = Date.now();
     for (const key of KEYS) {
       if (!fetchers[key]) continue;

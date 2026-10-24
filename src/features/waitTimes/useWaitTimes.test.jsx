@@ -282,6 +282,117 @@ describe('useWaitTimes', () => {
     expect(screen.getByTestId('a')).toHaveTextContent('off/off:');
   });
 
+  // Each request is stamped when it goes out (#184, #187), and one sent after
+  // a stop says so until it answers.
+  describe('askedAt, resuming and replaced requests', () => {
+    // A fetcher whose answers the test gives, one per request.
+    function manual() {
+      const pending = [];
+      const fetcher = vi.fn(
+        () => new Promise((resolve, reject) => pending.push({ resolve, reject })),
+      );
+      return { fetcher, pending };
+    }
+    const part = (store) => store.getSnapshot().county;
+
+    it('stamps each request when it goes out, and is not resuming on its usual interval', async () => {
+      const { fetcher, pending } = manual();
+      const store = createWaitTimesStore({ county: fetcher, city: null });
+      const unsubscribe = store.subscribe(() => {});
+      expect(part(store)).toMatchObject({ askedAt: START, answeredAt: null, resuming: false });
+      await act(async () => pending[0].resolve([]));
+      expect(part(store)).toMatchObject({ askedAt: START, answeredAt: START, resuming: false });
+      await act(() => vi.advanceTimersByTimeAsync(REFRESH));
+      expect(part(store)).toMatchObject({ askedAt: START + REFRESH, resuming: false });
+      unsubscribe();
+    });
+
+    // A slow answer skips a tick; the next request is still a usual refresh.
+    it('is not resuming after an answer slower than the interval', async () => {
+      const { fetcher, pending } = manual();
+      const store = createWaitTimesStore({ county: fetcher, city: null });
+      const unsubscribe = store.subscribe(() => {});
+      await act(() => vi.advanceTimersByTimeAsync(REFRESH * 1.2));
+      await act(async () => pending[0].resolve([]));
+      await act(() => vi.advanceTimersByTimeAsync(REFRESH * 0.8));
+      expect(fetcher).toHaveBeenCalledTimes(2);
+      expect(part(store)).toMatchObject({ askedAt: START + 2 * REFRESH, resuming: false });
+      unsubscribe();
+    });
+
+    it('is resuming from a request sent after a stop until that request answers', async () => {
+      const { fetcher, pending } = manual();
+      const store = createWaitTimesStore({ county: fetcher, city: null });
+      const unsubscribe = store.subscribe(() => {});
+      await act(async () => pending[0].resolve([]));
+      act(() => setVisibility('hidden'));
+      await act(() => vi.advanceTimersByTimeAsync(REFRESH * 10));
+      act(() => setVisibility('visible'));
+      const wokeAt = START + REFRESH * 10;
+      expect(part(store)).toMatchObject({ askedAt: wokeAt, answeredAt: START, resuming: true });
+      await act(async () => pending[1].resolve([]));
+      expect(part(store)).toMatchObject({ answeredAt: wokeAt, resuming: false });
+      unsubscribe();
+    });
+
+    it('stops resuming when the request sent after a stop fails', async () => {
+      const { fetcher, pending } = manual();
+      const store = createWaitTimesStore({ county: fetcher, city: null });
+      const unsubscribe = store.subscribe(() => {});
+      await act(async () => pending[0].resolve([]));
+      act(() => setVisibility('hidden'));
+      await act(() => vi.advanceTimersByTimeAsync(REFRESH * 10));
+      act(() => setVisibility('visible'));
+      await act(async () => pending[1].reject(new Error('down')));
+      expect(part(store)).toMatchObject({ refreshFailed: true, resuming: false });
+      unsubscribe();
+    });
+
+    // A request still out when the tab stopped is replaced on return.
+    async function replaced() {
+      const { fetcher, pending } = manual();
+      const store = createWaitTimesStore({ county: fetcher, city: null });
+      const unsubscribe = store.subscribe(() => {});
+      await act(async () => pending[0].resolve([entry('county', 'abs601boec', 1, 7)]));
+      await act(() => vi.advanceTimersByTimeAsync(REFRESH));
+      expect(fetcher).toHaveBeenCalledTimes(2);
+      act(() => setVisibility('hidden'));
+      await act(() => vi.advanceTimersByTimeAsync(REFRESH * 10));
+      act(() => setVisibility('visible'));
+      expect(fetcher).toHaveBeenCalledTimes(3);
+      return { fetcher, pending, store, unsubscribe, before: part(store) };
+    }
+
+    it('drops the late answer of a replaced request', async () => {
+      const { pending, store, unsubscribe, before } = await replaced();
+      await act(async () => pending[1].resolve([entry('county', 'abs602boec', 1, 9)]));
+      expect(part(store)).toBe(before);
+      unsubscribe();
+    });
+
+    it('drops the late failure of a replaced request', async () => {
+      const { pending, store, unsubscribe, before } = await replaced();
+      await act(async () => pending[1].reject(new Error('down')));
+      expect(part(store)).toBe(before);
+      expect(part(store).refreshFailed).toBe(false);
+      unsubscribe();
+    });
+
+    it('keeps the replacing request in flight through the late answer, then asks again', async () => {
+      const { fetcher, pending, store, unsubscribe } = await replaced();
+      await act(async () => pending[1].resolve([]));
+      await act(() => vi.advanceTimersByTimeAsync(REFRESH));
+      // The replacing request is still out: no second request beside it.
+      expect(fetcher).toHaveBeenCalledTimes(3);
+      await act(async () => pending[2].resolve([entry('county', 'abs602boec', 0, 4)]));
+      expect(part(store)).toMatchObject({ status: 'ok', resuming: false });
+      expect(part(store).waits.map((w) => w.value)).toEqual([4]);
+      await act(() => vi.advanceTimersByTimeAsync(REFRESH));
+      expect(fetcher).toHaveBeenCalledTimes(4);
+      unsubscribe();
+    });
+  });
+
   it('renders the loading state on the server without asking', () => {
     const county = vi.fn(async () => []);
     const store = createWaitTimesStore({ county, city: null });

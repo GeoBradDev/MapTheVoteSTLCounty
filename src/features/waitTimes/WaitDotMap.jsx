@@ -63,15 +63,13 @@ const LNG_TICKS = [-90.6, -90.4, -90.2].map((lng) => ({ lng, x: project(lng, 38.
 
 const KEYS = ['county', 'city'];
 
-// A gap between answers longer than this means the loop was stopped (a tab
-// hidden or frozen), not a refresh on its usual interval.
-const GAP_MS = 1.5 * election.waitTimes.refreshSeconds * 1000;
-
+// Answered since the sites opened, and not asking again after the loop was
+// stopped (a tab hidden or frozen): the loop says which (`resuming`).
 function answeredSince(part, openedAt) {
   if (part.status === 'off') return true;
-  const { answeredAt, askedAt } = part;
+  const { answeredAt } = part;
   if (answeredAt === null || answeredAt < openedAt) return false;
-  return !(askedAt > answeredAt && askedAt - answeredAt > GAP_MS);
+  return !part.resuming;
 }
 
 function Swatch({ step, r }) {
