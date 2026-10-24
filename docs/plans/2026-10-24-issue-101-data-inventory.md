@@ -27,9 +27,9 @@ because the doc prose follows the repo's existing data.md voice.
    inventory" section count; code spans never do (revised after two review rounds: code spans
    include field names like `precincts` and `URL`, and one shared set let a name in one org
    hide the same name in another). A root that answers
-   with an ArcGIS error body (HTTP 200) or no services list prints `fail`, not an empty org. A `*` alone, or a
-   pattern with fewer than 4 literal characters, is ignored, so a stray pattern cannot hide
-   every service.
+   with an ArcGIS error body (HTTP 200) or no services list prints `fail`, not an empty org. A `*` alone, or a pattern with fewer than 4 literal characters, is ignored. A broader
+   pattern that still has 4 (`*_view`, `BOE/*`) is guarded only by the doc's rule against
+   family patterns (criterion revised at Low after the third finder: no shipped line uses `*`).
 6. The St. Louis City part points at #57's comments (its closing comment and the `maps6` BOE
    findings) and at the existing St. Louis City section.
 7. README: the election update steps say the inventory is re-checked before each election, and
@@ -65,7 +65,7 @@ Not touched: `src/i18n/en.json` and the geocoder credits (#120 is open on them),
 - The Board's forms (absentee applications, curbside check-in) hold voter personal data. The
   inventory reads only the directory listing; categorizing used the public item titles from the
   content search, never a query or layer metadata.
-- The City org is the whole City government (160 services). Listing them is long; they sit in
+- The City org is the whole City government (159 unique services). Listing them is long; they sit in
   collapsed `<details>` blocks so the doc stays readable.
 
 Chosen not to do: list the wait time org (`IeWM0VelvUwce9qE`), which is not one of the two

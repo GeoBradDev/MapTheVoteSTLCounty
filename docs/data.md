@@ -1169,8 +1169,9 @@ tables below give a reason for is also listed in its root's "Named in the tables
 A root that answers with an error, or with no services list, is a `fail` line, not an empty
 org. Before each election, run it and add each new service here: a reason in a table or a
 block's summary, and its name in the right block (README, Updating for a new election). Never
-use a bare family pattern like `polls_*`: that would hide the next election's
-`polls_YYYY_MM_view`.
+use a family pattern like `polls_*`, `*_view` or `BOE/*`: the script ignores only a pattern
+with fewer than 4 characters besides `*`, so these would hide the next election's
+`polls_YYYY_MM_view` or every new service in a root.
 
 The inventory step reads only the directory listings. It never queries a listed service or reads
 its metadata: some are the Board's forms and hold voters' personal data. What each opaque
