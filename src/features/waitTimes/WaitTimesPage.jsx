@@ -352,7 +352,13 @@ export default function WaitTimesPage({
     return at === null ? '' : copy.status.checked(clockTime(at));
   };
   const statusText = statusFor(checkedAt);
-  const shownStatusText = statusFor(lastSuccess);
+  // The visible line shows no time while the loop asks again after a stop (a
+  // phone woken the next morning, #187): until that answer, the last check is
+  // from before it. The live region keeps its text: emptying and refilling it
+  // would have a screen reader hear the time again inside ANNOUNCE_MS. A
+  // no-break space keeps the line's height, so nothing below it moves (#27).
+  const resuming = waits.county.resuming || waits.city.resuming;
+  const shownStatusText = resuming ? statusFor(null) || '\u00a0' : statusFor(lastSuccess);
 
   // The map's classes (#172): Jenks natural breaks over the fresh counts of
   // the sites listed, both boards on one scale (both count people in line),

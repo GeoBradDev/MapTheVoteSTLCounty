@@ -276,6 +276,95 @@ describe('WaitTimesPage', () => {
     expect(statusLine()).not.toHaveTextContent(copy.status.unavailable);
   });
 
+  // A phone woken the next morning (#187): until the loop's first request
+  // since it woke answers, the evening before's check time is not shown. The
+  // live region keeps its text, so emptying and refilling it never makes a
+  // screen reader hear a time again inside ANNOUNCE_MS.
+  it('shows no check time while the loop asks again after a stop', async () => {
+    let state;
+    const listeners = new Set();
+    const evening = START - 16 * 60 * MINUTE;
+    const part = (change) => ({
+      status: 'ok',
+      refreshFailed: false,
+      checkedAt: evening,
+      answeredAt: evening,
+      askedAt: evening,
+      resuming: false,
+      waits: [],
+      ...change,
+    });
+    const set = (county) => {
+      state = { waits: [], county, city: part({ status: 'off', checkedAt: null }) };
+      listeners.forEach((l) => l());
+    };
+    set(part());
+    const source = {
+      subscribe: (l) => {
+        listeners.add(l);
+        return () => listeners.delete(l);
+      },
+      getSnapshot: () => state,
+      getServerSnapshot: () => state,
+    };
+    vi.setSystemTime(evening);
+    renderPage({ waitSource: source });
+    await screen.findByRole('list', { name: copy.listLabel });
+    expect(shownStatus()).toHaveTextContent(copy.status.checked('17:00'));
+    vi.setSystemTime(START);
+    act(() => set(part({ askedAt: START, resuming: true })));
+    // A no-break space keeps the line's height, so nothing below it moves.
+    expect(shownStatus().textContent).toBe('\u00a0');
+    expect(statusLine()).toHaveTextContent(copy.status.checked('17:00'));
+    act(() => set(part({ askedAt: START, answeredAt: START, checkedAt: START })));
+    expect(shownStatus()).toHaveTextContent(copy.status.checked('09:00'));
+    expect(statusLine()).toHaveTextContent(copy.status.checked('09:00'));
+  });
+
+  // A short return (#187): the live region keeps the time it last announced
+  // through the resume and after it, inside ANNOUNCE_MS.
+  it('keeps the live region unchanged through a short resume', async () => {
+    let state;
+    const listeners = new Set();
+    const part = (change) => ({
+      status: 'ok',
+      refreshFailed: false,
+      checkedAt: START,
+      answeredAt: START,
+      askedAt: START,
+      resuming: false,
+      waits: [],
+      ...change,
+    });
+    const set = (county) => {
+      state = { waits: [], county, city: part({ status: 'off', checkedAt: null }) };
+      listeners.forEach((l) => l());
+    };
+    set(part());
+    const source = {
+      subscribe: (l) => {
+        listeners.add(l);
+        return () => listeners.delete(l);
+      },
+      getSnapshot: () => state,
+      getServerSnapshot: () => state,
+    };
+    renderPage({ waitSource: source });
+    await screen.findByRole('list', { name: copy.listLabel });
+    const texts = [];
+    const observer = new MutationObserver(() => texts.push(statusLine().textContent));
+    observer.observe(statusLine(), { childList: true, characterData: true, subtree: true });
+    const back = START + 2.5 * MINUTE;
+    vi.setSystemTime(back);
+    act(() => set(part({ askedAt: back, resuming: true })));
+    act(() => set(part({ askedAt: back, answeredAt: back, checkedAt: back })));
+    await act(async () => {});
+    observer.disconnect();
+    expect(texts).toEqual([]);
+    expect(statusLine()).toHaveTextContent(copy.status.checked('09:00'));
+    expect(shownStatus()).toHaveTextContent(copy.status.checked('09:02'));
+  });
+
   it('leaves focus on a list link when the map fails', async () => {
     vi.stubGlobal('WebGL2RenderingContext', function WebGL2RenderingContext() {});
     createWaitTimesMap.mockReturnValue({ setSites: vi.fn(), remove: vi.fn() });

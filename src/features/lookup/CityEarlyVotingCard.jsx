@@ -7,7 +7,7 @@ import { t as message, translated } from '../../i18n/index.js';
 import { createWaitTimesStore } from '../waitTimes/useWaitTimes.js';
 import { cityHours, cityScheduleFor, citySchedules } from './cityEarlyVoting.js';
 import { earlyVotingStatus, formatLongDate } from './earlyVoting.js';
-import { EarlyVotingSites } from './EarlyVotingCard.jsx';
+import { EarlyVotingSites, MailLine } from './EarlyVotingCard.jsx';
 import { EarlyVoteSummary } from './ResultsSummary.jsx';
 import { copy, sourceName } from './resultsCopy.js';
 
@@ -53,9 +53,10 @@ function CityDetail({ site, now }) {
  * early voting (No Excuse Absentee) sites, each with its status today, its
  * own dates and hours from the City config, and while early voting runs its
  * current line count, with the County card's code (EarlyVotingSites). No
- * eligibility rules: it cites the City Board's No Excuse Absentee page and
- * links its Apply to Vote Absentee page for voting by mail. Not the absentee
- * topic, which is the County's (#94). In the City chunk (src/cityChunk.js).
+ * eligibility rules: it cites the City Board's No Excuse Absentee page and,
+ * for voting by mail, links the absentee topic, which has a City section
+ * (#94, #168), and the City Board's Apply to Vote Absentee page, as the
+ * County card does. In the City chunk (src/cityChunk.js).
  * @param {{ code: string, origin: { lat: number, lng: number } | null,
  *   waitSource?: object }} props `waitSource` is for tests.
  */
@@ -86,13 +87,7 @@ export default function CityEarlyVotingCard({ code, origin, waitSource = cityWai
         </TextLink>
         . {t.lastVerified(formatLongDate(lastVerified, { year: true }))}
       </p>
-      <p className="mt-3">
-        {message('results.earlyVoting.mailCity')}{' '}
-        <TextLink href={absenteeUrl} rel="noreferrer">
-          {sourceName(absenteeUrl)}
-        </TextLink>
-        .
-      </p>
+      <MailLine href={absenteeUrl} label={sourceName(absenteeUrl)} />
     </EarlyVotingSites>
   );
 }

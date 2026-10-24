@@ -23,6 +23,7 @@ import { PRECINCT_CODE, normalize } from '../src/data/arcgis.js';
 import { cityPrecinctCode } from '../src/data/cityPrecinctCode.js';
 import { fileNameMatchesPrecinct, parseSampleBallot } from '../src/data/sampleBallot.js';
 import { parseCityHours, selectCityWaits, selectCountyWaits } from '../src/data/waitTimes.js';
+import { PARTY } from '../src/features/lookup/cityDistricts.js';
 import { earlyVotingStatus, zonedNow } from '../src/features/lookup/earlyVoting.js';
 import { roomIndex } from '../src/features/lookup/pollRooms.js';
 import { isPastElection } from './electionWindow.mjs';
@@ -108,6 +109,35 @@ export const OUTSIDE_POINT = { name: 'Gateway Arch, St. Louis City', lat: 38.624
 
 /** A sane number of City precincts (#87). 207 for November 2026. */
 export const CITY_PRECINCT_RANGE = { min: 150, max: 300 };
+
+/**
+ * The City districts layer's offices the districts card leaves out on purpose
+ * (#90, docs/data.md): citywide and statewide offices, the same for every City
+ * voter, and the two placeholder rows. Read from the layer on 2026-10-24. Any
+ * other office no row of `districts.rows` names is a WARN (#160): it may be a
+ * row's office renamed on some polygons only, which the card would drop there.
+ * A party committee post is never listed here.
+ */
+export const CITY_OFFICES_LEFT_OUT = Object.freeze([
+  'Attorney General',
+  'Circuit Attorney',
+  'Collector of Revenue',
+  'Comptroller',
+  'Governor',
+  'License Collector',
+  'Lieutenant Governor',
+  'Mayor',
+  'President of the Board of Aldermen',
+  'President of the United States',
+  'Recorder of Deeds',
+  'Secretary of State',
+  'Sheriff',
+  'State Auditor',
+  'State Treasurer',
+  'Treasurer',
+  'United States Senate',
+  'Vice-President of the United States',
+]);
 
 /** City Hall, 1200 Market St: in a City precinct, a ward and the City outline. */
 export const CITY_KNOWN_POINT = {
@@ -251,6 +281,11 @@ export async function runHealthCheck(
     cityEarlyVoting = cityResults.earlyVoting,
     // The City's one sample ballot for all precincts (src/config/cityResults.js, #92).
     citySampleBallot = cityResults.sampleBallot,
+    // The City districts card's rows and the offices each reads
+    // (src/config/cityResults.js, #90, #160).
+    cityDistricts = cityResults.districts,
+    // The offices the districts card leaves out (#160).
+    leftOut = CITY_OFFICES_LEFT_OUT,
   } = {},
 ) {
   const results = [];
@@ -929,12 +964,17 @@ export async function runHealthCheck(
 
   async function checkCity(city) {
     const cityLayerUrl = (key) => `${city.serviceRoot}/${city.layers[key]}`;
-    const cityQuery = async (key, params) => {
+    // `whole`: the caller needs every row, so an answer cut off at the
+    // layer's record limit fails rather than passing on part of the layer.
+    const cityQuery = async (key, params, { whole = false } = {}) => {
       const body = await request(
         `${cityLayerUrl(key)}/query?${new URLSearchParams({ f: 'json', ...params })}`,
       );
       if (!Array.isArray(body?.features)) {
         throw new CheckError('the response has no features list');
+      }
+      if (whole && body.exceededTransferLimit) {
+        throw new CheckError(`too many ${key} for one request: page the query`);
       }
       return (body.features ?? []).map((f) => f?.attributes ?? {});
     };
@@ -1099,6 +1139,75 @@ export async function runHealthCheck(
     } else {
       const failed = ['precincts', 'districts', 'boundary'].find((k) => !ok[k]);
       record('city known points', 'skip', `the city layer ${failed} check failed`);
+    }
+
+    // The districts card matches office names exactly (#90), so a renamed
+    // office would drop its row with no error: every row must find at least
+    // one of its offices among the layer's values, and an office no row names
+    // and the card does not leave out is a WARN (#160). Reads the office names
+    // only, never the officeholder fields.
+    if (ok.districts) {
+      await check('city district offices', async () => {
+        const field = city.districtLayerFields.office;
+        // Every row's office, not returnDistinctValues: the hosted layer
+        // compares text without case, so its distinct values would fold
+        // "State senate" into "State Senate" while the card tells them apart.
+        // About 50 rows.
+        const rows = await cityQuery(
+          'districts',
+          { where: '1=1', outFields: field, returnGeometry: 'false' },
+          { whole: true },
+        );
+        // Trimmed, as the card reads them (normalize in src/data/arcgis.js),
+        // which turns a blank office into null.
+        const values = rows.map((r) => normalize(r)[field]);
+        const have = new Set(values.filter((v) => typeof v === 'string'));
+        // A district with no office matches no row, so the card drops that
+        // row for the voters in it, as it does for a renamed office.
+        const blank = values.filter((v) => typeof v !== 'string').length;
+        if (have.size === 0) throw new CheckError('the districts layer returned no offices');
+        const loose = (v) => v.replace(/\s+/g, '').toLowerCase();
+        const bad = [];
+        for (const { key, offices } of cityDistricts.rows) {
+          if (offices.some((o) => have.has(o))) continue;
+          const wanted = new Set(offices.map(loose));
+          const near = [...have].filter((v) => wanted.has(loose(v)));
+          const names = offices.map((o) => JSON.stringify(o)).join(' or ');
+          const hint = near.length
+            ? ` (it has ${near.map((v) => JSON.stringify(v)).join(', ')})`
+            : '';
+          bad.push(`${key}: no office ${names} on the layer${hint}`);
+        }
+        if (bad.length) {
+          throw new CheckError(
+            `${bad.join('; ')}. The card would drop these rows: ` +
+              'check districts.rows in src/config/cityResults.js.',
+          );
+        }
+        const known = new Set([...cityDistricts.rows.flatMap((r) => r.offices), ...leftOut]);
+        // A party committee post (the card's PARTY pattern) is never a card
+        // row, so it needs no place on the list either.
+        const unknown = [...have].filter((v) => !known.has(v) && !PARTY.test(v)).sort();
+        const detail = `${cityDistricts.rows.length} districts card rows (districts.rows) each match an office on the layer`;
+        const warnings = [];
+        if (unknown.length) {
+          warnings.push(
+            `the layer also has ${unknown.map((v) => JSON.stringify(v)).join(', ')}, ` +
+              "which no row names. If it is a row's office renamed on some districts, the card " +
+              'drops that row there: add it to districts.rows in src/config/cityResults.js, or to ' +
+              'CITY_OFFICES_LEFT_OUT in scripts/check-config.mjs if the card leaves it out.',
+          );
+        }
+        if (blank) {
+          warnings.push(
+            `${blank} district${blank === 1 ? '' : 's'} on the layer ${blank === 1 ? 'has' : 'have'} ` +
+              'no office. The card drops its row there: ask the City Board.',
+          );
+        }
+        return warnings.length ? { warn: `${detail}, but ${warnings.join(' Also, ')}` } : detail;
+      });
+    } else {
+      record('city district offices', 'skip', 'the city layer districts check failed');
     }
 
     // 10. The City's sample ballot (#92) answers HEAD with a PDF. The City

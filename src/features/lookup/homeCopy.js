@@ -10,7 +10,7 @@ export const copy = translated((t) => ({
   // Says up front that this is not either board's own site (#71); the footer
   // names the official boards.
   unofficial: t('home.unofficial'),
-  // The first action next to the address search (#104).
+  // The wait times page's button under the dot map (#104, #209).
   waitTimes: t('home.waitTimes'),
   // On Election Day the same page lists the polling places (#107).
   waitTimesElectionDay: t('home.waitTimesElectionDay'),
@@ -38,9 +38,6 @@ export const copy = translated((t) => ({
     mapLinkElectionDay: t('home.waitMap.mapLinkElectionDay'),
     county: t('home.waitMap.county'),
     city: t('home.waitMap.city'),
-    shortest: t('home.waitMap.shortest'),
-    /** @param {{ name: string, board: string, count: number }} site */
-    site: ({ name, board, count }) => t('home.waitMap.site', { name, board, count }),
     noCounts: t('home.waitMap.noCounts'),
     unavailable: t('home.waitMap.unavailable'),
     /** @param {string} board From the config. */

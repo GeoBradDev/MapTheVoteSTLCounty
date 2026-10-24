@@ -190,7 +190,10 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
       {/* The credits follow both actions (#80), still on the page as the
           sources' terms ask. */}
       <GeocoderAttribution />
-      {/* Last, so it pushes nothing down when it appears (#27). */}
+      {/* Last, so it pushes none of the lookup's own controls down when it
+          appears (#27). On the home page the dot map box and the wait times
+          button below the lookup do move, only while a lookup the voter
+          started is still out (#209). */}
       <div role="status" className="mt-2 empty:hidden">
         {slow && <Notice>{errorCopy.slow}</Notice>}
       </div>

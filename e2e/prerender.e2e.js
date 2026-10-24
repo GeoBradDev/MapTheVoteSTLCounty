@@ -84,7 +84,9 @@ test.describe('with JavaScript off', () => {
     await page.clock.setFixedTime(WAITS_RECORDED_AT);
     await page.goto('/');
     await expect(page.locator('[data-home-map-box]')).toBeHidden();
-    await expect(page.getByRole('link', { name: 'See early voting wait times' })).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: 'Detailed early voting wait times map' }),
+    ).toBeVisible();
   });
 
   test('a topic shows its text', async ({ page }) => {
@@ -118,7 +120,9 @@ test.describe('hydration', () => {
     await page.clock.setFixedTime(ELECTION_DAY_AT);
     await answerFromFixtures(page);
     await page.goto('/');
-    await expect(page.getByRole('link', { name: 'See Election Day line counts' })).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: 'Detailed Election Day line counts map' }),
+    ).toBeVisible();
     await page.waitForLoadState('networkidle');
     expect(problems).toEqual([]);
   });
@@ -130,7 +134,7 @@ test.describe('hydration', () => {
     await page.clock.setFixedTime(WAITS_RECORDED_AT);
     await answerFromFixtures(page);
     await page.goto('/');
-    await expect(page.getByText('Shortest lines now')).toBeVisible();
+    await expect(page.getByText(/^Line counts checked at /)).toBeVisible();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('St. Louis Voter Guide');
     await page.waitForLoadState('networkidle');
     expect(problems).toEqual([]);

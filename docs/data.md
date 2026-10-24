@@ -1067,7 +1067,8 @@ Missouri Supreme Court found the H.B. 1 referendum petition sufficient on 2026-0
 Hoskins, No. SC101805), so H.B. 1 does not take effect unless voters approve it, and the 2022
 districts stay in effect for the November 2026 general election. The layer's single "First
 District" polygon is right under either map, so the card shows the row. Recheck when the map
-changes. (The County card reads the 2025 field; #150 tracks that.)
+changes. The County card reads the 2022 field, `congressional_district_20` (see "Which
+congressional map (#150)" under Precincts).
 
 **Districts for a precinct** (the districts card asks this way on every City page, after a
 lookup too, so the voter's own point never goes to the districts layer): `BOE/PRECINCTS_2023`
@@ -1135,10 +1136,10 @@ fields (`pocname`, `pocemail`, `pocphone`).
   open, as the City Board's dashboard does. `node scripts/check-config.mjs` fails while a site the
   filter returns has no hours in the config. The City early voting card and the wait times page
   show these sites; the card cites the No Excuse Absentee page rather than stating who may vote
-  this way, and for voting by mail links the City Board's Apply to Vote Absentee page
+  this way, and for voting by mail links the absentee topic, which has a City section (#94,
+  #168), and the City Board's Apply to Vote Absentee page
   (`.../voter/absentee/vote-by-absentee-ballot.cfm`, which covers both ways to vote absentee;
-  the No Excuse page says it has no mail option), not the absentee topic. That topic has had a
-  City section since #94; whether the card should link it is #168.
+  the No Excuse page says it has no mail option).
 - **Not the Election Day list:** `ElectionGeography_public_*` layer 0 has the same 57 public
   rows (it is a view, `publicview = 'Yes'`, of the same data) without the ZIP fields.
   `Polling_Centers_WFL1/FeatureServer/1` is the page's own embedded map ("Active Polling

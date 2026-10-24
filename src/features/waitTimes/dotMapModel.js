@@ -14,9 +14,6 @@ export const DOT_RADIUS = Object.freeze([4, 5, 6, 7.5, 9]);
 /** A hollow ring's radius: a closed site, or one with no current count. */
 export const HOLLOW_RADIUS = 3.5;
 
-/** How many sites the summary names. */
-export const SHORTEST_COUNT = 3;
-
 /**
  * A point in the outline's view units.
  * @param {number} lng
@@ -30,8 +27,6 @@ export function project(lng, lat) {
 
 const MINUTE_MS = 60_000;
 const toMinutes = (time) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5));
-
-const byName = (a, b) => (a.name ?? '').localeCompare(b.name ?? '') || a.key.localeCompare(b.key);
 
 /**
  * @typedef {object} MapRow One site, as the wait times page lists it.
@@ -92,18 +87,6 @@ export function dotMap({ rows, waits, now }) {
     return { ...range, index: i, token, r: DOT_RADIUS[token] };
   });
 
-  const shortest = sites
-    .filter((site) => site.value !== null)
-    .map((site) => ({
-      key: site.key,
-      name: site.row.name,
-      loc: site.row.loc,
-      jurisdiction: site.row.jurisdiction,
-      value: site.value,
-    }))
-    .sort((a, b) => a.value - b.value || byName(a, b))
-    .slice(0, SHORTEST_COUNT);
-
   const anyOpen = sites.some((site) => site.open);
   // When the current opening began: the earliest opening time today among the
   // sites open now, or null when none is. A check from before it (the evening
@@ -139,13 +122,12 @@ export function dotMap({ rows, waits, now }) {
     dots,
     classes,
     legend,
-    shortest,
     anyOpen,
     openedAt,
     nextOpen,
     // Every site closed for good: the evening before Election Day.
     ended: sites.length > 0 && sites.every((site) => site.status.kind === 'ended'),
     // A site is open but neither board sent a fresh count.
-    stale: anyOpen && shortest.length === 0,
+    stale: anyOpen && sites.every((site) => site.value === null),
   };
 }

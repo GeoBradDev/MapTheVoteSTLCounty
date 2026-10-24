@@ -25,6 +25,11 @@ import { stillShowable } from '../../data/waitTimes.js';
  *   with counts or a failure, was sent (ms), or null before the first.
  * @property {number | null} askedAt When the latest request was sent (ms), or
  *   null before the first. Later than `answeredAt` while it is unanswered.
+ * @property {boolean} resuming Whether the loop was stopped (a tab hidden or
+ *   frozen, a phone asleep, or no component reading it: more than RESUME_GAP
+ *   intervals since its last tick) and no request since has answered: from
+ *   the first snapshot after the stop until the first request sent after it
+ *   answers. Until then, what the loop holds is from before the stop.
  * @property {import('../../data/waitTimes.js').WaitEntry[]} waits
  */
 
@@ -45,6 +50,7 @@ function initialState(fetchers) {
     checkedAt: null,
     answeredAt: null,
     askedAt: null,
+    resuming: false,
     waits: [],
   });
   return withWaits({ county: part('county'), city: part('city') });
@@ -53,6 +59,9 @@ function initialState(fetchers) {
 function withWaits(state) {
   return { ...state, waits: KEYS.flatMap((key) => state[key].waits) };
 }
+
+/** More than this many intervals since the loop last asked means it was stopped. */
+const RESUME_GAP = 1.5;
 
 const isHidden = () => typeof document !== 'undefined' && document.visibilityState === 'hidden';
 
@@ -77,6 +86,9 @@ export function createWaitTimesStore(
   // left waits out the interval instead of asking again.
   let lastTickAt = null;
 
+  // Whether the loop has not ticked for more than RESUME_GAP intervals.
+  const stopped = () => lastTickAt !== null && Date.now() - lastTickAt > RESUME_GAP * refreshMs;
+
   function update(key, change) {
     state = withWaits({ ...state, [key]: { ...state[key], ...change } });
     for (const listener of listeners) listener();
@@ -100,7 +112,7 @@ export function createWaitTimesStore(
     if (inFlight.has(key) && !resumed) return;
     const sentAt = Date.now();
     inFlight.set(key, sentAt);
-    update(key, { askedAt: sentAt });
+    update(key, { askedAt: sentAt, resuming: resumed });
     const current = () => inFlight.get(key) === sentAt;
     try {
       const waits = await fetchers[key]();
@@ -110,11 +122,12 @@ export function createWaitTimesStore(
         refreshFailed: false,
         checkedAt: sentAt,
         answeredAt: sentAt,
+        resuming: false,
         waits,
       });
     } catch {
       if (!current()) return;
-      update(key, { refreshFailed: true, answeredAt: sentAt });
+      update(key, { refreshFailed: true, answeredAt: sentAt, resuming: false });
       prune(key, true);
     } finally {
       if (current()) inFlight.delete(key);
@@ -126,7 +139,7 @@ export function createWaitTimesStore(
     timer = null;
     if (listeners.size === 0 || isHidden()) return;
     timer = setTimeout(tick, refreshMs);
-    const resumed = lastTickAt !== null && Date.now() - lastTickAt > 1.5 * refreshMs;
+    const resumed = stopped();
     lastTickAt = Date.now();
     for (const key of KEYS) {
       if (!fetchers[key]) continue;
@@ -170,11 +183,17 @@ export function createWaitTimesStore(
      * While no component reads it, the loop is stopped and nothing prunes, so a
      * component mounting later would first render values that aged out. Drop
      * them here, before that render; with no listeners there is no one to tell.
+     * After a long stop, that render also already says it is resuming, as the
+     * first tick will (#187), so it shows no check time from before the stop.
      * @returns {WaitTimesState}
      */
     getSnapshot() {
       if (listeners.size === 0) {
-        for (const key of KEYS) if (fetchers[key]) prune(key, state[key].refreshFailed);
+        for (const key of KEYS) {
+          if (!fetchers[key]) continue;
+          prune(key, state[key].refreshFailed);
+          if (stopped() && !state[key].resuming) update(key, { resuming: true });
+        }
       }
       return state;
     },

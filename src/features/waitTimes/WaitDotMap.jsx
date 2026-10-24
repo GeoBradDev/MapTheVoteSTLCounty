@@ -1,18 +1,17 @@
 // The home page's line count dot map (#184): during early voting and on
 // Election Day, every County and City site on one small inline SVG map,
-// colored and sized by how many people are in line, with the legend, the
-// three shortest open lines and each board's rule. No map library and no
-// tiles: the outlines are committed (outline.js) and this module loads on
-// demand, after the home page's text has painted. The map is one link to the
-// wait times page, which lists everything it shows; the SVG itself is hidden
-// from screen readers, and the summary carries the data.
+// colored and sized by how many people are in line, with its legend. No
+// map library and no tiles: the outlines are committed (outline.js) and this
+// module loads on demand, after the home page's text has painted. The map is
+// one link to the wait times page, which lists everything it shows; the SVG
+// itself is hidden from screen readers, and the status line and legend carry
+// the data.
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'wouter';
 import election, { jurisdictions } from '../../config/election.js';
 import { getAbsenteeSites, getPolls } from '../../data/arcgis.js';
 import { earlyVotingStatus, zonedNow } from '../lookup/earlyVoting.js';
 import { copy as homeCopy } from '../lookup/homeCopy.js';
-import { copy as resultsCopy } from '../lookup/resultsCopy.js';
 import { useNow } from '../lookup/useNow.js';
 import { dotMap, HOLLOW_RADIUS, project } from './dotMapModel.js';
 import { homeMapMode } from './homeMapMode.js';
@@ -63,15 +62,13 @@ const LNG_TICKS = [-90.6, -90.4, -90.2].map((lng) => ({ lng, x: project(lng, 38.
 
 const KEYS = ['county', 'city'];
 
-// A gap between answers longer than this means the loop was stopped (a tab
-// hidden or frozen), not a refresh on its usual interval.
-const GAP_MS = 1.5 * election.waitTimes.refreshSeconds * 1000;
-
+// Answered since the sites opened, and not asking again after the loop was
+// stopped (a tab hidden or frozen): the loop says which (`resuming`).
 function answeredSince(part, openedAt) {
   if (part.status === 'off') return true;
-  const { answeredAt, askedAt } = part;
+  const { answeredAt } = part;
   if (answeredAt === null || answeredAt < openedAt) return false;
-  return !(askedAt > answeredAt && askedAt - answeredAt > GAP_MS);
+  return !part.resuming;
 }
 
 function Swatch({ step, r }) {
@@ -269,7 +266,7 @@ export default function WaitDotMap({
   // Settled once each board asked has answered since the sites opened: the
   // shared loop may still hold an answer from the evening before (a page left
   // open, or a phone woken the next morning), which is not these lines. Nor
-  // while a request is out after a long gap (a phone woken later the same
+  // while the loop resumes after a long gap (a phone woken later the same
   // day): the counts the loop dropped as too old are not "no count".
   const settled = !model?.anyOpen || KEYS.every((key) => answeredSince(waits[key], model.openedAt));
 
@@ -277,7 +274,7 @@ export default function WaitDotMap({
   // map to draw, the home page is as it was, with its wait times link. Counts
   // that are stale or cannot be loaded do not close it: the box is already on
   // screen at its reserved height, and closing it would move everything below
-  // (#27). The sites then show as hollow rings, and the summary says so.
+  // (#27). The sites then show as hollow rings, and a line says so.
   useEffect(() => {
     if (mode === 'off' || result?.error || result?.failed) onClose();
   }, [mode, result, onClose]);
@@ -285,9 +282,9 @@ export default function WaitDotMap({
   const heading = electionDay ? text.headingElectionDay : text.heading;
   const mapLabel = electionDay ? text.mapLinkElectionDay : text.mapLink;
   const status = statusLine(model, waits, electionDay, now, settled);
-  // Once shown, the legend and rule stay while the counts are first asked
+  // Once shown, the legend stays while the counts are first asked
   // (when a site opens with the page open, the answer can take a few
-  // seconds); the summary and the status line wait for the answer.
+  // seconds); the no-count line and the status line wait for the answer.
   const [shownOnce, setShownOnce] = useState(false);
   if (model && settled && !shownOnce) setShownOnce(true);
   const ready = Boolean(model && (settled || shownOnce));
@@ -319,31 +316,7 @@ export default function WaitDotMap({
       {ready && (
         <>
           <Legend legend={model.legend} />
-          {model.anyOpen &&
-            settled &&
-            (model.shortest.length ? (
-              <div className="mt-3 text-sm">
-                <p id="home-map-shortest" className="font-semibold">
-                  {text.shortest}
-                </p>
-                <ul aria-labelledby="home-map-shortest" className="mt-1 space-y-0.5">
-                  {model.shortest.map((site) => (
-                    <li key={site.key}>
-                      {text.site({
-                        name: site.name ?? resultsCopy.polls.unnamed(site.loc),
-                        board: jurisdictions[site.jurisdiction].name,
-                        count: site.value,
-                      })}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <p className="mt-3 text-sm">{text.noCounts}</p>
-            ))}
-          <p className="mt-3 text-sm text-muted">
-            {electionDay ? copy.electionDay.city : copy.city}
-          </p>
+          {model.stale && settled && <p className="mt-3 text-sm">{text.noCounts}</p>}
         </>
       )}
     </section>
