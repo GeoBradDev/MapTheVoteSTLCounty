@@ -69,7 +69,7 @@ npm run build         # build the static site into dist/
 npm run preview       # serve dist/ locally
 npm test              # run the tests once (npm run test:watch to watch)
 npm run test:e2e      # accessibility and failure-state checks in Chromium; run npm run build first
-npm run test:perf     # Lighthouse performance budgets; run npm run build first
+npm run test:perf     # Lighthouse performance budgets and SEO audits; run npm run build first
 npm run lint          # ESLint, including jsx-a11y rules
 npm run format        # format with Prettier (npm run format:check to check only)
 ```
@@ -268,6 +268,10 @@ headers and the cache rules. `src/test/render.test.js` checks it.
 - **Content-Security-Policy:** it allows only the origins the app calls. Code that fetches a
   new origin (a geocoder, map tiles, fonts) must add it to the policy in `render.yaml` in the
   same change, or the browser blocks the request in production.
+- **`noindex` on precinct pages (#98):** `/p/*` is also served with `X-Robots-Tag: noindex`
+  (see [Search engines](#search-engines)); `npm run preview` sends it too. Like any header
+  change it shows only on production: check it with `curl -I https://mapthevotestl.com/p/CC007`
+  or the smoke test after the deploy.
 - **Preconnect on precinct pages:** `/p/*` is served with a `Link` header that preconnects to
   the ArcGIS host the page asks for its precinct first (`PRECINCT_PRECONNECT` in
   `src/prerender/plugin.js`, built from the County's and the City's election service roots).
@@ -277,7 +281,8 @@ headers and the cache rules. `src/test/render.test.js` checks it.
   network does not credit a preconnect, so the Lighthouse run cannot measure its gain.
 - **Cache-Control:** no two header rules may match the same path; Render does not document
   how they combine. The app shell and the pre-rendered pages send `no-cache` and hashed `/assets/` files are
-  `immutable`; `/robots.txt` and `/sitemap.xml` are cached for an hour; `/manifest.webmanifest`
+  `immutable`; `/robots.txt`, `/sitemap.xml` and the link preview image `/share-image.png` are
+  cached for an hour; `/manifest.webmanifest`
   and `/sw.js` send `no-cache`. A new route needs its own `no-cache` rule.
 - **Installable app, no service worker (#25):** every page links `/apple-touch-icon.png`, and
   the app's script links `/manifest.webmanifest` (`public/`, with its icons in `public/icons/`)
@@ -322,7 +327,7 @@ precinct `/p/W01P12` the app shell (with nothing pre-rendered in it), that a has
 `/learn` and `/learn/voter-id` returns the page pre-rendered, with its `h1` and canonical, that `/robots.txt` is a text file with a `Sitemap:` line and
 `/sitemap.xml` is XML (not the app shell), that `/manifest.webmanifest` is the web app manifest's
 JSON (not the app shell), and that the expected security and cache headers are
-present. It exits 1 and lists what failed. Against a host that sets no headers, such as
+present, `X-Robots-Tag: noindex` on `/p/CC007` among them (#98). It exits 1 and lists what failed. Against a host that sets no headers, such as
 `npm run preview`, add `--skip-headers`. Against a PR preview, add `--preview`: it then checks
 that `/robots.txt` says `Disallow: /` and the home page and the shell carry `noindex`, instead of the sitemap. The expected headers are a table at the top of `scripts/smoke.mjs`; change it
 when the host's header config changes. `src/test/render.test.js` checks `render.yaml` against
@@ -340,13 +345,22 @@ Every build writes `robots.txt`, and a production build writes `sitemap.xml`, bo
   other pages have none.
 - **Not in the sitemap:** precinct pages (`/p/<code>`). `robots.txt` does not disallow them:
   a disallowed URL can still be indexed from links, without its content, and a crawler cannot
-  see a `noindex` on a page it may not fetch. Whether they carry `noindex` is #98. The early
+  see a `noindex` on a page it may not fetch. The early
   voting wait times page (`/early-voting`, #104) is not in the sitemap or pre-rendered either:
-  its content is live, so it is rendered in the browser from the shell.
+  its content is live, so it is rendered in the browser from the shell. It is not `noindex`.
+- **`noindex` (#98):** precinct pages, County and City alike (owner decision: their polling
+  places are right only for the current election, and a search snippet can outlive a change),
+  the not-found page and the error screen carry `<meta name="robots" content="noindex">` while
+  shown (`useNoindex` in `src/components/`, which removes only the tag it added, never a PR
+  preview's). The host answers every unknown path with 200 and the shell, so without it a
+  mistyped link is a soft 404 that could be indexed. Precinct pages are also sent
+  `X-Robots-Tag: noindex` (see Deploy), for crawlers that do not run the app; it is a header,
+  not a tag in `shell.html`, because the wait times page gets the same shell. Link previews
+  ignore both.
 - **Pre-rendered pages:** the indexed pages above are static HTML too, so crawlers and link preview
   bots that do not run JavaScript get each page's content and its own title, description,
   canonical (`siteUrl` plus the path) and Open Graph tags (`og:type`, `og:site_name`,
-  `og:title`, `og:description`, `og:url`). After the client build, `src/prerender/plugin.js`
+  `og:title`, `og:description`, `og:url`, and the share image below). After the client build, `src/prerender/plugin.js`
   renders `src/entry-server.jsx` in Node for each path `prerenderPaths()` in `src/pageHead.js`
   lists (the sitemap's own list, `publicPaths()` in `src/config/publicPages.js`), and the browser hydrates the markup (`src/main.jsx`). The head values come from
   `pageHead()`, which the app also applies on every in-app navigation. A description is the
@@ -357,7 +371,17 @@ Every build writes `robots.txt`, and a production build writes `sitemap.xml`, bo
   that section, not the page); a topic without one gets the `/learn` intro. Code that runs at module load or while
   rendering must work without `window`, `document` or `navigator`; `npm test` renders every
   pre-rendered path in Node. Precinct pages are never pre-rendered (their data is live) and
-  keep the shell's head; what they and the not-found page carry is #98.
+  keep the shell's head.
+- **Link previews (#98):** every page, the shell included, names one site-wide share image,
+  `public/share-image.png` (1200 x 630: the site's mark, its name and "Find where to vote" on
+  the brand teal; no election or date, so it does not go stale), by its absolute production URL
+  in `og:image`, with its size and alt text, and `twitter:card` `summary_large_image`.
+  `scripts/draw-share-image.mjs` draws it from the palette tokens, `en.json` and the favicon's
+  mark; run it again when any of those changes. The shell (`index.html`) writes out the
+  site's own preview tags, `headTags(shellHead())` in `src/pageHead.js` (a test keeps the two
+  the same), with no canonical or `og:url` since it answers many paths, so a shared precinct
+  link previews with the site name, the description and the image. Each pre-rendered page
+  replaces them with its own (`src/prerender/html.js`).
 - **PR previews:** Render sets `IS_PULL_REQUEST=true` in a preview build. The build then
   writes a `robots.txt` of `User-agent: *` / `Disallow: /`, adds
   `<meta name="robots" content="noindex">` to `index.html` (and so to the shell and every
@@ -423,7 +447,10 @@ is 2.5 s or more, or any run reports no LCP or ends without the page's own conte
 heading, and on the results page the precinct line under it, the municipality, districts, sample ballot link and each
 polling place's name and ZIP; on the City results page the City Board's Election Day rule,
 the districts card, the City Board's sample ballot PDF link and each polling place's name; on the wait times page each site's name, or
-the note that early voting has ended). It writes the report of the run with the median score to
+the note that early voting has ended). Each run also takes Lighthouse's SEO category (#98):
+every scored SEO audit must pass on every route, except `is-crawlable` on the precinct pages,
+which must fail there because they are `noindex` (`SEO_EXPECTED_FAILURES` in
+`e2e/lighthouse.js`, each with its reason). It writes the report of the run with the median score to
 `lighthouse-reports/` (CI keeps it as the `lighthouse-reports` artifact). No live service is
 called: Chromium resolves the county's ArcGIS host (the City Board's layers are on it too) and the basemap host to a local HTTPS
 server, and every other host except `localhost` to nothing. That server answers the County

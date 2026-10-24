@@ -107,8 +107,8 @@ function usePageArrival() {
 
 /**
  * Keeps the head describing the page shown (#99): a public page's title,
- * description, canonical and Open Graph tags, or the shell's description with
- * no canonical on any other page. A pre-rendered page arrives with its own
+ * description, canonical, Open Graph and card tags, or the shell's tags (no
+ * canonical) on any other page. A pre-rendered page arrives with its own
  * head, and the title each page puts back when it goes is the one it found,
  * so a public page's title is set here too (the home page sets none itself).
  * Other pages set their own titles. It renders after the page, so its effect

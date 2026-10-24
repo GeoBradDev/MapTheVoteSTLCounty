@@ -1,7 +1,8 @@
 // Turns the built app shell (dist/index.html) into one pre-rendered page
 // (#99): the page's own title, description, canonical, Open Graph and card
-// tags in the head, in place of the shell's (#98), and its server-rendered markup in the root. The root is marked
-// with the path it was rendered for, so src/main.jsx hydrates it only there.
+// tags in the head, in place of the shell's (#98), and its server-rendered
+// markup in the root. The root is marked with the path it was rendered for,
+// so src/main.jsx hydrates it only there.
 
 import { headTags } from '../pageHead.js';
 

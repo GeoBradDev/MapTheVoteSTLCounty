@@ -34,7 +34,7 @@ jobs:
 
       # The header and cache rules in render.yaml match these paths. The web
       # app manifest and its icons (#25); no service worker until #183, which
-      # adds dist/sw.js here.
+      # adds dist/sw.js here; the link preview image (#98).
       - name: Check build output
         run: |
           test -f dist/index.html
@@ -45,6 +45,7 @@ jobs:
           ls dist/icons/icon-192.png dist/icons/icon-512.png dist/icons/maskable-192.png dist/icons/maskable-512.png
           grep -q 'rel="apple-touch-icon" href="/apple-touch-icon.png"' dist/index.html
           test ! -e dist/sw.js
+          test -f dist/share-image.png
 
       # Accessibility in a real browser (#26): axe, reflow, skip link and focus
       # on the key routes at 360 and 1280 px, against the build above. The
@@ -57,6 +58,8 @@ jobs:
       # Fails below a score of 90 or with LCP at 2.5 s or more. The county's
       # layers come from the recorded fixtures through a local server; no live
       # service is called. The median run's reports are kept as an artifact.
+      # Every run also takes the SEO category (#98): every scored audit must
+      # pass, except is-crawlable on the noindex precinct pages.
       - run: npm run test:perf
 
       - uses: actions/upload-artifact@v4
