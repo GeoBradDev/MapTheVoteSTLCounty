@@ -78,6 +78,7 @@ off; the owner adds the `G-` ID in `src/config/site.js` and applies the GA prope
   `PrivacyPage.analytics.test.jsx` (new, the notice with an ID set via `vi.mock`), sharing
   `src/test/privacyNotice.js` (new: the CSP origins and the hosts a text names).
 - `render.yaml`, `src/test/render.test.js`.
+- `src/data/jurisdictions.js`: its `isPrecinctCode` comment no longer claims analytics uses it.
 - `e2e/analytics.e2e.js` (new): builds the app with a test ID (a Vite plugin that rewrites
   `site.js` in the test's own build, no production hook), serves it with `vite preview` at the
   production origin through Playwright routing, stubs Google's hosts, runs a Use my location

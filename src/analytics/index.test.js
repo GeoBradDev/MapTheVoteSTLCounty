@@ -98,6 +98,7 @@ describe('routePattern', () => {
     ['/p/', '/not-found'],
     ['/p/CC007/extra', '/not-found'],
     ['/learn//', '/not-found'],
+    ['//', '/not-found'],
   ])('reports %s as %s', (path, pattern) => {
     expect(routePattern(path)).toBe(pattern);
   });

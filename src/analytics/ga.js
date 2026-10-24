@@ -34,7 +34,8 @@ const TOPIC_PAGE = /^\/learn\/([^/]+)$/i;
 export function routePattern(path) {
   const pathOnly = String(path).split(/[?#]/)[0];
   if (PRECINCT_PAGE.test(pathOnly)) return '/p/:precinct';
-  const trimmed = pathOnly.length > 1 ? pathOnly.replace(/\/$/, '') : pathOnly;
+  // One trailing slash only, as wouter matches: // and /learn// are not found.
+  const trimmed = /[^/]\/$/.test(pathOnly) ? pathOnly.slice(0, -1) : pathOnly;
   const lower = trimmed.toLowerCase();
   if (STATIC_ROUTES.has(lower)) return lower;
   const topic = TOPIC_PAGE.exec(trimmed)?.[1];
