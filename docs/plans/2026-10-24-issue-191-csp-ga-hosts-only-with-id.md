@@ -61,6 +61,11 @@ against the directive a browser applies (`script-src-elem` over `script-src`, `d
 when one is left out), and the message names that directive; the README's pre-election check
 also confirms no outbound `click` hit for a directions link.
 
+Review revision (finder 4): with the ID empty, each source is parsed (scheme, host, port, path)
+and a wildcard host is tried against one sample host per Google domain, so a wildcard with a
+path (`https://*/gtag/js`) or over a two-label suffix (`*.co.uk`) is caught; the Google domains
+also include `googleapis.com` and `googleusercontent.com`.
+
 ## Order of work
 
 1. Red: write `src/analytics/csp.test.js` (helper does not exist) and confirm it fails.

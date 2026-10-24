@@ -22,18 +22,54 @@ export const ANALYTICS_CSP = Object.freeze({
   'img-src': [COLLECTOR],
 });
 
-// A source naming a Google host or a wildcard under one: google.com (and
-// country domains like google.co.uk), the tag, analytics, ad and static
-// domains GA and Tag Manager use, and their subdomains, with or without a
-// trailing dot.
+// A Google host: google.com (and country domains like google.co.uk), the tag,
+// analytics, ad, static, API and user content domains, and their subdomains.
 const GOOGLE_HOST =
-  /^(?:[a-z][a-z0-9+.-]*:\/\/)?(?:[*a-z0-9-]+\.)*(?:google(?:\.com?)?\.[a-z]{2,}|(?:googletagmanager|google-analytics|googleadservices|googlesyndication|googletagservices|doubleclick|gstatic)\.(?:com|net))\.?(?::\d+|:\*)?(?:\/.*)?$/i;
+  /^(?:[a-z0-9-]+\.)*(?:google(?:\.com?)?\.[a-z]{2,}|(?:googletagmanager|google-analytics|googleadservices|googlesyndication|googletagservices|googleapis|googleusercontent|doubleclick|gstatic)\.(?:com|net))$/i;
 
-// A source that allows any host, Google's among them: a network scheme alone
-// (https:, wss:), *, or a wildcard over a whole top-level domain (*.com),
-// with or without a scheme and port.
-const ANY_HOST =
-  /^(?:(?:https?|wss?):|(?:[a-z][a-z0-9+.-]*:\/\/)?\*(?:\.[a-z]+)?(?::\d+|:\*)?\/?)$/i;
+// Hosts a wildcard source is tried against: one per Google domain above, as
+// a browser would request it (*.com and *.co.uk allow some of them).
+const GOOGLE_SAMPLES = [
+  'www.googletagmanager.com',
+  'region1.google-analytics.com',
+  'www.google.com',
+  'www.google.co.uk',
+  'www.google.com.au',
+  'www.googleadservices.com',
+  'pagead2.googlesyndication.com',
+  'www.googletagservices.com',
+  'www.googleapis.com',
+  'lh3.googleusercontent.com',
+  'stats.g.doubleclick.net',
+  'ssl.gstatic.com',
+];
+
+// A CSP host source: an optional scheme, a host (or none, for a scheme
+// alone like https:), an optional port and an optional path.
+const SOURCE = /^(?:([a-z][a-z0-9+.-]*):(?:\/\/|$))?([^/:]*)(?::(?:\d+|\*))?(?:\/.*)?$/i;
+
+/**
+ * Whether a source lets the page reach a Google host: a Google host itself,
+ * a wildcard that covers one (*, *.com), or a network scheme alone (https:).
+ */
+function allowsGoogle(source) {
+  if (source.startsWith("'")) return false;
+  const match = source.match(SOURCE);
+  if (!match) return false;
+  const [, scheme, rawHost] = match;
+  const host = rawHost.toLowerCase().replace(/\.$/, '');
+  if (!host) return /^(?:https?|wss?)$/i.test(scheme ?? '');
+  if (host === '*') return true;
+  // *.X covers X's subdomains: Google's, when X is a Google host or a
+  // suffix of one (com, co.uk).
+  if (host.startsWith('*.')) {
+    const suffix = host.slice(2);
+    return (
+      GOOGLE_HOST.test(suffix) || GOOGLE_SAMPLES.some((google) => google.endsWith(`.${suffix}`))
+    );
+  }
+  return GOOGLE_HOST.test(host);
+}
 
 // The directives a browser applies to each of GA's requests, most specific
 // first: script-src-elem governs a script tag over script-src, and
@@ -79,7 +115,7 @@ export function analyticsCspProblems(policy, measurementId) {
     });
   }
   return parsed.flatMap(([name, values]) => {
-    const google = values.filter((source) => GOOGLE_HOST.test(source) || ANY_HOST.test(source));
+    const google = values.filter(allowsGoogle);
     return google.length
       ? [
           `gaMeasurementId is empty (or not a GA4 ID), so render.yaml's Content-Security-Policy must allow no ` +

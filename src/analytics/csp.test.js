@@ -135,6 +135,9 @@ describe('analyticsCspProblems', () => {
       'https://*.doubleclick.net',
       'https://www.googleadservices.com',
       'https://www.googletagservices.com',
+      'https://www.google.com:443',
+      'https://*.googleapis.com',
+      'https://lh3.googleusercontent.com',
     ]) {
       expect(analyticsCspProblems(`${BASE}; frame-src ${source}`, ''), source).toEqual([
         expect.stringContaining(`remove ${source} from frame-src`),
@@ -150,6 +153,12 @@ describe('analyticsCspProblems', () => {
       'http:',
       'HTTPS:',
       'https://*',
+      'https://*/gtag/js',
+      '*/gtag/js',
+      'https://*.com/gtag/js',
+      'https://*.com:443/gtag/js',
+      'https://*.co.uk',
+      'https://*.com.au',
       '*:*',
       '*.com',
       'https://*.net',
@@ -161,7 +170,15 @@ describe('analyticsCspProblems', () => {
   });
 
   it('does not take a source that allows no network host for Google', () => {
-    for (const source of ['data:', 'blob:', "'self'", "'none'", 'https://photon.komoot.io']) {
+    for (const source of [
+      'data:',
+      'blob:',
+      "'self'",
+      "'none'",
+      'https://photon.komoot.io',
+      'https://*.arcgis.com',
+      'https://services6.arcgis.com:443/path',
+    ]) {
       expect(analyticsCspProblems(`${BASE}; img-src ${source}`, ''), source).toEqual([]);
     }
   });
