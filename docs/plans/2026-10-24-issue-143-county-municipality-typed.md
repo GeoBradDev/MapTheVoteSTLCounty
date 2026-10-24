@@ -64,6 +64,8 @@ layer; besides real towns it holds `ST LOUIS COUNTY` (unincorporated), `ST LOUIS
   Blvd, Town and Country).
 - `src/data/countyAddress.cityunit143.test.js`: new, review finding 2 (6200 Enright Ave).
 - `src/data/countyAddress.citysite143.test.js`: new, review finding 3 (6200 Enright Ave).
+- `src/data/countyAddress.stlcity143.test.js`: new, review finding 4 (6200 Enright Ave, St.
+  Louis City).
 - `scripts/check-geocoder.mjs`: the #143 typed and picked cases.
 - `docs/data.md`, `README.md`: the rule text.
 
