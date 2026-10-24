@@ -76,7 +76,7 @@ services the doc lists that are gone.
 
 - Criteria 3, 5: unit tests in `src/test/inspectData.test.js`, including one that reads the
   real `docs/data.md` and checks `polls_2027_11_view` and a made-up City election service are
-  reported, while every name in the "Read by the app" table is documented.
+  reported, while every layer `src/config/election.js` names in the County and City orgs is in its own root's block.
 - Criteria 2, 3, 4: live drive, `node scripts/inspect-data.mjs --inventory` prints the three
   roots with 0 undocumented each, and its code fetches only the roots.
 - Criteria 1, 6, 7: review of the doc diff.
