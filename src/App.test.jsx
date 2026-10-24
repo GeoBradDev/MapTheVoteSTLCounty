@@ -122,7 +122,7 @@ describe('App', () => {
   it('opens the wait times page from the home page without a full reload', async () => {
     const user = userEvent.setup();
     const location = renderAt('/');
-    await user.click(screen.getByRole('link', { name: 'See early voting wait times' }));
+    await user.click(screen.getByRole('link', { name: 'Detailed early voting wait times map' }));
     expect(location.history.at(-1)).toBe('/early-voting');
     // The page's own heading takes focus (tabindex -1); the loading
     // fallback's, with the same text, does not (#151).

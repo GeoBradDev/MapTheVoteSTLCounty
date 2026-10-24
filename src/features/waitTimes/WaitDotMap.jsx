@@ -1,18 +1,17 @@
 // The home page's line count dot map (#184): during early voting and on
 // Election Day, every County and City site on one small inline SVG map,
-// colored and sized by how many people are in line, with the legend, the
-// three shortest open lines and each board's rule. No map library and no
-// tiles: the outlines are committed (outline.js) and this module loads on
-// demand, after the home page's text has painted. The map is one link to the
-// wait times page, which lists everything it shows; the SVG itself is hidden
-// from screen readers, and the summary carries the data.
+// colored and sized by how many people are in line, with its legend. No
+// map library and no tiles: the outlines are committed (outline.js) and this
+// module loads on demand, after the home page's text has painted. The map is
+// one link to the wait times page, which lists everything it shows; the SVG
+// itself is hidden from screen readers, and the status line and legend carry
+// the data.
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'wouter';
 import election, { jurisdictions } from '../../config/election.js';
 import { getAbsenteeSites, getPolls } from '../../data/arcgis.js';
 import { earlyVotingStatus, zonedNow } from '../lookup/earlyVoting.js';
 import { copy as homeCopy } from '../lookup/homeCopy.js';
-import { copy as resultsCopy } from '../lookup/resultsCopy.js';
 import { useNow } from '../lookup/useNow.js';
 import { dotMap, HOLLOW_RADIUS, project } from './dotMapModel.js';
 import { homeMapMode } from './homeMapMode.js';
@@ -275,7 +274,7 @@ export default function WaitDotMap({
   // map to draw, the home page is as it was, with its wait times link. Counts
   // that are stale or cannot be loaded do not close it: the box is already on
   // screen at its reserved height, and closing it would move everything below
-  // (#27). The sites then show as hollow rings, and the summary says so.
+  // (#27). The sites then show as hollow rings, and a line says so.
   useEffect(() => {
     if (mode === 'off' || result?.error || result?.failed) onClose();
   }, [mode, result, onClose]);
@@ -283,9 +282,9 @@ export default function WaitDotMap({
   const heading = electionDay ? text.headingElectionDay : text.heading;
   const mapLabel = electionDay ? text.mapLinkElectionDay : text.mapLink;
   const status = statusLine(model, waits, electionDay, now, settled);
-  // Once shown, the legend and rule stay while the counts are first asked
+  // Once shown, the legend stays while the counts are first asked
   // (when a site opens with the page open, the answer can take a few
-  // seconds); the summary and the status line wait for the answer.
+  // seconds); the no-count line and the status line wait for the answer.
   const [shownOnce, setShownOnce] = useState(false);
   if (model && settled && !shownOnce) setShownOnce(true);
   const ready = Boolean(model && (settled || shownOnce));
@@ -317,31 +316,7 @@ export default function WaitDotMap({
       {ready && (
         <>
           <Legend legend={model.legend} />
-          {model.anyOpen &&
-            settled &&
-            (model.shortest.length ? (
-              <div className="mt-3 text-sm">
-                <p id="home-map-shortest" className="font-semibold">
-                  {text.shortest}
-                </p>
-                <ul aria-labelledby="home-map-shortest" className="mt-1 space-y-0.5">
-                  {model.shortest.map((site) => (
-                    <li key={site.key}>
-                      {text.site({
-                        name: site.name ?? resultsCopy.polls.unnamed(site.loc),
-                        board: jurisdictions[site.jurisdiction].name,
-                        count: site.value,
-                      })}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <p className="mt-3 text-sm">{text.noCounts}</p>
-            ))}
-          <p className="mt-3 text-sm text-muted">
-            {electionDay ? copy.electionDay.city : copy.city}
-          </p>
+          {model.stale && settled && <p className="mt-3 text-sm">{text.noCounts}</p>}
         </>
       )}
     </section>

@@ -1,6 +1,7 @@
 import { act, render, screen, within } from '@testing-library/react';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
+import { buttonClass } from '../../components/buttonClass.js';
 import cityResults from '../../config/cityResults.js';
 import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
@@ -18,6 +19,8 @@ vi.mock('../waitTimes/WaitDotMap.jsx', () => ({
     return <p data-testid="dot-map">dot map</p>;
   },
 }));
+
+const box = (container) => container.querySelector('[data-home-map-box]');
 
 function renderHome() {
   const { hook } = memoryLocation({ path: '/' });
@@ -41,13 +44,16 @@ describe('HomePage', () => {
     expect(header.querySelectorAll('time')).toHaveLength(1);
   });
 
-  // The first action next to the address search (#104): no address needed.
-  it('links to the early voting wait times before the address search', () => {
+  // The wait times page's button (#104, #209): an in-app link drawn as a
+  // button, after the address search, no address needed.
+  it('links to the early voting wait times as a button, after the address search (#209)', () => {
     renderHome();
     const link = screen.getByRole('link', { name: copy.waitTimes });
+    expect(link.tagName).toBe('A');
     expect(link).toHaveAttribute('href', '/early-voting');
+    expect(link).toHaveClass(...buttonClass({ variant: 'secondary' }).split(' '));
     expect(
-      link.compareDocumentPosition(screen.getByRole('combobox')) & Node.DOCUMENT_POSITION_FOLLOWING,
+      screen.getByRole('combobox').compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
 
@@ -82,8 +88,8 @@ describe('HomePage', () => {
 
   // #165: the precinct pages state each jurisdiction's own Election Day rule;
   // the home page, which serves City and County voters alike, states none of
-  // its own. The dot map (stood in for here) repeats the wait times page's
-  // line that each board's sites are for its own voters (#184,
+  // its own, and the dot map (stood in for here) no longer repeats the wait
+  // times page's line that each board's sites are for its own voters (#209,
   // WaitDotMap.test.jsx).
   it('states no Election Day rule of its own for either jurisdiction (#165)', () => {
     const { container } = renderHome();
@@ -111,15 +117,18 @@ describe('HomePage', () => {
   });
 
   // #80: the hero is the heading, the date, the intro and the nonpartisan
-  // line, then the wait times link and the address search.
-  it('puts the wait times link between the header and the address box', () => {
+  // line; the address search follows it directly (#209), so it is on the
+  // first screen in every calendar state.
+  it('puts the address box right after the header, before the wait times button', () => {
     const { container } = renderHome();
     const header = container.querySelector('header');
+    const search = screen.getByRole('combobox');
     const link = screen.getByRole('link', { name: copy.waitTimes });
-    expect(header.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(header.compareDocumentPosition(search) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(header.contains(link)).toBe(false);
+    expect(search.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(
-      link.compareDocumentPosition(screen.getByRole('combobox')) & Node.DOCUMENT_POSITION_FOLLOWING,
+      search.compareDocumentPosition(box(container)) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
 
@@ -175,15 +184,15 @@ describe('HomePage', () => {
   });
 });
 
-// The line count dot map (#184): in its own box between the header and the
-// wait times link, only during early voting and on Election Day.
+// The line count dot map (#184): in its own box between the address search
+// and the wait times button (#209), only during early voting and on Election
+// Day.
 describe('HomePage dot map', () => {
   // 9:05 a.m. Central on 2026-10-22, during early voting; a day in August;
   // 7:30 p.m. Central on Election Day, after the polls close.
   const OPEN_AT = Date.UTC(2026, 9, 22, 14, 5);
   const BEFORE_AT = Date.UTC(2026, 7, 10, 15, 0);
   const AFTER_POLLS_AT = Date.UTC(2026, 10, 4, 1, 30);
-  const box = (container) => container.querySelector('[data-home-map-box]');
 
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date'] });
@@ -195,15 +204,15 @@ describe('HomePage dot map', () => {
     vi.useRealTimers();
   });
 
-  it('opens the box during early voting, after the header and before the wait times link', async () => {
+  it('opens the box during early voting, after the address box and before the wait times button', async () => {
     vi.setSystemTime(OPEN_AT);
     const { container } = renderHome();
     const map = await screen.findByTestId('dot-map');
     expect(box(container)).toHaveAttribute('data-open');
     expect(box(container)).not.toHaveAttribute('data-closed');
-    const header = container.querySelector('header');
+    const search = screen.getByRole('combobox');
     const link = screen.getByRole('link', { name: copy.waitTimes });
-    expect(header.compareDocumentPosition(map) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(search.compareDocumentPosition(map) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(map.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 

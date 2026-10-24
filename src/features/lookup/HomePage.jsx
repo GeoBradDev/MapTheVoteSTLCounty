@@ -1,4 +1,5 @@
 import { Component, lazy, Suspense, useCallback, useState, useSyncExternalStore } from 'react';
+import Button from '../../components/Button.jsx';
 import TextLink from '../../components/TextLink.jsx';
 import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
@@ -70,8 +71,8 @@ function MapBox() {
 }
 
 // The first screen. One job: get an address (or the device's location).
-// During early voting and on Election Day the line count dot map (#184) comes
-// first, with the address search right after it.
+// During early voting and on Election Day the line count dot map (#184)
+// follows the address search, then the wait times page's button (#209).
 export default function HomePage() {
   const electionDay = useSyncExternalStore(noSubscribe, electionDayNow, notElectionDay);
   return (
@@ -95,23 +96,24 @@ export default function HomePage() {
         <p className="mt-1 text-sm text-muted">{copy.unofficial}</p>
       </header>
 
-      <MapBox />
-
-      {/* The first action, next to the address search (#104): no address needed. */}
-      <p className="mt-2">
-        <TextLink to="/early-voting" variant="tap" className="font-semibold">
-          {electionDay ? copy.waitTimesElectionDay : copy.waitTimes}
-        </TextLink>
-      </p>
-
-      <div className="mt-2">
+      {/* The address search comes first in every calendar state, so it is on
+          the first screen of a 360 x 640 phone (#209); the line count dot map
+          (#184) follows it. */}
+      <div className="mt-6">
         <AddressLookup />
       </div>
 
+      <MapBox />
+
+      {/* The wait times page, drawn as a button (#209): no address needed. */}
+      <p className="mt-4">
+        <Button to="/early-voting" variant="secondary" className="w-full text-center sm:w-auto">
+          {electionDay ? copy.waitTimesElectionDay : copy.waitTimes}
+        </Button>
+      </p>
+
       {/* No Election Day rule of its own here (#165): each precinct page
-          states its own jurisdiction's rule, County or City. The dot map
-          (#184) repeats only the wait times page's line that each board's
-          sites are for its own voters. */}
+          states its own jurisdiction's rule, County or City. */}
       <nav aria-label={copy.moreInfo} className="mt-8">
         {/* Tappable rows (#80). */}
         <ul className="flex flex-col gap-2">

@@ -81,8 +81,8 @@ async function openDisclosure(page, summary) {
   if ((await line.locator('..').getAttribute('open')) === null) await line.click();
 }
 
-// The home page's line count dot map (#184), ready once its summary or its
-// "open again" line shows.
+// The home page's line count dot map (#184), ready once its status line (when
+// the counts were checked, or when sites open again) shows.
 const homeMapReady = (line) => async (page) => {
   await expect(page.getByRole('combobox')).toBeVisible();
   const box = page.locator('[data-home-map-box]');
@@ -96,7 +96,7 @@ const ROUTES = [
     name: '/ with the dot map, early voting sites open',
     path: '/',
     at: WAITS_RECORDED_AT,
-    ready: homeMapReady('Shortest lines now'),
+    ready: homeMapReady(/^Line counts checked at /),
   },
   {
     name: '/ with the dot map, every site closed',
@@ -124,7 +124,7 @@ const ROUTES = [
     path: '/',
     at: ELECTION_DAY_AT,
     waits: ELECTION_DAY_WAITS,
-    ready: homeMapReady('Shortest lines now'),
+    ready: homeMapReady(/^Line counts checked at /),
   },
   {
     // At the time the wait fixtures were recorded, so the early voting card
@@ -470,8 +470,9 @@ test('going home from a page focuses the home heading at the top', async ({ page
 });
 
 // The heading takes focus only so a screen reader announces the page; it is not
-// a control, so it draws no focus ring (#78). Links and buttons keep theirs.
-test('a heading focused after an in-app link draws no ring, a link still does', async ({
+// a control, so it draws no focus ring (#78). Links, buttons and fields keep
+// theirs.
+test('a heading focused after an in-app link draws no ring, a control still does', async ({
   page,
 }) => {
   await answerFromFixtures(page);
@@ -486,12 +487,17 @@ test('a heading focused after an in-app link draws no ring, a link still does', 
   // browser's heuristics, keeps the ring off.
   expect(await heading.evaluate((el) => el.matches(':focus-visible'))).toBe(true);
   expect(await heading.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe('none');
+  // The next stop is the address box, first after the header (#209), then
+  // the links further down: each draws its ring.
+  const ring = async () =>
+    page.evaluate(() => {
+      const style = getComputedStyle(document.activeElement);
+      return { tag: document.activeElement.tagName, style: style.outlineStyle };
+    });
   await page.keyboard.press('Tab');
-  const ring = await page.evaluate(() => {
-    const style = getComputedStyle(document.activeElement);
-    return { tag: document.activeElement.tagName, style: style.outlineStyle };
-  });
-  expect(ring).toEqual({ tag: 'A', style: 'solid' });
+  expect(await ring()).toEqual({ tag: 'INPUT', style: 'solid' });
+  for (let i = 0; i < 10 && (await ring()).tag !== 'A'; i += 1) await page.keyboard.press('Tab');
+  expect(await ring()).toEqual({ tag: 'A', style: 'solid' });
 });
 
 // The same for a row heading "Show more" focuses (an h3), while the button
@@ -545,7 +551,7 @@ test.describe('the early voting wait times page', () => {
 
   test('opens from the home page and focuses its heading', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('link', { name: 'See early voting wait times' }).click();
+    await page.getByRole('link', { name: 'Detailed early voting wait times map' }).click();
     const heading = page.getByRole('heading', { level: 1 });
     await expect(heading).toHaveText('Early voting wait times');
     await expect(heading).toBeFocused();
@@ -855,52 +861,57 @@ test.describe('with reduced motion', () => {
 
 // The site says it is nonpartisan and unofficial (#71).
 test.describe('the nonpartisan, unofficial statement', () => {
-  // Outside the dot map's window (#184); in it, the map comes first (below).
-  test('sits above the fold on a 360 x 640 phone, with the address box', async ({ page }) => {
-    await page.clock.setFixedTime(AFTER_POLLS_AT);
-    await page.setViewportSize({ width: 360, height: 640 });
-    await answerFromFixtures(page);
-    await page.goto('/');
-    await expect(page.getByText(/independent, nonpartisan guide/)).toBeInViewport({ ratio: 1 });
-    await expect(page.getByRole('combobox')).toBeInViewport({ ratio: 1 });
-    // The wait times link too (#104), with no scrolling: on Election Day it
-    // names the line counts (#107).
-    await expect(page.getByRole('link', { name: 'See Election Day line counts' })).toBeInViewport({
-      ratio: 1,
+  // In every calendar state, the address search is on the first screen of a
+  // phone or a desktop, above the line count dot map (#209), with the
+  // statement and the heading.
+  const VIEWPORTS = [
+    { width: 360, height: 640 },
+    { width: 375, height: 667 },
+    { width: 390, height: 844 },
+    { width: 1280, height: 800 },
+  ];
+  const CALENDAR = [
+    ['outside the dot map window', AFTER_POLLS_AT, undefined, null],
+    ['early voting, sites open', WAITS_RECORDED_AT, undefined, /^Line counts checked at /],
+    ['every site closed', EARLY_VOTING_CLOSED_AT, NO_WAITS, /^Sites open again /],
+    ['the evening before Election Day', AFTER_EARLY_VOTING_AT, NO_WAITS, /^Early voting has ended/],
+    ['Election Day before the polls open', BEFORE_POLLS_AT, NO_WAITS, /^Polls open today at /],
+    ['Election Day', ELECTION_DAY_AT, ELECTION_DAY_WAITS, /^Line counts checked at /],
+  ];
+  for (const [name, at, waits, line] of CALENDAR) {
+    test(`sits above the fold with the address box, on phones and desktop (${name})`, async ({
+      page,
+    }) => {
+      await page.clock.setFixedTime(at);
+      await answerFromFixtures(page, { waits });
+      for (const viewport of VIEWPORTS) {
+        await page.setViewportSize(viewport);
+        await page.goto('/');
+        const box = page.locator('[data-home-map-box]');
+        if (line) await expect(box.getByText(line)).toBeVisible();
+        else await expect(box).toHaveAttribute('data-closed', '');
+        const size = `${viewport.width} x ${viewport.height}`;
+        for (const target of [
+          page.getByText(/independent, nonpartisan guide/),
+          page.getByRole('heading', { level: 1 }),
+          page.getByRole('combobox'),
+          page.getByRole('button', { name: 'Find my precinct' }),
+          page.getByRole('button', { name: 'Use my location' }),
+        ]) {
+          await expect(target, size).toBeInViewport({ ratio: 1 });
+        }
+        expect(await page.evaluate(() => window.scrollY), size).toBe(0);
+        // The map, when shown, follows the address search.
+        if (line) {
+          const searchBottom = await page
+            .getByRole('combobox')
+            .evaluate((el) => el.getBoundingClientRect().bottom);
+          const boxTop = await box.evaluate((el) => el.getBoundingClientRect().top);
+          expect(boxTop, size).toBeGreaterThan(searchBottom);
+        }
+      }
     });
-    // And the heading and both ways in (#80).
-    await expect(page.getByRole('heading', { level: 1 })).toBeInViewport({ ratio: 1 });
-    await expect(page.getByRole('button', { name: 'Find my precinct' })).toBeInViewport({
-      ratio: 1,
-    });
-    await expect(page.getByRole('button', { name: 'Use my location' })).toBeInViewport({
-      ratio: 1,
-    });
-  });
-
-  // During early voting and on Election Day the line count dot map (#184)
-  // opens the page, by owner decision: the statement, the heading and the
-  // map's heading stay above the fold, and the address search follows the map.
-  test('sits above the fold on a 360 x 640 phone, above the dot map', async ({ page }) => {
-    await page.clock.setFixedTime(WAITS_RECORDED_AT);
-    await page.setViewportSize({ width: 360, height: 640 });
-    await answerFromFixtures(page);
-    await page.goto('/');
-    await expect(page.getByText(/independent, nonpartisan guide/)).toBeInViewport({ ratio: 1 });
-    await expect(page.getByRole('heading', { level: 1 })).toBeInViewport({ ratio: 1 });
-    await expect(
-      page.getByRole('heading', { level: 2, name: 'Lines at early voting now' }),
-    ).toBeInViewport({
-      ratio: 1,
-    });
-    const box = page.locator('[data-home-map-box]');
-    await expect(box.getByText('Shortest lines now')).toBeVisible();
-    const boxBottom = await box.evaluate((el) => el.getBoundingClientRect().bottom);
-    const searchTop = await page
-      .getByRole('combobox')
-      .evaluate((el) => el.getBoundingClientRect().top);
-    expect(searchTop).toBeGreaterThan(boxBottom);
-  });
+  }
 
   test('prints on a results page, without the Privacy link', async ({ page }) => {
     await answerFromFixtures(page);
@@ -922,15 +933,22 @@ test.describe('the nonpartisan, unofficial statement', () => {
 // window the page is as it was.
 test.describe('home page dot map', () => {
   const STATES = [
-    ['early voting, sites open', WAITS_RECORDED_AT, undefined, 'Shortest lines now'],
+    ['early voting, sites open', WAITS_RECORDED_AT, undefined, /^Line counts checked at /],
     ['every site closed', EARLY_VOTING_CLOSED_AT, NO_WAITS, /^Sites open again /],
     ['the evening before Election Day', AFTER_EARLY_VOTING_AT, NO_WAITS, /^Early voting has ended/],
     ['Election Day before the polls open', BEFORE_POLLS_AT, NO_WAITS, /^Polls open today at /],
-    ['Election Day', ELECTION_DAY_AT, ELECTION_DAY_WAITS, 'Shortest lines now'],
+    ['Election Day', ELECTION_DAY_AT, ELECTION_DAY_WAITS, /^Line counts checked at /],
+    // Sites open with no current count: with Election Day, the tallest state.
+    [
+      'early voting, no current count',
+      WAITS_RECORDED_AT,
+      { county: 'stale', city: 'stale' },
+      'No site has a current line count right now.',
+    ],
   ];
 
   for (const [name, at, waits, line] of STATES) {
-    test(`the address search stays put when the map loads (${name})`, async ({ page }) => {
+    test(`the wait times button stays put when the map loads (${name})`, async ({ page }) => {
       await page.clock.setFixedTime(at);
       await answerFromFixtures(page, { delayMs: 600, waits });
       // Hold the app's script, so the first look is the pre-rendered page
@@ -944,8 +962,11 @@ test.describe('home page dot map', () => {
         await route.continue();
       });
       await page.goto('/', { waitUntil: 'commit' });
-      const search = page.getByRole('combobox');
-      await expect(search).toBeVisible();
+      // The button under the box: the pre-rendered page names it for early
+      // voting, and on Election Day the app renames it (#107), so it is found
+      // by its link.
+      const button = page.locator('main a[href="/early-voting"]').last();
+      await expect(button).toBeVisible();
       await expect(page.locator('html')).toHaveAttribute('data-home-map', '');
       // The app is held: the box is still the pre-rendered empty one, yet the
       // stylesheet already reserves its height.
@@ -954,11 +975,11 @@ test.describe('home page dot map', () => {
       await expect(box).not.toHaveAttribute('data-open');
       await expect
         .poll(() => box.evaluate((el) => el.getBoundingClientRect().height))
-        .toBeGreaterThan(500);
-      const before = await search.boundingBox();
+        .toBeGreaterThan(400);
+      const before = await button.boundingBox();
       release();
       await expect(page.locator('[data-home-map-box]').getByText(line)).toBeVisible();
-      const after = await search.boundingBox();
+      const after = await button.boundingBox();
       expect(Math.abs(after.y - before.y)).toBeLessThan(1);
     });
 
@@ -990,7 +1011,7 @@ test.describe('home page dot map', () => {
     });
     await answerFromFixtures(page);
     await page.goto('/');
-    await expect(page.getByText('Shortest lines now')).toBeVisible();
+    await expect(page.getByText(/^Line counts checked at /)).toBeVisible();
     expect(asked.length).toBeGreaterThan(0);
     // Each board's own services, from the config: the County's election and
     // line count services and the City's.
@@ -1061,11 +1082,13 @@ test.describe('home page dot map', () => {
     const box = page.locator('[data-home-map-box]');
     await expect(box).toHaveAttribute('data-closed', '');
     await expect(box).toBeHidden();
-    await expect(page.getByRole('link', { name: 'See early voting wait times' })).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: 'Detailed early voting wait times map' }),
+    ).toBeVisible();
   });
 
   // Stale counts keep the box, already on screen at its height, so nothing
-  // moves: every site is a hollow ring and the summary says so.
+  // moves: every site is a hollow ring and a line says so.
   test('keeps the box, with hollow rings, when the counts are stale', async ({ page }) => {
     await page.clock.setFixedTime(WAITS_RECORDED_AT);
     await answerFromFixtures(page, { waits: { county: 'stale', city: 'stale' } });
@@ -1074,6 +1097,8 @@ test.describe('home page dot map', () => {
     await expect(box.getByText('No site has a current line count right now.')).toBeVisible();
     await expect(box).toHaveAttribute('data-open', '');
     await expect(box.locator('circle[data-dot="count"]')).toHaveCount(0);
-    await expect(page.getByRole('link', { name: 'See early voting wait times' })).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: 'Detailed early voting wait times map' }),
+    ).toBeVisible();
   });
 });

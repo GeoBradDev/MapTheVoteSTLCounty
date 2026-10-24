@@ -1115,15 +1115,19 @@ dark mode each marker keeps its ink outline, light there, and the ramp is the sa
 deeper pale tan, so the light ink outline of the precinct stays apart from every step
 (`mapColors.test.js` checks both themes, each on its basemap's land).
 
-During early voting and on Election Day the home page opens with a small line count dot map
-(#184), above the address search: every County and City site (on Election Day, every polling
+During early voting and on Election Day the home page shows a small line count dot map
+(#184) right under the address search, which comes first in every calendar state so it is on
+the first screen of a 360 x 640 phone (#209; `e2e/a11y.e2e.js` checks it on phones and
+desktop in each state): every County and City site (on Election Day, every polling
 place) on an inline SVG of the County and City outlines, with no map library and no tiles. It
 uses the wait times page's sites and counts, Jenks classes and ramp; each dot also grows with
-its class, and a closed site or one with no current count is a hollow gray ring. Under it are
-the legend, the three open sites with the fewest people in line (with their board) or when
-sites open again, and each board's rule that its sites are for its own voters. The whole map is
-one link to `/early-voting`; the drawing is hidden from screen readers and the text carries the
-data. Its code loads on demand with the wait times page's chunk, after the page's text paints.
+its class, and a closed site or one with no current count is a hollow gray ring. Under it is
+the legend; the line above the map says when the counts were checked, when sites open
+again, that early voting has ended, or that counts could not be loaded. The whole map is one link to `/early-voting`, and under the box a button-styled link
+(`Button` with `to`, #78) leads there too ("Detailed early voting wait times map", or on
+Election Day "Detailed Election Day line counts map"); the drawing is hidden from screen
+readers and the text carries the data. Its code loads on demand with the wait times page's
+chunk, after the page's text paints.
 
 It shows from midnight of the first early voting day (County or City) to Election Day's poll
 close, in the config's time zone (`src/features/waitTimes/homeMapWindow.js`), and
@@ -1133,7 +1137,7 @@ date is known, so the build writes a few hundred bytes of plain script from thos
 same origin, so the Content-Security-Policy allows it). While the window is open it marks
 `<html>` with `data-home-map`, and `src/index.css` then reserves the map's box at the height of
 its tallest state before the first paint, so nothing below it moves when the map arrives (the
-e2e checks hold the app's script and compare the address search's position). Outside the
+e2e checks hold the app's script and compare the wait times button's position). Outside the
 window, and with JavaScript off, the box takes no space. The box closes, leaving the home page
 as it was, only when the map cannot be drawn (its chunk or a board's site list fails); stale or
 missing counts keep it, with every site a ring and a line saying so, since closing it then would

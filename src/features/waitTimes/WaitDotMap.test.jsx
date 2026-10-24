@@ -136,18 +136,16 @@ describe('WaitDotMap during early voting, sites open', () => {
     expect(items[0]).toHaveTextContent(/person|people/);
   });
 
-  it('names the three open sites with the fewest people in line, and their board', async () => {
+  // The wait times page lists every site and line, and states each board's
+  // rule: the home page's map keeps only its legend (#209).
+  it('lists no shortest lines and states no board rule under the legend (#209)', async () => {
     renderMap();
-    const list = await screen.findByRole('list', { name: homeCopy.waitMap.shortest });
-    const items = within(list).getAllByRole('listitem');
-    expect(items).toHaveLength(3);
-    for (const item of items) expect(item).toHaveTextContent(jurisdictions.county.name);
-    expect(items[0]).toHaveTextContent(': 0 people');
-  });
-
-  it('states each board’s rule: its sites are for its own voters', async () => {
-    renderMap();
-    expect(await screen.findByText(copy.city)).toBeInTheDocument();
+    await screen.findByText(copy.status.checked('09:05'));
+    expect(screen.getAllByRole('list')).toEqual([
+      screen.getByRole('list', { name: copy.map.legend }),
+    ]);
+    expect(screen.queryByText(copy.city)).toBeNull();
+    expect(screen.queryByText(homeCopy.waitMap.noCounts)).toBeNull();
   });
 });
 
@@ -161,13 +159,13 @@ describe('WaitDotMap and the shared line count loop', () => {
     const city = vi.fn(none);
     const source = createWaitTimesStore({ county, city });
     const first = renderMap({ source });
-    await screen.findByRole('list', { name: homeCopy.waitMap.shortest });
+    await screen.findByText(copy.status.checked('09:05'));
     const asked = county.mock.calls.length;
     const askedCity = city.mock.calls.length;
     first.unmount();
     vi.setSystemTime(OPEN_AT + 10_000);
     renderMap({ source });
-    expect(await screen.findByRole('list', { name: homeCopy.waitMap.shortest })).toBeVisible();
+    expect(await screen.findByText(copy.status.checked('09:05'))).toBeVisible();
     expect(county).toHaveBeenCalledTimes(asked);
     expect(city).toHaveBeenCalledTimes(askedCity);
   });
@@ -181,16 +179,16 @@ describe('WaitDotMap with no current counts', () => {
     const { container, onClose } = renderMap({ waits: { county: none, city: none } });
     expect(await screen.findByText(homeCopy.waitMap.noCounts)).toBeInTheDocument();
     for (const dot of dots(container)) expect(dot).toHaveAttribute('data-dot', 'hollow');
-    expect(screen.queryByRole('list', { name: homeCopy.waitMap.shortest })).toBeNull();
+    expect(screen.queryByText(copy.city)).toBeNull();
     expect(onClose).not.toHaveBeenCalled();
   });
 
   it('names the board whose counts cannot be loaded, so its rings are not read as closed', async () => {
-    renderMap({ waits: { county: countyFresh, city: failing } });
+    const { container } = renderMap({ waits: { county: countyFresh, city: failing } });
     expect(
       await screen.findByText(homeCopy.waitMap.boardUnavailable(jurisdictions.city.name)),
     ).toBeInTheDocument();
-    expect(screen.getByRole('list', { name: homeCopy.waitMap.shortest })).toBeInTheDocument();
+    expect(container.querySelectorAll('svg circle[data-dot="count"]').length).toBeGreaterThan(0);
   });
 
   it('says so when both boards’ counts cannot be loaded', async () => {
@@ -229,7 +227,7 @@ describe('WaitDotMap with every site closed', () => {
     ).toBeInTheDocument();
     await waitFor(() => expect(dots(container).length).toBeGreaterThan(0));
     for (const dot of dots(container)) expect(dot).toHaveAttribute('data-dot', 'hollow');
-    expect(screen.queryByRole('list', { name: homeCopy.waitMap.shortest })).toBeNull();
+    expect(screen.queryByText(copy.city)).toBeNull();
     expect(onClose).not.toHaveBeenCalled();
   });
 
@@ -263,8 +261,8 @@ describe('WaitDotMap with every site closed', () => {
       screen.queryByText(homeCopy.waitMap.pollsOpen(election.electionDayHours.open)),
     ).toBeNull();
     expect(screen.queryByText(homeCopy.waitMap.noCounts)).toBeNull();
-    expect(screen.queryByRole('list', { name: homeCopy.waitMap.shortest })).toBeNull();
-    expect(screen.getByText(copy.electionDay.city)).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: copy.map.legend })).toBeInTheDocument();
+    expect(screen.queryByText(copy.electionDay.city)).toBeNull();
   });
 
   // A page left open across a closing: the shared loop still holds the
@@ -288,7 +286,7 @@ describe('WaitDotMap with every site closed', () => {
     // County sites only: some City sites stay open until 7 p.m. on Thursdays.
     const noCitySites = async () => ({ ...(await loadCity()), layer: { features: [] } });
     renderMap({ waits: { county, city: none }, city: noCitySites });
-    await screen.findByRole('list', { name: homeCopy.waitMap.shortest });
+    await screen.findByText(/^Line counts checked at /);
     // Every site closes at 4:30; the next morning at 8:00:30 they open again
     // and the counts have not answered yet.
     answer = () => new Promise(() => {});
@@ -302,7 +300,6 @@ describe('WaitDotMap with every site closed', () => {
     });
     expect(screen.queryByText(homeCopy.waitMap.noCounts)).toBeNull();
     expect(screen.queryByText(/^Line counts checked at /)).toBeNull();
-    expect(screen.queryByRole('list', { name: homeCopy.waitMap.shortest })).toBeNull();
   });
 
   // A phone asleep (or a tab frozen) from one afternoon to the next morning:
@@ -325,7 +322,7 @@ describe('WaitDotMap with every site closed', () => {
     const noCitySites = async () => ({ ...(await loadCity()), layer: { features: [] } });
     try {
       renderMap({ waits: { county, city: none }, city: noCitySites });
-      await screen.findByRole('list', { name: homeCopy.waitMap.shortest });
+      await screen.findByText(/^Line counts checked at /);
       expect(screen.getByText(copy.status.checked('16:25'))).toBeInTheDocument();
       answer = () => new Promise(() => {});
       // Asleep: no timer runs while the clock moves to 8:00:30 the next day.
@@ -335,7 +332,6 @@ describe('WaitDotMap with every site closed', () => {
       expect(screen.queryByText(copy.status.checked('16:25'))).toBeNull();
       expect(screen.queryByText(/^Line counts checked at /)).toBeNull();
       expect(screen.queryByText(homeCopy.waitMap.noCounts)).toBeNull();
-      expect(screen.queryByRole('list', { name: homeCopy.waitMap.shortest })).toBeNull();
     } finally {
       setVisibility('visible');
       delete document.visibilityState;
@@ -353,7 +349,7 @@ describe('WaitDotMap with every site closed', () => {
     const noCitySites = async () => ({ ...(await loadCity()), layer: { features: [] } });
     try {
       renderMap({ waits: { county, city: none }, city: noCitySites });
-      await screen.findByRole('list', { name: homeCopy.waitMap.shortest });
+      await screen.findByText(/^Line counts checked at /);
       // A refresh goes out (the page is shown again) and the phone sleeps
       // before it answers.
       answer = () => new Promise((r) => (resolveOld = r));
@@ -386,7 +382,7 @@ describe('WaitDotMap with every site closed', () => {
     const noCitySites = async () => ({ ...(await loadCity()), layer: { features: [] } });
     try {
       renderMap({ waits: { county, city: none }, city: noCitySites });
-      await screen.findByRole('list', { name: homeCopy.waitMap.shortest });
+      await screen.findByText(/^Line counts checked at /);
       act(() => setVisibility('hidden'));
       answer = () => new Promise(() => {});
       // 12:30 p.m.: the 10:00 count is past the max age.
@@ -445,6 +441,7 @@ describe('WaitDotMap with every site closed', () => {
     const { onClose } = renderMap({ waits: { county: none, city: none } });
     const { open, close } = election.electionDayHours;
     expect(await screen.findByText(homeCopy.waitMap.ended(open, close))).toBeInTheDocument();
+    expect(screen.queryByText(copy.city)).toBeNull();
     expect(onClose).not.toHaveBeenCalled();
   });
 
@@ -459,6 +456,6 @@ describe('WaitDotMap with every site closed', () => {
     ).toBeInTheDocument();
     await waitFor(() => expect(dots(container)).toHaveLength(polls.features.length));
     expect(screen.getByRole('link', { name: homeCopy.waitMap.mapLinkElectionDay })).toBeVisible();
-    expect(screen.getByText(copy.electionDay.city)).toBeInTheDocument();
+    expect(screen.queryByText(copy.electionDay.city)).toBeNull();
   });
 });
