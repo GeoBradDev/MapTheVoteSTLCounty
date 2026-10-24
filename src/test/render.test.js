@@ -11,7 +11,8 @@ import election from '../config/election.js';
 import { CITY_GEOCODER_URL } from '../data/cityAddress.js';
 import { HOSTED_URL, LIVE_URL } from '../data/countyAddress.js';
 import { DEFAULT_BASE_URL as PHOTON } from '../data/photon.js';
-import { ANALYTICS_HOSTS } from '../analytics/index.js';
+import { ANALYTICS_CSP } from '../analytics/csp.js';
+import { analyticsEnabled } from '../analytics/index.js';
 import { BASEMAP_DARK_STYLE_URL, BASEMAP_STYLE_URL } from '../features/lookup/basemap.js';
 import { ASSET_HEADERS, PRECINCT_HEADERS, SHELL_HEADERS } from '../../scripts/smoke.mjs';
 import { PRECINCT_PRECONNECT, previewHeaders, SHELL_FILE } from '../prerender/plugin.js';
@@ -22,9 +23,11 @@ import { readSitemapTopics } from '../features/learn/content/searchEngines.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 const BASEMAP = new URL(BASEMAP_STYLE_URL).origin;
-// Google Analytics (#69): its loader, and the hosts it sends page views to.
-const GA_LOADER = `https://${ANALYTICS_HOSTS.loader}`;
-const GA_COLLECTOR = `https://${ANALYTICS_HOSTS.collector}`;
+// Google Analytics' sources (#69), by directive, only once its measurement
+// ID is set (#191): the ID ships empty and the policy then names no Google host.
+const GA_CSP = analyticsEnabled() ? ANALYTICS_CSP : {};
+const withGa = (name, sources) => [...sources, ...(GA_CSP[name] ?? [])];
+const GA_WILDCARDS = [...new Set(Object.values(GA_CSP).flat())].filter((s) => s.includes('*'));
 const SHELL_PATHS = [
   '/',
   '/index.html',
@@ -313,14 +316,16 @@ describe('Content-Security-Policy', () => {
 
   // The whole policy, so a loosened source or an added override directive
   // (script-src-elem, style-src-attr, ...) fails here and gets reviewed.
+  // Google Analytics' sources are in it only with the ID set
+  // (src/analytics/csp.test.js says which are missing).
   it('is exactly the reviewed policy', () => {
     expect(Object.fromEntries(csp)).toEqual({
       'default-src': ["'self'"],
-      'script-src': ["'self'", GA_LOADER],
+      'script-src': withGa('script-src', ["'self'"]),
       'style-src': ["'self'"],
-      'img-src': ["'self'", GA_COLLECTOR],
+      'img-src': withGa('img-src', ["'self'"]),
       'font-src': ["'self'"],
-      'connect-src': [
+      'connect-src': withGa('connect-src', [
         "'self'",
         new URL(election.serviceRoot).origin,
         new URL(LIVE_URL).origin,
@@ -328,9 +333,7 @@ describe('Content-Security-Policy', () => {
         new URL(CITY_GEOCODER_URL).origin,
         PHOTON,
         BASEMAP,
-        GA_LOADER,
-        GA_COLLECTOR,
-      ],
+      ]),
       'manifest-src': ["'self'"],
       'object-src': ["'none'"],
       'base-uri': ["'self'"],
@@ -355,11 +358,11 @@ describe('Content-Security-Policy', () => {
     }
   });
 
-  // The one host wildcard is Google Analytics' collector (#69): GA4 sends
-  // page views to region hosts under it.
-  it('has no host wildcard but the analytics collector', () => {
+  // The one host wildcard allowed is Google Analytics' collector (#69), and
+  // only once its ID is set: GA4 sends page views to region hosts under it.
+  it('has no host wildcard but the analytics collector with the ID set', () => {
     const sources = directives.flatMap(([, values]) => values);
-    expect([...new Set(sources.filter((source) => source.includes('*')))]).toEqual([GA_COLLECTOR]);
+    expect([...new Set(sources.filter((source) => source.includes('*')))]).toEqual(GA_WILDCARDS);
   });
 
   it('is the same policy on every shell path', () => {

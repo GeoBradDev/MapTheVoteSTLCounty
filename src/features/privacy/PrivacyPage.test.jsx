@@ -35,9 +35,10 @@ describe('PrivacyPage', () => {
   });
 
   // A new third party in the policy means a new place data goes: the notice
-  // must say so in the same change. Google Analytics' hosts (#69) are named
-  // once its measurement ID is set (PrivacyPage.analytics.test.jsx); while it
-  // is empty nothing goes there, and the notice says the site has no analytics.
+  // must say so in the same change. Google Analytics' hosts (#69) are in the
+  // policy only once its measurement ID is set (#191), and the notice names
+  // them then (PrivacyPage.analytics.test.jsx); this file renders the notice
+  // with the ID empty, so it skips them whichever state the config is in.
   it('names every third-party origin the Content-Security-Policy allows but analytics', async () => {
     render(<PrivacyPage />);
     const named = namedHosts(section(copy.sent.heading).textContent);
@@ -45,7 +46,6 @@ describe('PrivacyPage', () => {
     const origins = (await connectOrigins()).map((origin) => new URL(origin).host);
 
     expect(origins.length).toBeGreaterThan(0);
-    expect(origins).toEqual(expect.arrayContaining(analytics));
     for (const host of origins.filter((h) => !analytics.includes(h))) {
       expect(named).toContain(host);
     }

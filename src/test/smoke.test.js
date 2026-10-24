@@ -10,6 +10,8 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 import { build, preview } from 'vite';
 import { runSmoke } from '../../scripts/smoke.mjs';
+import { ANALYTICS_CSP } from '../analytics/csp.js';
+import { analyticsEnabled } from '../analytics/index.js';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 const SCRIPT = path.join(ROOT, 'scripts/smoke.mjs');
@@ -39,11 +41,21 @@ const SITEMAP =
 // The web app manifest (#25), as public/manifest.webmanifest ships it.
 const MANIFEST = JSON.stringify({ name: 'St. Louis Voter Guide', start_url: '/', icons: [] });
 
+// A policy that agrees with the measurement ID (#191): Google Analytics'
+// hosts only once it is set. MISMATCHED_CSP disagrees with it.
+const GA_POLICY = Object.entries(ANALYTICS_CSP)
+  .map(([name, sources]) => `${name} 'self' ${sources.join(' ')}`)
+  .join('; ');
+const AGREEING_CSP = analyticsEnabled() ? `default-src 'self'; ${GA_POLICY}` : "default-src 'self'";
+const MISMATCHED_CSP = analyticsEnabled()
+  ? "default-src 'self'"
+  : `default-src 'self'; ${GA_POLICY}`;
+
 const GOOD_HEADERS = {
   'referrer-policy': 'no-referrer',
   'x-content-type-options': 'nosniff',
   'permissions-policy': 'geolocation=(self), camera=(), microphone=()',
-  'content-security-policy': "default-src 'self'",
+  'content-security-policy': AGREEING_CSP,
 };
 
 // A host that behaves like the Render Blueprint (render.yaml), with overrides per test.
@@ -56,8 +68,10 @@ const GOOD_HEADERS = {
 // same for the City precinct link (#95): 'shell', '404' or 'home'. `manifest`
 // set to 'missing' leaves the web app manifest out (#25), so the shell answers
 // it, and 'nameless' serves JSON with no name. `precinctNoindex` set to false
-// leaves out the precinct pages' X-Robots-Tag header (#98).
+// leaves out the precinct pages' X-Robots-Tag header (#98). `csp` replaces the
+// Content-Security-Policy.
 function stubHost({
+  csp = AGREEING_CSP,
   precinctNoindex = true,
   manifest = 'json',
   deepLink = 'shell',
@@ -73,7 +87,7 @@ function stubHost({
   const shell = preview ? PREVIEW_SHELL : SHELL;
   return createServer((req, res) => {
     const common = {
-      ...(headers ? GOOD_HEADERS : {}),
+      ...(headers ? { ...GOOD_HEADERS, 'content-security-policy': csp } : {}),
       ...(headers && precinctNoindex && req.url.startsWith('/p/') && { 'x-robots-tag': 'noindex' }),
     };
     if (req.url === '/robots.txt' && robots !== 'missing') {
@@ -378,6 +392,18 @@ describe('smoke test against stub hosts', () => {
     ]) {
       expect(detail).toContain(name);
     }
+  });
+
+  // #191: a live policy naming Google's hosts while the ID is empty (or
+  // missing them once it is set) disagrees with the build it serves.
+  it('fails when the Content-Security-Policy and the measurement ID disagree', async () => {
+    server = stubHost({ csp: MISMATCHED_CSP });
+    const results = await runSmoke(await listen(server));
+
+    expect(failedChecks(results)).toEqual(['headers on /']);
+    expect(results.find((r) => r.name === 'headers on /').detail).toContain(
+      'content-security-policy',
+    );
   });
 
   it('skips header checks with checkHeaders: false', async () => {

@@ -332,7 +332,9 @@ precinct `/p/W01P12` the app shell (with nothing pre-rendered in it), that a has
 `/learn` and `/learn/voter-id` returns the page pre-rendered, with its `h1` and canonical, that `/robots.txt` is a text file with a `Sitemap:` line and
 `/sitemap.xml` is XML (not the app shell), that `/manifest.webmanifest` is the web app manifest's
 JSON (not the app shell), and that the expected security and cache headers are
-present, `X-Robots-Tag: noindex` on `/p/CC007` among them (#98). It exits 1 and lists what failed. Against a host that sets no headers, such as
+present, `X-Robots-Tag: noindex` on `/p/CC007` among them (#98), and that the
+Content-Security-Policy names Google Analytics' hosts exactly when the checkout's measurement ID
+is set (#191). It exits 1 and lists what failed. Against a host that sets no headers, such as
 `npm run preview`, add `--skip-headers`. Against a PR preview, add `--preview`: it then checks
 that `/robots.txt` says `Disallow: /` and the home page and the shell carry `noindex`, instead of the sitemap. The expected headers are a table at the top of `scripts/smoke.mjs`; change it
 when the host's header config changes. `src/test/render.test.js` checks `render.yaml` against
@@ -927,9 +929,9 @@ when app code under `src` uses browser storage, cookies or the console, and
 `src/test/addressPrivacy.test.jsx` runs a lookup and checks storage, cookies, Cache Storage
 entries, IndexedDB database names, the URL, the title, the head tags (#98) and the console for the address (jsdom has no
 Cache Storage or IndexedDB, so those two run only where they exist). A test also fails when the
-Content-Security-Policy allows an origin the notice does not name, with one exception while the
-Google Analytics measurement ID is empty: its hosts, which get nothing then and which the notice
-names once the ID is set (`PrivacyPage.analytics.test.jsx` checks that state).
+Content-Security-Policy allows an origin the notice does not name. The policy names Google
+Analytics' hosts only while its measurement ID is set (#191), and the notice names them then
+(`PrivacyPage.analytics.test.jsx` checks that state).
 
 The tests run in jsdom, so check a real browser by hand before each election: look up an
 address and use Use my location, then in the browser's devtools confirm that Application shows
@@ -949,7 +951,7 @@ set to 100 m or less. If it says the location is only a rough estimate, press it
 
 Page view and voter action counts with Google Analytics 4 (#69, #70), in `src/analytics/`, the only app code that
 calls `gtag`, reads the `dataLayer` or names Google's analytics hosts (`src/test/analyticsOnly.test.js`
-fails on any other; the notice's text and `render.yaml` name them too).
+fails on any other; the notice's text names them too, and `render.yaml` once the ID is set).
 It is off while `gaMeasurementId` in `src/config/site.js` is empty, as it ships (owner decision
 on #69), and the privacy notice then says the site has no analytics; once the ID is set, the
 notice drops that and adds a "Visit counts" section naming Google's hosts and what they get. The
@@ -1007,18 +1009,26 @@ Before setting the ID, apply these settings in GA, since they live there, not in
 1. Create a GA4 property and a web data stream for `mapthevotestl.com`.
 2. In the stream's Enhanced measurement, turn off page changes based on browser history events
    (the app sends its own redacted page views), outbound clicks, file downloads, site search and
-   form interactions: each sends real URLs (a sample ballot PDF link names the precinct). Turn
-   scrolls and video engagement off too; the app does not use them.
+   form interactions: each sends real URLs (a sample ballot PDF link names the precinct, and a
+   directions link carries the polling place's coordinates, so outbound clicks must stay off).
+   Turn scrolls and video engagement off too; the app does not use them.
 3. In Admin, Custom definitions, add event-scoped custom dimensions for the event parameters
    `source`, `outcome`, `card`, `provider`, `method` and `where` (#70), so reports can break the
    events down by them (Realtime shows them without this).
 4. Turn Google signals off, set data retention to the shortest option (2 months), and leave every
    Google Ads and other product link off. In the property's data collection settings, turn off
    granular location and device data collection.
-5. Put the `G-` ID in `src/config/site.js`. The CSP in `render.yaml` already allows the loader
-   (`www.googletagmanager.com`) and the collection hosts (`*.google-analytics.com`), and the
-   tests pass with the ID empty or set: the unit tests of the notice pin each state themselves,
-   and `e2e/analytics.e2e.js` replaces whatever ID is there with its own.
+5. Set the ID and add the CSP hosts in the same change. Put the `G-` ID in `src/config/site.js`,
+   and in `render.yaml`'s Content-Security-Policy add `https://www.googletagmanager.com` (the
+   loader) to `script-src` and `connect-src`, and `https://*.google-analytics.com` (the
+   collection hosts) to `connect-src` and `img-src` (`ANALYTICS_CSP` in
+   `src/analytics/csp.js`). While the ID is empty the policy names no Google host (#191, owner
+   decision): `www.googletagmanager.com` can serve any Tag Manager container.
+   `src/analytics/csp.test.js` fails until the policy and the ID agree, naming each source to
+   add or remove, and `npm run smoke` checks the live header the same way, so run it from the
+   commit that deployed. The other tests pass with the ID empty or set: the unit tests of the
+   notice pin each state themselves, and `e2e/analytics.e2e.js` replaces whatever ID is there
+   with its own (`vite preview` sends no CSP, so that spec runs without one).
 
 Manual check before each election, once the ID is set: on the live site, open `/`, run a lookup
 and open a topic. In devtools, Application shows no cookies (`_ga*`), Local Storage or Session
@@ -1028,7 +1038,8 @@ Storage for the site; each `collect` request in Network has `dl=https://mapthevo
 pattern, not the first page's. Open a precinct's sample ballot link and confirm no `click` hit
 goes to Google (enhanced measurement's outbound clicks are off: its `link_url` would name the
 precinct), and that the `sample_ballot_open` hit (`en=sample_ballot_open`) carries no link or code;
-press a directions link and Share, and check their hits carry only the labels in the table above. In GA's Realtime report, the page views show under the redacted paths. With Global Privacy
+press a directions link and Share, and check their hits carry only the labels in the table above
+and that no `click` hit goes to Google for the directions link (its URL holds the polling place's coordinates). In GA's Realtime report, the page views show under the redacted paths. With Global Privacy
 Control on (Brave, or Firefox's setting), no request goes to Google.
 
 ## Share links

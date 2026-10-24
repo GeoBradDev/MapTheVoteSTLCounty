@@ -115,22 +115,24 @@ services:
       # its own map CSS instead of maplibre-gl.css, so no data: icons either.
       # Links to other official sites are navigation, which connect-src does
       # not govern.
-      # Google Analytics (#69, src/analytics/): script-src and connect-src allow
-      # its loader (www.googletagmanager.com), connect-src and img-src (its
-      # image fallback) the hosts it sends page views to (*.google-analytics.com,
-      # GA4's region hosts). Nothing is sent there while the measurement ID in
-      # src/config/site.js is empty, and never off the production origin or with
-      # Global Privacy Control on. The privacy notice names both hosts once the
-      # ID is set.
+      # Google Analytics (#69) is off while the measurement ID in
+      # src/config/site.js is empty, as it ships, so no Google host is allowed
+      # (#191, owner decision): www.googletagmanager.com can serve any Tag
+      # Manager container. Set the ID and add its hosts here in the same change:
+      # script-src and connect-src https://www.googletagmanager.com (its loader),
+      # connect-src and img-src (its image fallback) https://*.google-analytics.com
+      # (the hosts it sends page views to, GA4's region hosts). ANALYTICS_CSP in
+      # src/analytics/csp.js lists them, and src/analytics/csp.test.js fails
+      # until this policy and the ID agree, naming what to add or remove.
       - path: /*
         name: Content-Security-Policy
         value: >-
           default-src 'self';
-          script-src 'self' https://www.googletagmanager.com;
+          script-src 'self';
           style-src 'self';
-          img-src 'self' https://*.google-analytics.com;
+          img-src 'self';
           font-src 'self';
-          connect-src 'self' https://services6.arcgis.com https://maps.stlouisco.com https://services2.arcgis.com https://maps6.stlouis-mo.gov https://photon.komoot.io https://tiles.openfreemap.org https://www.googletagmanager.com https://*.google-analytics.com;
+          connect-src 'self' https://services6.arcgis.com https://maps.stlouisco.com https://services2.arcgis.com https://maps6.stlouis-mo.gov https://photon.komoot.io https://tiles.openfreemap.org;
           manifest-src 'self';
           object-src 'none';
           base-uri 'self';
