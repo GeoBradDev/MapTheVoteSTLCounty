@@ -62,7 +62,7 @@ almost no first-load bytes.
 
 ## Proof
 
-- `PollsCard.test.jsx`: the distance in a stand-in locale (`fr`) reads "2,9"; 0.95 gives "0.9 miles", 1.0 gives "1.0 mile".
+- `PollsCard.test.jsx`: the distance in a stand-in locale (`fr`) reads "2,9"; 0.95 gives "0.9 miles", 1.04 gives "1.0 mile".
 - `GeocoderAttribution.test.jsx`, `PrecinctMap.test.jsx`, `WaitTimesMap.test.jsx`: unchanged
   English text, and the text follows a test locale's messages.
 - `src/test/build.test.js`: the first-load budget.
