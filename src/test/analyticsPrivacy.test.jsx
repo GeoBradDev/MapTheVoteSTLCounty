@@ -7,7 +7,7 @@
 // events (#70) are checked the same way: a lookup's outcome, and pressing the
 // sample ballot, directions and Share on the results page.
 import { StrictMode } from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import absenteeSites from '../../docs/raw/fixtures/absentee-sites.json';
 import polls from '../../docs/raw/fixtures/polls.json';
@@ -102,7 +102,10 @@ function renderApp() {
   );
 }
 
-const calls = () => (ga.dataLayer ?? []).map((entry) => Array.from(entry));
+// Every entry but gtag's `js` start time, a Date whose text (like
+// 12:00:38.514Z) could match a coordinate needle by chance.
+const calls = () =>
+  (ga.dataLayer ?? []).map((entry) => Array.from(entry)).filter(([command]) => command !== 'js');
 const events = () =>
   calls()
     .filter(([command, name]) => command === 'event' && name !== 'page_view')
@@ -164,7 +167,8 @@ it('sends only fixed labels for the results page presses (#70)', async () => {
         name: new RegExp(`^${copy.ballot.open.replace(/[()]/g, '\\$&')}`),
       }),
     );
-    const [directions] = await screen.findAllByRole('link', {
+    const polls = await screen.findByRole('list', { name: copy.polls.listLabel });
+    const [directions] = within(polls).getAllByRole('link', {
       name: new RegExp(`^${copy.polls.directions}`),
     });
     await userEvent.click(directions);

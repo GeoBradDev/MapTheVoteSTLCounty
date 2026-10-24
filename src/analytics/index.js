@@ -1,4 +1,5 @@
-// Google Analytics 4 page views, cookieless, with the precinct redacted (#69).
+// Google Analytics 4 page views (#69) and voter action events (#70),
+// cookieless, with the precinct redacted.
 // src/analytics/ is the only app code that calls gtag, reads the dataLayer or
 // names Google's analytics hosts (src/test/analyticsOnly.test.js fails on any other). This file is
 // in the first load and stays small; GA itself is ga.js, loaded on demand.

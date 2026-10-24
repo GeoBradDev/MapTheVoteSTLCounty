@@ -8,8 +8,8 @@ export const siteUrl = 'https://mapthevotestl.com';
  * The Google Analytics 4 measurement ID, like `G-ABC123DEF4` (#69). Empty
  * means analytics is off: nothing loads and the privacy notice says the site
  * has no analytics. Before setting it, apply the GA property settings in the
- * README (Privacy, Google Analytics): the app's own page views are redacted,
- * but GA's enhanced measurement would send real URLs.
+ * README (Privacy, Google Analytics): the app's own page views and events are
+ * redacted, but GA's enhanced measurement would send real URLs.
  */
 export const gaMeasurementId = '';
 

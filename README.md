@@ -982,7 +982,7 @@ Voter actions (#70) are counted with `track(name, params)` from `src/analytics/i
 components call nothing else. `EVENTS` in `src/analytics/ga.js` is the allowlist: each event's
 parameter names and the fixed values each may take. An unknown event is not sent, and an unknown
 parameter or value is dropped. It is in the lazily loaded `ga.js`, so the first load carries only
-`track()`, its queue and the call sites, and `track()` does nothing while GA is off. A press is counted from its click
+`track()`, its queue, the call sites and the lookup's outcome map, and `track()` does nothing while GA is off. A press is counted from its click
 handler, never waiting on it and never preventing the link's default. The County and City cards
 send the same events, with no jurisdiction.
 

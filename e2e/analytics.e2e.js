@@ -122,8 +122,14 @@ async function serve(page, local) {
   return google;
 }
 
+// Every entry but gtag's `js` start time, a Date whose text (like
+// 12:00:38.685Z) could match a coordinate needle by chance.
 const dataLayer = (page) =>
-  page.evaluate(() => (window.dataLayer ? window.dataLayer.map((e) => Array.from(e)) : null));
+  page.evaluate(() =>
+    window.dataLayer
+      ? window.dataLayer.map((e) => Array.from(e)).filter(([command]) => command !== 'js')
+      : null,
+  );
 
 const pageViews = (layer) =>
   layer.filter(([command, name]) => command === 'event' && name === 'page_view');
@@ -179,7 +185,10 @@ test('with an ID: redacted page views, no voter data to Google, no cookies', asy
   // #70: the results page's presses, each counted with fixed labels only.
   await holdLinks(page);
   await page.getByRole('link', { name: /^Open your sample ballot/ }).click();
+  // A polling place row's: the summary above it may show an early voting
+  // site's button first while early voting runs.
   await page
+    .getByRole('list', { name: 'Nearest polling places' })
     .getByRole('link', { name: /^Get directions/ })
     .first()
     .click();
