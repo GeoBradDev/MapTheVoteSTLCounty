@@ -1,7 +1,15 @@
 // Fixtures are live responses recorded by scripts/record-fixtures.mjs. The real
 // data client runs against a stubbed fetch. The page is imported fresh for each
 // test, since the client caches the polls list for the page's lifetime.
-import { configure, getConfig, render, screen, waitFor, within } from '@testing-library/react';
+import {
+  cleanup,
+  configure,
+  getConfig,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
@@ -13,6 +21,7 @@ import byId from '../../../docs/raw/fixtures/precinct-by-id.json';
 import nonresidential from '../../../docs/raw/fixtures/precinct-nonresidential.json';
 import { copy as lookupsCopy } from '../../components/officialLookupsCopy.js';
 import election from '../../config/election.js';
+import { RETRY_DELAY_MS } from '../../data/arcgis.js';
 import referrals from '../../config/referrals.js';
 import { createFakeGeocoder } from '../../test/fakeGeocoder.js';
 import { nearestPolls, polygonCenter } from './nearbyPolls.js';
@@ -78,7 +87,30 @@ beforeEach(async () => {
   ({ rememberLookupPoint } = await import('./lookupPoint.js'));
 });
 
-afterEach(() => {
+// Whether any of this test's answers is one query() retries: a failed fetch,
+// a 5xx or a 429 (isTransient in src/data/arcgis.js). It cannot see an HTTP
+// 200 ArcGIS error body without a code, which query() also retries, nor an
+// answer still pending when the test ends; no test here gives either.
+const retried = (mock) =>
+  mock.mock.settledResults.some(
+    ({ type, value }) =>
+      type === 'rejected' ||
+      (type === 'fulfilled' && (value?.status >= 500 || value?.status === 429)),
+  );
+
+// A retry waits RETRY_DELAY_MS on a real timer, and unmounting does not stop
+// one already waiting: it then called the global fetch, by then a later
+// test's stub, and failed that test's request checks (#186). Unmounting only
+// after the unstub also let a still mounted page ask the setup file's failing
+// fetch, whose retry then did the same. So unmount first, let failures still
+// being handled arm their retries, and, if any did, wait out the delay here:
+// Node fires timers of the same delay in the order they were set, so each
+// retry reaches this test's own stub before the next test starts.
+// Only Date may be faked here: with fake timers this hook would never finish.
+afterEach(async () => {
+  cleanup();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  if (retried(fetchMock)) await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
   vi.unstubAllGlobals();
   vi.useRealTimers();
 });
@@ -829,5 +861,39 @@ describe('PrecinctPage', () => {
     await ready('CC007');
     await userEvent.click(screen.getByRole('link', { name: copy.searchAnother }));
     expect(location.history).toEqual(['/p/CC007', '/']);
+  });
+
+  // #186: a request one test starts must never reach a later test's fetch
+  // stub. A failed line count request is retried RETRY_DELAY_MS later, after
+  // the page that asked has gone; most tests here end well before that. The
+  // two tests run in this order (the file's tests run in order, no shuffle).
+  describe('between tests (#186)', () => {
+    const { county, city } = election.waitTimes;
+    const isWaitLayer = (input) =>
+      [county, city].some((s) => String(input).startsWith(`${s.serviceRoot}/${s.layer}/`));
+
+    it('ends while a failed line count request waits for its retry', async () => {
+      // While early voting sites are open, so the page asks for line counts.
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(Date.UTC(2026, 9, 22, 15)));
+      routeFetch(byId);
+      const answer = fetchMock.getMockImplementation();
+      fetchMock.mockImplementation((input) =>
+        isWaitLayer(input) ? respond({}, 500) : answer(input),
+      );
+      renderAt('CC007');
+      await ready('CC007');
+      // The summary starts the loop once it mounts, which can be just after.
+      await waitFor(() =>
+        expect(fetchMock.mock.calls.some(([input]) => isWaitLayer(input))).toBe(true),
+      );
+    });
+
+    it('gets no request from the test before', async () => {
+      renderAt('nope');
+      await alertSaying(copy.errors.notFound);
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS + 100));
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
   });
 });
