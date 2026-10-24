@@ -12,7 +12,8 @@ accessibility and design skills: not applicable because no UI or component code 
 
 ## Cause (confirmed live, 2026-10-24)
 
-Both county layers hold `41 S CENTRAL AVE` (OBJECTIDs 142783 and 138309 in the live layer) with
+Both county layers hold `41 S CENTRAL AVE` (OBJECTID 142783 in the live layer, 138309 in the
+hosted copy) with
 `MAILINGCITY: 'SAINT LOUIS'`, `ZIPCODE: '63105'`, `MUNI: 'CLY'`,
 `MSAG_COMMUNITY_NAME: 'CLAYTON'`. `recordOf` in `src/data/countyAddress.js` gives a record only
 its mailing city as `city`; `matchesTyped` in `src/data/addressMatch.js` rejects a typed town that
@@ -46,16 +47,19 @@ layer; besides real towns it holds `ST LOUIS COUNTY` (unincorporated), `ST LOUIS
 ## Files that change
 
 - `src/data/countyAddress.js`: request `MSAG_COMMUNITY_NAME`; `recordOf` sets
-  `props.municipality` (title case) unless the value names a county or the City; export the out
-  fields so the fixture recorder asks for exactly what the app asks for.
+  `props.municipality` (the raw value, `&` read as `AND`, compared through `words()`), empty when
+  the value starts with ST LOUIS or ends in COUNTY; export the out fields so the fixture recorder
+  asks for exactly what the app asks for. In `find()`, a typed town (no ZIP) keeps every record of
+  each matching address on the same side of the City line, not only the records it matched.
 - `src/data/addressMatch.js`: `matchesTyped` and `isConfirmed` accept a typed town equal to
   `props.municipality` as well as `props.city`/`props.district`; header comment updated.
 - `scripts/record-fixtures.mjs`: record `county-address-central-ave.json` (the live layer's find
   answer for the typed text, the app's own where clause and fields).
 - `docs/raw/fixtures/county-address-central-ave.json`: new recorded fixture.
 - `src/data/countyAddress.municipality143.test.js`: new, the red test (criteria 1 to 4).
-- `src/data/countyAddress.test.js`: unit case for the county-wide names (criterion 4), if not
-  covered by the new file.
+- `src/data/countyAddress.test.js`: review finding 1 cases (1950 Walton Rd, 9300 Lewis and Clark
+  Blvd, Town and Country).
+- `src/data/countyAddress.cityunit143.test.js`: new, review finding 2 (6200 Enright Ave).
 - `scripts/check-geocoder.mjs`: the #143 typed and picked cases.
 - `docs/data.md`, `README.md`: the rule text.
 
@@ -79,6 +83,20 @@ layer; besides real towns it holds `ST LOUIS COUNTY` (unincorporated), `ST LOUIS
   costs first-load bytes the 120 KB budget lacks, and the readable field already names the town
   voters use for these records. Noted in the PR.
 - Bundle: a few bytes in the geocoder; checked with the build's budget.
+
+## Revisions during review
+
+- Finder 1: `MSAG_COMMUNITY_NAME` differs between records of one address (1950 Walton Rd 63114:
+  the house Overland, Unit R Vinita Park; 9300 Lewis and Clark Blvd 63137), so narrowing the pool
+  to matched records skipped the unit pick and the one-precinct check and gave a wrong precinct.
+  Fixed by keeping every record of each matching address (same `siteKey`). Also: "and" for
+  TOWN & COUNTRY, and no ST LOUIS name as a municipality.
+- Finder 2: with every record kept, `6200 Enright Ave Apt 111, University City` picked the City
+  unit at a shared City and County address. Fixed by keeping only records on the matching
+  record's side of the City line.
+- Budget: the first-load JavaScript sat 15 bytes over 120 KB gzipped after finder 1's fix, so
+  the code was made smaller with the same behavior. Main had 172 bytes of headroom; this change
+  leaves about 2.
 
 ## Proof
 
