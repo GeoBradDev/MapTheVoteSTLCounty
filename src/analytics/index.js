@@ -1,4 +1,5 @@
-// Google Analytics 4 page views, cookieless, with the precinct redacted (#69).
+// Google Analytics 4 page views (#69) and voter action events (#70),
+// cookieless, with the precinct redacted.
 // src/analytics/ is the only app code that calls gtag, reads the dataLayer or
 // names Google's analytics hosts (src/test/analyticsOnly.test.js fails on any other). This file is
 // in the first load and stays small; GA itself is ga.js, loaded on demand.
@@ -17,8 +18,12 @@
 //   events never carry the real URL either.
 // - ga.js and Google's script load after the load event, in idle time, so
 //   they cost the first load nothing (#27). No inline script: the CSP's
-//   script-src allows only 'self' and Google's loader. Page views until then
-//   wait here, as paths.
+//   script-src allows only 'self' and Google's loader. Page views and events
+//   until then wait here, as they were called.
+// - Voter actions (#70) go through track() only, and ga.js sends only the
+//   events, parameter names and values in its allowlist (EVENTS): fixed
+//   labels, never an address, coordinates, precinct code, place name or URL.
+//   The allowlist is in ga.js so it costs the first load nothing.
 // Keep this file's imports to the config: importing src/i18n here once made
 // the build split the topics into a chunk of their own, past the budget.
 import { gaMeasurementId, siteUrl } from '../config/site.js';
@@ -46,7 +51,10 @@ export function analyticsAllowed({ id, origin, gpc }) {
   return analyticsEnabled(id) && origin === siteUrl && gpc !== true;
 }
 
-/** @type {{ queue: string[], send: ((path: string) => void) | null, last: string | null } | null} */
+/**
+ * @typedef {{ page: (path: string) => void, event: (name: string, params?: object) => void }} Ga
+ * @type {{ queue: [keyof Ga, ...unknown[]][], ga: Ga | null, last: string | null } | null}
+ */
 let active = null;
 
 /**
@@ -64,16 +72,16 @@ export function startAnalytics(win, id = gaMeasurementId, load = () => import('.
     gpc: win.navigator?.globalPrivacyControl,
   });
   if (!allowed) return null;
-  const session = { queue: [], send: null, last: null };
+  const session = { queue: [], ga: null, last: null };
   active = session;
   const begin = () =>
     load().then(
       ({ startGa }) => {
         if (active !== session) return;
-        session.send = startGa(win, id);
-        session.queue.splice(0).forEach(session.send);
+        const ga = (session.ga = startGa(win, id));
+        session.queue.splice(0).forEach(([kind, ...args]) => ga[kind](...args));
       },
-      // ga.js could not load (offline, a new deploy): no page views, as if off.
+      // ga.js could not load (offline, a new deploy): no page views or events, as if off.
       () => {},
     );
   const whenIdle = () =>
@@ -104,6 +112,22 @@ export function pageView(path) {
     : text;
   if (key === active.last) return;
   active.last = key;
-  if (active.send) active.send(path);
-  else active.queue.push(path);
+  send('page', path);
+}
+
+function send(kind, ...args) {
+  if (active.ga) active.ga[kind](...args);
+  else active.queue.push([kind, ...args]);
+}
+
+/**
+ * Counts a voter action (#70): `name` and `params` from the allowlist in
+ * ga.js (anything else is dropped there, never sent). Call it from the
+ * click itself, never waiting on it or preventing the default: it never
+ * delays a link. Does nothing while GA is off.
+ * @param {string} name
+ * @param {Record<string, string>} [params]
+ */
+export function track(name, params) {
+  if (active) send('event', name, params);
 }

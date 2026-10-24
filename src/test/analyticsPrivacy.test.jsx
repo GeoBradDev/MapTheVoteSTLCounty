@@ -3,9 +3,11 @@
 // run over stubbed network and geolocation (as in addressPrivacy.test.jsx);
 // GA is started on a stand-in window at the production origin, so every call
 // the app makes lands in that window's dataLayer, which is checked for the
-// address, its parts, the coordinates and the precinct code.
+// address, its parts, the coordinates and the precinct code. The voter action
+// events (#70) are checked the same way: a lookup's outcome, and pressing the
+// sample ballot, directions and Share on the results page.
 import { StrictMode } from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import absenteeSites from '../../docs/raw/fixtures/absentee-sites.json';
 import polls from '../../docs/raw/fixtures/polls.json';
@@ -100,7 +102,14 @@ function renderApp() {
   );
 }
 
-const calls = () => (ga.dataLayer ?? []).map((entry) => Array.from(entry));
+// Every entry but gtag's `js` start time, a Date whose text (like
+// 12:00:38.514Z) could match a coordinate needle by chance.
+const calls = () =>
+  (ga.dataLayer ?? []).map((entry) => Array.from(entry)).filter(([command]) => command !== 'js');
+const events = () =>
+  calls()
+    .filter(([command, name]) => command === 'event' && name !== 'page_view')
+    .map(([, name, params]) => [name, params]);
 const pageViews = () =>
   calls()
     .filter(([command, name]) => command === 'event' && name === 'page_view')
@@ -134,7 +143,49 @@ it('reports a typed address lookup as the home page and /p/:precinct only', asyn
       page_referrer: '',
     },
   ]);
+  expect(events()).toEqual([['lookup_result', { source: 'address', outcome: 'precinct' }]]);
   expectNothingAboutTheVoter();
+});
+
+it('sends only fixed labels for the results page presses (#70)', async () => {
+  Object.defineProperty(navigator, 'clipboard', {
+    value: { writeText: vi.fn(async () => {}) },
+    configurable: true,
+  });
+  // The test stops each link here, after the app has handled the click.
+  const stopLinks = (event) => {
+    if (event.target.closest('a')) event.preventDefault();
+  };
+  window.addEventListener('click', stopLinks);
+  try {
+    renderApp();
+    await userEvent.type(screen.getByRole('combobox', { name: searchCopy.label }), ADDRESS);
+    await userEvent.click(screen.getByRole('button', { name: searchCopy.submit }));
+    await screen.findByText(copy.ready('CC007'));
+    await userEvent.click(
+      await screen.findByRole('link', {
+        name: new RegExp(`^${copy.ballot.open.replace(/[()]/g, '\\$&')}`),
+      }),
+    );
+    const polls = await screen.findByRole('list', { name: copy.polls.listLabel });
+    const [directions] = within(polls).getAllByRole('link', {
+      name: new RegExp(`^${copy.polls.directions}`),
+    });
+    await userEvent.click(directions);
+    await userEvent.click(screen.getByRole('button', { name: copy.share.button }));
+    await vi.dynamicImportSettled();
+  } finally {
+    window.removeEventListener('click', stopLinks);
+    delete navigator.clipboard;
+  }
+  expect(events()).toEqual([
+    ['lookup_result', { source: 'address', outcome: 'precinct' }],
+    ['sample_ballot_open', {}],
+    ['directions_open', { card: 'polls', provider: 'google' }],
+    ['share', { method: 'clipboard' }],
+  ]);
+  expectNothingAboutTheVoter();
+  expect(JSON.stringify(events())).not.toMatch(/https?:|\.pdf|maps/);
 });
 
 it('sends nothing about the device location after Use my location', async () => {
@@ -148,6 +199,7 @@ it('sends nothing about the device location after Use my location', async () => 
     `${siteUrl}/`,
     `${siteUrl}/p/:precinct`,
   ]);
+  expect(events()).toEqual([['lookup_result', { source: 'location', outcome: 'precinct' }]]);
   expectNothingAboutTheVoter();
 });
 

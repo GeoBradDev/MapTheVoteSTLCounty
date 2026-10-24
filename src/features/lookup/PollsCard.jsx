@@ -1,4 +1,5 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { track } from '../../analytics/index.js';
 import Button from '../../components/Button.jsx';
 import Notice from '../../components/Notice.jsx';
 import TextLink from '../../components/TextLink.jsx';
@@ -31,13 +32,43 @@ const CityElectionDayRule = cityComponent('CityElectionDayRule');
 const bar = 'rounded bg-border animate-pulse motion-reduce:animate-none';
 
 // The board's own lookup for this precinct's jurisdiction (#89); the early
-// voting cards' too (#91).
-export function OfficialLookupLink() {
+// voting cards' and the City districts card's too (#90, #91). A press is
+// counted with `card` (#70), a fixed label from src/analytics/ga.js.
+export function OfficialLookupLink({ card }) {
   const { id, officialLookupUrl } = useJurisdiction();
   return (
-    <TextLink href={officialLookupUrl} rel="noreferrer">
+    <TextLink
+      href={officialLookupUrl}
+      rel="noreferrer"
+      onClick={() => track('official_lookup_open', { card })}
+    >
       {copy.officialLookupFor(id)}
     </TextLink>
+  );
+}
+
+/**
+ * A place's directions links: Google Maps, and Apple Maps on an Apple phone
+ * or tablet. A press is counted with `card` and the provider only (#70),
+ * never the place: the links hold its coordinates.
+ * @param {{ place: { lat: number, lng: number }, name: string, apple: boolean,
+ *   card: string }} props
+ */
+export function DirectionsLinks({ place, name, apple, card }) {
+  const links = directionsLinks(place);
+  const target = <span className="sr-only">{copy.polls.linkTarget(name)}</span>;
+  const onClick = (provider) => () => track('directions_open', { card, provider });
+  return (
+    <p className="flex flex-wrap gap-x-4">
+      <TextLink href={links.google} rel="noreferrer" variant="tap" onClick={onClick('google')}>
+        {copy.polls.directions} {target}
+      </TextLink>
+      {apple && (
+        <TextLink href={links.apple} rel="noreferrer" variant="tap" onClick={onClick('apple')}>
+          {copy.polls.appleMaps} {target}
+        </TextLink>
+      )}
+    </p>
   );
 }
 
@@ -119,8 +150,6 @@ const waitKeyOf = { county: (poll) => poll.dayKey, city: (poll) => poll.name };
 
 function PollRow({ poll, room, apple, headingRef, now }) {
   const name = poll.name ?? copy.polls.unnamed(poll.loc);
-  const links = directionsLinks(poll);
-  const target = <span className="sr-only">{copy.polls.linkTarget(name)}</span>;
   return (
     <li className="border-t border-border pt-3 first:border-t-0 first:pt-0">
       <NameAndDistance name={name} miles={poll.miles} headingRef={headingRef} />
@@ -128,16 +157,7 @@ function PollRow({ poll, room, apple, headingRef, now }) {
       <p>{copy.polls.address(poll.address, poll.zip)}</p>
       <Room room={room} />
       <Entrances entry={poll.entry} accessibleEntry={poll.accessibleEntry} />
-      <p className="flex flex-wrap gap-x-4">
-        <TextLink href={links.google} rel="noreferrer" variant="tap">
-          {copy.polls.directions} {target}
-        </TextLink>
-        {apple && (
-          <TextLink href={links.apple} rel="noreferrer" variant="tap">
-            {copy.polls.appleMaps} {target}
-          </TextLink>
-        )}
-      </p>
+      <DirectionsLinks place={poll} name={name} apple={apple} card="polls" />
     </li>
   );
 }
@@ -255,16 +275,16 @@ export default function PollsCard({ code, origin, waitSource, electionDayOn }) {
           <Notice role="alert" variant="danger">
             {/* A new node per attempt, so a repeated failure is announced again. */}
             <span key={result.attempt}>
-              {copy.polls.failed} <OfficialLookupLink />.
+              {copy.polls.failed} <OfficialLookupLink card="polls" />.
             </span>
           </Notice>
-          <RetryButton onRetry={retry} busy={loading} className="mt-2" />
+          <RetryButton onRetry={retry} busy={loading} where="polls" className="mt-2" />
         </>
       )}
 
       {rows && rows.length === 0 && (
         <p>
-          {copy.polls.none} <OfficialLookupLink />.
+          {copy.polls.none} <OfficialLookupLink card="polls" />.
         </p>
       )}
 

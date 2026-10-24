@@ -284,3 +284,32 @@ describe('CityEarlyVoteSummary', () => {
     expect(getCity).not.toHaveBeenCalled();
   });
 });
+
+// #70: the City card counts its presses as the County card's, with the same
+// fixed labels and no jurisdiction. The analytics module is the copy the
+// card was imported with (vi.resetModules above).
+describe('CityEarlyVotingCard analytics (#70)', () => {
+  it('counts directions, the City lookup link and Try again as early_voting', async () => {
+    const { trackEvents, pressLink } = await import('../../test/trackedEvents.js');
+    const tracked = trackEvents();
+    try {
+      routeFetch({ fail: true });
+      renderCard();
+      const alert = await screen.findByRole('alert');
+      expect(await pressLink(userEvent.click, within(alert).getByRole('link'))).toBe(false);
+      routeFetch();
+      await userEvent.click(screen.getByRole('button', { name: /try again/i }));
+      const row = await firstRow();
+      const directions = within(row).getByRole('link', { name: /directions/i });
+      expect(await pressLink(userEvent.click, directions)).toBe(false);
+      expect(await tracked.events()).toEqual([
+        ['official_lookup_open', { card: 'early_voting' }],
+        ['retry', { where: 'early_voting' }],
+        ['directions_open', { card: 'early_voting', provider: 'google' }],
+      ]);
+      expect(JSON.stringify(await tracked.events())).not.toMatch(/W01P12|Buder|\d/);
+    } finally {
+      tracked.stop();
+    }
+  });
+});

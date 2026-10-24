@@ -42,7 +42,7 @@ describe('PrivacyPage with Google Analytics on', () => {
 
   it('says what Google Analytics gets, and what it never gets', () => {
     render(<PrivacyPage />);
-    const ga = item('Page counts');
+    const ga = item('Visit counts');
     for (const text of [
       'Google Analytics',
       `(${ANALYTICS_HOSTS.loader})`,
@@ -58,5 +58,30 @@ describe('PrivacyPage with Google Analytics on', () => {
     ]) {
       expect(ga).toHaveTextContent(text);
     }
+  });
+
+  // #70: the voter actions it counts, and what they never carry.
+  it('says which presses it counts and that a search is counted without what or where', () => {
+    render(<PrivacyPage />);
+    const ga = item('Visit counts');
+    for (const text of [
+      'which buttons and links you press',
+      'sample ballot',
+      'directions',
+      'Share',
+      'official lookup',
+      'Try again',
+      'how a search ended',
+      'whether it used an address or your location',
+      'whether it found a precinct or why not',
+      'outside St. Louis City and County',
+      'in St. Louis City or St. Louis County but no precinct was found for it',
+      'never what you searched for, your address or location, or which place, precinct or web address it was',
+    ]) {
+      expect(ga).toHaveTextContent(text);
+    }
+    expect(section(copy.never.heading)).toHaveTextContent(
+      "never include your address, your device's location, your precinct or what you searched for",
+    );
   });
 });

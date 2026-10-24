@@ -288,3 +288,42 @@ describe('CityDistrictsCard on phones and wide screens', () => {
     expect(details()).toHaveAttribute('open');
   });
 });
+
+// #70: its official lookup link and Try again are counted as districts, with
+// no ward, district or code. The analytics module is the copy the card was
+// imported with (vi.resetModules above).
+describe('CityDistrictsCard analytics (#70)', () => {
+  it('counts the City lookup link and Try again', async () => {
+    const { trackEvents, pressLink } = await import('../../test/trackedEvents.js');
+    const tracked = trackEvents();
+    try {
+      routeFetch({ fail: (n) => n <= 2 });
+      const card = renderCard();
+      const alert = await screen.findByRole('alert');
+      expect(await pressLink(userEvent.click, within(alert).getByRole('link'))).toBe(false);
+      await userEvent.click(within(card).getByRole('button'));
+      await loaded();
+      expect(await tracked.events()).toEqual([
+        ['official_lookup_open', { card: 'districts' }],
+        ['retry', { where: 'districts' }],
+      ]);
+      expect(JSON.stringify(tracked.calls())).not.toMatch(/W01P12|Ward|District \d/);
+    } finally {
+      tracked.stop();
+    }
+  });
+  it('counts the City lookup link when the districts are missing', async () => {
+    const { trackEvents, pressLink } = await import('../../test/trackedEvents.js');
+    const tracked = trackEvents();
+    try {
+      routeFetch({ districts: { features: [] } });
+      renderCard();
+      await screen.findByText(copy.districts.missing, { exact: false });
+      const link = screen.getByRole('link', { name: copy.officialLookupFor('city') });
+      expect(await pressLink(userEvent.click, link)).toBe(false);
+      expect(await tracked.events()).toEqual([['official_lookup_open', { card: 'districts' }]]);
+    } finally {
+      tracked.stop();
+    }
+  });
+});

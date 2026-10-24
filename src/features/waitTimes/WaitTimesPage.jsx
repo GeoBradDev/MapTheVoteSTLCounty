@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { track } from '../../analytics/index.js';
 import Button from '../../components/Button.jsx';
 import Notice from '../../components/Notice.jsx';
 import TextLink from '../../components/TextLink.jsx';
@@ -10,8 +11,8 @@ import { focusHeadingOnArrival } from '../../hydrate.js';
 import { getDeviceLocation } from '../lookup/deviceLocation.js';
 import { earlyVotingStatus, formatLongDate, hoursOn, zonedNow } from '../lookup/earlyVoting.js';
 import { electionDaySchedule, isElectionDay } from '../lookup/electionDay.js';
-import { distanceMiles, directionsLinks, isAppleMobile } from '../lookup/nearbyPolls.js';
-import { Entrances } from '../lookup/PollsCard.jsx';
+import { distanceMiles, isAppleMobile } from '../lookup/nearbyPolls.js';
+import { DirectionsLinks, Entrances } from '../lookup/PollsCard.jsx';
 import { copy as resultsCopy } from '../lookup/resultsCopy.js';
 import RetryButton from '../lookup/RetryButton.jsx';
 import { useNow } from '../lookup/useNow.js';
@@ -56,9 +57,14 @@ function useShownCheck(latest) {
 // The board's own lookup: the County's, or the City's (#91).
 const lookupUrls = { county: election.officialLookupUrl, city: referrals.stlCityLookup.url };
 
+// Counted as this page's (#70), not which board's.
 function OfficialLookupLink({ id = 'county' }) {
   return (
-    <TextLink href={lookupUrls[id]} rel="noreferrer">
+    <TextLink
+      href={lookupUrls[id]}
+      rel="noreferrer"
+      onClick={() => track('official_lookup_open', { card: 'wait_times' })}
+    >
       {resultsCopy.officialLookupFor(id)}
     </TextLink>
   );
@@ -75,8 +81,6 @@ function statusText(site) {
 
 function SiteRow({ site, now, apple }) {
   const name = site.name ?? resultsCopy.polls.unnamed(site.loc);
-  const links = directionsLinks(site);
-  const target = <span className="sr-only">{resultsCopy.polls.linkTarget(name)}</span>;
   const kind = resultsCopy.earlyVoting.siteKinds[site.absType];
   const { schedule } = site;
   const today = schedule && hoursOn(schedule, zonedNow(now, election.timeZone).date);
@@ -101,16 +105,7 @@ function SiteRow({ site, now, apple }) {
           <span className="font-semibold">{resultsCopy.earlyVoting.note}</span> {site.absNote}
         </p>
       )}
-      <p className="flex flex-wrap gap-x-4">
-        <TextLink href={links.google} rel="noreferrer" variant="tap">
-          {resultsCopy.polls.directions} {target}
-        </TextLink>
-        {apple && (
-          <TextLink href={links.apple} rel="noreferrer" variant="tap">
-            {resultsCopy.polls.appleMaps} {target}
-          </TextLink>
-        )}
-      </p>
+      <DirectionsLinks place={site} name={name} apple={apple} card="wait_times" />
     </li>
   );
 }
@@ -430,7 +425,7 @@ export default function WaitTimesPage({
                     <OfficialLookupLink id="city" />.
                   </span>
                 </Notice>
-                <RetryButton onRetry={retry} busy={loading} className="mt-2" />
+                <RetryButton onRetry={retry} busy={loading} where="wait_times" className="mt-2" />
               </>
             )}
             {result?.failed && (
@@ -440,7 +435,12 @@ export default function WaitTimesPage({
                     {text.failed} <OfficialLookupLink id={result.failed} />.
                   </span>
                 </Notice>
-                <RetryButton onRetry={retry} busy={loading} className="mt-2 mb-4" />
+                <RetryButton
+                  onRetry={retry}
+                  busy={loading}
+                  where="wait_times"
+                  className="mt-2 mb-4"
+                />
               </>
             )}
             {shown && shown.length === 0 && !result.failed && (

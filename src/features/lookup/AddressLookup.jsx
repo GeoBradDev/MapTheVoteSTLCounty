@@ -12,6 +12,7 @@ import GeocoderAttribution from './GeocoderAttribution.jsx';
 import { useGeocoder } from './geocoderContext.js';
 import { copy as errorCopy, isOffline } from './errorCopy.js';
 import { locate } from './locate.js';
+import { trackLookup } from './lookupOutcome.js';
 import { forgetLookupPoint, rememberLookupPoint } from './lookupPoint.js';
 import { copy } from './lookupCopy.js';
 import OutOfCountyNotice from './OutOfCountyNotice.jsx';
@@ -54,8 +55,8 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
   // The current lookup, so a superseded or unmounted one is dropped.
   const runRef = useRef(null);
   const runCountRef = useRef(0);
-  // How to repeat the last lookup, for "Try again": memory only, and dropped
-  // when the voter edits the address.
+  // How to repeat the last lookup, for "Try again", and its source for the
+  // count (#70): memory only, and dropped when the voter edits the address.
   const lastRef = useRef(null);
 
   useEffect(
@@ -70,14 +71,14 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
     if (outcome?.kind) outcomeRef.current?.focus();
   }, [outcome]);
 
-  async function run(getPlace, { retry = false } = {}) {
+  async function run(getPlace, { retry = false, source = 'address' } = {}) {
     // A new search, whatever its outcome, drops the point of the one before (#53).
     forgetLookupPoint();
     runRef.current?.abort();
     const controller = new AbortController();
     runRef.current = controller;
     const current = () => runRef.current === controller;
-    lastRef.current = getPlace;
+    lastRef.current = { getPlace, source };
     runCountRef.current += 1;
     const runNumber = runCountRef.current;
     setBusy(true);
@@ -114,6 +115,8 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
     setBusy(false);
     setRunning(null);
     setRetrying(false);
+    // Only how it ended, never the address, the point or the code (#70).
+    trackLookup(source, code ? 'precinct' : (next.error ?? next.kind));
     if (code) {
       rememberLookupPoint(code, point);
       navigate(`/p/${code}`);
@@ -153,11 +156,11 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
 
   function handleRetry() {
     if (runRef.current || !lastRef.current) return;
-    run(lastRef.current, { retry: true });
+    run(lastRef.current.getPlace, { retry: true, source: lastRef.current.source });
   }
 
   function handleLocation(place) {
-    run(async () => place);
+    run(async () => place, { source: 'location' });
   }
 
   return (
@@ -169,11 +172,13 @@ export default function AddressLookup({ noticeHeadingLevel = 2 }) {
           <Notice variant="danger" key={outcome.run}>
             <span>{copy.errors[outcome.error]}</span> {copy.errorAfterLink}{' '}
             {/* The address could be in either, so both boards' (#93). */}
-            <OfficialLookups />.
+            <OfficialLookups card="lookup_error" />.
           </Notice>
         )}
       </div>
-      {outcome?.canRetry && <RetryButton onRetry={handleRetry} busy={retrying} className="mt-2" />}
+      {outcome?.canRetry && (
+        <RetryButton onRetry={handleRetry} busy={retrying} where="lookup" className="mt-2" />
+      )}
       {/* Right under "Find my precinct": the other way in (#80). */}
       <div className="mt-2">
         <UseMyLocation

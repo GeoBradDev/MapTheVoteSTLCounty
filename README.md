@@ -50,6 +50,8 @@ never saves a
 typed address or a device location, in the URL, browser storage, cookies or the browser's
 cache, and a share link holds only the precinct code, like `/p/CC007`. Once the ID is set,
 Google Analytics counts page views by page type, and which topic (every precinct page is `/p/:precinct`),
+and a few voter actions by fixed labels (a lookup's outcome, and presses of the sample ballot,
+directions, official lookup, Share and Try again), never what was searched or the address or location; it
 sets no cookies and is skipped with Global Privacy Control. The plain-language
 notice at [`/privacy`](https://mapthevotestl.com/privacy) says what each service gets; the
 [Privacy](#privacy) section below has the rules and the tests that hold the code to them.
@@ -910,8 +912,8 @@ service in turn (network refusal, a request that never answers, 5xx) in a real b
 
 Addresses are sensitive. The app itself never puts a typed address or its coordinates in the
 URL, `localStorage`, `sessionStorage`, IndexedDB, cookies, logs or analytics. Its only analytics
-are the cookieless, redacted page views below (and GA's own events, with the same redacted page
-fields), off until the measurement ID is set. Every request that carries a typed address or coordinates uses `cache: 'no-store'`,
+are the cookieless, redacted page views and fixed-label voter action events below (and GA's own
+events, with the same redacted page fields), off until the measurement ID is set. Every request that carries a typed address or coordinates uses `cache: 'no-store'`,
 no cookies and no referrer, and sends them in a POST body, never the URL, where the service
 accepts one (#38): the county's address layers, the City geocoder and the County and City
 precinct and boundary point queries. Photon has no POST endpoint, so it gets the typed text in a GET query string;
@@ -945,12 +947,12 @@ set to 100 m or less. If it says the location is only a rough estimate, press it
 
 ### Google Analytics
 
-Page view counts with Google Analytics 4 (#69), in `src/analytics/`, the only app code that
+Page view and voter action counts with Google Analytics 4 (#69, #70), in `src/analytics/`, the only app code that
 calls `gtag`, reads the `dataLayer` or names Google's analytics hosts (`src/test/analyticsOnly.test.js`
 fails on any other; the notice's text and `render.yaml` name them too).
 It is off while `gaMeasurementId` in `src/config/site.js` is empty, as it ships (owner decision
 on #69), and the privacy notice then says the site has no analytics; once the ID is set, the
-notice drops that and adds a "Page counts" section naming Google's hosts and what they get. The
+notice drops that and adds a "Visit counts" section naming Google's hosts and what they get. The
 notice and the pre-rendered `/privacy` page follow the same config, so they are true in both
 states. With the ID set, GA loads only:
 
@@ -973,7 +975,32 @@ events. Never put a page field in `config`: gtag ranks event over config over se
 value would outrank every later `set` and GA's own events would keep reporting the first page.
 A new route in `src/App.jsx` needs its pattern in `routePattern` (a test fails until it has one).
 `e2e/analytics.e2e.js` builds the app with a test ID, serves it at the production origin and
-checks a lookup's page views and every request to Google's stubbed hosts.
+checks a lookup's page views, the events of pressing the sample ballot, a directions link and
+Share, and every request to Google's stubbed hosts.
+
+Voter actions (#70) are counted with `track(name, params)` from `src/analytics/index.js`;
+components call nothing else. `EVENTS` in `src/analytics/ga.js` is the allowlist: each event's
+parameter names and the fixed values each may take. An unknown event is not sent, and an unknown
+parameter or value is dropped. It is in the lazily loaded `ga.js`, so the first load carries only
+`track()`, its queue, the call sites and the lookup's outcome map, and `track()` does nothing while GA is off. A press is counted from its click
+handler, never waiting on it and never preventing the link's default. The County and City cards
+send the same events, with no jurisdiction parameter, though `no_precinct` and `city_referral`
+tell County or City for a search that found no precinct (the notice says so).
+
+| Event | When | Parameters |
+| --- | --- | --- |
+| `lookup_result` | an address search or Use my location finishes | `source`: `address`, `location`; `outcome`: `precinct` (County or City), `no_precinct` (taken to be in the County, no precinct found), `city_referral` (sent to the City Board: its precinct not found, or the City's layer not answering, #88), `out_of_area`, `no_match`, `unavailable`, `failed`, `offline`, and for the device `denied`, `timeout`, `coarse` |
+| `sample_ballot_open` | the County or City sample ballot link is pressed | none |
+| `directions_open` | a directions link is pressed | `card`: `polls`, `early_voting` (the results summary's buttons count as their card's), `wait_times`; `provider`: `google`, `apple` |
+| `official_lookup_open` | a results, error, referral or status message's link to a board's official lookup is pressed (not the How to vote topics' links) | `card`: `polls`, `early_voting`, `sample_ballot`, `districts`, `lookup_error`, `precinct_error`, `wait_times`, `error_screen`, `referral` (the out-of-area and City referral notices), `status` (the precinct status banner) |
+| `share` | Share this page finishes | `method`: `share_sheet`, `clipboard`, `manual` (closing the share sheet is not counted) |
+| `retry` | a Try again button is pressed (a retried lookup sends its own `lookup_result` too, so lookups count per attempt) | `where`: `lookup`, `precinct`, `polls`, `early_voting`, `districts`, `wait_times` |
+
+`src/features/lookup/lookupOutcome.js` maps the lookup's outcome kinds to those labels. A value is
+never an address, coordinates, a precinct code, a place's name, a ward or district, a distance, a
+URL, anything typed or a time. A new event, parameter or value goes in `EVENTS` and the privacy
+notice's "Visit counts" text in the same change; `src/test/analyticsPrivacy.test.jsx` runs real
+lookups and presses with GA forced on and fails on any voter detail in what is sent.
 
 Before setting the ID, apply these settings in GA, since they live there, not in code:
 
@@ -982,10 +1009,13 @@ Before setting the ID, apply these settings in GA, since they live there, not in
    (the app sends its own redacted page views), outbound clicks, file downloads, site search and
    form interactions: each sends real URLs (a sample ballot PDF link names the precinct). Turn
    scrolls and video engagement off too; the app does not use them.
-3. Turn Google signals off, set data retention to the shortest option (2 months), and leave every
+3. In Admin, Custom definitions, add event-scoped custom dimensions for the event parameters
+   `source`, `outcome`, `card`, `provider`, `method` and `where` (#70), so reports can break the
+   events down by them (Realtime shows them without this).
+4. Turn Google signals off, set data retention to the shortest option (2 months), and leave every
    Google Ads and other product link off. In the property's data collection settings, turn off
    granular location and device data collection.
-4. Put the `G-` ID in `src/config/site.js`. The CSP in `render.yaml` already allows the loader
+5. Put the `G-` ID in `src/config/site.js`. The CSP in `render.yaml` already allows the loader
    (`www.googletagmanager.com`) and the collection hosts (`*.google-analytics.com`), and the
    tests pass with the ID empty or set: the unit tests of the notice pin each state themselves,
    and `e2e/analytics.e2e.js` replaces whatever ID is there with its own.
@@ -997,7 +1027,8 @@ Storage for the site; each `collect` request in Network has `dl=https://mapthevo
 `gcs=G100` (all storage denied), and GA's own events (`user_engagement`) carry the current page's
 pattern, not the first page's. Open a precinct's sample ballot link and confirm no `click` hit
 goes to Google (enhanced measurement's outbound clicks are off: its `link_url` would name the
-precinct). In GA's Realtime report, the page views show under the redacted paths. With Global Privacy
+precinct), and that the `sample_ballot_open` hit (`en=sample_ballot_open`) carries no link or code;
+press a directions link and Share, and check their hits carry only the labels in the table above. In GA's Realtime report, the page views show under the redacted paths. With Global Privacy
 Control on (Brave, or Firefox's setting), no request goes to Google.
 
 ## Share links
@@ -1104,8 +1135,9 @@ green; run it locally first.
 - **Election values go in config.** Anything that changes between elections goes in
   `src/config/election.js`, never in the code that reads it (see
   [Election config](#election-config)).
-- **A change to what is sent to a service** also changes the privacy notice in the same pull
-  request (see [Privacy](#privacy)).
+- **A change to what is sent to a service**, or a new analytics event, parameter or value, also
+  changes the privacy notice in the same pull request (see [Privacy](#privacy) and
+  [Google Analytics](#google-analytics)).
 
 ## License
 

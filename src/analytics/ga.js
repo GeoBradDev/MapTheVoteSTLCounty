@@ -7,6 +7,77 @@ import { ANALYTICS_HOSTS } from './index.js';
 
 export const LOADER_URL = `https://${ANALYTICS_HOSTS.loader}/gtag/js`;
 
+const list = (...values) => Object.freeze(values);
+
+/**
+ * The voter actions counted (#70): for each event, its parameter names and
+ * each one's allowed values. Fixed labels only: never an address,
+ * coordinates, a precinct code, a place's name, a district, a distance, a
+ * URL or anything typed. A new event, parameter or value is added here and
+ * to the privacy notice in the same change (README, Google Analytics).
+ */
+export const EVENTS = Object.freeze({
+  lookup_result: Object.freeze({
+    source: list('address', 'location'),
+    outcome: list(
+      'precinct',
+      'no_precinct',
+      'city_referral',
+      'out_of_area',
+      'no_match',
+      'unavailable',
+      'failed',
+      'offline',
+      'denied',
+      'timeout',
+      'coarse',
+    ),
+  }),
+  sample_ballot_open: Object.freeze({}),
+  directions_open: Object.freeze({
+    card: list('polls', 'early_voting', 'wait_times'),
+    provider: list('google', 'apple'),
+  }),
+  official_lookup_open: Object.freeze({
+    card: list(
+      'polls',
+      'early_voting',
+      'sample_ballot',
+      'districts',
+      'lookup_error',
+      'precinct_error',
+      'wait_times',
+      'error_screen',
+      'referral',
+      'status',
+    ),
+  }),
+  share: Object.freeze({ method: list('share_sheet', 'clipboard', 'manual') }),
+  retry: Object.freeze({
+    where: list('lookup', 'precinct', 'polls', 'early_voting', 'districts', 'wait_times'),
+  }),
+});
+
+/**
+ * The parameters of an allowed event, keeping only allowed names with an
+ * allowed string value; null for an event not in EVENTS.
+ * @param {unknown} name
+ * @param {unknown} params
+ * @returns {Record<string, string> | null}
+ */
+export function eventParams(name, params) {
+  if (typeof name !== 'string' || !Object.hasOwn(EVENTS, name)) return null;
+  const allowed = EVENTS[name];
+  const clean = {};
+  if (params && typeof params === 'object') {
+    for (const key of Object.keys(allowed)) {
+      const value = Object.hasOwn(params, key) ? params[key] : undefined;
+      if (typeof value === 'string' && allowed[key].includes(value)) clean[key] = value;
+    }
+  }
+  return clean;
+}
+
 /** A fixed, English name per page type, never a page's own title. */
 export const PAGE_TITLES = Object.freeze({
   '/': 'Home',
@@ -62,7 +133,9 @@ function hitFor(path) {
  * script. The caller has checked that analytics may run.
  * @param {Window} win
  * @param {string} id The measurement ID.
- * @returns {(path: string) => void} Sends one page view for `path`.
+ * @returns {{ page: (path: string) => void, event: (name: string, params?: object) => void }}
+ *   `page` sends one page view for `path`; `event` sends an allowed event
+ *   (EVENTS) with only its allowed parameters, and drops anything else.
  */
 export function startGa(win, id) {
   const layer = (win.dataLayer = win.dataLayer || []);
@@ -90,9 +163,16 @@ export function startGa(win, id) {
   script.async = true;
   script.src = `${LOADER_URL}?id=${encodeURIComponent(id)}`;
   win.document.head.append(script);
-  return (path) => {
-    const hit = hitFor(path);
-    gtag('set', hit);
-    gtag('event', 'page_view', hit);
+  return {
+    page(path) {
+      const hit = hitFor(path);
+      gtag('set', hit);
+      gtag('event', 'page_view', hit);
+    },
+    // The page fields come from set, so an event carries the redacted page.
+    event(name, params) {
+      const clean = eventParams(name, params);
+      if (clean) gtag('event', name, clean);
+    },
   };
 }
