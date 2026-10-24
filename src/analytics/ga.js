@@ -25,8 +25,9 @@ const TOPIC_PAGE = /^\/learn\/([^/]+)$/i;
 /**
  * The route a path is reported as: the pattern of the page the app shows for
  * it, matched as wouter matches (any letter case, one optional trailing
- * slash). Every precinct page is /p/:precinct, whatever follows /p/; a topic
- * keeps its id (public content) only when it is a topic; anything else is
+ * slash). Every precinct page (one path segment after /p/, a code or not)
+ * is /p/:precinct; a topic keeps its id (public content) only when it is a
+ * topic (every topic exists in English, DEFAULT_LOCALE); anything else is
  * /not-found. No query string or hash.
  * @param {string} path
  */

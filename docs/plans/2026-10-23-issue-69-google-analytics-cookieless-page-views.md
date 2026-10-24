@@ -33,7 +33,7 @@ off; the owner adds the `G-` ID in `src/config/site.js` and applies the GA prope
    `page_location` = `siteUrl` + route pattern, `page_title` a fixed name per page type and
    `page_referrer` empty. The same values are `set` globally so GA's automatic events carry
    them too.
-6. Route patterns: `/`, `/p/:precinct` (every path under `/p/`, County `CC007`, City
+6. Route patterns: `/`, `/p/:precinct` (every precinct page, `/p/` and one segment, County `CC007`, City
    `W01P12`, any case, trailing slash, invalid codes), `/learn`, `/learn/<topic id>` for a
    known topic only, `/early-voting`, `/privacy`, `/not-found` for everything else. No query
    string or hash ever. Each route in `src/App.jsx` has a pattern (a test fails when a route

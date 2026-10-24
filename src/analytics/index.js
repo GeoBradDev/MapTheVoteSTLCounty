@@ -5,8 +5,9 @@
 //
 // - Off unless the measurement ID (src/config/site.js) is set, the page is on
 //   the production origin and the browser does not send Global Privacy
-//   Control: never on PR previews, localhost, vite preview, the e2e and
-//   Lighthouse runs or tests.
+//   Control: the shipped build never loads it on PR previews, localhost,
+//   vite preview, or the e2e and Lighthouse runs (only tests that pass their
+//   own origin and ID, or e2e/analytics.e2e.js's own build, turn it on).
 // - Consent Mode defaults every storage and ad signal to denied, before
 //   anything else, and nothing ever grants it: GA sets no cookies and keeps
 //   nothing in the browser, so the site needs no consent banner.
@@ -18,7 +19,10 @@
 //   they cost the first load nothing (#27). No inline script: the CSP's
 //   script-src allows only 'self' and Google's loader. Page views until then
 //   wait here, as paths.
+// Keep this file's imports to the config: importing src/i18n here once made
+// the build split the topics into a chunk of their own, past the budget.
 import { gaMeasurementId, siteUrl } from '../config/site.js';
+
 
 /** The hosts GA uses, as the privacy notice and render.yaml's CSP name them. */
 export const ANALYTICS_HOSTS = Object.freeze({

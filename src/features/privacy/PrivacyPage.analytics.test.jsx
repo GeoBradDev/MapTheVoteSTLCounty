@@ -48,6 +48,7 @@ describe('PrivacyPage with Google Analytics on', () => {
       `(${ANALYTICS_HOSTS.loader})`,
       `(${ANALYTICS_HOSTS.collector})`,
       'which kind of page you open',
+      'a How to vote topic (and which topic)',
       'never gets your address, your location or your precinct',
       "every precinct's results are counted as one page",
       'your IP address and your browser',

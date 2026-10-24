@@ -118,7 +118,8 @@ export function jurisdictionFor(code) {
 /**
  * Whether a value is a County or City precinct code. The one test for "is this
  * a precinct code" in a URL or a share link. Analytics (#69) reports every
- * path under /p/ as /p/:precinct, code or not (src/analytics/ga.js).
+ * precinct page, /p/ and one path segment, as /p/:precinct, code or not
+ * (src/analytics/ga.js).
  * @param {unknown} code
  */
 export function isPrecinctCode(code) {

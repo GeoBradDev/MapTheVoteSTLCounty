@@ -953,8 +953,9 @@ notice drops that and adds a "Page counts" section naming Google's hosts and wha
 notice and the pre-rendered `/privacy` page follow the same config, so they are true in both
 states. With the ID set, GA loads only:
 
-- on the production origin (`siteUrl`): never on PR previews, `localhost`, `vite preview`, the
-  e2e and Lighthouse runs or tests;
+- on the production origin (`siteUrl`): the shipped build never loads it on PR previews,
+  `localhost`, `vite preview` or the e2e and Lighthouse runs (only tests that pass their own
+  origin and ID, and `e2e/analytics.e2e.js`'s own build, turn it on);
 - when the browser does not send Global Privacy Control (`navigator.globalPrivacyControl`);
 - after the `load` event, in idle time: `src/analytics/ga.js` is a chunk of its own, and Google's
   script tag is added by it, so neither is in the first load (#27). The CSP has no inline script.
