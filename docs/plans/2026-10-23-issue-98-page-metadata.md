@@ -47,7 +47,7 @@ name (#93) have landed. The favicon (#79) and the manifest (#25) exist.
    from the palette tokens and the site mark; nothing election-specific in it.
    `render.yaml` gives `/share-image.png` its own Cache-Control rule (no overlap).
 8. `npm run test:perf` also runs Lighthouse's SEO category on every route it measures and
-   fails when a run fails an SEO audit, except `is-crawlable` on `/p/*` (noindex by the
+   fails when a run fails (or errors on) an SEO audit, except `is-crawlable` on `/p/*` (noindex by the
    owner's decision). No existing threshold changes.
 9. The smoke test checks the `X-Robots-Tag` header on `/p/CC007` with the other header
    checks, and the docs (README Search engines, Deploy, Performance, Smoke test) match.
@@ -63,7 +63,9 @@ name (#93) have landed. The favicon (#79) and the manifest (#25) exist.
 - `src/components/useNoindex.js` (new): adds a marked robots noindex tag while the page
   is shown. Used in `NotFoundPage.jsx`, `ErrorBoundary.jsx` (`ErrorScreen`) and
   `src/features/lookup/PrecinctPage.jsx`.
-- `src/i18n/en.json`: `site.shareImageAlt`, `site.shareImageTagline`.
+- `src/i18n/en.json`: `site.shareImageAlt`, `site.shareTagline`.
+- `.github/workflows/ci.yml`: the build output check also expects `dist/share-image.png`;
+  the perf step's comment names the SEO gate.
 - `public/share-image.png` (new), `scripts/draw-share-image.mjs` (new).
 - `render.yaml`: `X-Robots-Tag` on `/p/*`, Cache-Control for `/share-image.png`.
 - `src/prerender/plugin.js`: `previewHeaders` sends `X-Robots-Tag` on `/p/*`.

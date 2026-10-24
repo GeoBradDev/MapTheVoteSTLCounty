@@ -302,12 +302,13 @@ async function measure(browser, { path: route, shows, code = CODE, clock }) {
     const { lhr } = result;
     if (lhr.runtimeError) throw new Error(`${route}: ${lhr.runtimeError.message}`);
     const audit = (id) => lhr.audits[id].numericValue;
-    // The scored SEO audits that did not pass (manual and not-applicable ones
-    // have a null score).
+    // The scored SEO audits that did not pass, an audit that errored (null
+    // score) among them; manual and not-applicable ones also have a null
+    // score and are skipped.
     const seoFailed = lhr.categories.seo.auditRefs
       .filter((ref) => ref.weight > 0)
       .map((ref) => lhr.audits[ref.id])
-      .filter((a) => a.score !== null && a.score < 1)
+      .filter((a) => a.scoreDisplayMode === 'error' || (a.score !== null && a.score < 1))
       .map((a) => a.id);
     return {
       score: Math.round(lhr.categories.performance.score * 100),
@@ -379,18 +380,20 @@ async function main() {
       const expected = SEO_EXPECTED_FAILURES.filter((e) => e.applies(route.path)).map(
         (e) => e.audit,
       );
+      const seoFailures = new Set();
       for (const run of runs) {
         const unexpected = run.seoFailed.filter((id) => !expected.includes(id));
         const missing = expected.filter((id) => !run.seoFailed.includes(id));
         if (unexpected.length) {
-          failures.push(`${route.label}: SEO audits failed: ${unexpected.join(', ')}`);
+          seoFailures.add(`${route.label}: SEO audits failed: ${unexpected.join(', ')}`);
         }
         if (missing.length) {
-          failures.push(
+          seoFailures.add(
             `${route.label}: SEO audits passed that should fail: ${missing.join(', ')}`,
           );
         }
       }
+      failures.push(...seoFailures);
       if (!runs.every((r) => r.shown)) {
         failures.push(`${route.label}: a run ended without the page's content`);
       }

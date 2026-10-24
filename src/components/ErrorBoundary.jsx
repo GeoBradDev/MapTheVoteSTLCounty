@@ -17,7 +17,7 @@ function ErrorScreen({ jurisdiction }) {
   useEffect(() => {
     headingRef.current?.focus();
   }, []);
-  // Not the failed page's head (#99): the shell's description, no canonical.
+  // Not the failed page's head (#99): the shell's tags, no canonical (#98).
   useEffect(() => {
     applyHead(document, null);
   }, []);

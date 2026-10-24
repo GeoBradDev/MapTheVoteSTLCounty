@@ -178,7 +178,7 @@ describe('production build', () => {
   // render.yaml's Content-Security-Policy allows only same-origin scripts,
   // styles, images and fonts, with no 'unsafe-inline'.
   it('needs nothing the Content-Security-Policy blocks', () => {
-    const scripts = [...html.split('</head>')[0].matchAll(/<script\b[^>]*>/g)].map((m) => m[0]);
+    const scripts = [...html.matchAll(/<script\b[^>]*>/g)].map((m) => m[0]);
     expect(scripts.length).toBeGreaterThan(0);
     expect(scripts.filter((tag) => !/\bsrc="\/assets\//.test(tag))).toEqual([]);
     expect(html).not.toMatch(/<style\b/i);
