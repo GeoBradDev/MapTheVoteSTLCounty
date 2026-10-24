@@ -878,7 +878,10 @@ describe('PrecinctPage', () => {
       );
       renderAt('CC007');
       await ready('CC007');
-      expect(fetchMock.mock.calls.some(([input]) => isWaitLayer(input))).toBe(true);
+      // The summary starts the loop once it mounts, which can be just after.
+      await waitFor(() =>
+        expect(fetchMock.mock.calls.some(([input]) => isWaitLayer(input))).toBe(true),
+      );
     });
 
     it('gets no request from the test before', async () => {

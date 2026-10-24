@@ -67,6 +67,16 @@ because nothing a voter sees changes.
   leaves. A reader that comes back inside the interval would then wait up to 30 s for its first
   count, a behavior change in election week for a test isolation bug.
 
+## Revision: the red test's own precondition
+
+Under three full runs at once, the first test of the pair failed its precondition: no line count
+request yet when the page said ready, since the summary starts the loop once it mounts, which can
+be just after. The test now waits for that request (`waitFor`) instead of checking once. This
+edits a frozen test without the owner's approval (the run is unattended); it strengthens the
+precondition and changes no assertion. Re-proved red: the rewritten pair, without the
+`afterEach` fix, at `f829c76` (the merge base) fails "gets no request from the test before" with 3
+calls from the earlier test (the County and City line count layers and the rooms layer).
+
 ## Proof
 
 - Criterion 1 and 2: the new pair of tests; red on `main`, green after.
