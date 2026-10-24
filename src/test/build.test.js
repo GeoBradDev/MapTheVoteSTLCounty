@@ -288,7 +288,7 @@ describe('production build', () => {
 
   // Performance budget (#27): every script the first load fetches (the entry
   // and anything index.html preloads) under 121 KB gzipped. Owner decision on
-  // #143 (2026-10-24): raised from 120 KB to 121 KB.
+  // #143: raised from 120 KB to 121 KB.
   it('keeps the first-load JavaScript under 121 KB gzipped', () => {
     const firstLoad = [...html.matchAll(/(?:src|href)="\/assets\/([\w-]+\.js)"/g)].map((m) => m[1]);
     expect(firstLoad.length).toBeGreaterThan(0);
