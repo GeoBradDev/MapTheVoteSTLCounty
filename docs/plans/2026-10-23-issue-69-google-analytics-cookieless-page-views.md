@@ -60,17 +60,22 @@ off; the owner adds the `G-` ID in `src/config/site.js` and applies the GA prope
 ## Files that change
 
 - `src/config/site.js`: `gaMeasurementId = ''`.
-- `src/analytics/index.js` (new): `ANALYTICS_HOSTS`, `routePattern(path)`, `pageTitleFor`,
-  `analyticsAllowed`, `startAnalytics(win, id)`, `pageView(path)`, `analyticsOn()`.
-- `src/analytics/index.test.js` (new): unit tests for the above.
-- `src/analytics/usePageViews.js` (new): the hook App uses, deduping per location.
-- `src/App.jsx`: call `usePageViews()`.
+- `src/analytics/index.js` (new, first load): `ANALYTICS_HOSTS`, `analyticsEnabled`,
+  `analyticsAllowed`, `startAnalytics(win, id)`, `pageView(path)` (deduped, queued until GA
+  loads).
+- `src/analytics/ga.js` (new, its own chunk, loaded after `load` in idle time):
+  `routePattern`, `PAGE_TITLES`, `pageTitleFor`, `LOADER_URL`, `startGa` (consent, config,
+  the script tag, the page view sender).
+- `src/analytics/index.test.js` (new): unit tests for both.
+- `src/App.jsx`: an effect calling `pageView(location)`.
 - `src/main.jsx`: `startAnalytics(window)` before render.
 - `src/test/analyticsOnly.test.js` (new): only `src/analytics/` names Google or gtag.
 - `src/test/analyticsPrivacy.test.jsx` (new, next to `addressPrivacy.test.jsx`): the real app,
   GA forced on with a fake `gtag`, a lookup by address and by Use my location to `/p/CC007`;
   every recorded call is free of the address, its parts, the coordinates and the code.
-- `src/features/privacy/privacyCopy.js`, `src/i18n/en.json`, `PrivacyPage.test.jsx`.
+- `src/features/privacy/privacyCopy.js`, `src/i18n/en.json`, `PrivacyPage.test.jsx`, and
+  `PrivacyPage.analytics.test.jsx` (new, the notice with an ID set via `vi.mock`), sharing
+  `src/test/privacyNotice.js` (new: the CSP origins and the hosts a text names).
 - `render.yaml`, `src/test/render.test.js`.
 - `e2e/analytics.e2e.js` (new): builds the app with a test ID (a Vite plugin that rewrites
   `site.js` in the test's own build, no production hook), serves it with `vite preview` at the
@@ -112,3 +117,10 @@ off; the owner adds the `G-` ID in `src/config/site.js` and applies the GA prope
 - 12: `src/test/build.test.js`, `npm run test:perf`.
 - e2e: `e2e/analytics.e2e.js`. Live drive: the e2e run plus a browser check of `/privacy`
   in both states.
+
+## Revisions
+
+- Implementation: the first version put the whole module in the first load, +1.15 KB gzipped
+  against about 1.8 KB of headroom under the 120 KB budget. GA itself moved to `ga.js`, a chunk
+  loaded only when analytics may run, after `load` in idle time; page views before it loads
+  are queued as paths in memory. The first load grew 0.72 KB, 0.31 KB of it the notice text.

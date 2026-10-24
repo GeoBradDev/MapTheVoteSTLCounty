@@ -40,14 +40,17 @@ same.)
 
 ## Privacy statement
 
-The site has no accounts, no analytics, no cookies and no server of its own: the browser talks
+The site has no accounts, no cookies and no server of its own, and, until its Google Analytics
+measurement ID is set, no analytics (see [Google Analytics](#google-analytics)): the browser talks
 straight to the public services that look up the address and the precinct, and to the boards'
 line count layers on the home page's line count map, the wait times page and the results page
 while early voting runs or, on Election Day, while the polls are open (then a precinct's results
 ask only its own board's; the home page's map asks only while a site is open, #184). It
 never saves a
 typed address or a device location, in the URL, browser storage, cookies or the browser's
-cache, and a share link holds only the precinct code, like `/p/CC007`. The plain-language
+cache, and a share link holds only the precinct code, like `/p/CC007`. Once the ID is set,
+Google Analytics counts page views by page type only (every precinct page is `/p/:precinct`),
+sets no cookies and is skipped with Global Privacy Control. The plain-language
 notice at [`/privacy`](https://mapthevotestl.com/privacy) says what each service gets; the
 [Privacy](#privacy) section below has the rules and the tests that hold the code to them.
 
@@ -68,7 +71,7 @@ npm run dev           # start the dev server
 npm run build         # build the static site into dist/
 npm run preview       # serve dist/ locally
 npm test              # run the tests once (npm run test:watch to watch)
-npm run test:e2e      # accessibility and failure-state checks in Chromium; run npm run build first
+npm run test:e2e      # accessibility, failure-state and analytics checks in Chromium; run npm run build first
 npm run test:perf     # Lighthouse performance budgets and SEO audits; run npm run build first
 npm run lint          # ESLint, including jsx-a11y rules
 npm run format        # format with Prettier (npm run format:check to check only)
@@ -906,13 +909,14 @@ service in turn (network refusal, a request that never answers, 5xx) in a real b
 ## Privacy
 
 Addresses are sensitive. The app itself never puts a typed address or its coordinates in the
-URL, `localStorage`, `sessionStorage`, IndexedDB, cookies, logs or analytics, and v1 has no
-analytics. Every request that carries a typed address or coordinates uses `cache: 'no-store'`,
+URL, `localStorage`, `sessionStorage`, IndexedDB, cookies, logs or analytics. Its only analytics
+are the cookieless, redacted page views below, off until the measurement ID is set. Every request that carries a typed address or coordinates uses `cache: 'no-store'`,
 no cookies and no referrer, and sends them in a POST body, never the URL, where the service
 accepts one (#38): the county's address layers, the City geocoder and the County and City
 precinct and boundary point queries. Photon has no POST endpoint, so it gets the typed text in a GET query string;
 the notice says so. A new request that carries either must do the same, and a service worker
-(#183) must not put those requests in Cache Storage, which `no-store` does not cover. The plain-language
+(#183) must not put those requests in Cache Storage, which `no-store` does not cover, and must not
+intercept or cache requests to Google's analytics hosts. The plain-language
 notice at `/privacy` (`src/features/privacy/privacyCopy.js`, its text under `privacy` in
 `src/i18n/en.json` and every other language's file) says what each third party gets;
 change it in the same change as any new service or any change to what is sent. `src/test/no-storage.test.js` fails
@@ -935,6 +939,53 @@ never reaches the URL or storage.
 Use my location turns away a fix with an accuracy radius over 100 m before any query (#83), so
 for this check use a phone with precise location on, or an emulated location whose accuracy is
 set to 100 m or less. If it says the location is only a rough estimate, press it again.
+
+### Google Analytics
+
+Page view counts with Google Analytics 4 (#69), in `src/analytics/`, the only app code that
+names Google, `gtag` or the `dataLayer` (`src/test/analyticsOnly.test.js` fails on any other).
+It is off while `gaMeasurementId` in `src/config/site.js` is empty, as it ships (owner decision
+on #69), and the privacy notice then says the site has no analytics; once the ID is set, the
+notice drops that and adds a "Page counts" section naming Google's hosts and what they get. The
+notice and the pre-rendered `/privacy` page follow the same config, so they are true in both
+states. With the ID set, GA loads only:
+
+- on the production origin (`siteUrl`): never on PR previews, `localhost`, `vite preview`, the
+  e2e and Lighthouse runs or tests;
+- when the browser does not send Global Privacy Control (`navigator.globalPrivacyControl`);
+- after the `load` event, in idle time: `src/analytics/ga.js` is a chunk of its own, and Google's
+  script tag is added by it, so neither is in the first load (#27). The CSP has no inline script.
+
+What it sends: Consent Mode defaults every storage and ad signal (`analytics_storage`,
+`ad_storage`, `ad_user_data`, `ad_personalization`) to `denied` before anything else, and
+nothing grants them, so GA sets no cookies and needs no banner. `config` turns off its own page
+views, Google signals and ad personalization. The app sends one page view per navigation, with
+`page_location` set to `siteUrl` plus the route pattern (`/`, `/p/:precinct` for every precinct
+page in any letter case, County or City, `/learn`, `/learn/<topic id>`, `/early-voting`,
+`/privacy`, `/not-found` for anything else; never a query string or hash), a fixed `page_title`
+per page type and an empty `page_referrer`, and sets the same values for GA's own later events.
+A new route in `src/App.jsx` needs its pattern in `routePattern` (a test fails until it has one).
+`e2e/analytics.e2e.js` builds the app with a test ID, serves it at the production origin and
+checks a lookup's page views and every request to Google's stubbed hosts.
+
+Before setting the ID, apply these settings in GA, since they live there, not in code:
+
+1. Create a GA4 property and a web data stream for `mapthevotestl.com`.
+2. In the stream's Enhanced measurement, turn off page changes based on browser history events
+   (the app sends its own redacted page views), outbound clicks, file downloads, site search and
+   form interactions: each sends real URLs (a sample ballot PDF link names the precinct). Scrolls
+   and video engagement may stay off too; the app does not need them.
+3. Turn Google signals off, set data retention to the shortest option (2 months), and leave every
+   Google Ads and other product link off.
+4. Put the `G-` ID in `src/config/site.js`. The CSP in `render.yaml` already allows the loader
+   (`www.googletagmanager.com`) and the collection hosts (`*.google-analytics.com`).
+
+Manual check before each election, once the ID is set: on the live site, open `/`, run a lookup
+and open a topic. In devtools, Application shows no cookies (`_ga*`), Local Storage or Session
+Storage for the site; each `collect` request in Network has `dl=https://mapthevotestl.com/p/:precinct`
+(never a real code) or another route pattern, a fixed `dt` and `gcs=G100` (all storage denied).
+In GA's Realtime report, the page views show under the redacted paths. With Global Privacy
+Control on (Brave, or Firefox's setting), no request goes to Google.
 
 ## Share links
 
