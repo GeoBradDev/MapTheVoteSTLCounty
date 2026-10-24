@@ -6,7 +6,7 @@ and changes no app behavior.
 
 Domain skills: superpowers:test-driven-development, invoke. Frontend, accessibility, React
 and design skills: not applicable because no UI or app code changes. Data: the check reads
-only the City Board's public districts layer (`electedoffice` distinct values), never voter
+only the City Board's public districts layer (the `electedoffice` value of every row), never voter
 data and never the officeholder fields.
 
 Scope: item 2 of #160 only (coordinator instruction). Item 1 (an outline with no inside shows

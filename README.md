@@ -194,7 +194,7 @@ may need new values too. Work on a branch and merge through the usual pull reque
    `sources` also name the City Board's Apply to Vote Absentee page, which the City card links
    for voting by mail. And it includes the City districts card's rows (`districts` in
    `cityResults.js`, #90): check each row's `electedoffice` names against the districts layer
-(the data health check's `city district offices` check does this),
+   (the data health check's `city district offices` check does this),
    and recheck which congressional map is in effect and that the whole City is still in one
    district under it (its `sources`). And it includes the City's sample ballot
    (`sampleBallot` in `cityResults.js`, #92): the City Board's one PDF for all precincts, linked
