@@ -19,15 +19,17 @@ Domain skills:
 
 1. Under the address search (home, not-found page, and the precinct page's "search instead"),
    the visible text is one short line ("Your address and location are used only to find your
-   precinct and are not saved.") plus a closed-by-default disclosure ("Address search sources")
+   precinct. This site does not save them."; changed from the owner's example "...and are not
+   saved" so it does not claim the outside services keep nothing) plus a closed-by-default disclosure ("Address search sources")
    holding: each service that gets the address (County address points with its link, Photon by
    komoot with its link, the City of St. Louis address search), the "Photon data ©
    OpenStreetMap contributors" credit with its link to the OSM copyright page, that the address
    is sent only to these services and this site does not save it, and a link to `/privacy`.
 2. The "Results are for where your device is now, which may not be your home address..." note
    no longer shows before any lookup. It shows after a Use my location result: on the precinct
-   page reached by Use my location (not by a typed address, a reload or a shared link), and with
-   the out-of-area notice when Use my location found a place outside both jurisdictions.
+   page reached by Use my location (not by a typed address, a reload or a shared link), and
+   after the notice when Use my location found no precinct to open (outside both
+   jurisdictions, or a County or City referral).
 3. On the home page, the space between the dot map's last line (legend, or the no-count line)
    and the "Detailed early voting wait times map" button is the button's own margin (16 px,
    under 24 px) in every calendar state, at 360, 390, 640 and 1280 px wide.
@@ -51,8 +53,8 @@ Domain skills:
 - `src/features/lookup/lookupPoint.js`: remember whether the point came from the device
   (`lookupFromDevice(code)`), memory only like the point.
 - `src/features/lookup/AddressLookup.jsx`: pass the source to `rememberLookupPoint`; show
-  `notHome` (an info `Notice`) above the out-of-area notice when the outcome came from Use my
-  location.
+  `notHome` (an info `Notice`) after the out-of-area or referral notice when the outcome came
+  from Use my location.
 - `src/features/lookup/PrecinctPage.jsx`: show `notHome` as an info `Notice` under the header
   when `lookupFromDevice(code)`, read once at mount like the origin.
 - `src/features/waitTimes/WaitDotMap.jsx`: the section is a flex column filling the box; the map

@@ -913,6 +913,27 @@ test.describe('the nonpartisan, unofficial statement', () => {
     });
   }
 
+  // #216: one line under the search; the credits the data license asks for
+  // are folded under it, one tap away.
+  test('folds the address search credits under one line, one tap away', async ({ page }) => {
+    await answerFromFixtures(page);
+    await page.goto('/');
+    await expect(
+      page.getByText('Your address and location are used only to find your precinct.'),
+    ).toBeVisible();
+    await expect(page.getByText(/may not be your home address/)).toHaveCount(0);
+    const osm = page.getByRole('link', { name: 'OpenStreetMap contributors' });
+    await expect(osm).toBeHidden();
+    await openDisclosure(page, 'Address search sources');
+    await expect(osm).toBeVisible();
+    await expect(osm).toHaveAttribute('href', 'https://www.openstreetmap.org/copyright');
+    await expect(page.getByText(/This site does not save it\./)).toBeVisible();
+    await expect(page.getByRole('link', { name: 'privacy notice' })).toHaveAttribute(
+      'href',
+      '/privacy',
+    );
+  });
+
   test('prints on a results page, without the Privacy link', async ({ page }) => {
     await answerFromFixtures(page);
     await page.goto(`/p/${CODE}`);

@@ -61,7 +61,7 @@ async function search(text = ADDRESS) {
 
 describe('AddressLookup', () => {
   // #80: the two ways in come first, one under the other; the fine print
-  // (the location notes and the address search credits) follows both.
+  // (the privacy line and the folded address search credits, #216) follows both.
   it('puts "Use my location" right after "Find my precinct" and the credits after both', () => {
     renderLookup();
     const find = screen.getByRole('button', { name: searchCopy.submit });
@@ -71,6 +71,10 @@ describe('AddressLookup', () => {
       Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
     expect(follows(find, locate)).toBe(true);
     expect(follows(locate, credits)).toBe(true);
+    // The one privacy line comes before the folded credits (#216).
+    const line = screen.getByText(/used only to find your precinct\. This site does not save/);
+    expect(follows(locate, line)).toBe(true);
+    expect(follows(line, screen.getByText(copy.attribution.summary))).toBe(true);
     const buttons = screen.getAllByRole('button');
     expect(buttons.indexOf(locate)).toBe(buttons.indexOf(find) + 1);
   });

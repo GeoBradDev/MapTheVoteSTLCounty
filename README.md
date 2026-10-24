@@ -941,7 +941,12 @@ the notice says so. A new request that carries either must do the same, and a se
 intercept or cache requests to Google's analytics hosts. The plain-language
 notice at `/privacy` (`src/features/privacy/privacyCopy.js`, its text under `privacy` in
 `src/i18n/en.json` and every other language's file) says what each third party gets;
-change it in the same change as any new service or any change to what is sent. `src/test/no-storage.test.js` fails
+change it in the same change as any new service or any change to what is sent. Under the
+address search, one line says the address and location are used only to find the precinct and
+that this site does not save them, and a closed "Address search sources" disclosure (`GeocoderAttribution.jsx`)
+names each service that gets the address, carries Photon's © OpenStreetMap contributors credit
+and links the notice (#216); the "may not be your home address" note shows only after a Use my
+location result. `src/test/no-storage.test.js` fails
 when app code under `src` uses browser storage, cookies or the console, and
 `src/test/addressPrivacy.test.jsx` runs a lookup and checks storage, cookies, Cache Storage
 entries, IndexedDB database names, the URL, the title, the head tags (#98) and the console for the address (jsdom has no
@@ -1142,7 +1147,9 @@ date is known, so the build writes a few hundred bytes of plain script from thos
 same origin, so the Content-Security-Policy allows it). While the window is open it marks
 `<html>` with `data-home-map`, and `src/index.css` then reserves the map's box at the height of
 its tallest state before the first paint, so nothing below it moves when the map arrives (the
-e2e checks hold the app's script and compare the wait times button's position). Outside the
+e2e checks hold the app's script and compare the wait times button's position). The map's card
+then grows into whatever height the legend leaves, so the button follows the map's last line
+with no gap in any state (#216, checked by the e2e too). Outside the
 window, and with JavaScript off, the box takes no space. The box closes, leaving the home page
 as it was, only when the map cannot be drawn (its chunk or a board's site list fails); stale or
 missing counts keep it, with every site a ring and a line saying so, since closing it then would

@@ -58,7 +58,7 @@ describe('UseMyLocation', () => {
     expect(screen.getByText(copy.privacy)).toBeInTheDocument();
     expect(button()).toHaveAccessibleDescription(copy.privacy);
     expect(copy.privacy).toMatch(/only to find your precinct/);
-    expect(copy.privacy).toMatch(/not saved/);
+    expect(copy.privacy).toMatch(/does not save/);
   });
 
   // #216: the "may not be your home" note waits for a result (AddressLookup
