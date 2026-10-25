@@ -39,7 +39,10 @@ Domain skills:
   inner `cityPrecinct()` calls `loadCity()` instead of `loadCityClient()`. JSDoc names the
   option: a function that resolves to an object with `getCityPrecinctAtPoint`, for callers
   outside the browser build (the script, #198).
-- `src/features/lookup/locate.test.js`: tests for the option (below).
+- `src/features/lookup/locate.test.js`: the frozen red test for the option (below).
+- `src/features/lookup/locateCityLoader.test.js` (new): the failing-loader and no-precinct
+  tests for the option. Revised during Phase 4: they were first planned in `locate.test.js`, but
+  that file is frozen once the red test is committed, so they live in their own file.
 - `scripts/check-geocoder.mjs`: `import * as cityClient from '../src/data/cityArcgis.js'`
   (a static import, so a load failure stops the script at start, criterion 2) and
   `locate(place, { loadCity: async () => cityClient })` in `kindOf()`, with a comment naming
@@ -60,9 +63,10 @@ Domain skills:
    once with the point, and no request to the City precinct layer. Run it, confirm it fails
    because the option is ignored (the recorded City precinct comes back). Commit it alone; add
    its path to `.claude/fix-lock`.
-2. Green: the `locate.js` change. Then add (not frozen, already green with the change) the test
-   "a City loader that fails answers stl-city" (stub rejects) so criterion 3 holds through
-   the option.
+2. Green: the `locate.js` change. Then add (not frozen, already green with the change), in
+   `locateCityLoader.test.js`, the tests "a City loader that fails answers stl-city" (stub
+   rejects) and "the loaded City code finds nothing answers stl-city", so criterion 3 holds
+   through the option.
 3. The script change.
 4. The plain Node test (criterion 5). Confirm it would catch the defect class: temporarily
    point it at a module that imports `src/cityChunk.js` and see it fail, then revert (record
@@ -96,3 +100,14 @@ Domain skills:
   argument and see the City layer requested through the default loader; plus the e2e gate.
 - Criterion 5: `src/test/scriptsPlainNode.test.js`, and its temporary red run.
 - No live drive of the browser app: no user-facing change.
+
+### Recorded during Phase 4
+
+- Frozen red test (commit 74c4686), before the `locate.js` change: `× asks the given City
+  loader, not the City chunk`, `- "code": "W99P99"` / `+ "code": "W14P02"`: the option was
+  ignored and the recorded City precinct came back.
+- Temporary swap of the script's import to `../src/cityChunk.js`: both
+  `src/test/scriptsPlainNode.test.js` tests failed (`TypeError [ERR_UNKNOWN_FILE_EXTENSION]:
+  Unknown file extension ".jsx" for .../src/features/lookup/CityDistrictsCard.jsx`), and
+  `node scripts/check-geocoder.mjs` stopped at start with `ERR_UNKNOWN_FILE_EXTENSION`.
+  Reverted.
