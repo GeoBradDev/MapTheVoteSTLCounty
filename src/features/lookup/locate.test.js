@@ -366,6 +366,21 @@ describe('locate, on the Illinois bank while the City layer is down (#144)', () 
   });
 });
 
+describe('locate, with a City loader of its own (#198)', () => {
+  it('asks the given City loader, not the City chunk', async () => {
+    const getCityPrecinctAtPoint = vi.fn(async () => ({ code: 'W99P99' }));
+    const loadCity = vi.fn(async () => ({ getCityPrecinctAtPoint }));
+    expect(await locate(CITY, { loadCity })).toEqual({
+      kind: 'precinct',
+      jurisdiction: 'city',
+      precinct: { code: 'W99P99' },
+    });
+    expect(loadCity).toHaveBeenCalledTimes(1);
+    expect(getCityPrecinctAtPoint).toHaveBeenCalledWith({ lat: CITY.lat, lng: CITY.lng });
+    expect(requestedLayers()).not.toContain(CITY_PRECINCTS);
+  });
+});
+
 describe('classifyPlace', () => {
   it.each([
     ['St. Louis city', 'MO'],

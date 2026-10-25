@@ -882,6 +882,11 @@ W05P05, `6500 Chippewa St` W02P01, `8900 Riverview Blvd` W13P11; St. Charles, Wa
 and Philadelphia addresses get no precinct), and that addresses both list in one ZIP (`6135
 Horton Pl, St. Louis, MO 63133`, `1 Brookings Dr`, `1 Brookings Dr, St. Louis, MO 63130`,
 and the `1 Brookings` pick) are no match, with the live layer and with it blocked: all do.
+Rerun 2026-10-24 after #198 (the script had read every City address as the City referral,
+as plain Node could not load the City chunk's `.jsx` files; it now gives `locate()` the City's
+data module): app and live blocked 11 right of 11 each, every City address and City pick the
+City precinct above (City Hall W14P02, `6135 Washington Ave` 63112 W10P02, `5010 Nottingham
+Ave` W05P05, `6500 Chippewa St` W02P01, `8900 Riverview Blvd` W13P11), exit 0.
 A random sample of 192 current county address points, each typed both as stored
 and as a person would (lower case, full street type, town and ZIP), matched in the
 live layer every time.

@@ -136,10 +136,16 @@ export function eastOfCity({ lat, lng }) {
  * geocoder puts in the county, near the City, west of its river edge and not
  * known to be in the county, when the City's layer fails.
  * @param {Place} place
+ * @param {object} [options]
+ * @param {() => Promise<{ getCityPrecinctAtPoint: Function }>} [options.loadCity]
+ *   Loads the City's data code. The app leaves it out and gets the City chunk
+ *   (loadCityClient). Plain Node cannot load that chunk, which also holds the
+ *   City's .jsx components, so scripts/check-geocoder.mjs passes the City's
+ *   data module instead (#198).
  * @returns {Promise<Location>}
  * @throws {TypeError} When the place has no numeric lat and lng.
  */
-export async function locate(place) {
+export async function locate(place, { loadCity = loadCityClient } = {}) {
   const { lat, lng } = place ?? {};
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
     throw new TypeError('locate needs a place with numeric lat and lng');
@@ -154,7 +160,7 @@ export async function locate(place) {
   async function cityPrecinct() {
     cityAsked = true;
     try {
-      const client = await loadCityClient();
+      const client = await loadCity();
       const precinct = await client.getCityPrecinctAtPoint(point);
       return precinct ? { kind: 'precinct', jurisdiction: 'city', precinct } : null;
     } catch {

@@ -36,6 +36,12 @@ import { createGeocoder } from '../src/data/geocoder.js';
 import { GeocoderUnavailableError } from '../src/data/geocoderError.js';
 import { createPhotonGeocoder } from '../src/data/photon.js';
 import { locate } from '../src/features/lookup/locate.js';
+// The City's data code, the same functions the app's City chunk re-exports
+// (src/cityChunk.js). Plain Node cannot load that chunk, as it also holds the
+// City's .jsx components, so locate() is given this module instead; a static
+// import, so a load failure stops the script here rather than turning every
+// City address into stl-city (#198).
+import * as cityClient from '../src/data/cityArcgis.js';
 
 // North, south, west, central and unincorporated sites (docs/data.md, Geocoding).
 const LOCS = ['144', '020', '002', '054', '041', '148', '158', '122', '096', '178'];
@@ -126,7 +132,7 @@ async function withRetry(call) {
 // "city <code>", "county <code>", another locate() kind, or "no match".
 async function kindOf(place) {
   if (!place) return 'no match';
-  const result = await locate(place);
+  const result = await locate(place, { loadCity: async () => cityClient });
   if (result.kind !== 'precinct') return result.kind;
   const code = result.precinct.code ?? result.precinct.precinct;
   return `${result.jurisdiction} ${code}`;
