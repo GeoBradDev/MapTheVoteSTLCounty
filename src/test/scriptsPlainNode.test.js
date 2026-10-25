@@ -1,8 +1,10 @@
 // scripts/check-geocoder.mjs runs under plain Node, in the scheduled data
-// health check and by hand. Every module it imports from src/ must load there
-// without Vite: a module that pulls in a .jsx file (as src/cityChunk.js does)
-// fails with "Unknown file extension", and once made every City address read
-// as stl-city (#198).
+// health check and by hand, where a module that pulls in a .jsx file (as
+// src/cityChunk.js does) fails with "Unknown file extension". locate() loads
+// that chunk by default, which once made every City address read as stl-city
+// (#198). So the script must give every locate() call the City's data module
+// (the first test), and every module it imports from src/ must load without
+// Vite (the second).
 // @vitest-environment node
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
