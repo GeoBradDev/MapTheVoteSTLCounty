@@ -6,6 +6,7 @@ import { memoryLocation } from 'wouter/memory-location';
 import App from '../App.jsx';
 import { LOCALES } from './config.js';
 import { addMessages, setLocale } from './index.js';
+import { unmountThenUnstub } from '../test/teardown.js';
 
 vi.mock('../features/learn/topics.js', async (importOriginal) => {
   const actual = await importOriginal();
@@ -26,7 +27,7 @@ beforeEach(() => {
 afterEach(async () => {
   await act(() => setLocale('en'));
   delete LOCALES.xx;
-  vi.unstubAllGlobals();
+  await unmountThenUnstub();
 });
 
 it('redraws the page in a new language without remounting it or moving focus', async () => {

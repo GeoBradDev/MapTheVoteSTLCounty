@@ -15,6 +15,7 @@ import { lookupFromDevice, lookupPointFor } from './lookupPoint.js';
 import { copy } from './lookupCopy.js';
 import { copy as noticeCopy } from './outOfCountyCopy.js';
 import { copy as locationCopy } from './useMyLocationCopy.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 vi.mock('./locate.js', () => ({ locate: vi.fn() }));
 
@@ -34,8 +35,8 @@ beforeEach(() => {
   });
 });
 
-afterEach(() => {
-  vi.unstubAllGlobals();
+afterEach(async () => {
+  await unmountThenUnstub();
   window.history.replaceState(null, '', '/');
   localStorage.clear();
   sessionStorage.clear();

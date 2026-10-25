@@ -24,6 +24,7 @@ import election from '../../config/election.js';
 import { RETRY_DELAY_MS } from '../../data/arcgis.js';
 import referrals from '../../config/referrals.js';
 import { createFakeGeocoder } from '../../test/fakeGeocoder.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 import { nearestPolls, polygonCenter } from './nearbyPolls.js';
 import { formatLongDate } from './earlyVoting.js';
 import { copy, formatTime } from './resultsCopy.js';
@@ -87,31 +88,11 @@ beforeEach(async () => {
   ({ rememberLookupPoint } = await import('./lookupPoint.js'));
 });
 
-// Whether any of this test's answers is one query() retries: a failed fetch,
-// a 5xx or a 429 (isTransient in src/data/arcgis.js). It cannot see an HTTP
-// 200 ArcGIS error body without a code, which query() also retries, nor an
-// answer still pending when the test ends; no test here gives either.
-const retried = (mock) =>
-  mock.mock.settledResults.some(
-    ({ type, value }) =>
-      type === 'rejected' ||
-      (type === 'fulfilled' && (value?.status >= 500 || value?.status === 429)),
-  );
-
-// A retry waits RETRY_DELAY_MS on a real timer, and unmounting does not stop
-// one already waiting: it then called the global fetch, by then a later
-// test's stub, and failed that test's request checks (#186). Unmounting only
-// after the unstub also let a still mounted page ask the setup file's failing
-// fetch, whose retry then did the same. So unmount first, let failures still
-// being handled arm their retries, and, if any did, wait out the delay here:
-// Node fires timers of the same delay in the order they were set, so each
-// retry reaches this test's own stub before the next test starts.
-// Only Date may be faked here: with fake timers this hook would never finish.
+// Unmount first, then wait out any retry still pending, then unstub (#186,
+// #203: src/test/teardown.js). Only Date may be faked here: the helper's waits
+// are skipped when setTimeout is faked, and a retry here runs on a real timer.
 afterEach(async () => {
-  cleanup();
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  if (retried(fetchMock)) await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
-  vi.unstubAllGlobals();
+  await unmountThenUnstub();
   vi.useRealTimers();
 });
 

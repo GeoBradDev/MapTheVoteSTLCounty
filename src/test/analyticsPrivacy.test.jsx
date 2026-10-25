@@ -23,6 +23,7 @@ import { GeocoderContext } from '../features/lookup/geocoderContext.js';
 import { copy } from '../features/lookup/resultsCopy.js';
 import { copy as locationCopy } from '../features/lookup/useMyLocationCopy.js';
 import { createFakeGeocoder } from './fakeGeocoder.js';
+import { unmountThenUnstub } from './teardown.js';
 
 const ADDRESS = '7700 Fine Rd, Saint Louis, MO 63129';
 const PLACE = {
@@ -83,9 +84,9 @@ beforeEach(() => {
   stop = startAnalytics(ga, 'G-TEST123');
 });
 
-afterEach(() => {
+afterEach(async () => {
   stop?.();
-  vi.unstubAllGlobals();
+  await unmountThenUnstub();
   vi.restoreAllMocks();
   window.history.replaceState(null, '', '/');
 });

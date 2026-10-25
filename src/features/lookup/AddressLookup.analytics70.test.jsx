@@ -16,6 +16,7 @@ import { copy as errorCopy } from './errorCopy.js';
 import { GeocoderContext } from './geocoderContext.js';
 import { locate } from './locate.js';
 import { copy } from './lookupCopy.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 vi.mock('./locate.js', () => ({ locate: vi.fn() }));
 
@@ -35,9 +36,9 @@ beforeEach(() => {
   tracked = trackEvents();
 });
 
-afterEach(() => {
+afterEach(async () => {
   tracked.stop();
-  vi.unstubAllGlobals();
+  await unmountThenUnstub();
   window.history.replaceState(null, '', '/');
 });
 

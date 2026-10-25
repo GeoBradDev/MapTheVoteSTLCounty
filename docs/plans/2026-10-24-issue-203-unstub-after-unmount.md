@@ -169,3 +169,13 @@ With `afterEach(unmountThenUnstub)`: `Tests  6 passed (6)`.
 The helper reads `RETRY_DELAY_MS` through `vi.importActual`, not a static import, because
 four of the files (PollsCard, PollsCard.electionDay107, cardsAnalytics70, PrecinctMap) mock
 `src/data/arcgis.js`, and a mocked module would not give the value.
+
+## Revision during implementation
+
+Waiting whenever any answer was transient (#186's `retried`) made the suite about 3.5 s
+slower (7.7 s to 11.2 s wall), almost all in `locate.test.js` (+4.6 s) and
+`cityArcgis.test.js` (+4.2 s), whose failure tests already await both attempts. The helper
+now waits only when a retry may still be pending: a transient answer with no later request
+to the same URL and body. Its known limit, written in its comment: two identical requests
+that fail at once read as one request and its retry. Suite time after: 7.8 s to 10.1 s over
+three runs, the same range as `main` (7.7 s to 10.1 s).

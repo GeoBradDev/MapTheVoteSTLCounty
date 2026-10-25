@@ -2,6 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import App from './App.jsx';
+import { unmountThenUnstub } from './test/teardown.js';
 
 // The wait times page's chunk (#104) loads only when the test lets it, so the
 // test can look at the page while its code is still on the way.
@@ -22,8 +23,8 @@ beforeEach(() => {
   vi.stubGlobal('scrollTo', vi.fn());
 });
 
-afterEach(() => {
-  vi.unstubAllGlobals();
+afterEach(async () => {
+  await unmountThenUnstub();
 });
 
 // #151: the heading and intro, the page's largest text, paint while the page's

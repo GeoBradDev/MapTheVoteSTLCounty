@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { useRef } from 'react';
 import UseMyLocation from './UseMyLocation.jsx';
 import { copy } from './useMyLocationCopy.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 const POSITION = { coords: { latitude: 38.62, longitude: -90.33, accuracy: 12 }, timestamp: 1 };
 
@@ -17,8 +18,8 @@ beforeEach(() => {
   vi.stubGlobal('navigator', { ...navigator, geolocation: { getCurrentPosition } });
 });
 
-afterEach(() => {
-  vi.unstubAllGlobals();
+afterEach(async () => {
+  await unmountThenUnstub();
   window.history.replaceState(null, '', '/');
   localStorage.clear();
   sessionStorage.clear();

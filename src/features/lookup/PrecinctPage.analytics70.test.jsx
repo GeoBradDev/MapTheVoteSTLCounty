@@ -13,6 +13,7 @@ import byId from '../../../docs/raw/fixtures/precinct-by-id.json';
 import election from '../../config/election.js';
 import { copy as errorCopy } from './errorCopy.js';
 import { copy } from './resultsCopy.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 vi.mock('./precinctMapView.js', () => ({ createPrecinctMap: vi.fn() }));
 
@@ -46,9 +47,9 @@ beforeEach(async () => {
   tracked = helpers.trackEvents();
 });
 
-afterEach(() => {
+afterEach(async () => {
   tracked.stop();
-  vi.unstubAllGlobals();
+  await unmountThenUnstub();
   vi.useRealTimers();
 });
 

@@ -21,6 +21,7 @@ import PollsCard from './PollsCard.jsx';
 import { copy } from './resultsCopy.js';
 import SampleBallotCard from './SampleBallotCard.jsx';
 import ShareLink from './ShareLink.jsx';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 vi.mock('../../data/arcgis.js', () => ({
   getPolls: vi.fn(),
@@ -42,9 +43,9 @@ beforeEach(() => {
   getAbsenteeSites.mockReset();
   tracked = trackEvents();
 });
-afterEach(() => {
+afterEach(async () => {
   tracked.stop();
-  vi.unstubAllGlobals();
+  await unmountThenUnstub();
   delete navigator.share;
   delete navigator.clipboard;
 });

@@ -13,6 +13,7 @@ import { createWaitTimesStore } from '../waitTimes/useWaitTimes.js';
 import { copy as waitCopy } from '../waitTimes/waitTimesCopy.js';
 import { formatLongDate } from './earlyVoting.js';
 import { copy } from './resultsCopy.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 const city = election.jurisdictions.city;
 const cityEarlyVoting = cityResults.earlyVoting;
@@ -73,9 +74,9 @@ beforeEach(async () => {
   vi.setSystemTime(cdt(10, 22, 12));
 });
 
-afterEach(() => {
+afterEach(async () => {
   vi.useRealTimers();
-  vi.unstubAllGlobals();
+  await unmountThenUnstub();
 });
 
 // Counts off unless a source is given.

@@ -2,6 +2,9 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterEach } from 'vitest';
 
+// After-hooks run in reverse order, so this runs after a test file's own. A
+// file that stubs globals unmounts in its afterEach instead, through
+// unmountThenUnstub in ./teardown.js, before it restores them (#203).
 afterEach(() => {
   cleanup();
 });

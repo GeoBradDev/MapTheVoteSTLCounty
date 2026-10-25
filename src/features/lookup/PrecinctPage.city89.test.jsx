@@ -19,6 +19,7 @@ import { copy as errorCopy } from './errorCopy.js';
 import { copy as countyRuleCopy } from './countyElectionDayRuleCopy.js';
 import { nearestPolls, polygonCenter } from './nearbyPolls.js';
 import { copy } from './resultsCopy.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 const CODE = 'W01P12';
 const city = election.jurisdictions.city;
@@ -73,8 +74,8 @@ beforeEach(async () => {
   PrecinctPage = (await import('./PrecinctPage.jsx')).default;
 });
 
-afterEach(() => {
-  vi.unstubAllGlobals();
+afterEach(async () => {
+  await unmountThenUnstub();
   vi.useRealTimers();
 });
 

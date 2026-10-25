@@ -7,6 +7,7 @@ import { copy as footerCopy } from './components/siteFooterCopy.js';
 import election from './config/election.js';
 import referrals from './config/referrals.js';
 import { learnCopy } from './features/learn/learnCopy.js';
+import { unmountThenUnstub } from './test/teardown.js';
 
 // content/en/learn/ ships empty until #22, so the topic routes use fixtures.
 vi.mock('./features/learn/topics.js', async (importOriginal) => {
@@ -26,8 +27,8 @@ beforeEach(() => {
   vi.stubGlobal('scrollTo', vi.fn());
 });
 
-afterEach(() => {
-  vi.unstubAllGlobals();
+afterEach(async () => {
+  await unmountThenUnstub();
 });
 
 function renderAt(path) {

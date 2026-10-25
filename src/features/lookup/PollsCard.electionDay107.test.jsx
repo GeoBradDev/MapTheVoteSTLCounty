@@ -25,6 +25,7 @@ import { nearestPolls } from './nearbyPolls.js';
 import PollsCard from './PollsCard.jsx';
 import { createPrecinctMap } from './precinctMapView.js';
 import { copy } from './resultsCopy.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 vi.mock('../../data/arcgis.js', () => ({
   getPolls: vi.fn(),
@@ -88,9 +89,9 @@ beforeEach(() => {
   vi.stubGlobal('WebGL2RenderingContext', function WebGL2RenderingContext() {});
 });
 
-afterEach(() => {
+afterEach(async () => {
   vi.useRealTimers();
-  vi.unstubAllGlobals();
+  await unmountThenUnstub();
 });
 
 describe('PollsCard on Election Day (#107)', () => {

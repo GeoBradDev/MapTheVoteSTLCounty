@@ -9,6 +9,7 @@ import { JurisdictionContext } from './jurisdictionContext.js';
 import PrecinctMap from './PrecinctMap.jsx';
 import { createPrecinctMap } from './precinctMapView.js';
 import { copy } from './resultsCopy.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 vi.mock('../../data/arcgis.js', () => ({ getPrecinctGeometry: vi.fn() }));
 vi.mock('./precinctMapView.js', () => ({ createPrecinctMap: vi.fn() }));
@@ -29,8 +30,8 @@ beforeEach(() => {
   createPrecinctMap.mockReset().mockReturnValue(view);
 });
 
-afterEach(() => {
-  vi.unstubAllGlobals();
+afterEach(async () => {
+  await unmountThenUnstub();
 });
 
 const region = () => screen.getByRole('region', { name: copy.map.label('CC007') });

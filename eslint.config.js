@@ -66,6 +66,23 @@ export default defineConfig([
     },
   },
   {
+    // A test restores the globals it stubbed through unmountThenUnstub, which
+    // unmounts the page and waits out a pending retry first (#203).
+    files: ['src/**/*.test.{js,jsx}', 'src/test/**/*.{js,jsx}'],
+    ignores: ['src/test/teardown.js'],
+    rules: {
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'vi',
+          property: 'unstubAllGlobals',
+          message:
+            'Call unmountThenUnstub() from src/test/teardown.js in afterEach instead (#203).',
+        },
+      ],
+    },
+  },
+  {
     files: ['*.config.js', 'scripts/**/*.{js,mjs}'],
     languageOptions: {
       globals: globals.node,

@@ -16,6 +16,7 @@ import { GeocoderContext } from './geocoderContext.js';
 import { locate } from './locate.js';
 import { copy } from './lookupCopy.js';
 import { SLOW_MS } from './slowNotice.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 vi.mock('./locate.js', () => ({ locate: vi.fn() }));
 
@@ -56,9 +57,9 @@ beforeEach(() => {
   });
 });
 
-afterEach(() => {
+afterEach(async () => {
   vi.useRealTimers();
-  vi.unstubAllGlobals();
+  await unmountThenUnstub();
 });
 
 describe('AddressLookup failure states (#18)', () => {

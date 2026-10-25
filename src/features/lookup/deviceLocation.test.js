@@ -4,6 +4,7 @@ import {
   LocationError,
   MAX_ACCURACY_M,
 } from './deviceLocation.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 const POSITION = {
   coords: { latitude: 38.62, longitude: -90.33, accuracy: 12, altitude: null, speed: null },
@@ -21,8 +22,8 @@ function failWith(code) {
   return (_ok, fail) => fail({ code, message: `code ${code}`, PERMISSION_DENIED: 1 });
 }
 
-afterEach(() => {
-  vi.unstubAllGlobals();
+afterEach(async () => {
+  await unmountThenUnstub();
 });
 
 describe('getDeviceLocation', () => {

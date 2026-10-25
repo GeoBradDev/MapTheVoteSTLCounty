@@ -13,6 +13,7 @@ import election from '../../config/election.js';
 import { copy as errorCopy } from './errorCopy.js';
 import { copy } from './resultsCopy.js';
 import { SLOW_MS } from './slowNotice.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 let fetchMock;
 let PrecinctPage;
@@ -42,8 +43,8 @@ beforeEach(async () => {
   PrecinctPage = (await import('./PrecinctPage.jsx')).default;
 });
 
-afterEach(() => {
-  vi.unstubAllGlobals();
+afterEach(async () => {
+  await unmountThenUnstub();
   vi.useRealTimers();
 });
 
