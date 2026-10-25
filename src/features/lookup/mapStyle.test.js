@@ -2,6 +2,7 @@
 // style in dark, switching when the setting changes.
 import { BASEMAP_DARK_STYLE_URL, BASEMAP_STYLE_URL } from './basemap.js';
 import { basemapStyleUrl, DARK_SCHEME, followColorScheme, watchColorScheme } from './mapStyle.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 function fakeMedia(matches) {
   const listeners = new Set();
@@ -22,7 +23,7 @@ function fakeMedia(matches) {
   return query;
 }
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => unmountThenUnstub());
 
 describe('basemapStyleUrl', () => {
   it('is Positron in the light scheme', () => {

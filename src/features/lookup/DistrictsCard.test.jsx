@@ -6,6 +6,7 @@ import election from '../../config/election.js';
 import DistrictsCard from './DistrictsCard.jsx';
 import { districtRows } from './districts.js';
 import { copy } from './resultsCopy.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 const attributesOf = (fixture) => fixture.features[0].attributes;
 const list = () => document.querySelector('dl');
@@ -60,7 +61,7 @@ describe('DistrictsCard on phones and wide screens', () => {
     vi.stubGlobal('matchMedia', (query) => ({
       matches: query === '(min-width: 640px)' && width >= 640,
     }));
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => unmountThenUnstub());
   const details = () => list().closest('details');
 
   it('starts folded on a phone, and opens from its summary line', async () => {

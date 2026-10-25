@@ -13,6 +13,7 @@ import byId from '../../docs/raw/fixtures/city-precinct-by-id.json';
 import geometry from '../../docs/raw/fixtures/city-precinct-geometry.json';
 import errorBody from '../../docs/raw/fixtures/error-body.json';
 import { jurisdictions } from '../config/election.js';
+import { unmountThenUnstub } from '../test/teardown.js';
 
 const city = jurisdictions.city;
 const layer = (key) => `${city.serviceRoot}/${city.layers[key]}/query`;
@@ -63,8 +64,8 @@ beforeEach(async () => {
   base = await import('./arcgis.js');
 });
 
-afterEach(() => {
-  vi.unstubAllGlobals();
+afterEach(async () => {
+  await unmountThenUnstub();
   vi.useRealTimers();
 });
 

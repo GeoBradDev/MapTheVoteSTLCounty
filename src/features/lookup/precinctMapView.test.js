@@ -3,6 +3,7 @@
 // theme's token colors, and the map follows the scheme until removed.
 import { BASEMAP_DARK_STYLE_URL, BASEMAP_STYLE_URL } from './basemap.js';
 import { createPrecinctMap } from './precinctMapView.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 const maps = [];
 
@@ -121,9 +122,9 @@ beforeEach(() => {
   setTokens(LIGHT);
 });
 
-afterEach(() => {
+afterEach(async () => {
   container.remove();
-  vi.unstubAllGlobals();
+  await unmountThenUnstub();
 });
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));

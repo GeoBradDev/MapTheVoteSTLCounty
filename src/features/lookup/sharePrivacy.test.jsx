@@ -14,6 +14,7 @@ import { copy as searchCopy } from './addressSearchCopy.js';
 import { GeocoderContext } from './geocoderContext.js';
 import { locate } from './locate.js';
 import { copy } from './resultsCopy.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 vi.mock('./locate.js', () => ({ locate: vi.fn() }));
 
@@ -55,8 +56,8 @@ beforeEach(() => {
   Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
 });
 
-afterEach(() => {
-  vi.unstubAllGlobals();
+afterEach(async () => {
+  await unmountThenUnstub();
   delete navigator.share;
   delete navigator.clipboard;
   window.history.replaceState(null, '', '/');

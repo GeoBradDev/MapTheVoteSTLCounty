@@ -6,6 +6,7 @@ import { BASEMAP_ATTRIBUTION } from '../lookup/basemap.js';
 import WaitTimesMap from './WaitTimesMap.jsx';
 import { createWaitTimesMap } from './waitTimesMapView.js';
 import { copy } from './waitTimesCopy.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 vi.mock('./waitTimesMapView.js', () => ({ createWaitTimesMap: vi.fn() }));
 
@@ -112,7 +113,7 @@ describe('WaitTimesMap', () => {
       );
     });
 
-    afterEach(() => vi.unstubAllGlobals());
+    afterEach(() => unmountThenUnstub());
 
     it('reserves its box and loads nothing until it is in view', async () => {
       render(<WaitTimesMap sites={SITES} classes={CLASSES} />);

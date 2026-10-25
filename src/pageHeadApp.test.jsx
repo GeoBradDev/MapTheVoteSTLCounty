@@ -10,6 +10,7 @@ import { siteUrl } from './config/site.js';
 import { copy as errorCopy } from './components/errorBoundaryCopy.js';
 import { copy as waitCopy } from './features/waitTimes/waitTimesCopy.js';
 import { pageHead, shellHead } from './pageHead.js';
+import { unmountThenUnstub } from './test/teardown.js';
 
 // The privacy page throws when `privacyThrows` is set, to show the error screen.
 let privacyThrows = false;
@@ -31,8 +32,8 @@ beforeEach(() => {
   vi.stubGlobal('scrollTo', vi.fn());
 });
 
-afterEach(() => {
-  vi.unstubAllGlobals();
+afterEach(async () => {
+  await unmountThenUnstub();
   privacyThrows = false;
 });
 

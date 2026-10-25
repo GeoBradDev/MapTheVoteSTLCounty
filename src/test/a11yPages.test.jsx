@@ -8,6 +8,7 @@ import axe from 'axe-core';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import App from '../App.jsx';
+import { unmountThenUnstub } from './teardown.js';
 
 beforeAll(() => {
   document.documentElement.lang = 'en';
@@ -22,8 +23,8 @@ beforeEach(() => {
   );
 });
 
-afterEach(() => {
-  vi.unstubAllGlobals();
+afterEach(async () => {
+  await unmountThenUnstub();
 });
 
 async function violations(path) {

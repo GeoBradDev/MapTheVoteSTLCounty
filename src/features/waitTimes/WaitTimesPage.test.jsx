@@ -22,6 +22,7 @@ import { waitClasses, waitColor } from './jenks.js';
 import { createWaitTimesMap } from './waitTimesMapView.js';
 import WaitTimesPage from './WaitTimesPage.jsx';
 import { copy } from './waitTimesCopy.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 vi.mock('./waitTimesMapView.js', () => ({ createWaitTimesMap: vi.fn() }));
 
@@ -86,9 +87,9 @@ beforeEach(() => {
   vi.setSystemTime(START);
 });
 
-afterEach(() => {
+afterEach(async () => {
   vi.useRealTimers();
-  vi.unstubAllGlobals();
+  await unmountThenUnstub();
 });
 
 describe('WaitTimesPage', () => {

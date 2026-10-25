@@ -10,6 +10,7 @@ import election from '../../config/election.js';
 import referrals from '../../config/referrals.js';
 import { interiorPoint } from '../../data/interiorPoint.js';
 import { copy } from './resultsCopy.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 const city = election.jurisdictions.city;
 const fields = city.districtLayerFields;
@@ -59,8 +60,8 @@ beforeEach(async () => {
   };
 });
 
-afterEach(() => {
-  vi.unstubAllGlobals();
+afterEach(async () => {
+  await unmountThenUnstub();
 });
 
 function renderCard() {

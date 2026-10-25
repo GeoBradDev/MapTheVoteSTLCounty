@@ -9,6 +9,7 @@ import { copy } from './components/errorBoundaryCopy.js';
 import { copy as lookupsCopy } from './components/officialLookupsCopy.js';
 import election from './config/election.js';
 import referrals from './config/referrals.js';
+import { unmountThenUnstub } from './test/teardown.js';
 
 vi.mock('./features/lookup/PrecinctPage.jsx', () => ({
   default: () => {
@@ -30,9 +31,9 @@ beforeEach(() => {
   );
   vi.stubGlobal('scrollTo', vi.fn());
 });
-afterEach(() => {
+afterEach(async () => {
   errors.mockRestore();
-  vi.unstubAllGlobals();
+  await unmountThenUnstub();
 });
 
 function renderAt(path) {

@@ -2,12 +2,13 @@
 // under plain Node (#198): a loader that fails is the City layer failing.
 // @vitest-environment node
 import { locate } from './locate.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 // 1200 Market St, St. Louis, MO 63103 (City Hall), as the geocoder names it.
 const CITY = { lat: 38.62741, lng: -90.19843, state: 'MO', county: 'St. Louis city' };
 
-afterEach(() => {
-  vi.unstubAllGlobals();
+afterEach(async () => {
+  await unmountThenUnstub();
 });
 
 describe('locate, when a City loader of its own fails (#198)', () => {

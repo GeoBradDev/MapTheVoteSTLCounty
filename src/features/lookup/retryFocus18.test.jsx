@@ -13,10 +13,11 @@ import { copy as errorCopy } from './errorCopy.js';
 import { GeocoderContext } from './geocoderContext.js';
 import { copy } from './lookupCopy.js';
 import { copy as resultsCopy } from './resultsCopy.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 vi.mock('./locate.js', () => ({ locate: vi.fn() }));
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => unmountThenUnstub());
 
 describe('focus after a retry that removes "Try again"', () => {
   it('goes to the address box when the retry finds no match', async () => {

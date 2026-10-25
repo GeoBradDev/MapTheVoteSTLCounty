@@ -10,6 +10,7 @@ import { nearestPolls, polygonCenter } from './nearbyPolls.js';
 import PollsCard from './PollsCard.jsx';
 import { createPrecinctMap } from './precinctMapView.js';
 import { copy, formatTime } from './resultsCopy.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 // The Election Day line counts (#107) import the wait fetchers too.
 vi.mock('../../data/arcgis.js', () => ({
@@ -44,8 +45,8 @@ beforeEach(() => {
   getPrecinctGeometry.mockReset().mockResolvedValue(geometry.features[0]);
 });
 
-afterEach(() => {
-  vi.unstubAllGlobals();
+afterEach(async () => {
+  await unmountThenUnstub();
   shown.topics = [];
 });
 

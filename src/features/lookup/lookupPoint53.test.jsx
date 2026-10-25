@@ -12,6 +12,7 @@ import { GeocoderContext } from './geocoderContext.js';
 import { locate } from './locate.js';
 import { lookupPointFor } from './lookupPoint.js';
 import { copy } from './lookupCopy.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 vi.mock('./locate.js', () => ({ locate: vi.fn() }));
 
@@ -57,7 +58,7 @@ beforeEach(() => {
   });
 });
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => unmountThenUnstub());
 
 describe('the lookup point after a failed search (#53)', () => {
   it('is forgotten by a search with no match: Back, failed search, Forward', async () => {

@@ -15,6 +15,7 @@ import cityPrecinctAtCounty from '../../../docs/raw/fixtures/city-precinct-at-co
 import election, { jurisdictions } from '../../config/election.js';
 import cityOutline from '../../../docs/raw/fixtures/city-outline.json';
 import { classifyPlace, eastOfCity, locate } from './locate.js';
+import { unmountThenUnstub } from '../../test/teardown.js';
 
 const PRECINCTS = `${election.serviceRoot}/${election.layers.precincts}/query`;
 const BOUNDARY = `${election.serviceRoot}/${election.layers.countyBoundary}/query`;
@@ -76,8 +77,8 @@ beforeEach(() => {
   vi.stubGlobal('fetch', fetchMock);
 });
 
-afterEach(() => {
-  vi.unstubAllGlobals();
+afterEach(async () => {
+  await unmountThenUnstub();
   vi.useRealTimers();
 });
 

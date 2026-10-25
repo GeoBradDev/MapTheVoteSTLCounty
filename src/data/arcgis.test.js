@@ -18,6 +18,7 @@ import {
   countyFresh,
   ELECTION_DAY_SHIFT_MS,
 } from './waitTimes.fixtures.js';
+import { unmountThenUnstub } from '../test/teardown.js';
 
 const PRECINCTS = `${election.serviceRoot}/${election.layers.precincts}/query`;
 const BOUNDARY = `${election.serviceRoot}/${election.layers.countyBoundary}/query`;
@@ -69,8 +70,8 @@ beforeEach(async () => {
   client = await import('./arcgis.js');
 });
 
-afterEach(() => {
-  vi.unstubAllGlobals();
+afterEach(async () => {
+  await unmountThenUnstub();
   vi.useRealTimers();
 });
 

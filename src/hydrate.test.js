@@ -7,6 +7,7 @@ import {
   shouldHydrate,
   startHydration,
 } from './hydrate.js';
+import { unmountThenUnstub } from './test/teardown.js';
 
 function root(path, html = '<div><h1>Page</h1></div>') {
   const element = document.createElement('div');
@@ -56,9 +57,9 @@ describe('focusHeadingOnArrival', () => {
     vi.stubGlobal('scrollY', 0);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     endHydration();
-    vi.unstubAllGlobals();
+    await unmountThenUnstub();
   });
 
   it('focuses the heading on an in-app arrival', () => {
