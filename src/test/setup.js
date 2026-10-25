@@ -18,6 +18,6 @@ afterEach(() => {
 if (typeof window !== 'undefined') {
   globalThis.fetch = offlineFetch;
   beforeEach(() => {
-    offlineFetch.mockClear();
+    offlineFetch.mockReset();
   });
 }

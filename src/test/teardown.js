@@ -10,8 +10,8 @@ const wait = (ms) => new Promise((resolve) => realSetTimeout(resolve, ms));
  * The fetch src/test/setup.js gives every component test: no test reaches the
  * network, so a request no test stubbed (a wait time loop a page starts on its
  * own, #184) fails, as offline. A mock, so the teardown below can see whether
- * one of its failures still waits for a retry; the setup file clears its calls
- * before each test.
+ * one of its failures still waits for a retry; the setup file resets it before
+ * each test, so a spy or an answer a test gave it does not outlast the test.
  */
 export const offlineFetch = vi.fn(() => Promise.reject(new TypeError('No network in unit tests')));
 
@@ -19,6 +19,7 @@ export const offlineFetch = vi.fn(() => Promise.reject(new TypeError('No network
 // src/data/arcgis.js). It cannot see the HTTP 200 answers query() also
 // retries, since the page has already read their body: an ArcGIS error body
 // whose code is missing, 5xx or 429, or a body that fails to download.
+// Nor an answer still pending at teardown, which may yet fail and retry.
 const transient = ({ type, value }) =>
   type === 'rejected' || (type === 'fulfilled' && (value?.status >= 500 || value?.status === 429));
 

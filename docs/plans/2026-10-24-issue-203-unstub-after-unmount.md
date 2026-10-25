@@ -119,11 +119,10 @@ can enforce, and a later count assertion in any of them is already safe.
   and the skip when `setTimeout` is faked. Riskiest step: if any file's tests depend on a
   retry still firing after the test, the skip or wait could change what it sees; the full
   suite run shows it.
-- Moving the unmount earlier puts it before other teardown in the same hook when that line
-  comes first today (for example `tracked.stop()` then unstub keeps its order, but
-  `errors.mockRestore()` in AppErrorBoundary now runs after the unmount, since the helper
-  is placed where the unstub was). Placing the helper where the unstub was keeps every
-  other line's order; only the unmount moves earlier, which is the fix.
+- Moving the unmount earlier: the helper takes the unstub's place, so every other line in
+  the hook keeps its order and runs before the unmount, as it did before the setup file's
+  `cleanup()` on `main` (for example `errors.mockRestore()` in AppErrorBoundary,
+  `tracked.stop()`, `endHydration()`). Only the unmount moves, ahead of the unstub.
 - Node-environment files (smoke, build) do not unstub and are not touched.
 - Suite time: the 500 ms wait runs only in tests with a transient answer on real timers.
   Measure before and after; flag it if the suite grows by more than a few seconds.
@@ -193,3 +192,12 @@ three runs, the same range as `main` (7.7 s to 10.1 s).
   fails to download) cannot be seen once the page has read the body; two identical
   requests failing at once (StrictMode) read as one request and its retry. Waiting on any
   transient answer would close the second, at the 3.5 s cost measured above.
+
+## Revision after review (finder 2, notes only)
+
+- `src/test/setup.js` resets `offlineFetch` (`mockReset`, which in Vitest 5 restores its
+  failing implementation) before each test instead of only clearing its calls, since a
+  `vi.spyOn(globalThis, 'fetch')` now lands on the shared mock and an answer a test gave
+  it must not reach later tests.
+- The helper's comment again names the limit #186's comment had: an answer still pending
+  at teardown is not seen.
