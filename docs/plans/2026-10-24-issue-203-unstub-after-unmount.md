@@ -144,3 +144,28 @@ can enforce, and a later count assertion in any of them is already safe.
   before and after.
 - Live drive: none needed beyond the gate, since no app behavior changes; the e2e and perf
   gates run against the build as a check that nothing in the app moved.
+
+### Red run of the reproduction (before the helper)
+
+`npx vitest run src/test/teardown.test.jsx` with `afterEach(() => { vi.unstubAllGlobals(); })`,
+the pattern the 35 files have on `main`:
+
+```
+ ❯ src/test/teardown.test.jsx (6 tests | 2 failed) 620ms
+   ❯ a retry still waiting when the test ends (2)
+     × gets no request from the test before 606ms
+   ❯ a page still mounted when the test ends (2)
+     × was unmounted while its test stubs were still in place 2ms
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+  1st vi.fn() call: ".../polls_2026_11_view/FeatureServer/1/query?where=1%3D1&outFields=loc&f=json"
+AssertionError: expected [Function] to be [Function Mock] // Object.is equality
+  - [Function Mock]
+  + [Function anonymous]
+      Tests  2 failed | 4 passed (6)
+```
+
+With `afterEach(unmountThenUnstub)`: `Tests  6 passed (6)`.
+
+The helper reads `RETRY_DELAY_MS` through `vi.importActual`, not a static import, because
+four of the files (PollsCard, PollsCard.electionDay107, cardsAnalytics70, PrecinctMap) mock
+`src/data/arcgis.js`, and a mocked module would not give the value.
