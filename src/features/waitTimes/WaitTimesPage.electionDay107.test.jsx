@@ -81,9 +81,9 @@ function renderPage({ waitSource } = {}) {
 
 // The loaders answer in microtasks, so one macrotask inside act renders both
 // boards' rows: the list is then counted once, not polled. A timed wait over
-// 256 rows outlasted its timeout on a busy machine (#202). If the page ever
-// loads its rows through a timer or a chunk instead of these loaders, the
-// count fails at once, short, rather than after a timeout.
+// 256 rows outlasted its timeout on a busy machine (#202). This assumes the
+// loaders answer in microtasks: if the page ever loads its rows through a
+// timer or a chunk instead, wait for that instead of this one macrotask.
 const loaded = () => act(() => new Promise((resolve) => setTimeout(resolve, 0)));
 const items = async () => {
   await loaded();

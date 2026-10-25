@@ -57,7 +57,8 @@ and the a11y skills, not applicable because nothing a voter sees changes.
    is counted once instead of polled; see #202).
 3. Change `items()` to `await loaded()` and then query synchronously:
    `within(screen.getByRole('list', { name: copy.electionDay.listLabel })).getAllByRole('listitem')`.
-   Tests 3 to 5, which use `items()` through `findByRole` today, get the same deterministic wait.
+   Tests 2 to 5, which use `items()` through `findByRole` today, get the same deterministic wait
+   (test 2 calls it after its own `waitFor` on the count text, when the list is already there).
 4. In the failing test, replace the `waitFor` around `items()` with
    `expect(await items()).toHaveLength(polls.features.length + cityPolls.features.length)`.
    Same assertion, one count.
@@ -67,10 +68,12 @@ and the a11y skills, not applicable because nothing a voter sees changes.
 ## Risks
 
 - If the page ever loads its rows through a timer or a lazy chunk instead of the props' loaders,
-  one macrotask may not be enough and the test fails at once (not after a timeout), naming the
-  short list. That is a clear failure, not a flake; the comment says what the flush assumes.
-- Tests 3 to 5 now always see both boards' rows before reading the first row; before, they may
-  have read a County-only list. Their assertions (Election Day hours and status, no absentee
+  one macrotask may not be enough. A long delay fails at once, naming the short list; a delay
+  shorter than the render may still pass (review found 1 and 20 ms timers passed, 100 ms failed),
+  so the result could depend on timing again. The comment says what the flush assumes; today
+  both loaders answer in microtasks.
+- Tests 2 to 5 now always see both boards' rows before reading the list; before, tests 3 to 5
+  may have read a County-only list. Their assertions (Election Day hours and status, no absentee
   kind, no count) hold for any polling place, so they are unchanged.
 - Not done: test 2's `waitFor` on the line count text (`getAllByText(COUNT_TEXT)`), which waits on
   the line count store's loop, not the list, and has not failed in the measurements. Left as is
