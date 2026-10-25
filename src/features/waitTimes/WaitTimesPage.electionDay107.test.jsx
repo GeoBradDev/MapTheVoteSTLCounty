@@ -4,7 +4,7 @@
 // Dates are built with Date.UTC, never ISO literals: the hardcoding test scans
 // this file.
 import { StrictMode } from 'react';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { Router } from 'wouter';
 import { memoryLocation } from 'wouter/memory-location';
 import sites from '../../../docs/raw/fixtures/absentee-sites.json';
@@ -79,8 +79,18 @@ function renderPage({ waitSource } = {}) {
   return { loadSites, loadCity, loadPolls, loadCityPolls };
 }
 
-const list = () => screen.findByRole('list', { name: copy.electionDay.listLabel });
-const items = async () => within(await list()).getAllByRole('listitem');
+// The loaders answer in microtasks, so one macrotask inside act renders both
+// boards' rows: the list is then counted once, not polled. A timed wait over
+// 256 rows outlasted its timeout on a busy machine (#202). If the page ever
+// loads its rows through a timer or a chunk instead of these loaders, the
+// count fails at once, short, rather than after a timeout.
+const loaded = () => act(() => new Promise((resolve) => setTimeout(resolve, 0)));
+const items = async () => {
+  await loaded();
+  return within(screen.getByRole('list', { name: copy.electionDay.listLabel })).getAllByRole(
+    'listitem',
+  );
+};
 
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] });
@@ -101,9 +111,7 @@ describe('WaitTimesPage on Election Day (#107)', () => {
     ).toBeInTheDocument();
     expect(screen.getByText(copy.electionDay.intro)).toBeInTheDocument();
     expect(screen.getByText(copy.electionDay.city)).toBeInTheDocument();
-    await waitFor(async () =>
-      expect(await items()).toHaveLength(polls.features.length + cityPolls.features.length),
-    );
+    expect(await items()).toHaveLength(polls.features.length + cityPolls.features.length);
     expect(loaders.loadPolls).toHaveBeenCalled();
     expect(loaders.loadCityPolls).toHaveBeenCalled();
     expect(loaders.loadSites).not.toHaveBeenCalled();
