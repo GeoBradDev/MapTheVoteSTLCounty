@@ -66,7 +66,7 @@ into for voters with physical disabilities and older voters.[^rsmo-115-115]
 
 A registered voter may vote at any polling place in St. Louis County on Election
 Day.[^county-polling-places] If you have a physical disability, you can also ask the county
-board for a polling place that is accessible to you.[^sos-how-to-vote][^rsmo-115-436] Or you
+board for a polling place that is accessible to you.[^rsmo-115-436] Or you
 can vote at a central polling place.[^sos-how-to-vote] Call the county board at 314-615-1800
 to ask.[^county-polls-app]
 

@@ -87,7 +87,7 @@ rule is for voters registered at a City address.[^city-polling-places] Under Mis
 provisional ballot cast at the wrong polling place is not counted.[^rsmo-115-430] If the
 election judges find you are at the wrong place, they tell you where to go.[^rsmo-115-430] You
 can go to a polling place your election board's rule above allows, or a central polling
-place.[^rsmo-115-430][^sos-other-questions]
+place.[^rsmo-115-430]
 
 ## Find out if your ballot counted
 
