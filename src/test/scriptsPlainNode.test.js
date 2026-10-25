@@ -26,8 +26,10 @@ describe('scripts/check-geocoder.mjs under plain Node (#198)', () => {
   it('imports the City data module, not the City chunk', () => {
     expect(imports).toContain(pathToFileURL(path.join(ROOT, 'src/data/cityArcgis.js')).href);
     expect(imports.some((url) => url.endsWith('/src/cityChunk.js'))).toBe(false);
-    // And hands it to locate(), whose own default loads the City chunk.
-    expect(readFileSync(SCRIPT, 'utf8')).toMatch(/locate\([^)]*\{\s*loadCity:/);
+    // And hands it to every locate() call, whose own default loads the City chunk.
+    const calls = readFileSync(SCRIPT, 'utf8').match(/\bawait locate\([^)]*\)/g) ?? [];
+    expect(calls.length).toBeGreaterThan(0);
+    for (const call of calls) expect(call).toMatch(/\{\s*loadCity:/);
   });
 
   it('loads every module it imports from src/ with plain node', () => {
