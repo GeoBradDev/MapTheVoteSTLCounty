@@ -121,3 +121,34 @@ accessible-voting.md, "### St. Louis County":
 - Criterion 7: the gate commands.
 - Live drive: open `/learn/provisional-ballots` and `/learn/accessible-voting` in the built
   preview and read the new sentences and their footnote numbers.
+
+## Revision after review (Phase 5, finder 1)
+
+Finder 1 found that two reworded sentences still cited Secretary of State pages that nobody
+could re-read for the new wording (Cloudflare blocks scripts; no browser was connected): the
+accessible-voting County sentence "ask the county board for a polling place that is
+accessible to you" (`sos-how-to-vote`) and the provisional-ballots sentence "a polling place
+your election board's rule above allows, or a central polling place"
+(`sos-other-questions`). RSMo 115.436.3 and RSMo 115.430 each support their sentence alone.
+
+The user approved (2026-10-24, option b): drop the SOS footnote from those two sentences
+only, keep the wording, keep both source entries (other sentences still cite them), and
+rewrite the frozen test to require only `[^rsmo-115-436]` on the accessible-voting sentence.
+
+- `src/test/voteAnywhereLearn.test.js` (frozen) rewritten with that approval: the RSMo
+  115.436 check now requires `accessible to you.[^rsmo-115-436]` with no further footnote.
+- `src/test/wrongPollingPlaceCitation.test.js` (new, frozen once red): the provisional
+  sentence cites `[^rsmo-115-430]` with no further footnote.
+- Criterion 3 now reads: the accessible-place request is cited to `rsmo-115-436` alone.
+  Criterion 1's last clause is cited to `rsmo-115-430` alone.
+
+Proof the rewritten test still catches the defect, run in a scratch worktree at the merge
+base `9e7c684` with only the rewritten test applied:
+
+```
+     × keeps the RSMo 115.436 request for an accessible polling place, cited to the statute alone
+      Tests  7 failed | 1 passed (8)
+```
+
+On the issue branch before the citation fix, both new checks failed on their regex
+(`Tests  2 failed | 7 passed (9)`).

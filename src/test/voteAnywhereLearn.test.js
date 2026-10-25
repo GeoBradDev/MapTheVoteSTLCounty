@@ -67,10 +67,12 @@ describe('accessible-voting, St. Louis County', () => {
     expect(text).toMatch(COUNTY_RULE);
   });
 
-  it('keeps the RSMo 115.436 request for an accessible polling place', async () => {
+  // Cited to RSMo 115.436.3 alone: the reworded claim was not re-read on the
+  // Secretary of State's page, which blocks scripts (owner decision on #199).
+  it('keeps the RSMo 115.436 request for an accessible polling place, cited to the statute alone', async () => {
     const text = section(await flat('accessible-voting'), '### St. Louis County');
     expect(text).toMatch(
-      /ask the county board for a polling place that is accessible to you\.\[\^sos-how-to-vote\]\[\^rsmo-115-436\]/,
+      /ask the county board for a polling place that is accessible to you\.\[\^rsmo-115-436\](?!\[)/,
     );
   });
 
