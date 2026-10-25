@@ -82,9 +82,12 @@ polling places on November 3, 2026.[^city-polling-places]
 
 ### At the wrong polling place
 
-Under Missouri law, a provisional ballot cast at the wrong polling place is not
-counted.[^rsmo-115-430] If the election judges find you are at the wrong place, they tell you where to go.[^rsmo-115-430] You can go to your
-correct polling place or a central polling place.[^rsmo-115-430][^sos-other-questions]
+The County rule above is for St. Louis County voters,[^county-polling-places] and the City
+rule is for voters registered at a City address.[^city-polling-places] Under Missouri law, a
+provisional ballot cast at the wrong polling place is not counted.[^rsmo-115-430] If the
+election judges find you are at the wrong place, they tell you where to go.[^rsmo-115-430] You
+can go to a polling place your election board's rule above allows, or a central polling
+place.[^rsmo-115-430][^sos-other-questions]
 
 ## Find out if your ballot counted
 

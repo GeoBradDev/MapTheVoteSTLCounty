@@ -14,6 +14,9 @@ sources:
   - id: rsmo-115-115
     label: Missouri Revised Statutes, Section 115.115 (polling places and central polling places)
     url: https://revisor.mo.gov/main/OneSection.aspx?section=115.115
+  - id: county-polling-places
+    label: St. Louis County Board of Elections, Polling Places
+    url: https://stlouiscountymo.gov/st-louis-county-government/board-of-elections/elections/polling-places/
   - id: county-polls-app
     label: St. Louis County Board of Elections, Polling Place Lookup (November 3, 2026)
     url: https://stlouiscovotes.maps.arcgis.com/apps/instant/nearby/index.html?appid=13fb36e785c84dbdbcc5219f999652ba
@@ -61,10 +64,11 @@ into for voters with physical disabilities and older voters.[^rsmo-115-115]
 
 ### St. Louis County
 
-If you have a physical disability and your polling place is not accessible, you can ask the
-county board for a different one.[^sos-how-to-vote][^rsmo-115-436] You can also vote at a
-central polling place.[^sos-how-to-vote] Call the county board at 314-615-1800 to
-ask.[^county-polls-app]
+A registered voter may vote at any polling place in St. Louis County on Election
+Day.[^county-polling-places] If you have a physical disability, you can also ask the county
+board for a polling place that is accessible to you.[^sos-how-to-vote][^rsmo-115-436] Or you
+can vote at a central polling place.[^sos-how-to-vote] Call the county board at 314-615-1800
+to ask.[^county-polls-app]
 
 ### City of St. Louis
 
