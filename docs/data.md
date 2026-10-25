@@ -645,9 +645,10 @@ a precinct opens `/p/<code>`, so only the precinct code goes in the URL.
 - **Typed community:** a typed town also agrees with a record's community,
   `MSAG_COMMUNITY_NAME`, both where a typed town must agree and where a named town needs
   its town or ZIP typed (41 S Central Ave 63105 is mailed Saint Louis, community Clayton,
-  so "41 S Central Ave, Clayton" finds it, #143; a record's `&` reads as AND, so a typed
-  "Town and Country" matches TOWN & COUNTRY, while a typed `&` is dropped like other
-  punctuation and does not). It is the emergency-services community and can differ from the
+  so "41 S Central Ave, Clayton" finds it, #143; a record's `&` reads as AND, and a typed `&`
+  between two words of letters reads as "and", so a typed "Town and Country" or
+  "Town & Country" matches TOWN & COUNTRY, #212, while the `&` of a unit like "Suite A5&6"
+  is dropped like other punctuation). It is the emergency-services community and can differ from the
   record's `MUNI` code (a `LADUE` community with `MUNI` `CLY`); only the community name is
   compared. A value that starts with ST LOUIS or ends in COUNTY (`ST LOUIS COUNTY`,
   `ST LOUIS CITY`, `JEFFERSON COUNTY`) is not a town. The community can differ between the

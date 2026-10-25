@@ -23,7 +23,9 @@ match (or ambiguous). A typed street has the same gap: "9300 Lewis & Clark Blvd"
 
 1. `words('Town & Country')` is `['town', 'and', 'country']`, the same as
    `words('Town and Country')`; `&` with or without spaces around it ("Town&Country") reads the
-   same way.
+   same way. Only an `&` between two words of letters reads as "and": the `&` of a unit
+   ("Suite A5&6", "#2&3", "Apt 2 & 3") is still dropped, so a typed unit never becomes a typed
+   town (revised after the first review, see Revisions).
 2. A County record with `MSAG_COMMUNITY_NAME` `TOWN & COUNTRY` matches
    "1318 Ross Ave, Town & Country" (and "1318 Ross Ave, Town & Country, MO" with the record's
    ZIP) as it matches "1318 Ross Ave, Town and Country" today.
@@ -49,12 +51,14 @@ match (or ambiguous). A typed street has the same gap: "9300 Lewis & Clark Blvd"
 
 ## Files that change
 
-- `src/data/addressMatch.js`: in `words()`, replace each `&` with ` and ` before splitting;
-  update its comment.
+- `src/data/addressMatch.js`: in `words()`, replace an `&` that has at least two letters on
+  each side (spaces allowed) with ` and ` before splitting; update its comment.
 - `src/data/addressMatch.ampersand212.test.js`: new, the red test (criteria 1 to 4): `words()`
   directly, plus the County source (`createCountyAddressSource` with a stubbed fetch and
   `precinctsAt`, built like `countyAddress.municipality143.test.js`) for the community and the
   street cases.
+- `src/data/addressMatch.ampersandunit212.test.js`: new, the red test for the unit `&`
+  regression the first finder found (passes on `origin/main`, failed on the first fix).
 - `docs/data.md`: the Typed community sentence (criterion 7).
 - `docs/progress.md`: the progress log line for #212 (Phase 8, if the repo's convention for a
   merged issue asks for it at PR time; otherwise no change).
@@ -78,12 +82,22 @@ match (or ambiguous). A typed street has the same gap: "9300 Lewis & Clark Blvd"
   the source has "and" (or `&`), which names the same place. Riskiest step: an `&` that was
   harmless noise, such as an intersection typed after the street ("100 Main St & Elm St"); today
   that is rejected as an unknown town ("elm st") and after the change as "and elm st", still
-  rejected. The test covers it.
+  rejected. The test covers it. A unit written with `&` (the County has SUITE A5&6, APT I&J,
+  SUITE D&E) must not gain an "and" that `typedTown` keeps as a town; the narrowed rule leaves
+  those `&` dropped as before.
 - Budget: about 20 raw bytes; the headroom is 575 gzipped bytes.
 - Chose not to: remove the now redundant `.replace('&', 'AND')` in `recordOf` (keeps the
   municipality string as #143 documented and tested it); change `tokens()` or `suggestWhere`
   (they build SQL from `[A-Z0-9]` words only, and a typed `&` there only narrows suggestions;
   "9300 Lewis & Clark" not suggesting LEWIS AND CLARK is left as a Note for the PR).
+
+## Revisions
+
+- After finder 1: reading every `&` as "and" broke real County units written with `&`
+  (10411 CLAYTON RD SUITE A5&6 63131, Frontenac, among others): `typedTown` kept the new "and"
+  as a typed town, so the record's own suggestion label answered ambiguous and
+  "Suite A5&6, Frontenac" answered none. The rule is narrowed to an `&` between two words of
+  letters, with its own frozen red test, and the risk is recorded above.
 
 ## Proof
 

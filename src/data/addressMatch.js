@@ -96,12 +96,13 @@ export const STREET_TYPES = new Set(
   'rd ave dr blvd ln ct pl ter pkwy hwy cir trl sq way plz xing cv ctr expy trce lndg'.split(' '),
 );
 
-// Lower-case words in one spelling: & as "and" (Town & Country, #212),
-// ordinals as bare numbers (63rd -> 63), then the CANONICAL forms.
+// Lower-case words in one spelling: & between two words of letters as "and"
+// (Town & Country, #212; the & of a unit like "Suite A5&6" or "2 & 3" is
+// dropped), ordinals as bare numbers (63rd -> 63), then the CANONICAL forms.
 export function words(text) {
   return String(text ?? '')
     .toLowerCase()
-    .replace(/&/g, ' and ')
+    .replace(/([a-z]{2})\s*&(?=\s*[a-z]{2})/g, '$1 and ')
     .split(/[^a-z0-9]+/)
     .filter(Boolean)
     .map((word) => word.replace(/^(\d+)(st|nd|rd|th)$/, '$1'))
