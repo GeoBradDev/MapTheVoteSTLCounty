@@ -50,6 +50,9 @@ Domain skills:
 - `src/test/scriptsPlainNode.test.js` (new): reads the static `from '../src/...'` imports of
   `scripts/check-geocoder.mjs`, then imports each with plain `node` (`execFileSync`, as
   `src/test/checkConfig.test.js` does) and expects success.
+  It also checks the script's source: its imports include `src/data/cityArcgis.js` and not
+  `src/cityChunk.js`, and every `await locate(` call passes `loadCity` (added in Phase 5, from
+  a finder note that one call could hide another without the option).
 - Docs, Phase 8: `README.md`'s address search check paragraph and `docs/data.md` only if a
   sentence there becomes wrong; a `docs/data.md` Geocoding entry recording the live run's
   result if that section records each run (it does for earlier runs).
