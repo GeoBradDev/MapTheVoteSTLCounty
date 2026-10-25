@@ -179,3 +179,17 @@ now waits only when a retry may still be pending: a transient answer with no lat
 to the same URL and body. Its known limit, written in its comment: two identical requests
 that fail at once read as one request and its retry. Suite time after: 7.8 s to 10.1 s over
 three runs, the same range as `main` (7.7 s to 10.1 s).
+
+## Revision after review (finder 1)
+
+- The setup file's default fetch becomes `offlineFetch`, a `vi.fn` exported from
+  `src/test/teardown.js`, cleared before each test by `src/test/setup.js`, so the helper
+  also waits when a request that went to it still waits for its retry. Reproduction:
+  `src/test/teardown.offline.test.js`, red before the fix:
+  `× gets no request from the test before`,
+  `AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times`.
+- Known limits, left as they are and written in the helper's comments: the 200 answers
+  `query()` retries (an ArcGIS error body with a missing, 5xx or 429 code, a body that
+  fails to download) cannot be seen once the page has read the body; two identical
+  requests failing at once (StrictMode) read as one request and its retry. Waiting on any
+  transient answer would close the second, at the 3.5 s cost measured above.

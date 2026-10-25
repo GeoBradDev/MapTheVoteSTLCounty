@@ -6,16 +6,28 @@ import { vi } from 'vitest';
 const realSetTimeout = globalThis.setTimeout;
 const wait = (ms) => new Promise((resolve) => realSetTimeout(resolve, ms));
 
+/**
+ * The fetch src/test/setup.js gives every component test: no test reaches the
+ * network, so a request no test stubbed (a wait time loop a page starts on its
+ * own, #184) fails, as offline. A mock, so the teardown below can see whether
+ * one of its failures still waits for a retry; the setup file clears its calls
+ * before each test.
+ */
+export const offlineFetch = vi.fn(() => Promise.reject(new TypeError('No network in unit tests')));
+
 // An answer query() retries: a failed fetch, a 5xx or a 429 (isTransient in
-// src/data/arcgis.js). It cannot see an HTTP 200 ArcGIS error body without a
-// code, which query() also retries, nor an answer still pending.
+// src/data/arcgis.js). It cannot see the HTTP 200 answers query() also
+// retries, since the page has already read their body: an ArcGIS error body
+// whose code is missing, 5xx or 429, or a body that fails to download.
 const transient = ({ type, value }) =>
   type === 'rejected' || (type === 'fulfilled' && (value?.status >= 500 || value?.status === 429));
 
 // Whether a retry may still be waiting: a transient answer with no later
 // request to the same URL and body, which would be its retry. A retry that
 // already ran needs no wait; most tests of a failure await both attempts.
-// Two identical requests failing at once read as one request and its retry.
+// Two identical requests failing at once read as one request and its retry,
+// as a page in StrictMode sends them; no test here gives such a pair a
+// transient answer today.
 function retryPending(stub) {
   if (!vi.isMockFunction(stub)) return false;
   const waiting = new Map();
@@ -48,7 +60,7 @@ export async function unmountThenUnstub() {
   if (globalThis.setTimeout === realSetTimeout) {
     const stub = globalThis.fetch;
     await wait(0);
-    if (retryPending(stub)) {
+    if (retryPending(stub) || retryPending(offlineFetch)) {
       // The real module's value: some files mock src/data/arcgis.js.
       const { RETRY_DELAY_MS } = await vi.importActual('../data/arcgis.js');
       await wait(RETRY_DELAY_MS);
