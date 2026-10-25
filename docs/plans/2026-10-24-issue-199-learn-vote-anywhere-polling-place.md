@@ -68,6 +68,8 @@ instead of "your correct polling place", which reads as one assigned place.
 
 ## Proposed wording
 
+As shipped, with the two SOS footnotes removed by the revision below.
+
 provisional-ballots.md, "### At the wrong polling place":
 
 > The County rule above is for St. Louis County voters,[^county-polling-places] and the City
@@ -75,13 +77,13 @@ provisional-ballots.md, "### At the wrong polling place":
 > provisional ballot cast at the wrong polling place is not counted.[^rsmo-115-430] If the
 > election judges find you are at the wrong place, they tell you where to go.[^rsmo-115-430]
 > You can go to a polling place your election board's rule above allows, or a central polling
-> place.[^rsmo-115-430][^sos-other-questions]
+> place.[^rsmo-115-430]
 
 accessible-voting.md, "### St. Louis County":
 
 > A registered voter may vote at any polling place in St. Louis County on Election
 > Day.[^county-polling-places] If you have a physical disability, you can also ask the county
-> board for a polling place that is accessible to you.[^sos-how-to-vote][^rsmo-115-436] Or
+> board for a polling place that is accessible to you.[^rsmo-115-436] Or
 > you can vote at a central polling place.[^sos-how-to-vote] Call the county board at
 > 314-615-1800 to ask.[^county-polls-app]
 
@@ -90,6 +92,7 @@ accessible-voting.md, "### St. Louis County":
 - `content/en/learn/provisional-ballots.md`
 - `content/en/learn/accessible-voting.md`
 - `src/test/voteAnywhereLearn.test.js` (new)
+- `src/test/wrongPollingPlaceCitation.test.js` (new, added by the revision below)
 - `docs/data.md`, Phase 8 only if its sentence on the provisional ballots topic (section 2)
   becomes untrue.
 
