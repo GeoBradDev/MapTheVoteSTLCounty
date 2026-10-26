@@ -224,6 +224,14 @@ function Sources({ electionDay }) {
         </TextLink>
         .
       </p>
+      {/* The County Board's turnout dashboards (#224); the City has none. */}
+      <p className="mt-2">
+        {copy.turnout}{' '}
+        <TextLink href={election.results.turnoutUrl} rel="noreferrer">
+          {copy.turnoutLink(election.jurisdictions.county.board)}
+        </TextLink>
+        .
+      </p>
     </section>
   );
 }

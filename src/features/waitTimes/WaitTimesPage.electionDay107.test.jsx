@@ -140,6 +140,14 @@ describe('WaitTimesPage on Election Day (#107)', () => {
     expect(first).toHaveTextContent(copy.noCount);
   });
 
+  it("links the County Board's unofficial turnout dashboards (#224)", async () => {
+    renderPage({ waitSource: createWaitTimesStore({ county: none, city: none }) });
+    await items();
+    expect(
+      screen.getByRole('link', { name: copy.turnoutLink(election.jurisdictions.county.board) }),
+    ).toHaveAttribute('href', election.results.turnoutUrl);
+  });
+
   it('says the polls closed after closing time', async () => {
     vi.setSystemTime(nov3(19, 30));
     renderPage({ waitSource: createWaitTimesStore({ county: none, city: none }) });

@@ -44,6 +44,28 @@ describe('SiteFooter', () => {
     }
   });
 
+  // #224: the County Board's results site serves the County only, so the label
+  // names that board and never the City.
+  it("links the County Board's election results from the config, after the boards", () => {
+    renderFooter();
+    expect(copy.countyResults).toContain('St. Louis County Board of Elections');
+    expect(copy.countyResults).toMatch(/results/i);
+    expect(copy.countyResults).not.toMatch(/city/i);
+    const list = screen.getByRole('list', { name: copy.officialSites });
+    expect(copy.officialSites).toMatch(/results/i);
+    const links = within(list).getAllByRole('link');
+    expect(links.map((link) => link.textContent)).toEqual([
+      copy.countySite,
+      copy.citySite,
+      copy.countyResults,
+    ]);
+    const results = links[2];
+    expect(results).toHaveAttribute('href', election.results.siteUrl);
+    expect(results).toHaveAttribute('rel', 'noreferrer');
+    expect(results).toHaveClass('min-h-11', 'print-href');
+    expect(results.closest('.print\\:hidden')).toBeNull();
+  });
+
   it('prints the statement and the board links, but not the Privacy link', () => {
     renderFooter();
     const footer = screen.getByRole('contentinfo');

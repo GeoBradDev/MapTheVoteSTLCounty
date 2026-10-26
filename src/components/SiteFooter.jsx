@@ -4,7 +4,8 @@ import { copy } from './siteFooterCopy.js';
 import TextLink from './TextLink.jsx';
 
 // On every page, below main: that the site is nonpartisan and unofficial, with
-// the official boards' sites (#71), and the link to the privacy notice (#20).
+// the official boards' sites (#71) and the County Board's election results
+// (#224), and the link to the privacy notice (#20).
 // A printed page keeps the statement and the boards' addresses; the Privacy
 // link is not printed. Its rule spans the page and its text sits in the same
 // column as the site header's and main's (#79).
@@ -32,6 +33,16 @@ export default function SiteFooter() {
               className="print-href print:inline"
             >
               {copy.citySite}
+            </TextLink>
+          </li>
+          <li>
+            <TextLink
+              href={election.results.siteUrl}
+              rel="noreferrer"
+              variant="tap"
+              className="print-href print:inline"
+            >
+              {copy.countyResults}
             </TextLink>
           </li>
         </ul>
