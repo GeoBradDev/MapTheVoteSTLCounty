@@ -527,6 +527,24 @@ describe('WaitTimesPage', () => {
     ).toHaveAttribute('href', election.waitTimes.city.sourceUrl);
   });
 
+  // #224: the County Board's own label for them is "Unofficial Turnout
+  // Dashboards", and the City publishes none.
+  it("links the County Board's unofficial turnout dashboards, after the sources", async () => {
+    renderPage({ waitSource: createWaitTimesStore({ county: countyEmpty, city: null }) });
+    await screen.findByRole('list', { name: copy.listLabel });
+    const { board } = election.jurisdictions.county;
+    const label = copy.turnoutLink(board);
+    expect(label).toContain(board);
+    expect(label).toMatch(/unofficial turnout dashboards/i);
+    const link = screen.getByRole('link', { name: label });
+    expect(link).toHaveAttribute('href', election.results.turnoutUrl);
+    expect(link).toHaveAttribute('rel', 'noreferrer');
+    const city = screen.getByRole('link', {
+      name: copy.cityLink(election.waitTimes.city.source),
+    });
+    expect(city.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('shows the map on arrival, colored by the Jenks classes of the counts shown (#172)', async () => {
     const user = userEvent.setup();
     vi.stubGlobal('WebGL2RenderingContext', function WebGL2RenderingContext() {});

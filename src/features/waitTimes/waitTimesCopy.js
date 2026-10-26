@@ -92,5 +92,8 @@ export const copy = translated((t) => ({
   sources: t('waitTimes.sources'),
   /** @param {string} board From the config. */
   countyLink: (board) => t('waitTimes.countyLink', { board }),
+  turnout: t('waitTimes.turnout'),
+  /** @param {string} board From the config. */
+  turnoutLink: (board) => t('waitTimes.turnoutLink', { board }),
   backHome: t('waitTimes.backHome'),
 }));

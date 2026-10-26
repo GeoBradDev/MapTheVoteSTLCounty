@@ -393,6 +393,8 @@
     "disclaimer": "Each board's staff report these counts, and lines change quickly. A count is a guide, not a promise of how long you will wait.",
     "sources": "Official sources:",
     "countyLink": "{board} absentee voting lookup",
+    "turnout": "Turnout so far:",
+    "turnoutLink": "{board} unofficial turnout dashboards",
     "backHome": "Back to home",
     "electionDay": {
       "heading": "Election Day line counts",

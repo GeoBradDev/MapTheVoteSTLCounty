@@ -28,8 +28,9 @@ Domain skills:
    Tally ENR site with exactly one `election=<uuid>` hash parameter.
 4. The wait times page, in its Official sources section (early voting and Election Day alike),
    links `https://experience.arcgis.com/experience/178545eb8cd0450fbd5de996adcc00ef` with the
-   label "St. Louis County Board of Elections unofficial turnout dashboards", after the County
-   and City source links. The URL lives only in the config (`results.turnoutUrl`, County block).
+   label "St. Louis County Board of Elections unofficial turnout dashboards", in its own line
+   ("Turnout so far: <link>.") after the County and City source links, since the dashboards
+   are not a source of the line counts. The URL lives only in the config (`results.turnoutUrl`, County block).
 5. The daily link check (`configLinks` in `scripts/check-content-links.mjs`) lists both URLs and
    the results source; a test proves it.
 6. The election hardcoding test collects both URLs, so neither can be written outside the config.
