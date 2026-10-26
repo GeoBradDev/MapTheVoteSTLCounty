@@ -9,5 +9,6 @@ export const copy = translated((t) => ({
   officialSites: t('footer.officialSites'),
   countySite: t('footer.countySite'),
   citySite: t('footer.citySite'),
+  countyResults: t('footer.countyResults'),
   privacy: t('footer.privacy'),
 }));

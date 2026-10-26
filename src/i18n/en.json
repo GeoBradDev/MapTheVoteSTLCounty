@@ -17,9 +17,10 @@
   },
   "footer": {
     "statement": "A nonpartisan, unofficial guide. Not affiliated with the St. Louis County Board of Elections or the St. Louis City Board of Election Commissioners. For official information, visit:",
-    "officialSites": "Official election offices",
+    "officialSites": "Official election offices and results",
     "countySite": "St. Louis County Board of Elections website",
     "citySite": "St. Louis City Board of Election Commissioners website",
+    "countyResults": "St. Louis County Board of Elections election results",
     "privacy": "Privacy"
   },
   "officialLookups": {
