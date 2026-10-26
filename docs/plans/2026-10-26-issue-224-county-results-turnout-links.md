@@ -51,7 +51,9 @@ Domain skills:
 - `src/features/waitTimes/waitTimesCopy.js`, `src/features/waitTimes/WaitTimesPage.jsx`
   (`Sources`): the turnout link.
 - Tests: `src/components/SiteFooter.test.jsx`, `src/config/election.test.js`,
-  `src/features/waitTimes/WaitTimesPage.test.jsx`, `src/test/checkContentLinks.test.js`,
+  `src/features/waitTimes/WaitTimesPage.test.jsx`,
+  `src/features/waitTimes/WaitTimesPage.electionDay107.test.jsx` (the Election Day view),
+  `src/test/checkContentLinks.test.js`,
   `src/test/election-hardcoding.test.js`.
 - `README.md` (Phase 8), `docs/data.md` only if its text becomes wrong.
 
@@ -82,7 +84,7 @@ Domain skills:
 ## Proof
 
 - AC1, AC2: `SiteFooter.test.jsx`. AC3: `election.test.js`. AC4: `WaitTimesPage.test.jsx`
-  (early voting and Election Day). AC5: `checkContentLinks.test.js`. AC6:
+  (early voting) and `WaitTimesPage.electionDay107.test.jsx` (Election Day). AC5: `checkContentLinks.test.js`. AC6:
   `election-hardcoding.test.js`. AC7: Phase 8 review.
 - Live drive: `npm run build && npm run preview`; in a browser, the footer on `/`, `/learn` and
   a precinct page shows the results link opening Tally ENR on the November 3, 2026 General
