@@ -26,7 +26,8 @@ Contents: [Nonpartisan statement](#nonpartisan-statement) ·
 A nonpartisan, unofficial guide. Not affiliated with the St. Louis County Board of Elections
 or the St. Louis City Board of Election Commissioners. (The site's footer opens with this
 statement on every page: it is the start of `footer.statement` in `src/i18n/en.json`, which
-then adds "For official information, visit:" before links to both boards. Keep the two the
+then adds "For official information, visit:" before links to both boards and the County
+Board's election results. Keep the two the
 same.)
 
 - **Reference tool only.** It says where, when and how to vote. It makes no endorsements and
@@ -181,7 +182,13 @@ may need new values too. Work on a branch and merge through the usual pull reque
    changes between elections is in one of them (the second holds what only the City's results
    cards read, see [Election config](#election-config)), including every link to that
    election's own Instant Apps, each with its `sources` and `lastVerified` where it has them.
-   Re-read every source; do not copy a value forward unchecked. That includes the County's
+   Re-read every source; do not copy a value forward unchecked. That includes the County
+   Board's results site and turnout dashboards (`results`, #224): the results link carries the
+   new election's ID from the results API's election list (its `sources`) and names the
+   election only, never a contest, and the turnout dashboards link is the board's app titled
+   for this election (check that the board's portal has one for the new election).
+   The daily link check confirms only that the pages answer, not that the ID is the new
+   election's. It also includes the County's
    Election Day rule (`electionDayPollingPlace`), from the County Board's Polling Places page,
    which scripts cannot read: open it in a browser. It also includes the City Board's
    Election Day rule (`electionDayRule` in `cityResults.js`), quoted from its polling places
@@ -605,7 +612,8 @@ from `src/data/jurisdictions.js`, picked from the precinct code's shape (`/p/CC0
 `/p/W01P12` the City; [docs/data.md](docs/data.md#jurisdictions-and-precinct-codes)), and
 the results' own links to a board follow that jurisdiction: on a City precinct's page, the
 official lookup, the polling places card, the map credit and the error
-screen link the City Board (#89). The footer lists both boards on every page. The test also fails on a City block's layer, service, filter or field name (except the common
+screen link the City Board (#89). The footer lists both boards, and the County Board's election results (#224; its site
+has no City results), on every page. The test also fails on a City block's layer, service, filter or field name (except the common
 words `name` and `district`) written outside the config.
 
 **The City chunk (owner decision on #147).** Code and config only St. Louis City needs load on
