@@ -91,6 +91,12 @@ describe('election-specific values', () => {
     expect(values).not.toContain(election.electionDayHours.sources[0]);
   });
 
+  it("collects the County's results site and turnout dashboards links (#224)", () => {
+    const values = electionValues();
+    expect(values).toContain(election.results.siteUrl);
+    expect(values).toContain(election.results.turnoutUrl);
+  });
+
   it("collects the City block's layers and field names (#86)", () => {
     const { city } = election.jurisdictions;
     const values = electionValues();

@@ -437,6 +437,14 @@ describe('configLinks', () => {
     expect(urls).not.toContain(election.serviceRoot);
   });
 
+  it("finds the County's results site, turnout dashboards and their source (#224)", async () => {
+    const { default: election } = await import('../config/election.js');
+    const urls = configLinks(election).map((l) => l.url);
+    expect(urls).toContain(election.results.siteUrl);
+    expect(urls).toContain(election.results.turnoutUrl);
+    expect(urls).toEqual(expect.arrayContaining(election.results.sources));
+  });
+
   it("finds the City's early voting sources in their own file, labelled with it (#91)", async () => {
     const { default: cityResults } = await import('../config/cityResults.js');
     const links = configLinks(cityResults, 'src/config/cityResults.js');

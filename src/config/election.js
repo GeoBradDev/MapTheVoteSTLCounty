@@ -53,6 +53,11 @@
  *   registered county voter may vote at any County polling place on Election
  *   Day is stated (#152), and the county board's number for help finding one,
  *   with the page that lists it.
+ * @property {{ siteUrl: string, turnoutUrl: string, sources: string[],
+ *   lastVerified: string }} results The County Board's election results site,
+ *   linked from the footer, and its unofficial turnout dashboards, linked from
+ *   the wait times page (#224), with where the results site's election ID was
+ *   read.
  * @property {{ minutes: number, electionDayMinutes: number }} layerMaxAge How
  *   long a loaded layer, such as the polling places, is reused before the app
  *   fetches it again, and the shorter limit on Election Day (#84).
@@ -288,6 +293,21 @@ const county = {
     lastVerified: '2026-10-22',
     phone: '314-615-1800',
     phoneSource: countyPollingPlaceLookup,
+  },
+
+  // The County Board's election results site, Tally ENR, and its "Unofficial
+  // Turnout Dashboards - November 2026" app (by precinct, polling place and
+  // in-person absentee site), an item in the board's own ArcGIS org (#224).
+  // The results site serves the County only (its client is cId=stl), so it is
+  // never labeled as having City results. Link the election alone, never a
+  // contest, filter or card: those open the site on one race, in front of
+  // every voter (Nonpartisan statement). The election ID is this election's
+  // in the results API's election list (`sources`), read on 2026-10-26.
+  results: {
+    siteUrl: 'https://stl.tally-enr.com/#election=a3c1db39-6def-4ac8-b9bd-b33592113c8a',
+    turnoutUrl: 'https://experience.arcgis.com/experience/178545eb8cd0450fbd5de996adcc00ef',
+    sources: ['https://enr-results-api.totalresults.com/Election/GetElectionList?cId=stl'],
+    lastVerified: '2026-10-26',
   },
 };
 

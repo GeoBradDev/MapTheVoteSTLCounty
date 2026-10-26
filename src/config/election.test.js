@@ -329,6 +329,38 @@ describe('Election Day hours', () => {
   });
 });
 
+describe("the County Board's results and turnout links (#224)", () => {
+  const { results } = election;
+
+  // The election alone: a contest, filter, bucket or card parameter opens the
+  // site on one race, which puts it in front of every voter (Nonpartisan
+  // statement).
+  it('links the Tally ENR results site by its election ID only', () => {
+    const url = new URL(results.siteUrl);
+    expect(url.origin).toBe('https://stl.tally-enr.com');
+    expect(url.pathname).toBe('/');
+    expect(url.search).toBe('');
+    const params = new URLSearchParams(url.hash.slice(1));
+    expect([...params.keys()]).toEqual(['election']);
+    expect(params.get('election')).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+    );
+  });
+
+  it("links the County's turnout dashboards on its ArcGIS Experience Builder", () => {
+    expect(results.turnoutUrl).toMatch(
+      /^https:\/\/experience\.arcgis\.com\/experience\/[0-9a-f]{32}$/,
+    );
+  });
+
+  it('is in the County block, and cites sources and a verified date', () => {
+    expect(jurisdictions.county.results).toBe(results);
+    expect(jurisdictions.city).not.toHaveProperty('results');
+    expectSources(results.sources);
+    expect(results.lastVerified).toMatch(ISO_DATE);
+  });
+});
+
 describe('the Election Day polling place rule', () => {
   const rule = election.electionDayPollingPlace;
 
